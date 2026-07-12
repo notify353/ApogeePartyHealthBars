@@ -8,6 +8,7 @@ ignore:
   - .gitignore
   - .pkgmeta
   - .release
+  - AGENTS.md
   - assets
   - scripts
   - tests

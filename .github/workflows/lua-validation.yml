@@ -1,0 +1,27 @@
+name: Lua validation
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua 5.1
+        run: sudo apt-get update && sudo apt-get install -y lua5.1
+      - name: Parse add-on files
+        run: for file in *.lua; do luac5.1 -p "$file"; done
+      - name: Validate macro library
+        run: lua5.1 tests/macro_library_spec.lua
+      - name: Validate macro installer
+        run: lua5.1 tests/macro_installer_spec.lua
+      - name: Validate event router
+        run: lua5.1 tests/event_router_spec.lua
+      - name: Validate secure frame guards
+        run: lua5.1 tests/secure_frames_spec.lua
+      - name: Validate unit display target path
+        run: lua5.1 tests/unit_display_spec.lua
+      - name: Validate full add-on lifecycle
+        run: lua5.1 tests/addon_smoke_spec.lua

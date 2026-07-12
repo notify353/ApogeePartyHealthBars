@@ -1,0 +1,331 @@
+-- Constants and mutable state (separate file — Lua main-chunk 200 local limit).
+ApogeePartyHealthBars_C = {
+    SAVED_VARIABLES_VERSION = 2,
+    ADDON_PREFIX         = "|cffFFD700Party Health:|r",
+    FRAME_W              = 200,
+    ROW_H                = 26,
+    MANA_H               = 5,
+    MANA_GAP             = 1,
+    ROW_GAP              = 2,
+    HEADER_H             = 22,
+    COMPACT_TOP          = 4,
+    MANA_POWER           = (Enum and Enum.PowerType and Enum.PowerType.Mana) or 0,
+    PAD_H                = 8,
+    PAD_BOT              = 6,
+    FLAT_BAR_TEXTURE     = "Interface\\Buttons\\WHITE8x8",
+    UPDATE_RATE          = 0.1,
+    RANGE_UPDATE_RATE    = 0.2,
+    OUT_OF_RANGE_ALPHA   = 0.35,
+    OFFLINE_ALPHA        = 0.50,
+    THREAT_RAIL_W        = 3,
+    THREAT_RAIL_GAP      = 2,
+    THREAT_TEXT_W        = 50,
+    THREAT_TEXT_GAP      = 3,
+    OFFLINE_BAR_COLOR    = { 0.22, 0.22, 0.25, 1 },
+    MAX_ROWS             = 5,
+    BIND_PANEL_W         = 420,
+    BIND_PANEL_H         = 420,
+    BIND_ROW_H           = 18,
+    BIND_LABEL_W         = 198,
+    BIND_PAD             = 8,
+    CONFIG_TAB_H         = 24,
+    CONFIG_CHECK_ROW_H   = 20,
+    CONFIG_SECTION_GAP   = 8,
+    CONFIG_BTN_H         = 22,
+    CONFIG_CONTENT_W     = 396, -- BIND_PANEL_W - BIND_PAD*2 - scrollbar
+    TRACKER_MAX_SLOTS    = 8,
+    TRACKER_ICON_SIZE    = 20,
+    TRACKER_ICON_GAP     = 3,
+    TRACKER_TOP_GAP      = 2,
+    TRACKER_READY_PULSE  = 0.65,
+    TRACKER_SOUND_DEBOUNCE = 2.0,
+    DEFAULT_ANCHOR       = "RIGHT",
+    DEFAULT_REL          = "RIGHT",
+    DEFAULT_X            = -20,
+    DEFAULT_Y            = -80,
+    MINIMAP_BTN_SIZE     = 31,
+    MINIMAP_RADIUS       = 80,
+    MINIMAP_ANGLE        = 225,
+    BUFF_ICON_SIZE       = 16,
+    BUFF_SLOT_GAP        = 2,
+    BUFF_EDGE_INSET      = 2,
+    PARTY_BUFF_ICON_TEXTURE    = "Interface\\Icons\\Spell_Holy_WordFortitude",
+    SELF_BUFF_ICON_TEXTURE      = "Interface\\Icons\\Spell_Holy_InnerFire",
+    -- First entry the player knows in spellbook wins (class-agnostic buff tracking).
+    PARTY_BUFF_DEFINITIONS = {
+        {
+            canonical = "Power Word: Fortitude",
+            pattern   = "^Power Word: Fortitude",
+            icon      = "Interface\\Icons\\Spell_Holy_WordFortitude",
+            auraIds = {
+                [1243] = true, [1244] = true, [1245] = true, [2791] = true,
+                [10937] = true, [10938] = true, [25389] = true,
+                [21562] = true, [21564] = true, [25392] = true,
+            },
+            auraNames = {
+                ["Power Word: Fortitude"] = true,
+                ["Prayer of Fortitude"]   = true,
+            },
+        },
+        {
+            canonical = "Mark of the Wild",
+            pattern   = "^Mark of the Wild",
+            icon      = "Interface\\Icons\\Spell_Nature_Regeneration",
+            auraIds = {
+                [1126] = true, [5232] = true, [6756] = true, [5234] = true,
+                [8907] = true, [9884] = true, [9885] = true, [26990] = true,
+                [21849] = true, [21850] = true, [26991] = true,
+            },
+            auraNames = {
+                ["Mark of the Wild"] = true,
+                ["Gift of the Wild"] = true,
+            },
+        },
+        {
+            canonical = "Blessing of Might",
+            pattern   = "^Blessing of Might",
+            icon      = "Interface\\Icons\\Spell_Holy_FistOfJustice",
+            auraIds = {
+                [19740] = true, [19834] = true, [19835] = true, [19836] = true,
+                [19837] = true, [19838] = true, [25291] = true, [27140] = true,
+                [25782] = true, [25916] = true, [27141] = true,
+            },
+            auraNames = {
+                ["Blessing of Might"]         = true,
+                ["Greater Blessing of Might"] = true,
+            },
+        },
+        {
+            canonical = "Blessing of Light",
+            pattern   = "^Blessing of Light",
+            icon      = "Interface\\Icons\\Spell_Holy_PrayerOfHealing02",
+            auraIds = {
+                [19977] = true, [19978] = true, [19979] = true, [27144] = true,
+                [25890] = true, [27145] = true,
+            },
+            auraNames = {
+                ["Blessing of Light"]         = true,
+                ["Greater Blessing of Light"] = true,
+            },
+        },
+        {
+            canonical = "Blessing of Kings",
+            pattern   = "^Blessing of Kings",
+            icon      = "Interface\\Icons\\Spell_Magic_MageArmor",
+            auraIds = {
+                [20217] = true, [25898] = true,
+            },
+            auraNames = {
+                ["Blessing of Kings"]         = true,
+                ["Greater Blessing of Kings"] = true,
+            },
+        },
+    },
+    SELF_BUFF_SPELL_DEFINITIONS = {
+        {
+            canonical = "Inner Fire",
+            pattern   = "^Inner Fire",
+            icon      = "Interface\\Icons\\Spell_Holy_InnerFire",
+            auraIds = {
+                [588] = true, [602] = true, [1006] = true,
+                [10951] = true, [10952] = true, [25472] = true,
+            },
+            auraNames = { ["Inner Fire"] = true },
+        },
+        {
+            canonical = "Devotion Aura",
+            pattern   = "^Devotion Aura",
+            icon      = "Interface\\Icons\\Spell_Holy_DevotionAura",
+            auraIds = {
+                [465] = true, [643] = true, [1032] = true,
+                [10290] = true, [10291] = true, [10292] = true,
+                [10293] = true, [27149] = true,
+            },
+            auraNames = { ["Devotion Aura"] = true },
+        },
+    },
+    TARGET_GAP           = 2,
+    SHIELD_BAR_COLOR     = { 0.15, 0.85, 1.00, 1 },
+    INCOMING_HEAL_COLOR  = { 0.25, 0.78, 0.35, 0.65 },
+    MANA_BAR_COLOR       = { 0.32, 0.52, 0.88, 1 },
+    POWER_BAR_FALLBACK_COLORS = {
+        MANA        = { 0.32, 0.52, 0.88, 1 },
+        RAGE        = { 0.90, 0.18, 0.18, 1 },
+        FOCUS       = { 1.00, 0.50, 0.25, 1 },
+        ENERGY      = { 1.00, 0.85, 0.10, 1 },
+        RUNIC_POWER = { 0.00, 0.82, 1.00, 1 },
+        LUNAR_POWER = { 0.30, 0.52, 0.90, 1 },
+        MAELSTROM   = { 0.00, 0.50, 1.00, 1 },
+        INSANITY    = { 0.40, 0.00, 0.80, 1 },
+        FURY        = { 0.79, 0.26, 0.99, 1 },
+        PAIN        = { 1.00, 0.61, 0.00, 1 },
+        DEFAULT     = { 0.70, 0.70, 0.70, 1 },
+    },
+    HOT_H                = 4,
+    HOT_GAP              = 1,
+    HOT_AREA_GAP         = 1,
+    -- HoT bars: one track per spell the player knows (player-cast auras only).
+    HOT_SPELL_DEFINITIONS = {
+        {
+            key       = "renew",
+            canonical = "Renew",
+            pattern   = "^Renew",
+            barColor  = { 0.35, 0.82, 0.48, 1 },
+            auraNames = { ["Renew"] = true },
+            auraIds = {
+                [139] = true, [607] = true, [947] = true, [959] = true,
+                [10927] = true, [10928] = true, [10929] = true,
+                [25315] = true, [25221] = true, [25222] = true,
+            },
+        },
+        {
+            key       = "rejuv",
+            canonical = "Rejuvenation",
+            pattern   = "^Rejuvenation",
+            barColor  = { 0.22, 0.72, 0.38, 1 },
+            auraNames = { ["Rejuvenation"] = true },
+            auraIds = {
+                [774] = true, [1058] = true, [1430] = true, [2090] = true,
+                [2091] = true, [3627] = true, [8910] = true, [9839] = true,
+                [9840] = true, [9841] = true, [25299] = true,
+                [26981] = true, [26982] = true,
+            },
+        },
+        {
+            key       = "regrowth",
+            canonical = "Regrowth",
+            pattern   = "^Regrowth",
+            barColor  = { 0.42, 0.78, 0.32, 1 },
+            auraNames = { ["Regrowth"] = true },
+            auraIds = {
+                [8936] = true, [8938] = true, [8939] = true, [8940] = true,
+                [8941] = true, [9750] = true, [9856] = true, [9857] = true,
+                [9858] = true, [26980] = true,
+            },
+        },
+        {
+            key       = "lifebloom",
+            canonical = "Lifebloom",
+            pattern   = "^Lifebloom",
+            barColor  = { 0.55, 0.88, 0.28, 1 },
+            auraNames = { ["Lifebloom"] = true },
+            auraIds = {
+                [33763] = true,
+            },
+        },
+    },
+    BAR_BG_COLOR         = { 0.11, 0.11, 0.13, 1 },
+    ENEMY_TARGET_BG_COLOR = { 0.32, 0.08, 0.08, 1 },
+    PANEL_BG_COLOR       = { 0.06, 0.06, 0.08, 0.96 },
+    PANEL_EDGE_COLOR     = { 0.22, 0.22, 0.26, 1 },
+    PW_SHIELD_RANKS = {
+        [17]    = { 45,  0.332 },
+        [592]   = { 89,  0.332 },
+        [600]   = { 145, 0.332 },
+        [3747]  = { 234, 0.332 },
+        [6064]  = { 301, 0.332 },
+        [10808] = { 376, 0.332 },
+        [10809] = { 470, 0.332 },
+        [25217] = { 908, 0.756 },
+        [25218] = { 970, 0.805 },
+        [25431] = { 970, 0.805 },
+    },
+    PW_SHIELD_SPELL_IDS = {},
+    PW_SHIELD_AURA_NAMES = {
+        ["Power Word: Shield"] = true,
+    },
+    SLOT_UNITS = { "player", "party1", "party2", "party3", "party4" },
+    CLASS_COLOR = {
+        WARRIOR = { 0.78, 0.61, 0.43 },
+        PALADIN = { 0.96, 0.55, 0.73 },
+        HUNTER  = { 0.67, 0.83, 0.45 },
+        ROGUE   = { 1.00, 0.96, 0.41 },
+        PRIEST  = { 1.00, 1.00, 1.00 },
+        SHAMAN  = { 0.00, 0.44, 0.87 },
+        MAGE    = { 0.41, 0.80, 0.94 },
+        WARLOCK = { 0.58, 0.51, 0.79 },
+        DRUID   = { 1.00, 0.49, 0.04 },
+    },
+    MODIFIERS = {
+        { key = "",                label = "" },
+        { key = "alt-",            label = "Alt + " },
+        { key = "ctrl-",           label = "Ctrl + " },
+        { key = "ctrl-alt-",       label = "Ctrl + Alt + " },
+        { key = "shift-",          label = "Shift + " },
+        { key = "shift-alt-",      label = "Shift + Alt + " },
+        { key = "shift-ctrl-",     label = "Shift + Ctrl + " },
+        { key = "shift-ctrl-alt-", label = "Shift + Ctrl + Alt + " },
+    },
+    MOUSE_BUTTONS = {
+        { key = "1", label = "Left Click" },
+        { key = "2", label = "Right Click" },
+        { key = "3", label = "Middle Click" },
+    },
+    BINDING_SLOTS = {},
+    CLASS_HEALER_BINDING_DEFAULTS = {
+        PALADIN = {
+            { key = "1",       canonical = "Flash of Light", pattern = "^Flash of Light" },
+            { key = "2",       canonical = "Holy Light",     pattern = "^Holy Light" },
+            { key = "3",       canonical = "Purify",         pattern = "^Purify" },
+            { key = "3",       canonical = "Cleanse",        pattern = "^Cleanse" },
+            { key = "shift-1", canonical = "Holy Shock",     pattern = "^Holy Shock" },
+        },
+    },
+    BACKDROP = {
+        bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile     = true,
+        tileSize = 16,
+        edgeSize = 14,
+        insets   = { left = 4, right = 4, top = 4, bottom = 4 },
+    },
+}
+
+local C = ApogeePartyHealthBars_C
+for spellId in pairs(C.PW_SHIELD_RANKS) do
+    C.PW_SHIELD_SPELL_IDS[spellId] = true
+end
+C.MAX_HOT_SLOTS  = #C.HOT_SPELL_DEFINITIONS
+C.ROW_CONTENT_W  = C.FRAME_W - C.PAD_H * 2
+C.TARGET_BAR_W   = C.ROW_CONTENT_W
+C.BUFF_SLOT_STEP = C.BUFF_ICON_SIZE + C.BUFF_SLOT_GAP
+
+for _, mod in ipairs(C.MODIFIERS) do
+    for _, btn in ipairs(C.MOUSE_BUTTONS) do
+        local slotKey = mod.key .. btn.key
+        local label = (mod.key == "") and btn.label or (mod.label .. btn.label)
+        C.BINDING_SLOTS[#C.BINDING_SLOTS + 1] = { key = slotKey, label = label }
+    end
+end
+
+ApogeePartyHealthBars_S = {
+    sv                       = nil,
+    charSv                   = nil,
+    configMode               = false,
+    configTab                = "general",
+    layoutDirty              = false,
+    valuesDirty              = false,
+    valuesDirtyUnits         = nil,
+    uiTimer                  = 0,
+    rangeTimer               = 0,
+    auraCacheGen             = 0,
+    auraCache                = {},
+    selectedBindingKey       = nil,
+    selectedTrackerSlot      = nil,
+    spellbookHooked          = false,
+    castBtnSerial            = 0,
+    secureUpdatePending      = false,
+    partyBuffSpellKnown           = false,
+    partyBuffCastSpellName        = nil,
+    partyBuffIconTexture      = nil,
+    partyBuffAuraIds              = nil,
+    partyBuffAuraNames            = nil,
+    selfBuffSpellKnown      = false,
+    selfBuffCastSpellName   = nil,
+    selfBuffIconTexture = nil,
+    selfBuffAuraIds         = nil,
+    selfBuffAuraNames       = nil,
+    shieldRemaining          = {},
+    activeHotTracks          = {},
+    hotSpellKnown            = {},
+}

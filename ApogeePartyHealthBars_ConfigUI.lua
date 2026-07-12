@@ -1,0 +1,453 @@
+local C = ApogeePartyHealthBars_C
+local S = ApogeePartyHealthBars_S
+local SC = ApogeePartyHealthBars_SpellTrackerConfig
+local MC = ApogeePartyHealthBars_MacroConfig
+local UIH = ApogeePartyHealthBars_UIHelpers
+
+ApogeePartyHealthBars_ConfigUI = {}
+
+local UI = ApogeePartyHealthBars_ConfigUI
+local built = false
+local D
+
+local configPanel
+local generalTab, bindingsTab, spellsTab, macrosTab
+local generalScroll, generalScrollChild
+local bindScroll, bindScrollChild, bindHintFS
+local tabs, tabOrder = {}, {}
+local bindSlotRows = {}
+local generalRows = {}
+local hotRows = {}
+local resetBarBtn, resetSettingsBtn, resetMinimapBtn, generalHintFS
+local refreshing = false
+
+local function SaveConfigPosition()
+    if not S.sv or not configPanel then return end
+    local point, _, relPoint, x, y = configPanel:GetPoint()
+    S.sv.configPoint = point
+    S.sv.configRelPoint = relPoint
+    S.sv.configX = x
+    S.sv.configY = y
+end
+
+local function ApplyDefaultConfigPosition()
+    if not configPanel then return end
+    configPanel:ClearAllPoints()
+    configPanel:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+    if S.sv then
+        S.sv.configPoint = nil
+        S.sv.configRelPoint = nil
+        S.sv.configX = nil
+        S.sv.configY = nil
+    end
+end
+
+local function RestoreConfigPosition()
+    if not configPanel then return end
+    configPanel:ClearAllPoints()
+    if S.sv and type(S.sv.configX) == "number" and type(S.sv.configY) == "number" then
+        local ok = pcall(
+            configPanel.SetPoint,
+            configPanel,
+            S.sv.configPoint or "CENTER",
+            UIParent,
+            S.sv.configRelPoint or "CENTER",
+            S.sv.configX,
+            S.sv.configY
+        )
+        if ok then return end
+    end
+    ApplyDefaultConfigPosition()
+end
+
+local function AttachConfigDragHandle(frame)
+    frame:RegisterForDrag("LeftButton")
+    frame:SetScript("OnDragStart", function()
+        configPanel:StartMoving()
+    end)
+    frame:SetScript("OnDragStop", function()
+        configPanel:StopMovingOrSizing()
+        SaveConfigPosition()
+    end)
+end
+
+local function SetCheckboxChecked(check, checked)
+    local onClick = check:GetScript("OnClick")
+    check:SetScript("OnClick", nil)
+    check:SetChecked(checked)
+    check:SetScript("OnClick", onClick)
+end
+
+local function StyleTabButton(btn, active)
+    UIH.StyleTabButton(btn, active)
+end
+
+local function CreateTabButton(parent, text, xOffset, width)
+    return UIH.CreateTabButton(parent, text, xOffset, width)
+end
+
+local function CreateCheckboxRow(parent, labelText, indent)
+    local row = CreateFrame("Frame", nil, parent)
+    row:SetSize(C.CONFIG_CONTENT_W, C.CONFIG_CHECK_ROW_H)
+
+    local check = CreateFrame("CheckButton", nil, row, "UICheckButtonTemplate")
+    check:SetSize(20, 20)
+    check:SetPoint("LEFT", row, "LEFT", 0, 0)
+
+    local label = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    label:SetPoint("LEFT", check, "RIGHT", 2, 0)
+    label:SetJustifyH("LEFT")
+    label:SetWidth(C.CONFIG_CONTENT_W - 40 - (indent or 0))
+    label:SetText(labelText)
+
+    row.check = check
+    row.label = label
+    return row
+end
+
+local function CreateActionButton(parent, labelText)
+    return UIH.CreateButton(parent, labelText)
+end
+
+local function AttachScrollWheel(scroll, step)
+    UIH.AttachScrollWheel(scroll, step)
+end
+
+local function CreateScrollFrame(parent)
+    return UIH.CreateScrollFrame(parent)
+end
+
+local function IsGeneralRowVisible(svKey)
+    if svKey == "partyBuffEnabled" then return S.partyBuffSpellKnown end
+    if svKey == "selfBuffEnabled" then return S.selfBuffSpellKnown end
+    return true
+end
+
+local function SetConfigTab(tabName)
+    if not tabs[tabName] then tabName = "general" end
+    S.configTab = tabName
+    for _, key in ipairs(tabOrder) do
+        local spec = tabs[key]
+        local active = key == tabName
+        spec.frame:SetShown(active)
+        StyleTabButton(spec.button, active)
+    end
+end
+
+local function RegisterTab(spec)
+    assert(type(spec) == "table" and type(spec.key) == "string", "invalid config tab")
+    assert(not tabs[spec.key], "duplicate config tab: " .. spec.key)
+    tabs[spec.key] = spec
+    tabOrder[#tabOrder + 1] = spec.key
+end
+
+local function RefreshTab(key, ...)
+    local spec = tabs[key]
+    if spec and spec.refresh then spec.refresh(...) end
+end
+
+local function RefreshActiveTab(...)
+    RefreshTab(S.configTab or "general", ...)
+end
+
+local function LayoutGeneralTab()
+    local hotGlobal = D.IsHotEnabled()
+    local disabled = S.sv.hotDisabled or {}
+    local y = 0
+
+    for _, row in ipairs(generalRows) do
+        if IsGeneralRowVisible(row.svKey) then
+            row.frame:Show()
+            row.frame:ClearAllPoints()
+            row.frame:SetPoint("TOPLEFT", generalScrollChild, "TOPLEFT", 0, -y)
+            SetCheckboxChecked(row.frame.check, D.IsSavedFeatureEnabled(row.svKey))
+            y = y + C.CONFIG_CHECK_ROW_H
+        else
+            row.frame:Hide()
+        end
+    end
+
+    y = y + C.CONFIG_SECTION_GAP
+
+    for _, entry in ipairs(hotRows) do
+        if S.hotSpellKnown[entry.def.key] then
+            entry.row:Show()
+            entry.row:ClearAllPoints()
+            entry.row:SetPoint("TOPLEFT", generalScrollChild, "TOPLEFT", 12, -y)
+            SetCheckboxChecked(entry.row.check, not disabled[entry.def.key])
+            if hotGlobal then
+                entry.row.check:Enable()
+                entry.row.label:SetTextColor(0.9, 0.9, 0.9)
+            else
+                entry.row.check:Disable()
+                entry.row.label:SetTextColor(0.45, 0.45, 0.45)
+            end
+            y = y + C.CONFIG_CHECK_ROW_H
+        else
+            entry.row:Hide()
+        end
+    end
+
+    y = y + C.CONFIG_SECTION_GAP
+
+    resetBarBtn:ClearAllPoints()
+    resetBarBtn:SetPoint("TOPLEFT", generalScrollChild, "TOPLEFT", 0, -y)
+    y = y + C.CONFIG_BTN_H + 4
+
+    resetSettingsBtn:ClearAllPoints()
+    resetSettingsBtn:SetPoint("TOPLEFT", generalScrollChild, "TOPLEFT", 0, -y)
+    y = y + C.CONFIG_BTN_H + 4
+
+    resetMinimapBtn:ClearAllPoints()
+    resetMinimapBtn:SetPoint("TOPLEFT", generalScrollChild, "TOPLEFT", 0, -y)
+    y = y + C.CONFIG_BTN_H + 4
+
+    generalHintFS:ClearAllPoints()
+    generalHintFS:SetPoint("TOPLEFT", generalScrollChild, "TOPLEFT", 0, -y)
+    y = y + 28
+
+    generalScrollChild:SetHeight(y)
+end
+
+local function RefreshBindPanel()
+    for i, slot in ipairs(C.BINDING_SLOTS) do
+        local row = bindSlotRows[i]
+        local binding = D.GetBinding(slot.key)
+        if binding then
+            row.spellFS:SetText("|cffAAAAFF" .. D.GetBindingDisplayName(binding) .. "|r")
+        else
+            row.spellFS:SetText("|cff666666— unbound —|r")
+        end
+        if S.selectedBindingKey == slot.key then
+            row.bg:SetColorTexture(0.22, 0.22, 0.22, 1)
+            row.accent:Show()
+        else
+            row.bg:SetColorTexture(0.08, 0.08, 0.08, 1)
+            row.accent:Hide()
+        end
+    end
+    bindHintFS:SetText(S.selectedBindingKey
+        and "|cff00ff00Selected.|r Shift-click a spell in your spellbook."
+        or  "Select a row, then shift-click a spell. Right-click row to clear.")
+end
+
+local function RefreshConfigPanel()
+    if not S.configMode or not configPanel:IsShown() then return end
+
+    refreshing = true
+    LayoutGeneralTab()
+    refreshing = false
+
+    if S.configTab ~= "general" then RefreshActiveTab() end
+end
+
+local function BuildBindingsTab(parent)
+    bindingsTab = CreateFrame("Frame", nil, parent)
+    bindingsTab:SetPoint("TOPLEFT", parent, "TOPLEFT", C.BIND_PAD, -(C.BIND_PAD + C.CONFIG_TAB_H + 4))
+    bindingsTab:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -C.BIND_PAD, C.BIND_PAD)
+    bindingsTab:Hide()
+
+    local bindTitleFS = bindingsTab:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    bindTitleFS:SetPoint("TOPLEFT", bindingsTab, "TOPLEFT", 0, 0)
+    bindTitleFS:SetText("|cffFFD700Click Bindings|r")
+    bindTitleFS:SetTextColor(1, 0.82, 0)
+
+    bindHintFS = bindingsTab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    bindHintFS:SetPoint("TOPLEFT", bindTitleFS, "BOTTOMLEFT", 0, -2)
+    bindHintFS:SetWidth(C.BIND_PANEL_W - C.BIND_PAD * 2)
+    bindHintFS:SetJustifyH("LEFT")
+
+    local bindSep = bindingsTab:CreateTexture(nil, "ARTWORK")
+    bindSep:SetColorTexture(0.4, 0.4, 0.4, 0.8)
+    bindSep:SetSize(C.BIND_PANEL_W - C.BIND_PAD * 2, 1)
+    bindSep:SetPoint("TOPLEFT", bindHintFS, "BOTTOMLEFT", 0, -4)
+
+    bindScroll = CreateFrame("ScrollFrame", nil, bindingsTab)
+    bindScroll:SetPoint("TOPLEFT", bindSep, "BOTTOMLEFT", 0, -4)
+    bindScroll:SetPoint("BOTTOMRIGHT", bindingsTab, "BOTTOMRIGHT", 0, 0)
+    AttachScrollWheel(bindScroll, C.BIND_ROW_H * 3)
+
+    bindScrollChild = CreateFrame("Frame", nil, bindScroll)
+    bindScrollChild:SetWidth(C.CONFIG_CONTENT_W)
+    bindScroll:SetScrollChild(bindScrollChild)
+
+    for i, slot in ipairs(C.BINDING_SLOTS) do
+        local slotKey = slot.key
+        local btn = CreateFrame("Button", nil, bindScrollChild)
+        btn:SetSize(C.CONFIG_CONTENT_W, C.BIND_ROW_H)
+        btn:SetPoint("TOPLEFT", bindScrollChild, "TOPLEFT", 0, -(i - 1) * C.BIND_ROW_H)
+
+        local bg = btn:CreateTexture(nil, "BACKGROUND")
+        bg:SetAllPoints()
+        bg:SetColorTexture(0.08, 0.08, 0.08, 1)
+
+        local accent = btn:CreateTexture(nil, "OVERLAY")
+        accent:SetWidth(3)
+        accent:SetPoint("TOPLEFT", btn, "TOPLEFT")
+        accent:SetPoint("BOTTOMLEFT", btn, "BOTTOMLEFT")
+        accent:SetColorTexture(1, 0.82, 0, 1)
+        accent:Hide()
+
+        local hl = btn:CreateTexture(nil, "HIGHLIGHT")
+        hl:SetAllPoints()
+        hl:SetColorTexture(1, 1, 1, 0.06)
+
+        local labelFS = btn:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+        labelFS:SetPoint("LEFT", btn, "LEFT", 6, 0)
+        labelFS:SetWidth(C.BIND_LABEL_W)
+        labelFS:SetJustifyH("LEFT")
+        labelFS:SetWordWrap(false)
+        labelFS:SetText(slot.label)
+
+        local spellFS = btn:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+        spellFS:SetPoint("LEFT", labelFS, "RIGHT", 4, 0)
+        spellFS:SetPoint("RIGHT", btn, "RIGHT", -4, 0)
+        spellFS:SetJustifyH("LEFT")
+        spellFS:SetWordWrap(false)
+
+        btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+        btn:SetScript("OnClick", function(_, mouseButton)
+            if mouseButton == "RightButton" then
+                D.ClearBinding(slotKey)
+            else
+                S.selectedBindingKey = slotKey
+                S.selectedTrackerSlot = nil
+                RefreshBindPanel()
+            end
+        end)
+
+        bindSlotRows[i] = { btn = btn, bg = bg, accent = accent, spellFS = spellFS }
+    end
+
+    bindScrollChild:SetHeight(#C.BINDING_SLOTS * C.BIND_ROW_H)
+end
+
+local function BuildGeneralTab(parent)
+    generalTab = CreateFrame("Frame", nil, parent)
+    generalTab:SetPoint("TOPLEFT", parent, "TOPLEFT", C.BIND_PAD, -(C.BIND_PAD + C.CONFIG_TAB_H + 4))
+    generalTab:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -C.BIND_PAD, C.BIND_PAD)
+
+    generalScroll, generalScrollChild = CreateScrollFrame(generalTab)
+    AttachScrollWheel(generalScroll, C.CONFIG_CHECK_ROW_H * 2)
+
+    local function addCheckbox(label, svKey, onChange)
+        local frame = CreateCheckboxRow(generalScrollChild, label, 0)
+        generalRows[#generalRows + 1] = { frame = frame, svKey = svKey }
+        frame.check:SetScript("OnClick", function(self)
+            if refreshing then return end
+            local checked = self:GetChecked()
+            if svKey == "enabled" then
+                D.SetAddonEnabled(checked)
+            else
+                D.SetSavedFeature(svKey, checked, onChange)
+            end
+            RefreshConfigPanel()
+        end)
+    end
+
+    addCheckbox("Enable addon", "enabled")
+    addCheckbox("Show all 5 slots when solo", "showAllSlots")
+    addCheckbox("Missing party buff icons", "partyBuffEnabled")
+    addCheckbox("Missing self-buff or aura icon", "selfBuffEnabled")
+    addCheckbox("Shield overlay", "shieldEnabled")
+    addCheckbox("Incoming heal overlay", "incomingHealEnabled")
+    addCheckbox("Fade out-of-range party members", "rangeCheckEnabled")
+    local function refreshThreatSetting()
+        D.Threat.Refresh()
+        D.SyncVisualTicker()
+    end
+    addCheckbox("Threat indicators", "threatEnabled", refreshThreatSetting)
+    addCheckbox("Threat margin (current target)", "threatPercentEnabled", refreshThreatSetting)
+    addCheckbox("Unit target bars", "showUnitTargets")
+    addCheckbox("HoT duration bars", "hotEnabled", D.InitHotSpells)
+
+    for _, def in ipairs(C.HOT_SPELL_DEFINITIONS) do
+        local frame = CreateCheckboxRow(generalScrollChild, def.canonical, 12)
+        hotRows[#hotRows + 1] = { row = frame, def = def }
+        frame.check:SetScript("OnClick", function(self)
+            if refreshing or not D.IsHotEnabled() then return end
+            D.SetHotTrackEnabled(def.key, self:GetChecked())
+            RefreshConfigPanel()
+        end)
+    end
+
+    resetBarBtn = CreateActionButton(generalScrollChild, "Reset bar position")
+    resetBarBtn:SetScript("OnClick", function()
+        D.ApplyDefaultPosition()
+        D.ForceRefresh()
+    end)
+
+    resetSettingsBtn = CreateActionButton(generalScrollChild, "Reset settings position")
+    resetSettingsBtn:SetScript("OnClick", ApplyDefaultConfigPosition)
+
+    resetMinimapBtn = CreateActionButton(generalScrollChild, "Reset minimap button")
+    resetMinimapBtn:SetScript("OnClick", function()
+        D.ApplyDefaultMinimapPosition()
+    end)
+
+    generalHintFS = generalScrollChild:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    generalHintFS:SetWidth(C.CONFIG_CONTENT_W)
+    generalHintFS:SetJustifyH("LEFT")
+    generalHintFS:SetText("Drag the bars or the settings tabs to move them independently. Right-drag the minimap icon to reposition it.")
+end
+
+function UI.Build(deps)
+    if built then return UI end
+    built = true
+    D = deps
+
+    configPanel = CreateFrame("Frame", "ApogeePartyHealthBarsBindPanel", UIParent, "BackdropTemplate")
+    configPanel:SetSize(C.BIND_PANEL_W, C.BIND_PANEL_H)
+    configPanel:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+    configPanel:SetMovable(true)
+    configPanel:EnableMouse(true)
+    configPanel:SetClampedToScreen(true)
+    configPanel:SetFrameStrata("MEDIUM")
+    D.ApplyBackdrop(configPanel, C.PANEL_BG_COLOR[4], C.PANEL_EDGE_COLOR)
+    AttachConfigDragHandle(configPanel)
+    configPanel:Hide()
+
+    BuildGeneralTab(configPanel)
+    BuildBindingsTab(configPanel)
+    spellsTab = SC.Build(configPanel, D)
+    macrosTab = MC.Build(configPanel, D)
+
+    RegisterTab({ key = "general", label = "General", frame = generalTab, refresh = RefreshConfigPanel })
+    RegisterTab({ key = "bindings", label = "Bindings", frame = bindingsTab, refresh = RefreshBindPanel })
+    RegisterTab({ key = "spells", label = "Spells", frame = spellsTab, refresh = SC.Refresh })
+    RegisterTab({ key = "macros", label = "Macros", frame = macrosTab, refresh = MC.Refresh })
+
+    local tabWidth = (C.BIND_PANEL_W - C.BIND_PAD * 2 - (#tabOrder - 1) * 4) / #tabOrder
+    for index, key in ipairs(tabOrder) do
+        local spec = tabs[key]
+        spec.button = CreateTabButton(configPanel, spec.label,
+            C.BIND_PAD + (index - 1) * (tabWidth + 4), tabWidth)
+        AttachConfigDragHandle(spec.button)
+        spec.button:SetScript("OnClick", function()
+            SetConfigTab(key)
+            RefreshTab(key, key == "macros")
+        end)
+    end
+    SetConfigTab(S.configTab)
+
+    UI.configPanel = configPanel
+    UI.RefreshConfigPanel = RefreshConfigPanel
+    UI.RefreshBindPanel = RefreshBindPanel
+    UI.RefreshSpellPanel = SC.Refresh
+    UI.RefreshMacroPanel = MC.Refresh
+    UI.RegisterTab = RegisterTab
+    UI.ActivateTab = SetConfigTab
+    UI.RefreshTab = RefreshTab
+    UI.RefreshActiveTab = RefreshActiveTab
+    UI.Show = function()
+        RestoreConfigPosition()
+        SetConfigTab(S.configTab)
+        configPanel:Show()
+        RefreshConfigPanel()
+    end
+    UI.Hide = function()
+        configPanel:Hide()
+    end
+
+    return UI
+end

@@ -1,0 +1,33 @@
+## Interface: 20505
+## Title: Apogee Party Health Bars
+## Notes: Apogee 5-man party HP bars for any healing class
+## Version: 0.29
+## SavedVariables: ApogeePartyHealthSV
+## SavedVariablesPerCharacter: ApogeePartyHealthCharSV
+
+ApogeePartyHealthBars_Data.lua
+ApogeePartyHealthBars_MacroData.lua
+ApogeePartyHealthBars_MacroLibrary.lua
+ApogeePartyHealthBars_MacroInstaller.lua
+ApogeePartyHealthBars_EventRouter.lua
+ApogeePartyHealthBars_SecureFrames.lua
+ApogeePartyHealthBars_Effects.lua
+ApogeePartyHealthBars_Auras.lua
+ApogeePartyHealthBars_SpellTracker.lua
+ApogeePartyHealthBars_Threat.lua
+ApogeePartyHealthBars_MinimapController.lua
+ApogeePartyHealthBars_ConfigController.lua
+ApogeePartyHealthBars_PlayerSpells.lua
+ApogeePartyHealthBars_BindingStore.lua
+ApogeePartyHealthBars_BindingController.lua
+ApogeePartyHealthBars_ClickBindings.lua
+ApogeePartyHealthBars_UnitDisplay.lua
+ApogeePartyHealthBars_EffectsTracker.lua
+ApogeePartyHealthBars_UnitFrames.lua
+ApogeePartyHealthBars_Layout.lua
+ApogeePartyHealthBars_SpellTrackerConfig.lua
+ApogeePartyHealthBars_UIHelpers.lua
+ApogeePartyHealthBars_MacroConfig.lua
+ApogeePartyHealthBars_ConfigUI.lua
+ApogeePartyHealthBars_RuntimeEvents.lua
+ApogeePartyHealthBars.lua

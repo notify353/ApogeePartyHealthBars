@@ -546,6 +546,7 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
     ForceRefresh                = ForceRefresh,
     InitHotSpells               = InitHotSpells,
     SetAddonEnabled             = SetAddonEnabled,
+    SetConfigMode              = SetConfigMode,
     SetSavedFeature             = SetSavedFeature,
     SetHotTrackEnabled          = SetHotTrackEnabled,
     ApplyDefaultPosition        = ApplyDefaultPosition,

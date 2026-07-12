@@ -57,7 +57,7 @@ To assign a spell, select the appropriate binding or tracker slot and Shift-clic
 
 ## Compatibility
 
-Version 0.29 targets the World of Warcraft Anniversary/Burning Crusade Classic client identified by TOC interface `20505`. Other Classic flavors and Retail are not currently supported.
+The current release targets World of Warcraft Anniversary/Burning Crusade Classic 2.5.6, identified by TOC interface `20506`. Other Classic flavors and Retail are not currently supported.
 
 ## Support and source
 

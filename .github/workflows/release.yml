@@ -1,0 +1,85 @@
+name: Publish stable release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: production-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Validate, package, and publish
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate tag and release metadata
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF_NAME -notmatch '^v(?<version>0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$') {
+            throw "Release tags must use vX.Y.Z semantic versioning."
+          }
+          $version = $Matches.version + '.' + $Matches[2] + '.' + $Matches[3]
+          ./scripts/validate-package.ps1 -ExpectedVersion $version
+          if (-not (Select-String -Path CHANGELOG.md -Pattern ([regex]::Escape("## [$version] - ")) -Quiet)) {
+            throw "CHANGELOG.md has no dated section for $version."
+          }
+
+      - name: Install Lua 5.1
+        run: sudo apt-get update && sudo apt-get install -y lua5.1
+      - name: Parse add-on files
+        run: for file in *.lua; do luac5.1 -p "$file"; done
+      - name: Run Lua test suite
+        run: for spec in tests/*_spec.lua; do lua5.1 "$spec"; done
+
+      - name: Build package without publishing
+        uses: BigWigsMods/packager@6d50adb6e8517eefef63f4afb16a6518166a6b28 # v2.5.1
+        with:
+          args: -d -n "{package-name}-{project-version}"
+
+      - name: Inspect generated package
+        id: package
+        shell: pwsh
+        run: |
+          $zip = Get-ChildItem .release -File -Filter 'ApogeePartyHealthBars-*.zip'
+          if ($zip.Count -ne 1) { throw "Expected exactly one release ZIP, found $($zip.Count)." }
+          ./scripts/validate-package.ps1 -ExpectedVersion $env:GITHUB_REF_NAME.Substring(1) -ArchivePath $zip.FullName
+          "zip=$($zip.FullName)" >> $env:GITHUB_OUTPUT
+
+      - name: Publish the validated package
+        uses: BigWigsMods/packager@6d50adb6e8517eefef63f4afb16a6518166a6b28 # v2.5.1
+        with:
+          args: -c -n "{package-name}-{project-version}"
+        env:
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Attach SHA-256 checksum
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $zip = Get-ChildItem .release -File -Filter 'ApogeePartyHealthBars-*.zip'
+          if ($zip.Count -ne 1) { throw "Expected exactly one published ZIP." }
+          $checksumPath = "$($zip.FullName).sha256"
+          $hash = (Get-FileHash -Algorithm SHA256 $zip.FullName).Hash.ToLowerInvariant()
+          "$hash  $($zip.Name)" | Set-Content -Encoding utf8NoBOM $checksumPath
+          gh release upload $env:GITHUB_REF_NAME $checksumPath
+
+      - name: Publish release summary
+        shell: pwsh
+        run: |
+          @"
+          ## Release published
+          - GitHub: https://github.com/${{ github.repository }}/releases/tag/$env:GITHUB_REF_NAME
+          - CurseForge: https://www.curseforge.com/wow/addons/apogee-party-health-bars/files
+          "@ >> $env:GITHUB_STEP_SUMMARY

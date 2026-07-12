@@ -1,0 +1,18 @@
+package-as: ApogeePartyHealthBars
+manual-changelog: CHANGELOG.md
+
+ignore:
+  - .agents
+  - .codex
+  - .github
+  - .gitignore
+  - .pkgmeta
+  - .release
+  - assets
+  - scripts
+  - tests
+  - ARCHITECTURE.md
+  - CHANGELOG.md
+  - MACRO_LIBRARY_STYLE.md
+  - RELEASING.md
+  - ApogeePartyHealthBars-v*.zip

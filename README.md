@@ -1,5 +1,11 @@
 # Apogee Party Health Bars
 
+[![GitHub Release](https://img.shields.io/github/v/release/notify353/ApogeePartyHealthBars)](https://github.com/notify353/ApogeePartyHealthBars/releases)
+[![Lua validation](https://github.com/notify353/ApogeePartyHealthBars/actions/workflows/lua-validation.yml/badge.svg)](https://github.com/notify353/ApogeePartyHealthBars/actions/workflows/lua-validation.yml)
+[![CurseForge](https://img.shields.io/curseforge/dt/1608100?logo=curseforge&label=CurseForge)](https://www.curseforge.com/wow/addons/apogee-party-health-bars)
+[![MIT License](https://img.shields.io/github/license/notify353/ApogeePartyHealthBars)](LICENSE)
+[![WoW Anniversary TBC](https://img.shields.io/badge/WoW-Anniversary%20TBC-c79c6e)](https://www.curseforge.com/wow/addons/apogee-party-health-bars)
+
 Apogee Party Health Bars provides compact five-player unit frames designed for healers in World of Warcraft Anniversary and Burning Crusade Classic. It keeps health, healing context, click-casting, and party awareness together without requiring a large UI framework.
 
 ## Features
@@ -18,9 +24,13 @@ Apogee Party Health Bars provides compact five-player unit frames designed for h
 
 ## Installation
 
-The easiest installation method is through the CurseForge app after the project is approved.
+### CurseForge app (recommended)
 
-For manual installation:
+Install [Apogee Party Health Bars on CurseForge](https://www.curseforge.com/wow/addons/apogee-party-health-bars) for managed installation and automatic updates.
+
+### Manual installation
+
+Download the packaged ZIP attached to the latest [GitHub Release](https://github.com/notify353/ApogeePartyHealthBars/releases). Do not use GitHub's **Code → Download ZIP** button; that downloads the development source tree rather than the supported installable package.
 
 1. Download the release ZIP.
 2. Extract the `ApogeePartyHealthBars` folder into your Anniversary add-on directory:
@@ -37,6 +47,8 @@ For manual installation:
 
 4. Restart World of Warcraft or reload the UI.
 
+Only ZIP files attached to GitHub Releases and approved CurseForge files are supported release builds.
+
 ## Configuration
 
 Left-click the Apogee minimap button to open configuration. The available tabs control general display behavior, secure click bindings, tracked spells, and the macro library.
@@ -49,7 +61,7 @@ Version 0.29 targets the World of Warcraft Anniversary/Burning Crusade Classic c
 
 ## Support and source
 
-Source code and issue tracking are available on [GitHub](https://github.com/notify353/ApogeePartyHealthBars).
+Source code, release downloads, and issue tracking are available on [GitHub](https://github.com/notify353/ApogeePartyHealthBars). Managed releases are available on [CurseForge](https://www.curseforge.com/wow/addons/apogee-party-health-bars).
 
 When reporting a problem, include the add-on version, client version, character class, steps to reproduce, and the full Lua error if one was shown.
 

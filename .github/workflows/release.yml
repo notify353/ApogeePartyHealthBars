@@ -58,22 +58,28 @@ jobs:
       - name: Publish the validated package
         uses: BigWigsMods/packager@6d50adb6e8517eefef63f4afb16a6518166a6b28 # v2.5.1
         with:
-          args: -c -n "{package-name}-{project-version}"
+          args: -n "{package-name}-{project-version}"
         env:
           CF_API_KEY: ${{ secrets.CF_API_KEY }}
           GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Attach SHA-256 checksum
+      - name: Validate published package and attach SHA-256 checksum
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          $zip = Get-ChildItem .release -File -Filter 'ApogeePartyHealthBars-*.zip'
-          if ($zip.Count -ne 1) { throw "Expected exactly one published ZIP." }
+          $publishedDirectory = '.release/published'
+          New-Item -ItemType Directory -Path $publishedDirectory -Force | Out-Null
+          gh release download $env:GITHUB_REF_NAME --pattern 'ApogeePartyHealthBars-*.zip' --dir $publishedDirectory
+          if ($LASTEXITCODE -ne 0) { throw 'Unable to download the published GitHub package.' }
+          $zip = Get-ChildItem $publishedDirectory -File -Filter 'ApogeePartyHealthBars-*.zip'
+          if ($zip.Count -ne 1) { throw "Expected exactly one published ZIP, found $($zip.Count)." }
+          ./scripts/validate-package.ps1 -ExpectedVersion $env:GITHUB_REF_NAME.Substring(1) -ArchivePath $zip.FullName
           $checksumPath = "$($zip.FullName).sha256"
           $hash = (Get-FileHash -Algorithm SHA256 $zip.FullName).Hash.ToLowerInvariant()
           "$hash  $($zip.Name)" | Set-Content -Encoding utf8NoBOM $checksumPath
           gh release upload $env:GITHUB_REF_NAME $checksumPath
+          if ($LASTEXITCODE -ne 0) { throw 'Unable to upload the package checksum.' }
 
       - name: Publish release summary
         shell: pwsh

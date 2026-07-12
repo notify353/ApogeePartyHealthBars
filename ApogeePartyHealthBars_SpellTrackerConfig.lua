@@ -81,7 +81,7 @@ function SC.Build(parent, deps)
     D = deps
     local tracker = D.SpellTracker
     tab = CreateFrame("Frame", nil, parent)
-    tab:SetPoint("TOPLEFT", parent, "TOPLEFT", C.BIND_PAD, -(C.BIND_PAD + C.CONFIG_TAB_H + 4))
+    tab:SetPoint("TOPLEFT", parent, "TOPLEFT", C.BIND_PAD, -(C.CONFIG_HEADER_H + C.BIND_PAD + C.CONFIG_TAB_H + 4))
     tab:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -C.BIND_PAD, C.BIND_PAD)
     tab:Hide()
 

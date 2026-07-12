@@ -243,7 +243,7 @@ end
 
 local function BuildBindingsTab(parent)
     bindingsTab = CreateFrame("Frame", nil, parent)
-    bindingsTab:SetPoint("TOPLEFT", parent, "TOPLEFT", C.BIND_PAD, -(C.BIND_PAD + C.CONFIG_TAB_H + 4))
+    bindingsTab:SetPoint("TOPLEFT", parent, "TOPLEFT", C.BIND_PAD, -(C.CONFIG_HEADER_H + C.BIND_PAD + C.CONFIG_TAB_H + 4))
     bindingsTab:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -C.BIND_PAD, C.BIND_PAD)
     bindingsTab:Hide()
 
@@ -324,7 +324,7 @@ end
 
 local function BuildGeneralTab(parent)
     generalTab = CreateFrame("Frame", nil, parent)
-    generalTab:SetPoint("TOPLEFT", parent, "TOPLEFT", C.BIND_PAD, -(C.BIND_PAD + C.CONFIG_TAB_H + 4))
+    generalTab:SetPoint("TOPLEFT", parent, "TOPLEFT", C.BIND_PAD, -(C.CONFIG_HEADER_H + C.BIND_PAD + C.CONFIG_TAB_H + 4))
     generalTab:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -C.BIND_PAD, C.BIND_PAD)
 
     generalScroll, generalScrollChild = CreateScrollFrame(generalTab)
@@ -406,6 +406,32 @@ function UI.Build(deps)
     D.ApplyBackdrop(configPanel, C.PANEL_BG_COLOR[4], C.PANEL_EDGE_COLOR)
     AttachConfigDragHandle(configPanel)
     configPanel:Hide()
+
+    local header = CreateFrame("Frame", nil, configPanel)
+    header:SetPoint("TOPLEFT", configPanel, "TOPLEFT", C.BIND_PAD, -4)
+    header:SetPoint("TOPRIGHT", configPanel, "TOPRIGHT", -C.BIND_PAD, -4)
+    header:SetHeight(C.CONFIG_HEADER_H - 5)
+    AttachConfigDragHandle(header)
+
+    local title = header:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+    title:SetPoint("TOPLEFT", header, "TOPLEFT", 2, -3)
+    title:SetText("Apogee Party Health Bars")
+    title:SetTextColor(1, 0.82, 0)
+
+    local subtitle = header:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -1)
+    subtitle:SetText("Healer frame configuration")
+
+    local closeButton = CreateFrame("Button", nil, header, "UIPanelCloseButton")
+    closeButton:SetSize(24, 24)
+    closeButton:SetPoint("TOPRIGHT", header, "TOPRIGHT", 3, 1)
+    closeButton:SetScript("OnClick", function() D.SetConfigMode(false) end)
+
+    local headerDivider = configPanel:CreateTexture(nil, "ARTWORK")
+    headerDivider:SetPoint("TOPLEFT", configPanel, "TOPLEFT", C.BIND_PAD, -C.CONFIG_HEADER_H)
+    headerDivider:SetPoint("TOPRIGHT", configPanel, "TOPRIGHT", -C.BIND_PAD, -C.CONFIG_HEADER_H)
+    headerDivider:SetHeight(1)
+    headerDivider:SetColorTexture(0.45, 0.38, 0.12, 0.8)
 
     BuildGeneralTab(configPanel)
     BuildBindingsTab(configPanel)

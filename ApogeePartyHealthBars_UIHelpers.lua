@@ -6,6 +6,7 @@ local H = ApogeePartyHealthBars_UIHelpers
 function H.StyleTabButton(button, active)
     button.bg:SetColorTexture(active and 0.22 or 0.10, active and 0.22 or 0.10, active and 0.26 or 0.12, 1)
     if active then button.label:SetTextColor(1, 0.82, 0) else button.label:SetTextColor(0.75, 0.75, 0.75) end
+    button.accent:SetShown(active)
 end
 
 function H.CreateButton(parent, labelText, width, height)
@@ -15,15 +16,25 @@ function H.CreateButton(parent, labelText, width, height)
     bg:SetAllPoints(); bg:SetColorTexture(0.12, 0.12, 0.14, 1)
     local highlight = button:CreateTexture(nil, "HIGHLIGHT")
     highlight:SetAllPoints(); highlight:SetColorTexture(1, 1, 1, 0.08)
+    local border = button:CreateTexture(nil, "BORDER")
+    border:SetPoint("TOPLEFT"); border:SetPoint("TOPRIGHT"); border:SetHeight(1)
+    border:SetColorTexture(0.36, 0.36, 0.40, 0.75)
     local label = button:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     label:SetPoint("CENTER"); label:SetText(labelText)
-    button.bg, button.label = bg, label
+    button.bg, button.label, button.border = bg, label, border
     return button
 end
 
 function H.CreateTabButton(parent, text, xOffset, width)
     local button = H.CreateButton(parent, text, width, C.CONFIG_TAB_H)
-    button:SetPoint("TOPLEFT", parent, "TOPLEFT", xOffset, -C.BIND_PAD)
+    button:SetPoint("TOPLEFT", parent, "TOPLEFT", xOffset, -(C.CONFIG_HEADER_H + C.BIND_PAD))
+    local accent = button:CreateTexture(nil, "OVERLAY")
+    accent:SetPoint("BOTTOMLEFT", button, "BOTTOMLEFT")
+    accent:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT")
+    accent:SetHeight(2)
+    accent:SetColorTexture(1, 0.82, 0, 1)
+    accent:Hide()
+    button.accent = accent
     return button
 end
 
@@ -45,4 +56,3 @@ function H.CreateScrollFrame(parent)
     scroll:SetScrollChild(child)
     return scroll, child
 end
-

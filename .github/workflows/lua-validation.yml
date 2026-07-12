@@ -35,6 +35,9 @@ jobs:
       - name: Validate source and TOC layout
         shell: pwsh
         run: ./scripts/validate-package.ps1
+      - name: Validate release workflow safety
+        shell: pwsh
+        run: ./scripts/validate-release-workflow.ps1
       - name: Build and inspect installable ZIP
         shell: pwsh
         run: ./scripts/build-package.ps1 -OutputPath .release/ci-package.zip

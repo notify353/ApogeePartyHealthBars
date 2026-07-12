@@ -28,7 +28,7 @@ jobs:
           if ($env:GITHUB_REF_NAME -notmatch '^v(?<version>0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$') {
             throw "Release tags must use vX.Y.Z semantic versioning."
           }
-          $version = $Matches.version + '.' + $Matches[2] + '.' + $Matches[3]
+          $version = $env:GITHUB_REF_NAME.Substring(1)
           ./scripts/validate-package.ps1 -ExpectedVersion $version
           if (-not (Select-String -Path CHANGELOG.md -Pattern ([regex]::Escape("## [$version] - ")) -Quiet)) {
             throw "CHANGELOG.md has no dated section for $version."

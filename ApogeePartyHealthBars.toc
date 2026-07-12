@@ -1,7 +1,7 @@
 ## Interface: 20505
 ## Title: Apogee Party Health Bars
 ## Notes: Apogee 5-man party HP bars for any healing class
-## Version: 0.30.0
+## Version: 0.30.1
 ## X-Curse-Project-ID: 1608100
 ## SavedVariables: ApogeePartyHealthSV
 ## SavedVariablesPerCharacter: ApogeePartyHealthCharSV

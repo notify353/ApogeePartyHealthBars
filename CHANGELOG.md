@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.30.1] - 2026-07-12
+
 ### Changed
 
 - Corrected stable-release metadata validation after the unpublished v0.30.0 deployment attempt.

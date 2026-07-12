@@ -6,6 +6,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.30.0] - 2026-07-12
 ### Changed
 
 - Polished the configuration window with a branded header, a dedicated close control, clearer tab selection, and refined button styling.

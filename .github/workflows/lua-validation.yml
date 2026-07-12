@@ -38,5 +38,15 @@ jobs:
       - name: Build and inspect installable ZIP
         shell: pwsh
         run: ./scripts/build-package.ps1 -OutputPath .release/ci-package.zip
+      - name: Build with the production packager
+        uses: BigWigsMods/packager@6d50adb6e8517eefef63f4afb16a6518166a6b28 # v2.5.1
+        with:
+          args: -d -n "{package-name}-ci"
+      - name: Inspect production-packager ZIP
+        shell: pwsh
+        run: |
+          $zip = Get-ChildItem .release -File -Filter 'ApogeePartyHealthBars-ci.zip'
+          if ($zip.Count -ne 1) { throw "Expected exactly one production-packager ZIP, found $($zip.Count)." }
+          ./scripts/validate-package.ps1 -ArchivePath $zip.FullName
       - name: Check whitespace errors
         run: git diff --check

@@ -27,29 +27,43 @@ if (-not $match.Success -or $match.Groups['body'].Value -notmatch '(?m)^- ') {
 }
 $date = Get-Date -Format 'yyyy-MM-dd'
 $replacement = "## [Unreleased]`n`n## [$Version] - $date`n" + $match.Groups['body'].Value.Trim() + "`n`n"
-$changelog = $changelog.Remove($match.Index, $match.Length).Insert($match.Index, $replacement)
-[System.IO.File]::WriteAllText($changelogPath, $changelog, [System.Text.UTF8Encoding]::new($false))
+$preparedChangelog = $changelog.Remove($match.Index, $match.Length).Insert($match.Index, $replacement)
 
 $tocPath = Join-Path $repoRoot 'ApogeePartyHealthBars.toc'
 $toc = [System.IO.File]::ReadAllText($tocPath)
-$toc = [regex]::Replace($toc, '(?m)^## Version:\s*.*$', "## Version: $Version")
-[System.IO.File]::WriteAllText($tocPath, $toc, [System.Text.UTF8Encoding]::new($false))
+$preparedToc = [regex]::Replace($toc, '(?m)^## Version:\s*.*$', "## Version: $Version")
 
-& (Join-Path $PSScriptRoot 'validate-package.ps1') -ExpectedVersion $Version
-if ($LASTEXITCODE -ne 0) { throw 'Package validation failed.' }
+try {
+    [System.IO.File]::WriteAllText($changelogPath, $preparedChangelog, [System.Text.UTF8Encoding]::new($false))
+    [System.IO.File]::WriteAllText($tocPath, $preparedToc, [System.Text.UTF8Encoding]::new($false))
 
-$lua = Get-Command lua5.1 -ErrorAction SilentlyContinue
-$luac = Get-Command luac5.1 -ErrorAction SilentlyContinue
-if ($lua -and $luac) {
-    Get-ChildItem -Filter '*.lua' | ForEach-Object { & $luac.Source -p $_.FullName }
-    Get-ChildItem tests -Filter '*_spec.lua' | ForEach-Object { & $lua.Source $_.FullName }
+    & (Join-Path $PSScriptRoot 'validate-package.ps1') -ExpectedVersion $Version
+
+    $lua = Get-Command lua5.1 -ErrorAction SilentlyContinue
+    $luac = Get-Command luac5.1 -ErrorAction SilentlyContinue
+    if ($lua -and $luac) {
+        Get-ChildItem -Filter '*.lua' | ForEach-Object {
+            & $luac.Source -p $_.FullName
+            if ($LASTEXITCODE -ne 0) { throw "Lua parsing failed for $($_.Name)." }
+        }
+        Get-ChildItem tests -Filter '*_spec.lua' | ForEach-Object {
+            & $lua.Source $_.FullName
+            if ($LASTEXITCODE -ne 0) { throw "Lua test failed: $($_.Name)." }
+        }
+    }
+    else {
+        Write-Warning 'Lua 5.1 is not installed locally; GitHub CI remains the authoritative Lua validation.'
+    }
+
+    git diff --check
+    if ($LASTEXITCODE -ne 0) { throw 'Whitespace validation failed.' }
 }
-else {
-    Write-Warning 'Lua 5.1 is not installed locally; GitHub CI remains the authoritative Lua validation.'
+catch {
+    [System.IO.File]::WriteAllText($changelogPath, $changelog, [System.Text.UTF8Encoding]::new($false))
+    [System.IO.File]::WriteAllText($tocPath, $toc, [System.Text.UTF8Encoding]::new($false))
+    throw
 }
 
-git diff --check
-if ($LASTEXITCODE -ne 0) { throw 'Whitespace validation failed.' }
 git add CHANGELOG.md ApogeePartyHealthBars.toc
 git commit -m "Prepare Apogee Party Health Bars v$Version"
 if ($LASTEXITCODE -ne 0) { throw 'Unable to create release-preparation commit.' }

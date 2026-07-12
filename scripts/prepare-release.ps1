@@ -26,7 +26,7 @@ if (-not $match.Success -or $match.Groups['body'].Value -notmatch '(?m)^- ') {
     throw 'CHANGELOG.md Unreleased must contain at least one user-facing bullet.'
 }
 $date = Get-Date -Format 'yyyy-MM-dd'
-$replacement = "## [Unreleased]`n`n## [$Version] - $date`n" + $match.Groups['body'].Value.Trim() + "`n`n"
+$replacement = "## [Unreleased]`n`n## [$Version] - $date`n`n" + $match.Groups['body'].Value.Trim() + "`n`n"
 $preparedChangelog = $changelog.Remove($match.Index, $match.Length).Insert($match.Index, $replacement)
 
 $tocPath = Join-Path $repoRoot 'ApogeePartyHealthBars.toc'

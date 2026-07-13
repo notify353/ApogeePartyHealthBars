@@ -16,6 +16,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 - Added a target-of-target health column beside the player's inline target pane, matching standard health-bar height.
 - Added default Mage spell tracking in Fireball, Frostbolt, and Fire Blast order for newly initialized character trackers.
 - Added a Spells-tab button for resetting tracked slots to the character's class defaults.
+- Added an automatic, class-agnostic crowd-control lane above the current target that shows every supported CC spell known by the character without using configured tracker slots.
 
 ### Fixed
 

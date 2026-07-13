@@ -41,6 +41,10 @@ function R.Register(eventRouter, deps)
     }) do
         eventRouter.RegisterOptional(event, "SpellTracker", function() T.Refresh(false) end)
     end
+
+    eventRouter.RegisterOptional("UNIT_FLAGS", "SpellTrackerTarget", function(unit)
+        if unit == "target" then T.Refresh(false) end
+    end)
     
     for _, event in ipairs({ "UNIT_THREAT_SITUATION_UPDATE", "UNIT_THREAT_LIST_UPDATE" }) do
         eventRouter.RegisterOptional(event, "Threat", H.Refresh)

@@ -6,6 +6,16 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Added
+
+- Added a General setting to make missing buff reminder icons informational instead of clickable cast buttons.
+- Added Mage intellect reminders and regression coverage for every class with a supported, friendly-target party buff.
+- Added active power bars to inline unit-target health panes, aligned to the owning row's health and power geometry.
+
+### Fixed
+
+- Made tracked-spell icons cast their assigned spell when clicked using combat-safe secure actions.
+
 ## [0.30.4] - 2026-07-12
 
 ### Fixed

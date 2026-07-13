@@ -162,6 +162,7 @@ for _, frame in ipairs(frames) do
 end
 
 assert(type(ApogeePartyHealthBars_S.sv) == "table", "saved variables did not initialize")
+assert(ApogeePartyHealthBars_S.sv.clickableBuffIcons == true, "clickable buff icons should default on")
 assert(ApogeePartyHealthBars_MinimapController.IsCreated(), "minimap controller did not create")
 for _, message in ipairs(messages) do
     assert(not message:find("error", 1, true), "captured runtime failure: " .. message)

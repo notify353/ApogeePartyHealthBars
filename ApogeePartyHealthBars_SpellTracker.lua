@@ -5,6 +5,7 @@ ApogeePartyHealthBars_SpellTracker = {}
 local T = ApogeePartyHealthBars_SpellTracker
 
 local row, requestLayout, syncTicker
+local positionSecureOverlay, showSecureFrame, hideSecureFrame, setSecureMouseEnabled, deferSecureUpdate
 local icons = {}
 local resolved = {}
 local previousStates = {}
@@ -183,7 +184,17 @@ end
 local function CreateIcon(parent)
     local button = CreateFrame("Button", nil, parent)
     button:SetSize(C.TRACKER_ICON_SIZE, C.TRACKER_ICON_SIZE)
-    button:EnableMouse(true)
+    button:EnableMouse(false)
+
+    S.castBtnSerial = S.castBtnSerial + 1
+    local castButton = CreateFrame(
+        "Button", "ApogeePartyHealthBarsTrackerCast" .. S.castBtnSerial, UIParent,
+        "SecureActionButtonTemplate")
+    castButton:SetFrameStrata("TOOLTIP")
+    castButton:SetFrameLevel(103)
+    castButton:SetAttribute("useOnKeyDown", false)
+    castButton:RegisterForClicks("AnyUp", "AnyDown")
+    castButton:Hide()
 
     local texture = button:CreateTexture(nil, "ARTWORK")
     texture:SetPoint("TOPLEFT", 2, -2)
@@ -209,26 +220,67 @@ local function CreateIcon(parent)
     button.invalid = invalid
     button.border = CreateBorder(button, 0)
     button.pulseBorder = CreateBorder(button, 1)
+    button.castButton = castButton
     for _, edge in ipairs(button.pulseBorder) do
         edge:SetColorTexture(1, 0.82, 0, 1)
         edge:SetAlpha(0)
     end
     button:Hide()
 
-    button:SetScript("OnEnter", function(self)
-        local info = self.trackerInfo
+    castButton:SetScript("OnEnter", function()
+        local info = button.trackerInfo
         if not info then return end
-        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetOwner(castButton, "ANCHOR_TOP")
         if info.id and GameTooltip.SetSpellByID then
             GameTooltip:SetSpellByID(info.id)
         else
             GameTooltip:SetText(info.name or "Tracked spell")
         end
-        GameTooltip:AddLine(STATE_LABELS[self.trackerState] or "", 0.8, 0.8, 0.8)
+        GameTooltip:AddLine(STATE_LABELS[button.trackerState] or "", 0.8, 0.8, 0.8)
+        GameTooltip:AddLine("Click to cast", 0.3, 1, 0.3)
         GameTooltip:Show()
     end)
-    button:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    castButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
     return button
+end
+
+local function SyncSecureAction(icon, info)
+    local castButton = icon and icon.castButton
+    if not castButton then return end
+    if InCombatLockdown and InCombatLockdown() then
+        if deferSecureUpdate then deferSecureUpdate() end
+        return
+    end
+
+    castButton:SetAttribute("type", nil)
+    castButton:SetAttribute("spell", nil)
+    castButton:SetAttribute("type1", nil)
+    castButton:SetAttribute("spell1", nil)
+
+    if not IsEnabled() or not info or not icon:IsShown() then
+        setSecureMouseEnabled(castButton, false)
+        hideSecureFrame(castButton)
+        return
+    end
+
+    local spellName = info.castName or info.name
+    castButton:SetAttribute("type", "spell")
+    castButton:SetAttribute("spell", spellName)
+    castButton:SetAttribute("type1", "spell")
+    castButton:SetAttribute("spell1", spellName)
+    if positionSecureOverlay(castButton, icon) then
+        showSecureFrame(castButton)
+        setSecureMouseEnabled(castButton, true)
+    else
+        setSecureMouseEnabled(castButton, false)
+        hideSecureFrame(castButton)
+    end
+end
+
+function T.RefreshSecureActions()
+    for i = 1, C.TRACKER_MAX_SLOTS do
+        SyncSecureAction(icons[i], resolved[i])
+    end
 end
 
 local function GetCooldown(identifier)
@@ -400,6 +452,7 @@ function T.Layout()
             icon:Hide()
         end
     end
+    T.RefreshSecureActions()
 end
 
 function T.Refresh(suppressSound)
@@ -476,6 +529,11 @@ function T.Attach(playerRow, callbacks)
     row = playerRow
     requestLayout = callbacks and callbacks.RequestLayout
     syncTicker = callbacks and callbacks.SyncTicker
+    positionSecureOverlay = assert(callbacks and callbacks.PositionSecureOverlay)
+    showSecureFrame = assert(callbacks and callbacks.ShowSecureFrame)
+    hideSecureFrame = assert(callbacks and callbacks.HideSecureFrame)
+    setSecureMouseEnabled = assert(callbacks and callbacks.SetSecureMouseEnabled)
+    deferSecureUpdate = assert(callbacks and callbacks.DeferSecureUpdate)
     for i = 1, C.TRACKER_MAX_SLOTS do icons[i] = CreateIcon(row.btn) end
 end
 

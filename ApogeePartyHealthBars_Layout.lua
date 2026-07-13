@@ -149,16 +149,17 @@ function L.ApplyAllPartyBuffBindings()
         return
     end
 
+    local clickable = D.IsSavedFeatureEnabled("clickableBuffIcons")
     for i = 1, C.MAX_ROWS do
         local row = D.rows[i]
-        if row.btn:IsShown() and row.partyBuffIcon:IsShown() and UnitExists(row.unitId) then
+        if clickable and row.btn:IsShown() and row.partyBuffIcon:IsShown() and UnitExists(row.unitId) then
             ApplyPartyBuffBindingToRow(row, row.unitId, true)
         else
             ApplyPartyBuffBindingToRow(row, row.unitId, false)
         end
 
         local targetUnitId = row.showTargetPane and D.GetUnitTargetToken(row.unitId) or nil
-        if row.btn:IsShown() and row.targetPartyBuffIcon:IsShown()
+        if clickable and row.btn:IsShown() and row.targetPartyBuffIcon:IsShown()
             and targetUnitId and UnitExists(targetUnitId) then
             ApplyPartyBuffBinding(row.targetPartyBuffCastBtn, row.targetPartyBuffIcon, targetUnitId, true)
         else
@@ -181,9 +182,11 @@ function L.ApplyAllSelfBuffBindings()
         return
     end
 
+    local clickable = D.IsSavedFeatureEnabled("clickableBuffIcons")
     for i = 1, C.MAX_ROWS do
         local row = D.rows[i]
-        if row.unitId == "player"
+        if clickable
+            and row.unitId == "player"
             and row.btn:IsShown()
             and row.selfBuffIcon:IsShown()
             and UnitExists("player") then

@@ -95,6 +95,7 @@ function R.Register(eventRouter, deps)
     
         elseif event == "PLAYER_REGEN_ENABLED" then
             F.FlushDeferredUpdates()
+            T.RefreshSecureActions()
             H.Refresh()
             if D.GetConfigUI().RefreshMacroPanel then D.GetConfigUI().RefreshMacroPanel() end
             D.ForceRefresh()
@@ -146,9 +147,13 @@ function R.Register(eventRouter, deps)
             end
     
         elseif event == "UNIT_DISPLAYPOWER" then
-            if unit == "player" then
-                T.Refresh(false)
-                S.RequestLayoutUpdate()
+            if D.IsPanelTrackedUnit(unit) then
+                if unit == "player" then
+                    T.Refresh(false)
+                    S.RequestLayoutUpdate()
+                else
+                    S.RequestValuesUpdate(D.ResolvePanelUnit(unit))
+                end
             end
     
         elseif event == "UPDATE_SHAPESHIFT_FORM" then

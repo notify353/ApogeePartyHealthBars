@@ -9,7 +9,8 @@ local F = ApogeePartyHealthBars_UnitFrames
 function F.Build(D)
     for _, key in ipairs({
         "rows", "StyleReadableText", "ApplyFlatStatusBar", "ApplyFlatBg",
-        "GetRowTotalHeight", "SyncVisualTicker",
+        "GetRowTotalHeight", "SyncVisualTicker", "PositionSecureOverlay",
+        "ShowSecureFrame", "HideSecureFrame", "SetSecureMouseEnabled", "DeferSecureUpdate",
     }) do
         assert(D[key] ~= nil, "UnitFrames missing dependency: " .. key)
     end
@@ -131,7 +132,7 @@ function F.Build(D)
         btn:EnableMouse(false)
     
         local targetBtn = CreateFrame("Button", nil, btn)
-        targetBtn:SetSize(C.TARGET_BAR_W, C.ROW_H)
+        targetBtn:SetSize(C.TARGET_BAR_W, C.TARGET_PANE_H)
         targetBtn:SetPoint("TOPRIGHT", btn, "TOPRIGHT", 0, 0)
         targetBtn:EnableMouse(false)
         targetBtn:Hide()
@@ -160,6 +161,16 @@ function F.Build(D)
         targetNameFS:SetWordWrap(false)
         targetNameFS:SetMaxLines(1)
         D.StyleReadableText(targetNameFS)
+
+        local targetPowerBg = targetBtn:CreateTexture(nil, "BACKGROUND")
+        D.ApplyFlatBg(targetPowerBg, C.BAR_BG_COLOR)
+        targetPowerBg:Hide()
+
+        local targetPowerBar = CreateFrame("StatusBar", nil, targetBtn)
+        D.ApplyFlatStatusBar(targetPowerBar)
+        targetPowerBar:SetMinMaxValues(0, 1)
+        targetPowerBar:SetValue(1)
+        targetPowerBar:Hide()
     
         local targetPartyBuffIcon = CreateBuffIcon(targetBtn, C.PARTY_BUFF_ICON_TEXTURE)
     
@@ -257,6 +268,7 @@ function F.Build(D)
             targetBtn = targetBtn, targetBarBg = targetBarBg, targetBar = targetBar,
             targetHealPredBar = targetHealPredBar,
             targetNameFS = targetNameFS,
+            targetPowerBg = targetPowerBg, targetPowerBar = targetPowerBar,
             targetPartyBuffIcon = targetPartyBuffIcon,
             castBtn = castBtn, targetCastBtn = targetCastBtn, partyBuffCastBtn = partyBuffCastBtn,
             targetPartyBuffCastBtn = targetPartyBuffCastBtn, selfBuffCastBtn = selfBuffCastBtn,
@@ -272,6 +284,11 @@ function F.Build(D)
     T.Attach(rows[1], {
         RequestLayout = S.RequestLayoutUpdate,
         SyncTicker = D.SyncVisualTicker,
+        PositionSecureOverlay = D.PositionSecureOverlay,
+        ShowSecureFrame = D.ShowSecureFrame,
+        HideSecureFrame = D.HideSecureFrame,
+        SetSecureMouseEnabled = D.SetSecureMouseEnabled,
+        DeferSecureUpdate = D.DeferSecureUpdate,
     })
     H.Attach(rows, D.SyncVisualTicker)
     

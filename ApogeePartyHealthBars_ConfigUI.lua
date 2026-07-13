@@ -120,6 +120,9 @@ end
 local function IsGeneralRowVisible(svKey)
     if svKey == "partyBuffEnabled" then return S.partyBuffSpellKnown end
     if svKey == "selfBuffEnabled" then return S.selfBuffSpellKnown end
+    if svKey == "clickableBuffIcons" then
+        return S.partyBuffSpellKnown or S.selfBuffSpellKnown
+    end
     return true
 end
 
@@ -349,6 +352,9 @@ local function BuildGeneralTab(parent)
     addCheckbox("Show all 5 slots when solo", "showAllSlots")
     addCheckbox("Missing party buff icons", "partyBuffEnabled")
     addCheckbox("Missing self-buff or aura icon", "selfBuffEnabled")
+    addCheckbox("Clickable buff reminder icons", "clickableBuffIcons", function()
+        D.ApplyAllSecureBindings()
+    end)
     addCheckbox("Shield overlay", "shieldEnabled")
     addCheckbox("Incoming heal overlay", "incomingHealEnabled")
     addCheckbox("Fade out-of-range party members", "rangeCheckEnabled")

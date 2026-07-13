@@ -11,6 +11,7 @@ local FEATURE_DEFAULTS = {
     showAllSlots = false,
     partyBuffEnabled = true,
     selfBuffEnabled = true,
+    clickableBuffIcons = true,
     shieldEnabled = true,
     incomingHealEnabled = true,
     rangeCheckEnabled = true,

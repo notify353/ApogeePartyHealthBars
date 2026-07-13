@@ -266,6 +266,11 @@ local unitFrames = ApogeePartyHealthBars_UnitFrames.Build({
     ApplyFlatBg = ApplyFlatBg,
     GetRowTotalHeight = GetRowTotalHeight,
     SyncVisualTicker = SyncVisualTicker,
+    PositionSecureOverlay = PositionSecureOverlay,
+    ShowSecureFrame = ShowSecureFrame,
+    HideSecureFrame = HideSecureFrame,
+    SetSecureMouseEnabled = SetSecureMouseEnabled,
+    DeferSecureUpdate = DeferSecureUpdate,
 })
 panel = unitFrames.panel
 rows = unitFrames.rows
@@ -303,6 +308,7 @@ end
 
 local function ResolvePanelUnit(unitId)
     if FindRowForUnit(unitId) then return unitId end
+    if unitId == "target" then return "player" end
     local n = unitId and unitId:match("^party(%d)target$")
     if n then return "party" .. n end
     return unitId
@@ -444,6 +450,7 @@ L.Register({
     GetTargetColumnWidth = GetTargetColumnWidth,
     ShouldShowPartyBuffIcon = ShouldShowPartyBuffIcon,
     ShouldShowSelfBuffIcon = ShouldShowSelfBuffIcon,
+    IsSavedFeatureEnabled = IsSavedFeatureEnabled,
     ComputeRowLayoutKey = ComputeRowLayoutKey,
     PopulateHealthRow = PopulateHealthRow,
     SyncRowTargetPane = SyncRowTargetPane,
@@ -548,6 +555,7 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
     SetAddonEnabled             = SetAddonEnabled,
     SetConfigMode              = SetConfigMode,
     SetSavedFeature             = SetSavedFeature,
+    ApplyAllSecureBindings      = ApplyAllSecureBindings,
     SetHotTrackEnabled          = SetHotTrackEnabled,
     ApplyDefaultPosition        = ApplyDefaultPosition,
     ApplyDefaultMinimapPosition = ApplyDefaultMinimapPosition,

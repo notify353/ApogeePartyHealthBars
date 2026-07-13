@@ -59,7 +59,10 @@ function GetSpellInfo(identifier)
     local name = spellById[identifier] or tostring(identifier):match("^([^%(]+)")
     return name, nil, 135812, nil, nil, nil, type(identifier) == "number" and identifier or nil
 end
-function GetSpellCooldown() return 0, cooldownDuration, 1 end
+function GetSpellCooldown(identifier)
+    if identifier == 61304 then return 0, 0, 1 end
+    return 0, cooldownDuration, 1
+end
 function GetSpellCharges() return nil, nil end
 function IsUsableSpell() return usable, noResource end
 function SpellHasRange() return 1 end

@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.31.0] - 2026-07-12
+
 ### Added
 
 - Added a General setting to make missing buff reminder icons informational instead of clickable cast buttons.

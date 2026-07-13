@@ -57,7 +57,7 @@ local function widget()
         "SetAlpha", "SetVertexColor", "SetColorTexture", "SetScrollChild",
         "SetVerticalScroll", "SetMultiLine", "SetAutoFocus", "SetTextInsets",
         "SetFocus", "ClearFocus", "HighlightText", "SetChecked", "Enable", "Disable",
-        "SetDesaturated", "SetDuration", "SetFromAlpha", "SetToAlpha", "SetOrder",
+        "SetDesaturated", "SetCooldown", "Clear", "SetDuration", "SetFromAlpha", "SetToAlpha", "SetOrder",
         "Play", "Stop", "StartMoving", "StopMovingOrSizing",
     }
     for _, name in ipairs(noopMethods) do methods[name] = function() end end

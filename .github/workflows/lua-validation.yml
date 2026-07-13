@@ -36,6 +36,8 @@ jobs:
         run: lua5.1 tests/unit_display_spec.lua
       - name: Validate party buff definitions
         run: lua5.1 tests/party_buff_definitions_spec.lua
+      - name: Validate self-buff families
+        run: lua5.1 tests/self_buff_families_spec.lua
       - name: Validate full add-on lifecycle
         run: lua5.1 tests/addon_smoke_spec.lua
       - name: Validate source and TOC layout

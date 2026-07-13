@@ -123,6 +123,9 @@ local function IsGeneralRowVisible(svKey)
     if svKey == "clickableBuffIcons" then
         return S.partyBuffSpellKnown or S.selfBuffSpellKnown
     end
+    if svKey == "selfBuffPreference" then
+        return #(D.GetSelfBuffPreferenceOptions() or {}) > 2
+    end
     return true
 end
 
@@ -163,7 +166,16 @@ local function LayoutGeneralTab()
             row.frame:Show()
             row.frame:ClearAllPoints()
             row.frame:SetPoint("TOPLEFT", generalScrollChild, "TOPLEFT", 0, -y)
-            SetCheckboxChecked(row.frame.check, D.IsSavedFeatureEnabled(row.svKey))
+            if row.svKey == "selfBuffPreference" then
+                local currentKey = D.GetSelfBuffPreferenceKey()
+                local currentLabel = "Any self buff"
+                for _, option in ipairs(D.GetSelfBuffPreferenceOptions() or {}) do
+                    if option.key == currentKey then currentLabel = option.label; break end
+                end
+                row.frame.value.label:SetText(currentLabel .. "  |cff777777(click to change)|r")
+            else
+                SetCheckboxChecked(row.frame.check, D.IsSavedFeatureEnabled(row.svKey))
+            end
             y = y + C.CONFIG_CHECK_ROW_H
         else
             row.frame:Hide()
@@ -348,10 +360,40 @@ local function BuildGeneralTab(parent)
         end)
     end
 
+    local function addSelfBuffPreference()
+        local frame = CreateFrame("Frame", nil, generalScrollChild)
+        frame:SetSize(C.CONFIG_CONTENT_W, C.CONFIG_CHECK_ROW_H)
+        local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+        label:SetPoint("LEFT", frame, "LEFT", 2, 0)
+        label:SetWidth(125)
+        label:SetJustifyH("LEFT")
+        label:SetText("Preferred self buff")
+        local value = UIH.CreateButton(frame, "Any self buff", C.CONFIG_CONTENT_W - 132, C.CONFIG_CHECK_ROW_H)
+        value:SetPoint("RIGHT", frame, "RIGHT", 0, 0)
+        value:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+        value:SetScript("OnClick", function(_, mouseButton)
+            if refreshing then return end
+            local options = D.GetSelfBuffPreferenceOptions() or {}
+            if #options == 0 then return end
+            local currentKey = D.GetSelfBuffPreferenceKey()
+            local currentIndex = 1
+            for i, option in ipairs(options) do
+                if option.key == currentKey then currentIndex = i; break end
+            end
+            local direction = mouseButton == "RightButton" and -1 or 1
+            local nextIndex = ((currentIndex - 1 + direction) % #options) + 1
+            D.SetSelfBuffPreference(options[nextIndex].key)
+            RefreshConfigPanel()
+        end)
+        frame.value = value
+        generalRows[#generalRows + 1] = { frame = frame, svKey = "selfBuffPreference" }
+    end
+
     addCheckbox("Enable addon", "enabled")
     addCheckbox("Show all 5 slots when solo", "showAllSlots")
     addCheckbox("Missing party buff icons", "partyBuffEnabled")
     addCheckbox("Missing self-buff or aura icon", "selfBuffEnabled")
+    addSelfBuffPreference()
     addCheckbox("Clickable buff reminder icons", "clickableBuffIcons", function()
         D.ApplyAllSecureBindings()
     end)

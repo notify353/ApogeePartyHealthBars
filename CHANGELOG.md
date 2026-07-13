@@ -11,6 +11,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 - Added a General setting to make missing buff reminder icons informational instead of clickable cast buttons.
 - Added Mage intellect reminders and regression coverage for every class with a supported, friendly-target party buff.
 - Added active power bars to inline unit-target health panes, aligned to the owning row's health and power geometry.
+- Added character-specific preferences for mutually exclusive Mage armors, Paladin auras, Hunter aspects, Warlock armors, and Shaman shields.
 
 ### Fixed
 

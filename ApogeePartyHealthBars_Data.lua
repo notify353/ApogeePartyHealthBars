@@ -40,9 +40,14 @@ ApogeePartyHealthBars_C = {
     TRACKER_TOP_GAP      = 2,
     TRACKER_READY_PULSE  = 0.65,
     TRACKER_SOUND_DEBOUNCE = 2.0,
-    TRACKER_DEFAULTS_VERSION = 1,
+    TRACKER_DEFAULTS_VERSION = 2,
     TRACKER_CLASS_DEFAULTS = {
-        MAGE = { "Fireball", "Frostbolt", "Fire Blast" },
+        MAGE = { "Fireball", "Frostbolt", "Fire Blast", "Polymorph" },
+    },
+    -- Defaults introduced after the initial tracker rollout are appended to the
+    -- first free slot without replacing existing character customization.
+    TRACKER_CLASS_DEFAULT_ADDITIONS = {
+        [2] = { MAGE = { "Polymorph" } },
     },
     -- Targeted crowd-control spells use the target tracker lane and conservative
     -- client-visible eligibility checks. Patterns match every learned rank.

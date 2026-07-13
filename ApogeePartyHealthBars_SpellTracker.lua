@@ -112,6 +112,31 @@ local function SeedClassDefaults()
             }
         end
     end
+
+    for version = seededVersion + 1, C.TRACKER_DEFAULTS_VERSION do
+        local additions = C.TRACKER_CLASS_DEFAULT_ADDITIONS
+            and C.TRACKER_CLASS_DEFAULT_ADDITIONS[version]
+        local classAdditions = additions and additions[classToken]
+        for _, spellName in ipairs(classAdditions or {}) do
+            local alreadyTracked = false
+            for slot = 1, C.TRACKER_MAX_SLOTS do
+                local entry = entries and entries[slot]
+                local baseName = entry and entry.name and entry.name:match("^%s*([^%(]+)")
+                if baseName and baseName:gsub("%s+$", "") == spellName then
+                    alreadyTracked = true
+                    break
+                end
+            end
+            if not alreadyTracked then
+                for slot = 1, C.TRACKER_MAX_SLOTS do
+                    if not entries[slot] then
+                        entries[slot] = { name = spellName, enabled = true, soundKey = "none" }
+                        break
+                    end
+                end
+            end
+        end
+    end
     S.charSv.trackerDefaultsVersion = C.TRACKER_DEFAULTS_VERSION
 end
 

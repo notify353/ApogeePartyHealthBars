@@ -22,7 +22,7 @@ end
 
 ApogeePartyHealthBars_S = {
     sv = { spellTrackerEnabled = true, spellTrackerSoundsEnabled = true },
-    charSv = { trackedSpells = {} }, castBtnSerial = 0,
+    charSv = { trackedSpells = {}, trackerDefaultsVersion = ApogeePartyHealthBars_C.TRACKER_DEFAULTS_VERSION }, castBtnSerial = 0,
 }
 for index, name in ipairs(spellNames) do
     if index > ApogeePartyHealthBars_C.TRACKER_MAX_SLOTS then break end

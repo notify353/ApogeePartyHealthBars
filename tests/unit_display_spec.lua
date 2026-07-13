@@ -1,4 +1,6 @@
 dofile("ApogeePartyHealthBars_Data.lua")
+assert(ApogeePartyHealthBars_C.TARGET_OF_TARGET_H == ApogeePartyHealthBars_C.ROW_H,
+    "target-of-target health bar height must match standard health bars")
 assert(ApogeePartyHealthBars_C.TARGET_PANE_H
     == ApogeePartyHealthBars_C.ROW_H + ApogeePartyHealthBars_C.MANA_GAP + ApogeePartyHealthBars_C.MANA_H)
 unpack = unpack or table.unpack

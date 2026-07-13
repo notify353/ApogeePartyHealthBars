@@ -221,7 +221,7 @@ ApogeePartyHealthBars_C = {
         },
     },
     TARGET_GAP           = 2,
-    TARGET_OF_TARGET_H   = 14,
+    TARGET_OF_TARGET_H   = 26, -- matches ROW_H; kept explicit for Lua table initialization
     TARGET_OF_TARGET_GAP = 2,
     SHIELD_BAR_COLOR     = { 0.15, 0.85, 1.00, 1 },
     INCOMING_HEAL_COLOR  = { 0.25, 0.78, 0.35, 0.65 },

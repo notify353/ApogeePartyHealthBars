@@ -189,7 +189,7 @@ function F.Build(D)
         targetOfTargetBar:SetMinMaxValues(0, 1)
         targetOfTargetBar:SetValue(1)
 
-        local targetOfTargetNameFS = targetOfTargetBar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        local targetOfTargetNameFS = targetOfTargetBar:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
         targetOfTargetNameFS:SetPoint("LEFT", targetOfTargetBar, "LEFT", 3, 0)
         targetOfTargetNameFS:SetWidth(C.TARGET_BAR_W - 8)
         targetOfTargetNameFS:SetJustifyH("LEFT")

@@ -213,25 +213,47 @@ local function PopulateTargetBar(row, targetUnitId)
     row.targetBtn:SetAlpha((healable and inRange) and 1 or C.OUT_OF_RANGE_ALPHA)
 end
 
+local function UpdateTargetPowerVisual(row, targetUnitId)
+    if not row.targetPowerBar or not row.targetPowerBg then return false end
+    row.targetPowerBar:Hide()
+    row.targetPowerBg:Hide()
+    row.targetPowerVisible = false
+    if not targetUnitId then return false end
+
+    local powerType, powerToken = UnitPowerType(targetUnitId)
+    local visible = SetPowerBar(row.targetPowerBar, row.targetPowerBg, targetUnitId, powerType,
+        GetPowerBarColor(powerType, powerToken))
+    row.targetPowerVisible = visible
+    return visible
+end
+
 local function RefreshTargetPartyBuff(row, targetUnitId)
     local showPartyBuff = targetUnitId and D.ShouldShowPartyBuffIcon(targetUnitId) or false
+    local rightReserve = showPartyBuff and C.BUFF_SLOT_STEP or 0
+    -- Keep the target pane's health and power geometry identical to a standard
+    -- unit row, even when the current target has no visible power resource.
+    local bottomReserve = C.TARGET_PANE_H - C.ROW_H
+
+    row.targetBarBg:ClearAllPoints()
+    row.targetBarBg:SetPoint("TOPLEFT", row.targetBtn, "TOPLEFT")
+    row.targetBarBg:SetPoint("BOTTOMRIGHT", row.targetBtn, "BOTTOMRIGHT", -rightReserve, bottomReserve)
+    row.targetBar:ClearAllPoints()
+    row.targetBar:SetAllPoints(row.targetBarBg)
+
+    if row.targetPowerBg and row.targetPowerBar then
+        row.targetPowerBg:ClearAllPoints()
+        row.targetPowerBg:SetPoint("BOTTOMLEFT", row.targetBtn, "BOTTOMLEFT")
+        row.targetPowerBg:SetPoint("TOPRIGHT", row.targetBtn, "BOTTOMRIGHT", -rightReserve, C.MANA_H)
+        row.targetPowerBar:ClearAllPoints()
+        row.targetPowerBar:SetAllPoints(row.targetPowerBg)
+    end
+
     if showPartyBuff then
-        local reserve = C.BUFF_SLOT_STEP
-        row.targetBarBg:ClearAllPoints()
-        row.targetBarBg:SetPoint("TOPLEFT", row.targetBtn, "TOPLEFT")
-        row.targetBarBg:SetPoint("BOTTOMRIGHT", row.targetBtn, "BOTTOMRIGHT", -reserve, 0)
-        row.targetBar:ClearAllPoints()
-        row.targetBar:SetPoint("TOPLEFT", row.targetBarBg, "TOPLEFT", 0, 0)
-        row.targetBar:SetPoint("BOTTOMRIGHT", row.targetBarBg, "BOTTOMRIGHT", 0, 0)
         row.targetPartyBuffIcon:Show()
         row.targetPartyBuffIcon:ClearAllPoints()
         row.targetPartyBuffIcon:SetPoint("RIGHT", row.targetBtn, "RIGHT", -C.BUFF_EDGE_INSET, 0)
-        row.targetNameFS:SetWidth(math.max(20, C.TARGET_BAR_W - 12 - reserve))
+        row.targetNameFS:SetWidth(math.max(20, C.TARGET_BAR_W - 12 - rightReserve))
     else
-        row.targetBarBg:ClearAllPoints()
-        row.targetBarBg:SetAllPoints(row.targetBtn)
-        row.targetBar:ClearAllPoints()
-        row.targetBar:SetAllPoints(row.targetBarBg)
         row.targetPartyBuffIcon:Hide()
         F.Hide(row and row.targetPartyBuffCastBtn)
         row.targetNameFS:SetWidth(C.TARGET_BAR_W - 12)
@@ -243,11 +265,13 @@ local function PopulateHealthRow(row, unitId)
     if row.showTargetPane and UnitExists(targetToken) then
         row.targetBtn:Show()
         PopulateTargetBar(row, targetToken)
+        UpdateTargetPowerVisual(row, targetToken)
         RefreshTargetPartyBuff(row, targetToken)
     else
         row.targetBtn:Hide()
         row.targetBtn:SetAlpha(1)
         ApplyFlatBg(row.targetBarBg, C.BAR_BG_COLOR)
+        UpdateTargetPowerVisual(row, nil)
         RefreshTargetPartyBuff(row, nil)
     end
 
@@ -308,5 +332,6 @@ U.StyleReadableText = StyleReadableText
 U.ApplyFlatStatusBar = ApplyFlatStatusBar
 U.ApplyFlatBg = ApplyFlatBg
 U.UpdateRowPowerVisual = UpdateRowPowerVisual
+U.UpdateTargetPowerVisual = UpdateTargetPowerVisual
 U.PopulateHealthRow = PopulateHealthRow
 U.RefreshTargetPartyBuff = RefreshTargetPartyBuff

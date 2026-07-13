@@ -131,7 +131,7 @@ function F.Build(D)
         btn:EnableMouse(false)
     
         local targetBtn = CreateFrame("Button", nil, btn)
-        targetBtn:SetSize(C.TARGET_BAR_W, C.ROW_H)
+        targetBtn:SetSize(C.TARGET_BAR_W, C.TARGET_PANE_H)
         targetBtn:SetPoint("TOPRIGHT", btn, "TOPRIGHT", 0, 0)
         targetBtn:EnableMouse(false)
         targetBtn:Hide()
@@ -160,6 +160,16 @@ function F.Build(D)
         targetNameFS:SetWordWrap(false)
         targetNameFS:SetMaxLines(1)
         D.StyleReadableText(targetNameFS)
+
+        local targetPowerBg = targetBtn:CreateTexture(nil, "BACKGROUND")
+        D.ApplyFlatBg(targetPowerBg, C.BAR_BG_COLOR)
+        targetPowerBg:Hide()
+
+        local targetPowerBar = CreateFrame("StatusBar", nil, targetBtn)
+        D.ApplyFlatStatusBar(targetPowerBar)
+        targetPowerBar:SetMinMaxValues(0, 1)
+        targetPowerBar:SetValue(1)
+        targetPowerBar:Hide()
     
         local targetPartyBuffIcon = CreateBuffIcon(targetBtn, C.PARTY_BUFF_ICON_TEXTURE)
     
@@ -257,6 +267,7 @@ function F.Build(D)
             targetBtn = targetBtn, targetBarBg = targetBarBg, targetBar = targetBar,
             targetHealPredBar = targetHealPredBar,
             targetNameFS = targetNameFS,
+            targetPowerBg = targetPowerBg, targetPowerBar = targetPowerBar,
             targetPartyBuffIcon = targetPartyBuffIcon,
             castBtn = castBtn, targetCastBtn = targetCastBtn, partyBuffCastBtn = partyBuffCastBtn,
             targetPartyBuffCastBtn = targetPartyBuffCastBtn, selfBuffCastBtn = selfBuffCastBtn,

@@ -6,6 +6,10 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Added
+
+- Added active power bars to inline unit-target health panes, aligned to the owning row's health and power geometry.
+
 ## [0.30.4] - 2026-07-12
 
 ### Fixed

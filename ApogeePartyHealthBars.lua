@@ -303,6 +303,7 @@ end
 
 local function ResolvePanelUnit(unitId)
     if FindRowForUnit(unitId) then return unitId end
+    if unitId == "target" then return "player" end
     local n = unitId and unitId:match("^party(%d)target$")
     if n then return "party" .. n end
     return unitId

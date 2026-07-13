@@ -13,7 +13,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 - Added active power bars to inline unit-target health panes, aligned to the owning row's health and power geometry.
 - Added character-specific preferences for mutually exclusive Mage armors, Paladin auras, Hunter aspects, Warlock armors, and Shaman shields.
 - Added automatic spellbook opening when entering add-on configuration.
-- Added a target-of-target health bar beneath the player's inline target pane, matching standard health-bar height.
+- Added a target-of-target health column beside the player's inline target pane, matching standard health-bar height.
 
 ### Fixed
 

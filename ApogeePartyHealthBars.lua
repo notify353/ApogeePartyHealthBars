@@ -109,13 +109,15 @@ local function RowHasTargetPane(row)
     return UnitExists(GetUnitTargetToken(row.unitId))
 end
 
-local function GetTargetColumnWidth()
+local function GetTargetColumnWidth(rowOrUnit)
     if not IsUnitTargetsEnabled() then return 0 end
-    return C.TARGET_BAR_W + C.TARGET_GAP
+    local unitId = type(rowOrUnit) == "table" and rowOrUnit.unitId or rowOrUnit
+    local columns = unitId == "player" and 2 or 1
+    return columns * (C.TARGET_BAR_W + C.TARGET_GAP)
 end
 
 local function GetRowBtnWidth(row)
-    return C.ROW_CONTENT_W + GetTargetColumnWidth()
+    return C.ROW_CONTENT_W + GetTargetColumnWidth(row)
 end
 
 local function SyncRowTargetPane(row)
@@ -320,7 +322,7 @@ end
 local function ComputeRowLayoutKey(unitId, row)
     local showPartyBuff = unitId and ShouldShowPartyBuffIcon(unitId) or false
     local showSelfBuff = unitId and ShouldShowSelfBuffIcon(unitId) or false
-    local targetReserve = row and GetTargetColumnWidth() or 0
+    local targetReserve = row and GetTargetColumnWidth(row) or 0
     return string.format("%s|%s|%s|%d|%d|%d|%d",
         tostring(showPartyBuff), tostring(showSelfBuff), GetHotStripHeight(), targetReserve,
         GetRowPowerChromeHeight(unitId), T.GetHeight(unitId), H.GetGutterWidth())

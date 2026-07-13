@@ -281,10 +281,7 @@ end
 
 local function GetRowTotalHeight(rowOrUnit)
     local unitId = type(rowOrUnit) == "table" and rowOrUnit.unitId or rowOrUnit
-    local targetOfTargetHeight = unitId == "player"
-        and D.IsSavedFeatureEnabled("showUnitTargets") and C.TARGET_OF_TARGET_STEP or 0
-    return C.ROW_H + GetHotStripHeight() + GetRowPowerChromeHeight(unitId)
-        + T.GetHeight(unitId) + targetOfTargetHeight
+    return C.ROW_H + GetHotStripHeight() + GetRowPowerChromeHeight(unitId) + T.GetHeight(unitId)
 end
 
 local function ScanUnitPlayerHots(unitId)

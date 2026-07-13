@@ -221,7 +221,7 @@ function L.RefreshRowBuffs(row, unitId)
     end
 
     local rightReserve = GetBuffSlotReserve(showPartyBuff, showSelfBuff)
-    local targetReserve = D.GetTargetColumnWidth()
+    local targetReserve = D.GetTargetColumnWidth(row)
     local hotStripH = D.GetHotStripHeight()
     local powerChrome = D.GetRowPowerChromeHeight(unitId)
     local trackerHeight = D.GetTrackerHeight(unitId)
@@ -239,12 +239,16 @@ function L.RefreshRowBuffs(row, unitId)
 
     if row.targetBtn then
         row.targetBtn:ClearAllPoints()
-        row.targetBtn:SetPoint("TOPRIGHT", row.btn, "TOPRIGHT", 0, -trackerHeight)
+        if unitId == "player" and row.targetOfTargetBtn then
+            row.targetBtn:SetPoint(
+                "TOPRIGHT", row.targetOfTargetBtn, "TOPLEFT", -C.TARGET_GAP, 0)
+        else
+            row.targetBtn:SetPoint("TOPRIGHT", row.btn, "TOPRIGHT", 0, -trackerHeight)
+        end
     end
     if row.targetOfTargetBtn then
         row.targetOfTargetBtn:ClearAllPoints()
-        row.targetOfTargetBtn:SetPoint(
-            "TOPRIGHT", row.targetBtn, "BOTTOMRIGHT", 0, -C.TARGET_OF_TARGET_GAP)
+        row.targetOfTargetBtn:SetPoint("TOPRIGHT", row.btn, "TOPRIGHT", 0, -trackerHeight)
     end
     if unitId == "player" then D.LayoutTracker() end
 
@@ -313,7 +317,7 @@ function L.ValidateRowBuffLayout(row, label)
     local showPartyBuff = row.partyBuffIcon:IsShown()
     local showSelfBuff   = row.selfBuffIcon:IsShown()
     local buffReserve = GetBuffSlotReserve(showPartyBuff, showSelfBuff)
-    local targetReserve = D.GetTargetColumnWidth()
+    local targetReserve = D.GetTargetColumnWidth(row)
     local expectedRight = buffReserve + targetReserve
 
     local btnLeft, _, btnW = row.btn:GetRect()

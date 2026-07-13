@@ -9,6 +9,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 ### Added
 
 - Added a General setting to make missing buff reminder icons informational instead of clickable cast buttons.
+- Added Mage intellect reminders and regression coverage for every class with a supported, friendly-target party buff.
 
 ## [0.30.4] - 2026-07-12
 

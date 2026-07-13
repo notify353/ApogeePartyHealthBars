@@ -52,7 +52,9 @@ ApogeePartyHealthBars_C = {
     BUFF_EDGE_INSET      = 2,
     PARTY_BUFF_ICON_TEXTURE    = "Interface\\Icons\\Spell_Holy_WordFortitude",
     SELF_BUFF_ICON_TEXTURE      = "Interface\\Icons\\Spell_Holy_InnerFire",
-    -- First entry the player knows in spellbook wins (class-agnostic buff tracking).
+    -- First entry the player knows in spellbook wins. Keep this list limited to
+    -- long-duration buffs that can be cast directly on a friendly unit. Shouts,
+    -- totems, passive auras, pet auras, and self-only effects need different UX.
     PARTY_BUFF_DEFINITIONS = {
         {
             canonical = "Power Word: Fortitude",
@@ -66,6 +68,20 @@ ApogeePartyHealthBars_C = {
             auraNames = {
                 ["Power Word: Fortitude"] = true,
                 ["Prayer of Fortitude"]   = true,
+            },
+        },
+        {
+            canonical = "Arcane Intellect",
+            pattern   = "^Arcane Intellect",
+            icon      = "Interface\\Icons\\Spell_Holy_MagicalSentry",
+            auraIds = {
+                [1459] = true, [1460] = true, [1461] = true,
+                [10156] = true, [10157] = true, [27126] = true,
+                [23028] = true, [27127] = true,
+            },
+            auraNames = {
+                ["Arcane Intellect"]  = true,
+                ["Arcane Brilliance"] = true,
             },
         },
         {

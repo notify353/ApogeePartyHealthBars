@@ -241,8 +241,14 @@ local function UpdateTargetPowerVisual(row, targetUnitId)
     if not targetUnitId then return false end
 
     local powerType, powerToken = UnitPowerType(targetUnitId)
-    local visible = SetPowerBar(row.targetPowerBar, row.targetPowerBg, targetUnitId, powerType,
-        GetPowerBarColor(powerType, powerToken))
+    local r, g, b, a
+    if powerType == C.MANA_POWER then
+        r, g, b, a = unpack(C.MANA_BAR_COLOR)
+    else
+        r, g, b, a = GetPowerBarColor(powerType, powerToken)
+    end
+    local visible = SetPowerBar(
+        row.targetPowerBar, row.targetPowerBg, targetUnitId, powerType, r, g, b, a)
     row.targetPowerVisible = visible
     return visible
 end

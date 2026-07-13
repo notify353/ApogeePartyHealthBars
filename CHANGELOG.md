@@ -18,6 +18,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 ### Fixed
 
 - Made tracked-spell icons cast their assigned spell when clicked using combat-safe secure actions.
+- Unified player, party, and target mana bars on the add-on's softer blue color.
 
 ## [0.30.4] - 2026-07-12
 

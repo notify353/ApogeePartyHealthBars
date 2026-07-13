@@ -1,6 +1,7 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local T = ApogeePartyHealthBars_SpellTracker
+local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 
 ApogeePartyHealthBars_UnitFrames = {}
@@ -315,6 +316,7 @@ function F.Build(D)
         SetSecureMouseEnabled = D.SetSecureMouseEnabled,
         DeferSecureUpdate = D.DeferSecureUpdate,
     })
+    M.Attach(rows[1])
     H.Attach(rows, D.SyncVisualTicker)
     
     

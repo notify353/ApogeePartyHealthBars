@@ -15,6 +15,7 @@ ApogeePartyHealthBars_SecureFrames.lua
 ApogeePartyHealthBars_Effects.lua
 ApogeePartyHealthBars_Auras.lua
 ApogeePartyHealthBars_SpellTracker.lua
+ApogeePartyHealthBars_RaidMarkers.lua
 ApogeePartyHealthBars_Threat.lua
 ApogeePartyHealthBars_MinimapController.lua
 ApogeePartyHealthBars_ConfigController.lua

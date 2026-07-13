@@ -305,6 +305,10 @@ local function CreateIcon(parent)
     button:Hide()
 
     castButton:SetScript("OnEnter", function()
+        if InCombatLockdown and InCombatLockdown() then
+            if GameTooltip then GameTooltip:Hide() end
+            return
+        end
         local info = button.trackerInfo
         if not info then return end
         GameTooltip:SetOwner(castButton, "ANCHOR_TOP")
@@ -630,13 +634,13 @@ function T.Rebaseline()
     T.Refresh(true)
 end
 
-function T.ResolveAndRefresh()
+function T.ResolveAndRefresh(forceLayout)
     local oldHeight = T.GetHeight("player")
     ResolveEntries()
     local newHeight = T.GetHeight("player")
     wipe(previousStates)
     initialized = false
-    if oldHeight ~= newHeight and requestLayout then requestLayout() end
+    if (forceLayout or oldHeight ~= newHeight) and requestLayout then requestLayout() end
     if syncTicker then syncTicker() end
     T.Layout()
     T.Refresh(true)
@@ -765,5 +769,7 @@ end
 function T.PreviewSound(key) return PlayReadySound(key) end
 
 function T.OnTrackerSettingChanged()
-    T.ResolveAndRefresh()
+    -- The saved setting is changed before this callback runs, so height comparisons
+    -- alone cannot observe the disabled-to-enabled layout transition.
+    T.ResolveAndRefresh(true)
 end

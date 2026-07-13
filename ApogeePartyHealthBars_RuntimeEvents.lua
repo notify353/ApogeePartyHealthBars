@@ -2,6 +2,7 @@ local S = ApogeePartyHealthBars_S
 local A = ApogeePartyHealthBars_Auras
 local E = ApogeePartyHealthBars_Effects
 local T = ApogeePartyHealthBars_SpellTracker
+local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 local F = ApogeePartyHealthBars_SecureFrames
 
@@ -45,6 +46,8 @@ function R.Register(eventRouter, deps)
     eventRouter.RegisterOptional("UNIT_FLAGS", "SpellTrackerTarget", function(unit)
         if unit == "target" then T.Refresh(false) end
     end)
+
+    eventRouter.RegisterOptional("RAID_TARGET_UPDATE", "RaidMarkers", M.Refresh)
     
     for _, event in ipairs({ "UNIT_THREAT_SITUATION_UPDATE", "UNIT_THREAT_LIST_UPDATE" }) do
         eventRouter.RegisterOptional(event, "Threat", H.Refresh)
@@ -86,6 +89,7 @@ function R.Register(eventRouter, deps)
             D.ForceRefresh()
     
         elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
+            M.OnCombatLogEvent()
             if D.IsShieldEnabled() then
                 D.OnShieldCombatLog()
             end

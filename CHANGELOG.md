@@ -6,6 +6,19 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Added
+
+- Added right-aligned skull, cross, and moon controls above unmarked hostile targets, with per-marker tracking to avoid suggesting a marker already assigned through the controls.
+
+### Changed
+
+- Enabled the player spell tracker by default for new installations.
+- Hid tracked-spell descriptions while in combat to keep combat mouseovers unobtrusive.
+
+### Fixed
+
+- Made tracked spells immediately clickable after enabling the player spell tracker without requiring a UI reload.
+
 ## [0.31.0] - 2026-07-12
 
 ### Added

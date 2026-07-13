@@ -10,6 +10,7 @@ local S = ApogeePartyHealthBars_S
 local A = ApogeePartyHealthBars_Auras
 local E = ApogeePartyHealthBars_Effects
 local T = ApogeePartyHealthBars_SpellTracker
+local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 
 local panel, configUI, minimapController
@@ -375,6 +376,8 @@ UpdateUI = function()
     elseif doValues then
         UpdateRowValues()
     end
+
+    M.Refresh()
 
     ClearDirtyFlags()
 end

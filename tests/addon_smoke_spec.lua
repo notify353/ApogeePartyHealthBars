@@ -57,7 +57,7 @@ local function widget()
         "SetAlpha", "SetVertexColor", "SetColorTexture", "SetScrollChild",
         "SetVerticalScroll", "SetMultiLine", "SetAutoFocus", "SetTextInsets",
         "SetFocus", "ClearFocus", "HighlightText", "SetChecked", "Enable", "Disable",
-        "SetDesaturated", "SetDuration", "SetFromAlpha", "SetToAlpha", "SetOrder",
+        "SetDesaturated", "SetCooldown", "Clear", "SetDuration", "SetFromAlpha", "SetToAlpha", "SetOrder",
         "Play", "Stop", "StartMoving", "StopMovingOrSizing",
     }
     for _, name in ipairs(noopMethods) do methods[name] = function() end end
@@ -205,6 +205,10 @@ end
 
 assert(type(ApogeePartyHealthBars_S.sv) == "table", "saved variables did not initialize")
 assert(ApogeePartyHealthBars_S.sv.clickableBuffIcons == true, "clickable buff icons should default on")
+assert(ApogeePartyHealthBars_S.sv.spellTrackerEnabled == true, "player spell tracker should default on")
+local existingPreferences = { spellTrackerEnabled = false }
+ApogeePartyHealthBars_Effects.InitializeSavedVariables(existingPreferences, {})
+assert(existingPreferences.spellTrackerEnabled == false, "saved tracker preference was overwritten")
 assert(ApogeePartyHealthBars_MinimapController.IsCreated(), "minimap controller did not create")
 for _, message in ipairs(messages) do
     assert(not message:find("error", 1, true), "captured runtime failure: " .. message)

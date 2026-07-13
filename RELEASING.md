@@ -1,52 +1,41 @@
-# Release Process
+# Releasing
 
-Apogee Party Health Bars has one supported publishing path: repository scripts followed by the tag-triggered GitHub Actions workflow. The production workflow publishes the same verified package to GitHub Releases and CurseForge. Browser-based project forms, manual release creation, and manual asset uploads are not part of the release process.
+Requirements: PowerShell 7, Git, and an authenticated GitHub CLI. GitHub Actions is the only publisher.
 
-## Required tools
+## Development
 
-- PowerShell 7 (`pwsh`)
-- Git
-- [GitHub CLI](https://cli.github.com/) authenticated with `gh auth login --hostname github.com --git-protocol https --web`
+1. Work on a short-lived branch and open a pull request into `main`.
+2. Add user-visible changes under `CHANGELOG.md` -> `Unreleased`.
+3. Run the Lua tests, package checks, workflow-safety check, and `git diff --check`.
+4. Merge only after CI passes.
 
-Use `gh auth status --hostname github.com` to verify authentication. Never paste authentication tokens into chat, documentation, scripts, or repository files.
+## Prepare
 
-## Day-to-day development
+From clean, synchronized `main`:
 
-1. Create a short-lived feature branch, preferably with a `codex/` prefix.
-2. Add user-facing changes under `CHANGELOG.md` → `Unreleased`.
-3. Open a pull request into `main` and wait for the required Lua validation workflow.
-4. Merge only when validation passes. Never develop directly on a release tag.
+```powershell
+pwsh ./scripts/prepare-release.ps1 -Version X.Y.Z
+```
 
-## Prepare a stable release
+Push the preparation commit and wait for CI. Then verify in game:
 
-1. Confirm the intended version follows semantic versioning. Use a minor increment for features and a patch increment for fixes.
-2. Run `pwsh ./scripts/prepare-release.ps1 -Version X.Y.Z` from a clean, synchronized `main` branch.
-3. Review the generated release-preparation commit and push it.
-4. Wait for GitHub validation to pass.
-5. Complete the in-game checklist:
-   - Login and `/reload` without Lua errors.
-   - Solo and five-player party layouts.
-   - Entering and leaving combat.
-   - Click bindings and spellbook assignment.
-   - Spell tracking, threat, shields, incoming heals, and HoTs.
-   - Minimap/config movement and persistence.
-   - Macro creation and pickup.
-6. After the owner explicitly approves production, run the only supported production command:
+- Login and `/reload`
+- Solo and party layouts
+- Entering and leaving combat
+- Click bindings and spell assignment
+- Spell tracking, threat, shields, heals, and HoTs
+- Settings, minimap position, persistence, and macros
 
-   ```powershell
-   pwsh ./scripts/publish-release.ps1 -Version X.Y.Z -ConfirmProduction
-   ```
+## Publish
 
-The script verifies GitHub CLI authentication, clean synchronized `main`, version metadata, changelog state, package layout, and tag uniqueness before pushing the annotated production tag. GitHub Actions then validates the tagged commit again, builds the installable ZIP, publishes the GitHub Release, uploads the same package to CurseForge, and attaches a SHA-256 checksum.
+**Stop for explicit owner approval immediately before publishing.** After approval:
 
-Do not create releases, upload assets, or submit CurseForge files through a browser. Do not run the packager locally in upload mode. GitHub Actions is the sole publisher and `CF_API_KEY` exists only in the protected `production` environment.
+```powershell
+pwsh ./scripts/publish-release.ps1 -Version X.Y.Z -ConfirmProduction
+```
 
-## Failed releases
+The script pushes the production tag. GitHub Actions validates, packages, and publishes identical bytes to GitHub Releases and CurseForge, then attaches a SHA-256 checksum.
 
-Never move or overwrite a published tag. Fix the problem on `main`, prepare a new patch version, and publish it through `scripts/publish-release.ps1`. Archive the bad CurseForge file when necessary and describe the replacement in the changelog.
+Never create or move production tags manually. Never publish or upload assets manually. Fix a bad release with a new patch version. Never expose `CF_API_KEY` or another secret.
 
-## One-time repository setup
-
-- Create the GitHub environment `production`.
-- Add the CurseForge upload token as the environment secret `CF_API_KEY`.
-- Protect `main` with the `Lua validation / test` required status check and allow owner bypass for emergencies.
+A release ZIP must contain exactly one `ApogeePartyHealthBars/` root and pass `scripts/validate-package.ps1`. GitHub's source ZIP is not an installable release.

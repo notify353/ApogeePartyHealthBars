@@ -77,15 +77,20 @@ function GetTime() return 1 end
 BOOKTYPE_SPELL = "spell"
 PowerBarColor = { MANA = { r = 0, g = 0, b = 1 } }
 GameTooltip = widget()
+local tooltipShows = 0
+local tooltipHides = 0
 GameTooltip.SetOwner = function() end
 GameTooltip.SetSpellByID = function() end
 GameTooltip.AddLine = function() end
+GameTooltip.Show = function() tooltipShows = tooltipShows + 1 end
+GameTooltip.Hide = function() tooltipHides = tooltipHides + 1 end
 
 dofile("ApogeePartyHealthBars_SpellTracker.lua")
 local tracker = ApogeePartyHealthBars_SpellTracker
 local deferred = 0
+local layoutRequests = 0
 tracker.Attach({ btn = widget() }, {
-    RequestLayout = function() end,
+    RequestLayout = function() layoutRequests = layoutRequests + 1 end,
     SyncTicker = function() end,
     PositionSecureOverlay = function() return true end,
     ShowSecureFrame = function(frame) frame:Show() end,
@@ -107,6 +112,24 @@ assert(castButton.attributes.spell == "Fireball(Rank 1)")
 assert(castButton.attributes.type1 == "spell")
 assert(castButton.attributes.spell1 == "Fireball(Rank 1)")
 assert(castButton.shown and castButton.mouseEnabled, "tracker cast button is not clickable")
+
+castButton.scripts.OnEnter()
+assert(tooltipShows == 1, "tracker spell tooltip did not show out of combat")
+inCombat = true
+castButton.scripts.OnEnter()
+assert(tooltipShows == 1, "tracker spell tooltip showed in combat")
+assert(tooltipHides == 1, "tracker spell tooltip was not dismissed in combat")
+inCombat = false
+
+ApogeePartyHealthBars_S.sv.spellTrackerEnabled = false
+tracker.OnTrackerSettingChanged()
+assert(not castButton.shown and not castButton.mouseEnabled, "disabled tracker remained clickable")
+local beforeEnableLayout = layoutRequests
+ApogeePartyHealthBars_S.sv.spellTrackerEnabled = true
+tracker.OnTrackerSettingChanged()
+assert(layoutRequests == beforeEnableLayout + 1, "enabling tracker did not request a fresh layout")
+assert(castButton.attributes.type == "spell" and castButton.attributes.spell == "Fireball(Rank 1)")
+assert(castButton.shown and castButton.mouseEnabled, "re-enabled tracker spell did not become clickable")
 
 local beforeCombat = castButton.mutations
 inCombat = true

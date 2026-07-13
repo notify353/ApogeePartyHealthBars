@@ -241,6 +241,11 @@ function L.RefreshRowBuffs(row, unitId)
         row.targetBtn:ClearAllPoints()
         row.targetBtn:SetPoint("TOPRIGHT", row.btn, "TOPRIGHT", 0, -trackerHeight)
     end
+    if row.targetOfTargetBtn then
+        row.targetOfTargetBtn:ClearAllPoints()
+        row.targetOfTargetBtn:SetPoint(
+            "TOPRIGHT", row.targetBtn, "BOTTOMRIGHT", 0, -C.TARGET_OF_TARGET_GAP)
+    end
     if unitId == "player" then D.LayoutTracker() end
 
     if row.manaBg and row.manaBar then

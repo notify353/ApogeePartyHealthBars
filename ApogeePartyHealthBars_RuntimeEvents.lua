@@ -177,7 +177,7 @@ function R.Register(eventRouter, deps)
             end
     
         elseif event == "UNIT_TARGET" then
-            if unit == "player" or (unit and unit:match("^party%d$")) then
+            if unit == "player" or unit == "target" or (unit and unit:match("^party%d$")) then
                 S.RequestLayoutUpdate()
             end
         end

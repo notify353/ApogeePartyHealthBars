@@ -173,6 +173,29 @@ function F.Build(D)
         targetPowerBar:Hide()
     
         local targetPartyBuffIcon = CreateBuffIcon(targetBtn, C.PARTY_BUFF_ICON_TEXTURE)
+
+        local targetOfTargetBtn = CreateFrame("Frame", nil, btn)
+        targetOfTargetBtn:SetSize(C.TARGET_BAR_W, C.TARGET_OF_TARGET_H)
+        targetOfTargetBtn:EnableMouse(false)
+        targetOfTargetBtn:Hide()
+
+        local targetOfTargetBg = targetOfTargetBtn:CreateTexture(nil, "BACKGROUND")
+        targetOfTargetBg:SetAllPoints()
+        D.ApplyFlatBg(targetOfTargetBg, C.BAR_BG_COLOR)
+
+        local targetOfTargetBar = CreateFrame("StatusBar", nil, targetOfTargetBtn)
+        targetOfTargetBar:SetAllPoints()
+        D.ApplyFlatStatusBar(targetOfTargetBar)
+        targetOfTargetBar:SetMinMaxValues(0, 1)
+        targetOfTargetBar:SetValue(1)
+
+        local targetOfTargetNameFS = targetOfTargetBar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        targetOfTargetNameFS:SetPoint("LEFT", targetOfTargetBar, "LEFT", 3, 0)
+        targetOfTargetNameFS:SetWidth(C.TARGET_BAR_W - 8)
+        targetOfTargetNameFS:SetJustifyH("LEFT")
+        targetOfTargetNameFS:SetWordWrap(false)
+        targetOfTargetNameFS:SetMaxLines(1)
+        D.StyleReadableText(targetOfTargetNameFS)
     
         local barBg = btn:CreateTexture(nil, "BACKGROUND")
         barBg:SetPoint("TOPLEFT", btn, "TOPLEFT")
@@ -270,6 +293,8 @@ function F.Build(D)
             targetNameFS = targetNameFS,
             targetPowerBg = targetPowerBg, targetPowerBar = targetPowerBar,
             targetPartyBuffIcon = targetPartyBuffIcon,
+            targetOfTargetBtn = targetOfTargetBtn, targetOfTargetBg = targetOfTargetBg,
+            targetOfTargetBar = targetOfTargetBar, targetOfTargetNameFS = targetOfTargetNameFS,
             castBtn = castBtn, targetCastBtn = targetCastBtn, partyBuffCastBtn = partyBuffCastBtn,
             targetPartyBuffCastBtn = targetPartyBuffCastBtn, selfBuffCastBtn = selfBuffCastBtn,
             hotBg = hotBg, hotBars = hotBars,

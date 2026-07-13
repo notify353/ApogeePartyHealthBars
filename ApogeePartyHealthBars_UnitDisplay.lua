@@ -213,6 +213,26 @@ local function PopulateTargetBar(row, targetUnitId)
     row.targetBtn:SetAlpha((healable and inRange) and 1 or C.OUT_OF_RANGE_ALPHA)
 end
 
+local function PopulateTargetOfTarget(row)
+    if not row.targetOfTargetBtn then return end
+    local unitId = "targettarget"
+    if row.unitId ~= "player" or not row.showTargetPane or not UnitExists(unitId) then
+        row.targetOfTargetBtn:Hide()
+        return
+    end
+
+    local hp = UnitHealth(unitId) or 0
+    local hpMax = UnitHealthMax(unitId) or 1
+    if hpMax <= 0 then hpMax = 1 end
+    local cr, cg, cb = GetUnitNameColor(unitId)
+    row.targetOfTargetNameFS:SetText(UnitName(unitId) or unitId)
+    row.targetOfTargetNameFS:SetTextColor(cr, cg, cb, 1)
+    row.targetOfTargetBar:SetMinMaxValues(0, hpMax)
+    row.targetOfTargetBar:SetValue(hp)
+    SetBarColorByPct(row.targetOfTargetBar, hp / hpMax)
+    row.targetOfTargetBtn:Show()
+end
+
 local function UpdateTargetPowerVisual(row, targetUnitId)
     if not row.targetPowerBar or not row.targetPowerBg then return false end
     row.targetPowerBar:Hide()
@@ -267,12 +287,14 @@ local function PopulateHealthRow(row, unitId)
         PopulateTargetBar(row, targetToken)
         UpdateTargetPowerVisual(row, targetToken)
         RefreshTargetPartyBuff(row, targetToken)
+        PopulateTargetOfTarget(row)
     else
         row.targetBtn:Hide()
         row.targetBtn:SetAlpha(1)
         ApplyFlatBg(row.targetBarBg, C.BAR_BG_COLOR)
         UpdateTargetPowerVisual(row, nil)
         RefreshTargetPartyBuff(row, nil)
+        if row.targetOfTargetBtn then row.targetOfTargetBtn:Hide() end
     end
 
     if UnitIsConnected and not UnitIsConnected(unitId) then
@@ -333,5 +355,6 @@ U.ApplyFlatStatusBar = ApplyFlatStatusBar
 U.ApplyFlatBg = ApplyFlatBg
 U.UpdateRowPowerVisual = UpdateRowPowerVisual
 U.UpdateTargetPowerVisual = UpdateTargetPowerVisual
+U.PopulateTargetOfTarget = PopulateTargetOfTarget
 U.PopulateHealthRow = PopulateHealthRow
 U.RefreshTargetPartyBuff = RefreshTargetPartyBuff

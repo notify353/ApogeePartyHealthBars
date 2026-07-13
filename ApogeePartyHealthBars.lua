@@ -124,7 +124,7 @@ end
 
 local function IsPanelTrackedUnit(unit)
     if not unit then return false end
-    if unit == "player" or unit == "target" then return true end
+    if unit == "player" or unit == "target" or unit == "targettarget" then return true end
     if unit:match("^party%d$") or unit:match("^party%dtarget$") then return true end
     return false
 end
@@ -311,7 +311,7 @@ end
 
 local function ResolvePanelUnit(unitId)
     if FindRowForUnit(unitId) then return unitId end
-    if unitId == "target" then return "player" end
+    if unitId == "target" or unitId == "targettarget" then return "player" end
     local n = unitId and unitId:match("^party(%d)target$")
     if n then return "party" .. n end
     return unitId

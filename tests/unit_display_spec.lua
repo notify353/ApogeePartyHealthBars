@@ -36,6 +36,7 @@ local function widget()
     function object:SetMinMaxValues(minimum, maximum) self.minimum, self.maximum = minimum, maximum end
     function object:SetValue(value) self.value = value end
     function object:SetStatusBarColor(r, g, b, a) self.color = { r, g, b, a } end
+    function object:SetText(value) self.text = value end
     return setmetatable(object, {
         __index = function(_, key)
             return function() end
@@ -50,6 +51,8 @@ local row = {
     btn = widget(), targetBtn = widget(), targetBarBg = widget(), targetBar = widget(),
     targetHealPredBar = widget(), targetNameFS = widget(), targetPartyBuffIcon = widget(),
     targetPowerBg = widget(), targetPowerBar = widget(),
+    targetOfTargetBtn = widget(), targetOfTargetBg = widget(),
+    targetOfTargetBar = widget(), targetOfTargetNameFS = widget(),
     barBg = widget(), bar = widget(), shieldBar = widget(), healPredBar = widget(),
     nameFS = widget(), manaBg = widget(), manaBar = widget(),
     activePowerBg = widget(), activePowerBar = widget(), hotBg = {}, hotBars = {},
@@ -77,6 +80,10 @@ assert(row.targetPowerBg:IsShown() and row.targetPowerBar:IsShown())
 assert(row.targetPowerBar.minimum == 0 and row.targetPowerBar.maximum == 1000)
 assert(row.targetPowerBar.value == 625)
 assert(row.targetPowerBar.color[1] == 0.1 and row.targetPowerBar.color[3] == 0.9)
+assert(row.targetOfTargetBtn:IsShown(), "target-of-target bar was not shown")
+assert(row.targetOfTargetNameFS.text == "Test")
+assert(row.targetOfTargetBar.minimum == 0 and row.targetOfTargetBar.maximum == 100)
+assert(row.targetOfTargetBar.value == 50)
 
 targetPower, targetPowerMax, targetPowerType, targetPowerToken = 70, 100, 3, "ENERGY"
 U.PopulateHealthRow(row, "player")

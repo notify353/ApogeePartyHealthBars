@@ -161,6 +161,65 @@ ApogeePartyHealthBars_C = {
             auraNames = { ["Devotion Aura"] = true },
         },
     },
+    -- Mutually exclusive self-buff families. The first known spell is the
+    -- default cast when "Any" is selected; users may choose a specific known
+    -- spell per character. Aura names are sufficient across spell ranks.
+    SELF_BUFF_FAMILIES = {
+        {
+            key = "mageArmor", classToken = "MAGE",
+            label = "Mage armor", anyLabel = "Any Mage armor",
+            spells = {
+                { canonical = "Mage Armor", pattern = "^Mage Armor", icon = "Interface\\Icons\\Spell_MageArmor", auraNames = { ["Mage Armor"] = true } },
+                { canonical = "Molten Armor", pattern = "^Molten Armor", icon = "Interface\\Icons\\Ability_Mage_MoltenArmor", auraNames = { ["Molten Armor"] = true } },
+                { canonical = "Ice Armor", pattern = "^Ice Armor", icon = "Interface\\Icons\\Spell_Frost_FrostArmor02", auraNames = { ["Ice Armor"] = true } },
+                { canonical = "Frost Armor", pattern = "^Frost Armor", icon = "Interface\\Icons\\Spell_Frost_FrostArmor02", auraNames = { ["Frost Armor"] = true } },
+            },
+        },
+        {
+            key = "paladinAura", classToken = "PALADIN",
+            label = "Paladin aura", anyLabel = "Any Paladin aura",
+            spells = {
+                { canonical = "Devotion Aura", pattern = "^Devotion Aura", icon = "Interface\\Icons\\Spell_Holy_DevotionAura", auraNames = { ["Devotion Aura"] = true } },
+                { canonical = "Retribution Aura", pattern = "^Retribution Aura", icon = "Interface\\Icons\\Spell_Holy_AuraOfLight", auraNames = { ["Retribution Aura"] = true } },
+                { canonical = "Concentration Aura", pattern = "^Concentration Aura", icon = "Interface\\Icons\\Spell_Holy_MindSooth", auraNames = { ["Concentration Aura"] = true } },
+                { canonical = "Sanctity Aura", pattern = "^Sanctity Aura", icon = "Interface\\Icons\\Spell_Holy_MindVision", auraNames = { ["Sanctity Aura"] = true } },
+                { canonical = "Crusader Aura", pattern = "^Crusader Aura", icon = "Interface\\Icons\\Spell_Holy_CrusaderAura", auraNames = { ["Crusader Aura"] = true } },
+                { canonical = "Fire Resistance Aura", pattern = "^Fire Resistance Aura", icon = "Interface\\Icons\\Spell_Fire_SealOfFire", auraNames = { ["Fire Resistance Aura"] = true } },
+                { canonical = "Frost Resistance Aura", pattern = "^Frost Resistance Aura", icon = "Interface\\Icons\\Spell_Frost_WizardMark", auraNames = { ["Frost Resistance Aura"] = true } },
+                { canonical = "Shadow Resistance Aura", pattern = "^Shadow Resistance Aura", icon = "Interface\\Icons\\Spell_Shadow_SealOfKings", auraNames = { ["Shadow Resistance Aura"] = true } },
+            },
+        },
+        {
+            key = "hunterAspect", classToken = "HUNTER",
+            label = "Hunter aspect", anyLabel = "Any Hunter aspect",
+            spells = {
+                { canonical = "Aspect of the Hawk", pattern = "^Aspect of the Hawk", icon = "Interface\\Icons\\Spell_Nature_RavenForm", auraNames = { ["Aspect of the Hawk"] = true } },
+                { canonical = "Aspect of the Viper", pattern = "^Aspect of the Viper", icon = "Interface\\Icons\\Ability_Hunter_AspectoftheViper", auraNames = { ["Aspect of the Viper"] = true } },
+                { canonical = "Aspect of the Monkey", pattern = "^Aspect of the Monkey", icon = "Interface\\Icons\\Ability_Hunter_AspectOfTheMonkey", auraNames = { ["Aspect of the Monkey"] = true } },
+                { canonical = "Aspect of the Wild", pattern = "^Aspect of the Wild", icon = "Interface\\Icons\\Spell_Nature_ProtectionformNature", auraNames = { ["Aspect of the Wild"] = true } },
+                { canonical = "Aspect of the Beast", pattern = "^Aspect of the Beast", icon = "Interface\\Icons\\Ability_Mount_PinkTiger", auraNames = { ["Aspect of the Beast"] = true } },
+                { canonical = "Aspect of the Cheetah", pattern = "^Aspect of the Cheetah", icon = "Interface\\Icons\\Ability_Mount_JungleTiger", auraNames = { ["Aspect of the Cheetah"] = true } },
+                { canonical = "Aspect of the Pack", pattern = "^Aspect of the Pack", icon = "Interface\\Icons\\Ability_Mount_WhiteTiger", auraNames = { ["Aspect of the Pack"] = true } },
+            },
+        },
+        {
+            key = "warlockArmor", classToken = "WARLOCK",
+            label = "Warlock armor", anyLabel = "Any Warlock armor",
+            spells = {
+                { canonical = "Fel Armor", pattern = "^Fel Armor", icon = "Interface\\Icons\\Spell_Shadow_FelArmour", auraNames = { ["Fel Armor"] = true } },
+                { canonical = "Demon Armor", pattern = "^Demon Armor", icon = "Interface\\Icons\\Spell_Shadow_RagingScream", auraNames = { ["Demon Armor"] = true } },
+                { canonical = "Demon Skin", pattern = "^Demon Skin", icon = "Interface\\Icons\\Spell_Shadow_RagingScream", auraNames = { ["Demon Skin"] = true } },
+            },
+        },
+        {
+            key = "shamanShield", classToken = "SHAMAN",
+            label = "Shaman shield", anyLabel = "Any Shaman shield",
+            spells = {
+                { canonical = "Lightning Shield", pattern = "^Lightning Shield", icon = "Interface\\Icons\\Spell_Nature_LightningShield", auraNames = { ["Lightning Shield"] = true } },
+                { canonical = "Water Shield", pattern = "^Water Shield", icon = "Interface\\Icons\\Ability_Shaman_WaterShield", auraNames = { ["Water Shield"] = true } },
+            },
+        },
+    },
     TARGET_GAP           = 2,
     SHIELD_BAR_COLOR     = { 0.15, 0.85, 1.00, 1 },
     INCOMING_HEAL_COLOR  = { 0.25, 0.78, 0.35, 0.65 },
@@ -343,6 +402,10 @@ ApogeePartyHealthBars_S = {
     selfBuffIconTexture = nil,
     selfBuffAuraIds         = nil,
     selfBuffAuraNames       = nil,
+    selfBuffFamilyKey       = nil,
+    selfBuffFamilyLabel     = nil,
+    selfBuffPreferenceKey   = nil,
+    selfBuffPreferenceOptions = {},
     shieldRemaining          = {},
     activeHotTracks          = {},
     hotSpellKnown            = {},

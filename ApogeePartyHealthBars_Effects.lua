@@ -62,6 +62,9 @@ function E.InitializeSavedVariables(saved, characterSaved)
     if type(characterSaved.trackedSpells) ~= "table" then
         characterSaved.trackedSpells = {}
     end
+    if type(characterSaved.selfBuffSelections) ~= "table" then
+        characterSaved.selfBuffSelections = {}
+    end
 
     saved.schemaVersion = math.max(version, C.SAVED_VARIABLES_VERSION)
 end

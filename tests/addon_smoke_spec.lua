@@ -65,6 +65,7 @@ local function widget()
 end
 
 UIParent = widget(); Minimap = widget(); MinimapCluster = widget(); GameTooltip = widget()
+SpellBookFrame = widget(); SpellBookFrame:Hide()
 function CreateFrame() local frame = widget(); frames[#frames + 1] = frame; return frame end
 
 Enum = { PowerType = { Mana = 0 }, SpellBookSpellBank = { Player = 0, Pet = 1 } }
@@ -118,6 +119,11 @@ function PickupMacro() end
 function CreateMacro() return 121 end
 function EditMacro(index) return index end
 function hooksecurefunc() end
+local spellbookOpenCount = 0
+function ToggleSpellBook()
+    spellbookOpenCount = spellbookOpenCount + 1
+    SpellBookFrame:Show()
+end
 
 for line in io.lines("ApogeePartyHealthBars.toc") do
     if line:match("%.lua$") then dofile(line) end
@@ -146,6 +152,14 @@ router.Dispatch("ACTIONBAR_UPDATE_STATE")
 router.Dispatch("UNIT_THREAT_SITUATION_UPDATE")
 router.Dispatch("PLAYER_LEVEL_UP")
 router.Dispatch("PLAYER_TALENT_UPDATE")
+
+ApogeePartyHealthBars_ConfigController.SetMode(true)
+assert(SpellBookFrame:IsShown(), "opening settings did not open the spellbook")
+assert(spellbookOpenCount == 1, "spellbook did not open exactly once")
+ApogeePartyHealthBars_ConfigController.SetMode(false)
+ApogeePartyHealthBars_ConfigController.SetMode(true)
+assert(spellbookOpenCount == 1, "opening settings toggled an already-open spellbook closed")
+ApogeePartyHealthBars_ConfigController.SetMode(false)
 
 ApogeePartyHealthBars_S.configMode = true
 for _, key in ipairs({ "general", "bindings", "spells", "macros" }) do

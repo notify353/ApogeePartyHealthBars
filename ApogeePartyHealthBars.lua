@@ -498,6 +498,7 @@ bindingController.Initialize({
 })
 local ClearBinding = bindingController.ClearBinding
 HookSpellbook = bindingController.HookSpellbook
+local OpenSpellbook = bindingController.OpenSpellbook
 
 -- Minimap controller
 minimapController = ApogeePartyHealthBars_MinimapController
@@ -544,6 +545,7 @@ configController.Initialize({
     SavePosition = SavePosition,
     UpdateHeader = function() UpdateHeader() end,
     UpdateMinimapButtonStyle = UpdateMinimapButtonStyle,
+    OpenSpellbook = OpenSpellbook,
     HookSpellbook = function() HookSpellbook() end,
     Print = Print,
 })

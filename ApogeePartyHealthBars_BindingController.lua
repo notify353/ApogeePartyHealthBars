@@ -56,7 +56,7 @@ local function ClearBinding(slotKey)
 end
 
 local function HookSpellButton(btn)
-    if not btn or btn._PHSpellHooked then return end
+    if not btn or btn._PHSpellHooked then return false end
     btn._PHSpellHooked = true
     btn:HookScript("PreClick", function(self)
         if not S.configMode or (not S.selectedBindingKey and not S.selectedTrackerSlot)
@@ -77,20 +77,36 @@ local function HookSpellButton(btn)
             D.Print("could not read that spell — try another click.")
         end
     end)
+    return true
 end
 
 local function HookSpellbook()
-    if S.spellbookHooked then return end
-    S.spellbookHooked = true
+    if S.spellbookHooked then return true end
+    local foundButton = false
     for i = 1, 12 do
-        HookSpellButton(_G["SpellButton" .. i])
+        local button = _G["SpellButton" .. i]
+        if button then foundButton = true; HookSpellButton(button) end
     end
     for i = 1, 24 do
-        HookSpellButton(_G["SpellBookSkillLineAbility" .. i])
+        local button = _G["SpellBookSkillLineAbility" .. i]
+        if button then foundButton = true; HookSpellButton(button) end
     end
+    S.spellbookHooked = foundButton
+    return foundButton
+end
+
+local function OpenSpellbook()
+    local alreadyOpen = SpellBookFrame and SpellBookFrame.IsShown and SpellBookFrame:IsShown()
+    if not alreadyOpen and ToggleSpellBook then
+        ToggleSpellBook(BOOKTYPE_SPELL)
+    elseif not alreadyOpen and SpellBookFrame and ShowUIPanel then
+        ShowUIPanel(SpellBookFrame)
+    end
+    HookSpellbook()
+    return SpellBookFrame and SpellBookFrame.IsShown and SpellBookFrame:IsShown() or false
 end
 
 function B.Initialize(deps) D = deps end
 B.ClearBinding = ClearBinding
 B.HookSpellbook = HookSpellbook
-
+B.OpenSpellbook = OpenSpellbook

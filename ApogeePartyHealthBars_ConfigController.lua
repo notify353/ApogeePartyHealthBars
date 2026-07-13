@@ -53,6 +53,7 @@ function C.SetMode(active)
             D.SavePosition()
         end)
         D.GetConfigUI().Show()
+        D.OpenSpellbook()
         D.HookSpellbook()
     else
         C.Exit()
@@ -61,4 +62,3 @@ function C.SetMode(active)
     D.UpdateMinimapButtonStyle()
     D.ForceRefresh()
 end
-

@@ -71,6 +71,27 @@ local function GetEntries()
     return S.charSv.trackedSpells
 end
 
+local function SeedClassDefaults()
+    if not S.charSv then return end
+    local seededVersion = tonumber(S.charSv.trackerDefaultsVersion) or 0
+    if seededVersion >= C.TRACKER_DEFAULTS_VERSION then return end
+
+    local entries = GetEntries()
+    local _, classToken = UnitClass("player")
+    local defaults = C.TRACKER_CLASS_DEFAULTS[classToken]
+    if entries and next(entries) == nil and defaults then
+        for slot, spellName in ipairs(defaults) do
+            if slot > C.TRACKER_MAX_SLOTS then break end
+            entries[slot] = {
+                name = spellName,
+                enabled = true,
+                soundKey = "none",
+            }
+        end
+    end
+    S.charSv.trackerDefaultsVersion = C.TRACKER_DEFAULTS_VERSION
+end
+
 local function IsEnabled()
     return S.sv and S.sv.spellTrackerEnabled == true
 end
@@ -538,6 +559,7 @@ function T.Attach(playerRow, callbacks)
 end
 
 function T.Initialize()
+    SeedClassDefaults()
     ResolveEntries()
     T.Layout()
     T.Rebaseline()

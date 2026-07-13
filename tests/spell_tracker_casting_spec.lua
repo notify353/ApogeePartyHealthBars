@@ -9,13 +9,13 @@ ApogeePartyHealthBars_C = {
     TRACKER_READY_PULSE = 0.65,
     TRACKER_SOUND_DEBOUNCE = 2,
     OUT_OF_RANGE_ALPHA = 0.35,
+    TRACKER_DEFAULTS_VERSION = 1,
+    TRACKER_CLASS_DEFAULTS = { MAGE = { "Fireball", "Frostbolt", "Fire Blast" } },
 }
 ApogeePartyHealthBars_S = {
     sv = { spellTrackerEnabled = true, spellTrackerSoundsEnabled = true },
     charSv = {
-        trackedSpells = {
-            [1] = { id = 133, name = "Fireball", enabled = true, soundKey = "none" },
-        },
+        trackedSpells = {},
     },
     castBtnSerial = 0,
 }
@@ -54,6 +54,7 @@ end
 
 local inCombat = false
 function InCombatLockdown() return inCombat end
+function UnitClass() return "Mage", "MAGE" end
 function GetNumSpellTabs() return 1 end
 function GetSpellTabInfo() return nil, nil, 0, 1 end
 function GetSpellBookItemName() return "Fireball", "Rank 1" end
@@ -94,6 +95,12 @@ tracker.Attach({ btn = widget() }, {
 })
 tracker.Initialize()
 
+local seeded = tracker.GetSlots()
+assert(seeded[1].name == "Fireball")
+assert(seeded[2].name == "Frostbolt")
+assert(seeded[3].name == "Fire Blast")
+assert(ApogeePartyHealthBars_S.charSv.trackerDefaultsVersion == 1)
+
 local castButton = assert(secureButtons[1], "tracker did not create a secure cast button")
 assert(castButton.attributes.type == "spell")
 assert(castButton.attributes.spell == "Fireball(Rank 1)")
@@ -111,5 +118,14 @@ inCombat = false
 tracker.RefreshSecureActions()
 assert(castButton.attributes.type == nil and castButton.attributes.spell == nil)
 assert(not castButton.shown and not castButton.mouseEnabled, "cleared tracker action remained clickable")
+
+ApogeePartyHealthBars_S.charSv.trackerDefaultsVersion = nil
+ApogeePartyHealthBars_S.charSv.trackedSpells = {
+    [1] = { name = "Arcane Explosion", enabled = true, soundKey = "none" },
+}
+tracker.Initialize()
+assert(tracker.GetSlots()[1].name == "Arcane Explosion", "existing tracker customization was overwritten")
+assert(tracker.GetSlots()[2] == nil, "defaults were added to a customized tracker")
+assert(ApogeePartyHealthBars_S.charSv.trackerDefaultsVersion == 1)
 
 print("PASS tracked-spell casting")

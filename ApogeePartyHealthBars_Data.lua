@@ -40,6 +40,10 @@ ApogeePartyHealthBars_C = {
     TRACKER_TOP_GAP      = 2,
     TRACKER_READY_PULSE  = 0.65,
     TRACKER_SOUND_DEBOUNCE = 2.0,
+    TRACKER_DEFAULTS_VERSION = 1,
+    TRACKER_CLASS_DEFAULTS = {
+        MAGE = { "Fireball", "Frostbolt", "Fire Blast" },
+    },
     DEFAULT_ANCHOR       = "RIGHT",
     DEFAULT_REL          = "RIGHT",
     DEFAULT_X            = -20,

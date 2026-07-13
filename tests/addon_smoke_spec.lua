@@ -152,9 +152,10 @@ end
 local router = ApogeePartyHealthBars_EventRouter
 router.Dispatch("PLAYER_LOGIN")
 assert(ApogeePartyHealthBars_SpellTracker.AssignSpell(1, 9001, "Fireball"))
-assert(ApogeePartyHealthBars_SpellTracker.AssignSpell(2, 9002, "Polymorph"))
 assert(ApogeePartyHealthBars_SpellTracker.GetSlotLane(1) == "player", "ordinary tracker spell did not use player lane")
-assert(ApogeePartyHealthBars_SpellTracker.GetSlotLane(2) == "target", "crowd-control spell did not use target lane")
+assert(ApogeePartyHealthBars_SpellTracker.GetSlotLane(2) == nil, "automatic crowd control occupied a configured slot")
+assert(ApogeePartyHealthBars_SpellTracker.GetDisplayCount() == 2, "known crowd control was not displayed automatically")
+assert(ApogeePartyHealthBars_SpellTracker.GetDisplayLane(2) == "target", "automatic crowd control did not use target lane")
 router.Dispatch("PLAYER_ENTERING_WORLD")
 router.Dispatch("SPELLS_CHANGED")
 router.Dispatch("PLAYER_TARGET_CHANGED")

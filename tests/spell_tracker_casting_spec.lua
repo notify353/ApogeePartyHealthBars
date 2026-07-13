@@ -9,9 +9,8 @@ ApogeePartyHealthBars_C = {
     TRACKER_READY_PULSE = 0.65,
     TRACKER_SOUND_DEBOUNCE = 2,
     OUT_OF_RANGE_ALPHA = 0.35,
-    TRACKER_DEFAULTS_VERSION = 2,
-    TRACKER_CLASS_DEFAULTS = { MAGE = { "Fireball", "Frostbolt", "Fire Blast", "Polymorph" } },
-    TRACKER_CLASS_DEFAULT_ADDITIONS = { [2] = { MAGE = { "Polymorph" } } },
+    TRACKER_DEFAULTS_VERSION = 1,
+    TRACKER_CLASS_DEFAULTS = { MAGE = { "Fireball", "Frostbolt", "Fire Blast" } },
 }
 ApogeePartyHealthBars_S = {
     sv = { spellTrackerEnabled = true, spellTrackerSoundsEnabled = true },
@@ -100,8 +99,7 @@ local seeded = tracker.GetSlots()
 assert(seeded[1].name == "Fireball")
 assert(seeded[2].name == "Frostbolt")
 assert(seeded[3].name == "Fire Blast")
-assert(seeded[4].name == "Polymorph")
-assert(ApogeePartyHealthBars_S.charSv.trackerDefaultsVersion == 2)
+assert(ApogeePartyHealthBars_S.charSv.trackerDefaultsVersion == 1)
 
 local castButton = assert(secureButtons[1], "tracker did not create a secure cast button")
 assert(castButton.attributes.type == "spell")
@@ -127,15 +125,13 @@ ApogeePartyHealthBars_S.charSv.trackedSpells = {
 }
 tracker.Initialize()
 assert(tracker.GetSlots()[1].name == "Arcane Explosion", "existing tracker customization was overwritten")
-assert(tracker.GetSlots()[2].name == "Polymorph", "new Mage default was not appended")
-assert(tracker.GetSlots()[3] == nil, "migration added unrelated defaults to a customized tracker")
-assert(ApogeePartyHealthBars_S.charSv.trackerDefaultsVersion == 2)
+assert(tracker.GetSlots()[2] == nil, "defaults were added to a customized tracker")
+assert(ApogeePartyHealthBars_S.charSv.trackerDefaultsVersion == 1)
 
 assert(tracker.ResetClassDefaults())
 assert(tracker.GetSlots()[1].name == "Fireball")
 assert(tracker.GetSlots()[2].name == "Frostbolt")
 assert(tracker.GetSlots()[3].name == "Fire Blast")
-assert(tracker.GetSlots()[4].name == "Polymorph")
-assert(tracker.GetSlots()[5] == nil)
+assert(tracker.GetSlots()[4] == nil)
 
 print("PASS tracked-spell casting")

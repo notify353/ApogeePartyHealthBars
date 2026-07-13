@@ -24,10 +24,9 @@ ApogeePartyHealthBars_S = {
     sv = { spellTrackerEnabled = true, spellTrackerSoundsEnabled = true },
     charSv = { trackedSpells = {}, trackerDefaultsVersion = ApogeePartyHealthBars_C.TRACKER_DEFAULTS_VERSION }, castBtnSerial = 0,
 }
-for index, name in ipairs(spellNames) do
-    if index > ApogeePartyHealthBars_C.TRACKER_MAX_SLOTS then break end
-    ApogeePartyHealthBars_S.charSv.trackedSpells[index] = { name = name .. "(Rank 1)", enabled = true, soundKey = "none" }
-end
+ApogeePartyHealthBars_S.charSv.trackedSpells[1] = {
+    name = "Fireball(Rank 1)", enabled = true, soundKey = "none",
+}
 
 local secureButtons, visualButtons = {}, {}
 local function widget(shown)
@@ -111,8 +110,10 @@ tracker.Attach({ btn = playerBtn, targetBtn = targetBtn }, {
 tracker.Initialize()
 
 assert(tracker.GetSlotLane(1) == "player")
-for slot = 2, ApogeePartyHealthBars_C.TRACKER_MAX_SLOTS do
-    assert(tracker.GetSlotLane(slot) == "target", spellNames[slot] .. " was not classified as CC")
+assert(tracker.GetSlotLane(2) == nil, "automatic CC occupied a configured tracker slot")
+assert(tracker.GetDisplayCount() == 1 + #definitions, "not every known CC spell was displayed automatically")
+for displayIndex = 2, tracker.GetDisplayCount() do
+    assert(tracker.GetDisplayLane(displayIndex) == "target", "automatic CC used the wrong lane")
 end
 assert(tracker.GetHeight("player") == 22 and tracker.GetHeight("party1") == 0)
 assert(visualButtons[1].points[1][2] == playerBtn, "ordinary spell was not anchored to player lane")

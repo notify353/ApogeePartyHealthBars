@@ -8,10 +8,12 @@ local row, requestLayout, syncTicker
 local positionSecureOverlay, showSecureFrame, hideSecureFrame, setSecureMouseEnabled, deferSecureUpdate
 local icons = {}
 local resolved = {}
+local resolvedSlots = {}
 local previousStates = {}
 local lastSoundAt = {}
 local initialized = false
 local visibleCount = 0
+local MAX_DISPLAY_ICONS = C.TRACKER_MAX_SLOTS + #(C.CROWD_CONTROL_DEFINITIONS or {})
 local QUESTION_MARK_ICON = "Interface\\Icons\\INV_Misc_QuestionMark"
 
 local function GetRawSpellName(identifier)
@@ -113,30 +115,6 @@ local function SeedClassDefaults()
         end
     end
 
-    for version = seededVersion + 1, C.TRACKER_DEFAULTS_VERSION do
-        local additions = C.TRACKER_CLASS_DEFAULT_ADDITIONS
-            and C.TRACKER_CLASS_DEFAULT_ADDITIONS[version]
-        local classAdditions = additions and additions[classToken]
-        for _, spellName in ipairs(classAdditions or {}) do
-            local alreadyTracked = false
-            for slot = 1, C.TRACKER_MAX_SLOTS do
-                local entry = entries and entries[slot]
-                local baseName = entry and entry.name and entry.name:match("^%s*([^%(]+)")
-                if baseName and baseName:gsub("%s+$", "") == spellName then
-                    alreadyTracked = true
-                    break
-                end
-            end
-            if not alreadyTracked then
-                for slot = 1, C.TRACKER_MAX_SLOTS do
-                    if not entries[slot] then
-                        entries[slot] = { name = spellName, enabled = true, soundKey = "none" }
-                        break
-                    end
-                end
-            end
-        end
-    end
     S.charSv.trackerDefaultsVersion = C.TRACKER_DEFAULTS_VERSION
 end
 
@@ -161,8 +139,8 @@ local function GetSpellNameAndIcon(identifier)
 end
 
 local function BuildKnownSpellMap()
-    local byId, byName = {}, {}
-    if not GetNumSpellTabs or not GetSpellTabInfo then return byId, byName end
+    local byId, byName, knownList = {}, {}, {}
+    if not GetNumSpellTabs or not GetSpellTabInfo then return byId, byName, knownList end
     for tab = 1, GetNumSpellTabs() do
         local _, _, offset, count = GetSpellTabInfo(tab)
         if offset and count then
@@ -170,7 +148,8 @@ local function BuildKnownSpellMap()
                 local name, subName = GetSpellBookItemName(slot, BOOKTYPE_SPELL)
                 if name then
                     local castName = subName and subName ~= "" and (name .. "(" .. subName .. ")") or name
-                    byName[name] = { name = castName, baseName = name }
+                    local known = { name = castName, baseName = name }
+                    byName[name] = known
                     byName[castName] = byName[name]
                     if GetSpellBookItemInfo then
                         local r1, r2, r3 = GetSpellBookItemInfo(slot, BOOKTYPE_SPELL)
@@ -179,21 +158,41 @@ local function BuildKnownSpellMap()
                             byId[id] = { id = id, name = castName, baseName = name }
                             byName[name] = byId[id]
                             byName[castName] = byId[id]
+                            known = byId[id]
                         end
                     end
+                    knownList[#knownList + 1] = known
                 end
             end
         end
     end
-    return byId, byName
+    return byId, byName, knownList
+end
+
+local function BuildResolvedInfo(known, entry, slot)
+    local identifier = known.id or (entry and entry.id) or known.name
+    local name, icon, spellID = GetSpellNameAndIcon(identifier)
+    local resolvedName = name or known.baseName or known.name or (entry and entry.name)
+    local crowdControl = GetCrowdControlDefinition(resolvedName)
+    return {
+        id = spellID or known.id or (entry and entry.id),
+        name = resolvedName,
+        castName = known.name or name or (entry and entry.name),
+        icon = icon,
+        lane = crowdControl and "target" or "player",
+        crowdControl = crowdControl,
+        slot = slot,
+    }
 end
 
 local function ResolveEntries()
     wipe(resolved)
+    wipe(resolvedSlots)
     visibleCount = 0
     local entries = GetEntries()
     if not entries then return end
-    local byId, byName = BuildKnownSpellMap()
+    local byId, byName, knownList = BuildKnownSpellMap()
+    local configuredCrowdControl = {}
     for i = 1, C.TRACKER_MAX_SLOTS do
         local entry = entries[i]
         if entry and entry.enabled ~= false then
@@ -206,22 +205,27 @@ local function ResolveEntries()
                 end
             end
             if known then
-                local identifier = known.id or entry.id or known.name
-                local name, icon, spellID = GetSpellNameAndIcon(identifier)
-                local resolvedName = name or known.baseName or known.name or entry.name
-                local crowdControl = GetCrowdControlDefinition(resolvedName)
-                resolved[i] = {
-                    id = spellID or known.id or entry.id,
-                    name = resolvedName,
-                    castName = known.name or name or entry.name,
-                    icon = icon,
-                    lane = crowdControl and "target" or "player",
-                    crowdControl = crowdControl,
-                }
-                visibleCount = visibleCount + 1
+                local info = BuildResolvedInfo(known, entry, i)
+                resolvedSlots[i] = info
+                resolved[#resolved + 1] = info
+                if info.crowdControl then configuredCrowdControl[info.crowdControl] = true end
             end
         end
     end
+
+
+    local automaticByDefinition = {}
+    for _, known in ipairs(knownList) do
+        local crowdControl = GetCrowdControlDefinition(known.baseName or known.name)
+        if crowdControl then automaticByDefinition[crowdControl] = known end
+    end
+    for _, definition in ipairs(C.CROWD_CONTROL_DEFINITIONS or {}) do
+        local known = automaticByDefinition[definition]
+        if known and not configuredCrowdControl[definition] then
+            resolved[#resolved + 1] = BuildResolvedInfo(known, nil, nil)
+        end
+    end
+    visibleCount = #resolved
 end
 
 local function SetBorder(icon, color)
@@ -356,7 +360,7 @@ local function SyncSecureAction(icon, info)
 end
 
 function T.RefreshSecureActions()
-    for i = 1, C.TRACKER_MAX_SLOTS do
+    for i = 1, MAX_DISPLAY_ICONS do
         SyncSecureAction(icons[i], resolved[i])
     end
 end
@@ -548,7 +552,7 @@ end
 function T.Layout()
     if not row then return end
     local laneX = { player = 0, target = 0 }
-    for i = 1, C.TRACKER_MAX_SLOTS do
+    for i = 1, MAX_DISPLAY_ICONS do
         local icon = icons[i]
         local info = resolved[i]
         icon:ClearAllPoints()
@@ -571,7 +575,7 @@ function T.Refresh(suppressSound)
     local entries = GetEntries()
     local now = GetTime and GetTime() or 0
     local soundPlayed = false
-    for i = 1, C.TRACKER_MAX_SLOTS do
+    for i = 1, MAX_DISPLAY_ICONS do
         local icon, info = icons[i], resolved[i]
         if IsEnabled() and info then
             icon.texture:SetTexture(info.icon or QUESTION_MARK_ICON)
@@ -583,7 +587,7 @@ function T.Refresh(suppressSound)
             icon.trackerReason = reason
             if becameReady then
                 icon.pulseUntil = now + C.TRACKER_READY_PULSE
-                local entry = entries and entries[i]
+                local entry = entries and info.slot and entries[info.slot]
                 local canSound = not suppressSound and not soundPlayed and not gcdOnly and IsSoundsEnabled()
                     and entry and entry.soundKey and entry.soundKey ~= "none"
                     and now - (lastSoundAt[i] or 0) >= C.TRACKER_SOUND_DEBOUNCE
@@ -606,7 +610,7 @@ end
 
 function T.Tick()
     local now = GetTime and GetTime() or 0
-    for i = 1, C.TRACKER_MAX_SLOTS do
+    for i = 1, MAX_DISPLAY_ICONS do
         local icon = icons[i]
         if icon and icon.pulseUntil and icon.pulseUntil > now then
             local remaining = icon.pulseUntil - now
@@ -647,7 +651,7 @@ function T.Attach(playerRow, callbacks)
     hideSecureFrame = assert(callbacks and callbacks.HideSecureFrame)
     setSecureMouseEnabled = assert(callbacks and callbacks.SetSecureMouseEnabled)
     deferSecureUpdate = assert(callbacks and callbacks.DeferSecureUpdate)
-    for i = 1, C.TRACKER_MAX_SLOTS do icons[i] = CreateIcon(row.btn) end
+    for i = 1, MAX_DISPLAY_ICONS do icons[i] = CreateIcon(row.btn) end
 end
 
 function T.Initialize()
@@ -663,17 +667,20 @@ function T.GetSlotDisplay(slot)
     local entry = GetEntries() and GetEntries()[slot]
     if not entry then return nil, nil, false end
     local name, icon = GetSpellNameAndIcon(entry.id or entry.name)
-    return name or entry.name, icon, resolved[slot] ~= nil
+    return name or entry.name, icon, resolvedSlots[slot] ~= nil
 end
 
 -- Read-only diagnostics used by configuration and regression tests.
-function T.GetSlotLane(slot) return resolved[slot] and resolved[slot].lane or nil end
+function T.GetSlotLane(slot) return resolvedSlots[slot] and resolvedSlots[slot].lane or nil end
 function T.GetSlotState(slot)
-    local info = resolved[slot]
+    local info = resolvedSlots[slot]
     if not info then return nil, nil end
     local state, _, _, _, _, reason = Evaluate(info)
     return state, reason
 end
+
+function T.GetDisplayCount() return #resolved end
+function T.GetDisplayLane(index) return resolved[index] and resolved[index].lane or nil end
 
 function T.AssignSpell(slot, spellID, spellName)
     if InCombatLockdown and InCombatLockdown() then return false, "cannot edit tracked spells in combat." end

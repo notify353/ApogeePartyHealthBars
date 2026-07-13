@@ -596,6 +596,28 @@ function T.ClearSlot(slot)
     T.ResolveAndRefresh()
 end
 
+function T.ResetClassDefaults()
+    if InCombatLockdown and InCombatLockdown() then return false end
+    local entries = GetEntries()
+    if not entries then return false end
+    wipe(entries)
+
+    local _, classToken = UnitClass("player")
+    local defaults = C.TRACKER_CLASS_DEFAULTS[classToken]
+    for slot, spellName in ipairs(defaults or {}) do
+        if slot > C.TRACKER_MAX_SLOTS then break end
+        entries[slot] = {
+            name = spellName,
+            enabled = true,
+            soundKey = "none",
+        }
+    end
+    S.charSv.trackerDefaultsVersion = C.TRACKER_DEFAULTS_VERSION
+    S.selectedTrackerSlot = nil
+    T.ResolveAndRefresh()
+    return true
+end
+
 function T.SetSlotEnabled(slot, enabled)
     local entry = GetEntries() and GetEntries()[slot]
     if entry then entry.enabled = enabled and true or false end

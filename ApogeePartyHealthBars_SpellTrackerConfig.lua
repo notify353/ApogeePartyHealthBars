@@ -182,5 +182,12 @@ function SC.Build(parent, deps)
             sound = sound, preview = preview, up = up, down = down, clear = clear,
         }
     end
+
+    local reset = CreateSmallButton(tab, "Reset tracked spells", 140)
+    reset:SetPoint("TOPLEFT", topAnchor, "BOTTOMLEFT", 0, -6)
+    reset:SetScript("OnClick", function()
+        tracker.ResetClassDefaults()
+        SC.Refresh()
+    end)
     return tab
 end

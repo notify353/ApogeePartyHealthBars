@@ -128,4 +128,10 @@ assert(tracker.GetSlots()[1].name == "Arcane Explosion", "existing tracker custo
 assert(tracker.GetSlots()[2] == nil, "defaults were added to a customized tracker")
 assert(ApogeePartyHealthBars_S.charSv.trackerDefaultsVersion == 1)
 
+assert(tracker.ResetClassDefaults())
+assert(tracker.GetSlots()[1].name == "Fireball")
+assert(tracker.GetSlots()[2].name == "Frostbolt")
+assert(tracker.GetSlots()[3].name == "Fire Blast")
+assert(tracker.GetSlots()[4] == nil)
+
 print("PASS tracked-spell casting")

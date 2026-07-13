@@ -14,11 +14,24 @@ local initialized = false
 local visibleCount = 0
 local QUESTION_MARK_ICON = "Interface\\Icons\\INV_Misc_QuestionMark"
 
+local function GetRawSpellName(identifier)
+    if C_Spell and C_Spell.GetSpellInfo then
+        local info = C_Spell.GetSpellInfo(identifier)
+        if info then return info.name end
+    end
+    if GetSpellInfo then return GetSpellInfo(identifier) end
+    return nil
+end
+
 local function GetCrowdControlDefinition(spellName)
     if not spellName then return nil end
     local baseName = spellName:match("^%s*([^%(]+)") or spellName
     baseName = baseName:gsub("%s+$", "")
     for _, definition in ipairs(C.CROWD_CONTROL_DEFINITIONS or {}) do
+        for _, identitySpellId in ipairs(definition.identitySpellIds or {}) do
+            local localizedName = GetRawSpellName(identitySpellId)
+            if localizedName and baseName == localizedName then return definition end
+        end
         if baseName:match(definition.pattern) then return definition end
     end
     return nil
@@ -424,10 +437,9 @@ end
 
 local function Evaluate(info)
     local identifier = info.id or info.castName or info.name
-    if IsCurrent(identifier) then return "current", 0, 0, false, nil end
-
     local eligible, reason = EvaluateCrowdControlTarget(info)
     if not eligible then return "invalid", 0, 0, false, nil, reason end
+    if IsCurrent(identifier) then return "current", 0, 0, false, nil end
 
     local start, duration, enabled = GetCooldown(identifier)
     local currentCharges, maxCharges = GetCharges(identifier)

@@ -3,19 +3,29 @@ function wipe(value) for key in pairs(value or {}) do value[key] = nil end retur
 
 dofile("ApogeePartyHealthBars_Data.lua")
 local definitions = ApogeePartyHealthBars_C.CROWD_CONTROL_DEFINITIONS
-ApogeePartyHealthBars_C.TRACKER_MAX_SLOTS = 16
 ApogeePartyHealthBars_C.TRACKER_CLASS_DEFAULTS = {}
 
 local spellNames = { "Fireball" }
-for _, definition in ipairs(definitions) do spellNames[#spellNames + 1] = definition.canonical end
+local localizedByCanonical = {}
+for _, definition in ipairs(definitions) do
+    local localized = "Localized " .. definition.canonical
+    localizedByCanonical[definition.canonical] = localized
+    spellNames[#spellNames + 1] = localized
+end
 local spellById = {}
 for index, name in ipairs(spellNames) do spellById[1000 + index] = name end
+for _, definition in ipairs(definitions) do
+    for _, identitySpellId in ipairs(definition.identitySpellIds) do
+        spellById[identitySpellId] = localizedByCanonical[definition.canonical]
+    end
+end
 
 ApogeePartyHealthBars_S = {
     sv = { spellTrackerEnabled = true, spellTrackerSoundsEnabled = true },
     charSv = { trackedSpells = {} }, castBtnSerial = 0,
 }
 for index, name in ipairs(spellNames) do
+    if index > ApogeePartyHealthBars_C.TRACKER_MAX_SLOTS then break end
     ApogeePartyHealthBars_S.charSv.trackedSpells[index] = { name = name .. "(Rank 1)", enabled = true, soundKey = "none" }
 end
 
@@ -48,7 +58,7 @@ function CreateFrame(frameType, _, parent, template)
 end
 
 local target = { exists = true, dead = false, attackable = true, classification = "normal", creatureType = "Humanoid", combat = false }
-local inCombat, usable, noResource, inRange, cooldownDuration = false, true, false, 1, 0
+local inCombat, usable, noResource, inRange, cooldownDuration, currentSpell = false, true, false, 1, 0, false
 function InCombatLockdown() return inCombat end
 function UnitClass() return "Mage", "MAGE" end
 function GetNumSpellTabs() return 1 end
@@ -69,7 +79,7 @@ function SpellHasRange() return 1 end
 function IsSpellInRange() return inRange end
 function IsHarmfulSpell() return true end
 function IsHelpfulSpell() return false end
-function IsCurrentSpell() return false end
+function IsCurrentSpell() return currentSpell end
 function UnitExists(unit) return unit ~= "target" or target.exists end
 function UnitIsDeadOrGhost() return target.dead end
 function UnitCanAttack() return target.attackable end
@@ -101,33 +111,50 @@ tracker.Attach({ btn = playerBtn, targetBtn = targetBtn }, {
 tracker.Initialize()
 
 assert(tracker.GetSlotLane(1) == "player")
-for slot = 2, #spellNames do assert(tracker.GetSlotLane(slot) == "target", spellNames[slot] .. " was not classified as CC") end
+for slot = 2, ApogeePartyHealthBars_C.TRACKER_MAX_SLOTS do
+    assert(tracker.GetSlotLane(slot) == "target", spellNames[slot] .. " was not classified as CC")
+end
 assert(tracker.GetHeight("player") == 22 and tracker.GetHeight("party1") == 0)
 assert(visualButtons[1].points[1][2] == playerBtn, "ordinary spell was not anchored to player lane")
 assert(visualButtons[2].points[1][2] == targetBtn, "CC spell was not anchored to target lane")
 assert(visualButtons[2].points[1][4] == 0 and visualButtons[3].points[1][4] == 23, "target-lane order was not stable")
 assert(secureButtons[1].attributes.unit == nil)
-assert(secureButtons[2].attributes.unit == "target" and secureButtons[2].attributes.spell == "Polymorph(Rank 1)")
+assert(secureButtons[2].attributes.unit == "target" and secureButtons[2].attributes.spell == "Localized Polymorph(Rank 1)")
 
-local typedCases = {
-    { 2, "Beast", "ready" }, { 2, "Demon", "invalid" },
-    { 3, "Undead", "ready" }, { 3, "Humanoid", "invalid" },
-    { 4, "Humanoid", "ready" }, { 5, "Dragonkin", "ready" },
-    { 8, "Elemental", "ready" }, { 10, "Beast", "ready" },
-    { 12, "Humanoid", "ready" }, { 14, "Humanoid", "ready" },
-    { 15, "Demon", "ready" },
-}
-for _, case in ipairs(typedCases) do
-    target.creatureType = case[2]
-    local state = tracker.GetSlotState(case[1])
-    assert(state == case[3], spellNames[case[1]] .. " eligibility failed for " .. case[2])
+local function TrackCrowdControl(canonical)
+    local localized = localizedByCanonical[canonical]
+    ApogeePartyHealthBars_S.charSv.trackedSpells[2] = {
+        name = localized .. "(Rank 1)", enabled = true, soundKey = "none",
+    }
+    tracker.ResolveAndRefresh()
+    assert(tracker.GetSlotLane(2) == "target", canonical .. " failed localized CC recognition")
 end
 
+for _, definition in ipairs(definitions) do TrackCrowdControl(definition.canonical) end
+
+local typedCases = {
+    { "Polymorph", "Beast", "ready" }, { "Polymorph", "Critter", "ready" },
+    { "Polymorph", "Demon", "invalid" },
+    { "Shackle Undead", "Undead", "ready" }, { "Shackle Undead", "Humanoid", "invalid" },
+    { "Mind Control", "Humanoid", "ready" }, { "Hibernate", "Dragonkin", "ready" },
+    { "Banish", "Elemental", "ready" }, { "Scare Beast", "Beast", "ready" },
+    { "Sap", "Humanoid", "ready" }, { "Repentance", "Humanoid", "ready" },
+    { "Turn Evil", "Demon", "ready" },
+}
+for _, case in ipairs(typedCases) do
+    TrackCrowdControl(case[1])
+    target.creatureType = case[2]
+    local state = tracker.GetSlotState(2)
+    assert(state == case[3], case[1] .. " eligibility failed for " .. case[2])
+end
+
+TrackCrowdControl("Sap")
 target.creatureType = "Humanoid"
 target.combat = true
-local state, reason = tracker.GetSlotState(12)
+local state, reason = tracker.GetSlotState(2)
 assert(state == "invalid" and reason == "Target is in combat")
 target.combat = false
+TrackCrowdControl("Polymorph")
 target.exists = false
 state, reason = tracker.GetSlotState(2)
 assert(state == "invalid" and reason == "Select a hostile target")
@@ -139,6 +166,13 @@ target.attackable, target.classification = true, "worldboss"
 state, reason = tracker.GetSlotState(2)
 assert(state == "invalid" and reason == "World bosses cannot be crowd controlled")
 target.classification, target.creatureType = "normal", "Humanoid"
+
+currentSpell = true
+target.creatureType = "Demon"
+state, reason = tracker.GetSlotState(2)
+assert(state == "invalid", "current spell bypassed CC eligibility")
+currentSpell = false
+target.creatureType = "Humanoid"
 
 noResource = true
 assert(tracker.GetSlotState(2) == "resource")

@@ -22,7 +22,7 @@ end
 local secureButtons, visualButtons = {}, {}
 local function widget(shown)
     local value = { shown = shown ~= false, attributes = {}, scripts = {}, points = {}, mutations = 0 }
-    local noops = { "SetSize", "EnableMouse", "SetTexCoord", "SetAllPoints", "SetDrawEdge", "SetTextColor", "SetWidth", "SetHeight", "SetColorTexture", "SetAlpha", "SetTexture", "SetDesaturated", "SetCooldown", "Clear", "SetFrameStrata", "SetFrameLevel", "RegisterForClicks" }
+    local noops = { "SetSize", "EnableMouse", "SetTexCoord", "SetAllPoints", "SetDrawEdge", "SetText", "SetTextColor", "SetWidth", "SetHeight", "SetColorTexture", "SetAlpha", "SetTexture", "SetDesaturated", "SetCooldown", "Clear", "SetFrameStrata", "SetFrameLevel", "RegisterForClicks" }
     for _, name in ipairs(noops) do value[name] = function() end end
     function value:CreateTexture() return widget() end
     function value:CreateFontString() return widget() end

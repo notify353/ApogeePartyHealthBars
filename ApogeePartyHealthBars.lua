@@ -266,6 +266,11 @@ local unitFrames = ApogeePartyHealthBars_UnitFrames.Build({
     ApplyFlatBg = ApplyFlatBg,
     GetRowTotalHeight = GetRowTotalHeight,
     SyncVisualTicker = SyncVisualTicker,
+    PositionSecureOverlay = PositionSecureOverlay,
+    ShowSecureFrame = ShowSecureFrame,
+    HideSecureFrame = HideSecureFrame,
+    SetSecureMouseEnabled = SetSecureMouseEnabled,
+    DeferSecureUpdate = DeferSecureUpdate,
 })
 panel = unitFrames.panel
 rows = unitFrames.rows

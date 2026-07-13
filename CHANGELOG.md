@@ -6,6 +6,10 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Fixed
+
+- Made tracked-spell icons cast their assigned spell when clicked using combat-safe secure actions.
+
 ## [0.30.4] - 2026-07-12
 
 ### Fixed

@@ -9,7 +9,8 @@ local F = ApogeePartyHealthBars_UnitFrames
 function F.Build(D)
     for _, key in ipairs({
         "rows", "StyleReadableText", "ApplyFlatStatusBar", "ApplyFlatBg",
-        "GetRowTotalHeight", "SyncVisualTicker",
+        "GetRowTotalHeight", "SyncVisualTicker", "PositionSecureOverlay",
+        "ShowSecureFrame", "HideSecureFrame", "SetSecureMouseEnabled", "DeferSecureUpdate",
     }) do
         assert(D[key] ~= nil, "UnitFrames missing dependency: " .. key)
     end
@@ -272,6 +273,11 @@ function F.Build(D)
     T.Attach(rows[1], {
         RequestLayout = S.RequestLayoutUpdate,
         SyncTicker = D.SyncVisualTicker,
+        PositionSecureOverlay = D.PositionSecureOverlay,
+        ShowSecureFrame = D.ShowSecureFrame,
+        HideSecureFrame = D.HideSecureFrame,
+        SetSecureMouseEnabled = D.SetSecureMouseEnabled,
+        DeferSecureUpdate = D.DeferSecureUpdate,
     })
     H.Attach(rows, D.SyncVisualTicker)
     

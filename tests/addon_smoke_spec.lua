@@ -84,6 +84,10 @@ function UnitIsConnected() return true end
 function UnitIsPlayer(unit) return unit == "player" end
 function UnitIsDeadOrGhost() return false end
 function UnitCanAssist() return true end
+function UnitCanAttack() return true end
+function UnitClassification() return "normal" end
+function UnitCreatureType() return "Humanoid" end
+function UnitAffectingCombat() return false end
 function UnitIsEnemy() return false end
 function UnitIsUnit(a, b) return a == b end
 function UnitReaction() return 5 end
@@ -100,12 +104,28 @@ function UnitGetTotalAbsorbs() return 0 end
 function UnitAura() return nil end
 function UnitBuff() return nil end
 function UnitDebuff() return nil end
-function GetNumSpellTabs() return 0 end
+local smokeSpells = { [1] = { "Fireball", 9001 }, [2] = { "Polymorph", 9002 } }
+function GetNumSpellTabs() return 1 end
+function GetSpellTabInfo() return nil, nil, 0, #smokeSpells end
+function GetSpellBookItemName(slot) return smokeSpells[slot][1], "Rank 1" end
+function GetSpellBookItemInfo(slot) return "SPELL", smokeSpells[slot][2] end
 function GetTalentTabInfo(index) return "Tree" .. index, nil, index == 1 and 10 or 0 end
-function GetSpellInfo(value) return tostring(value), nil, 135274 end
+function GetSpellInfo(value)
+    for _, spell in ipairs(smokeSpells) do
+        if value == spell[2] then return spell[1], nil, 135274, nil, nil, nil, spell[2] end
+    end
+    return tostring(value):match("^([^%(]+)"), nil, 135274
+end
 function GetSpellTexture() return 135274 end
 function GetSpellBonusHealing() return 0 end
 function IsSpellInRange() return 1 end
+function SpellHasRange() return 1 end
+function IsHarmfulSpell() return true end
+function IsHelpfulSpell() return false end
+function IsCurrentSpell() return false end
+function IsUsableSpell() return true, false end
+function GetSpellCooldown() return 0, 0, 1 end
+function GetSpellCharges() return nil, nil end
 function GetTime() return 1 end
 function GetCursorPosition() return 100, 100 end
 function GetCursorInfo() return nil end
@@ -131,9 +151,14 @@ end
 
 local router = ApogeePartyHealthBars_EventRouter
 router.Dispatch("PLAYER_LOGIN")
+assert(ApogeePartyHealthBars_SpellTracker.AssignSpell(1, 9001, "Fireball"))
+assert(ApogeePartyHealthBars_SpellTracker.AssignSpell(2, 9002, "Polymorph"))
+assert(ApogeePartyHealthBars_SpellTracker.GetSlotLane(1) == "player", "ordinary tracker spell did not use player lane")
+assert(ApogeePartyHealthBars_SpellTracker.GetSlotLane(2) == "target", "crowd-control spell did not use target lane")
 router.Dispatch("PLAYER_ENTERING_WORLD")
 router.Dispatch("SPELLS_CHANGED")
 router.Dispatch("PLAYER_TARGET_CHANGED")
+router.Dispatch("UNIT_FLAGS", "target")
 router.Dispatch("UNIT_HEALTH", "player")
 router.Dispatch("UNIT_AURA", "player")
 router.Dispatch("UNIT_POWER_UPDATE", "player")

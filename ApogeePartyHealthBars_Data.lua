@@ -44,6 +44,24 @@ ApogeePartyHealthBars_C = {
     TRACKER_CLASS_DEFAULTS = {
         MAGE = { "Fireball", "Frostbolt", "Fire Blast" },
     },
+    -- Targeted crowd-control spells use the target tracker lane and conservative
+    -- client-visible eligibility checks. Patterns match every learned rank.
+    CROWD_CONTROL_DEFINITIONS = {
+        { canonical = "Polymorph",          pattern = "^Polymorph",          creatureTypes = { Beast = true, Humanoid = true }, creatureLabel = "a Beast or Humanoid" },
+        { canonical = "Shackle Undead",     pattern = "^Shackle Undead$",    creatureTypes = { Undead = true }, creatureLabel = "an Undead" },
+        { canonical = "Mind Control",       pattern = "^Mind Control$",      creatureTypes = { Humanoid = true }, creatureLabel = "a Humanoid" },
+        { canonical = "Hibernate",          pattern = "^Hibernate$",         creatureTypes = { Beast = true, Dragonkin = true }, creatureLabel = "a Beast or Dragonkin" },
+        { canonical = "Cyclone",            pattern = "^Cyclone$" },
+        { canonical = "Entangling Roots",   pattern = "^Entangling Roots$" },
+        { canonical = "Banish",             pattern = "^Banish$",            creatureTypes = { Demon = true, Elemental = true }, creatureLabel = "a Demon or Elemental" },
+        { canonical = "Fear",               pattern = "^Fear$" },
+        { canonical = "Scare Beast",        pattern = "^Scare Beast$",       creatureTypes = { Beast = true }, creatureLabel = "a Beast" },
+        { canonical = "Wyvern Sting",       pattern = "^Wyvern Sting$" },
+        { canonical = "Sap",                pattern = "^Sap$",               creatureTypes = { Humanoid = true }, creatureLabel = "a Humanoid", requiresOutOfCombat = true },
+        { canonical = "Blind",              pattern = "^Blind$" },
+        { canonical = "Repentance",         pattern = "^Repentance$",        creatureTypes = { Humanoid = true }, creatureLabel = "a Humanoid" },
+        { canonical = "Turn Evil",          pattern = "^Turn Evil$",         creatureTypes = { Demon = true, Undead = true }, creatureLabel = "a Demon or Undead" },
+    },
     DEFAULT_ANCHOR       = "RIGHT",
     DEFAULT_REL          = "RIGHT",
     DEFAULT_X            = -20,

@@ -95,6 +95,7 @@ function R.Register(eventRouter, deps)
     
         elseif event == "PLAYER_REGEN_ENABLED" then
             F.FlushDeferredUpdates()
+            T.RefreshSecureActions()
             H.Refresh()
             if D.GetConfigUI().RefreshMacroPanel then D.GetConfigUI().RefreshMacroPanel() end
             D.ForceRefresh()

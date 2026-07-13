@@ -30,6 +30,8 @@ jobs:
         run: lua5.1 tests/secure_frames_spec.lua
       - name: Validate clickable buff reminders
         run: lua5.1 tests/buff_icon_clickability_spec.lua
+      - name: Validate tracked-spell casting
+        run: lua5.1 tests/spell_tracker_casting_spec.lua
       - name: Validate unit display target path
         run: lua5.1 tests/unit_display_spec.lua
       - name: Validate party buff definitions

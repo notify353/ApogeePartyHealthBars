@@ -2,7 +2,7 @@ unpack = unpack or table.unpack
 function wipe(value) for key in pairs(value or {}) do value[key] = nil end return value end
 
 ApogeePartyHealthBars_C = {
-    TRACKER_MAX_SLOTS = 1,
+    TRACKER_MAX_SLOTS = 8,
     TRACKER_ICON_SIZE = 20,
     TRACKER_ICON_GAP = 3,
     TRACKER_TOP_GAP = 2,

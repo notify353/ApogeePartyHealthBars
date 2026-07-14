@@ -66,7 +66,13 @@ end
 
 UIParent = widget(); Minimap = widget(); MinimapCluster = widget(); GameTooltip = widget()
 SpellBookFrame = widget(); SpellBookFrame:Hide()
-function CreateFrame() local frame = widget(); frames[#frames + 1] = frame; return frame end
+function CreateFrame(_, name, _, template)
+    local frame = widget()
+    frame.template = template
+    frames[#frames + 1] = frame
+    if name then _G[name] = frame end
+    return frame
+end
 
 Enum = { PowerType = { Mana = 0 }, SpellBookSpellBank = { Player = 0, Pet = 1 } }
 C_EventUtils = { IsEventValid = function() return true end }
@@ -130,6 +136,7 @@ function GetTime() return 1 end
 function GetCursorPosition() return 100, 100 end
 function GetCursorInfo() return nil end
 function IsShiftKeyDown() return false end
+function GetMouseFocus() return nil end
 function CombatLogGetCurrentEventInfo() return 0, "SPELL_DAMAGE" end
 function GetNumMacros() return 0, 0 end
 function GetMacroInfo() return nil end
@@ -140,9 +147,14 @@ function CreateMacro() return 121 end
 function EditMacro(index) return index end
 function hooksecurefunc() end
 local spellbookOpenCount = 0
-function ToggleSpellBook()
+local directSpellbookToggleCount = 0
+SpellbookMicroButton = widget()
+function SpellbookMicroButton:Click()
     spellbookOpenCount = spellbookOpenCount + 1
     SpellBookFrame:Show()
+end
+function ToggleSpellBook()
+    directSpellbookToggleCount = directSpellbookToggleCount + 1
 end
 
 for line in io.lines("ApogeePartyHealthBars.toc") do
@@ -181,13 +193,38 @@ router.Dispatch("UNIT_THREAT_SITUATION_UPDATE")
 router.Dispatch("PLAYER_LEVEL_UP")
 router.Dispatch("PLAYER_TALENT_UPDATE")
 
-ApogeePartyHealthBars_ConfigController.SetMode(true)
+local minimapButton = ApogeePartyHealthBarsMinimapButton
+assert(minimapButton and minimapButton.template == "InsecureActionButtonTemplate",
+    "minimap button did not use the out-of-combat action template")
+assert(minimapButton.scripts.OnClick == nil,
+    "add-on replaced or extended the action template's protected OnClick handler")
+assert(type(minimapButton.scripts.PreClick) == "function"
+        and type(minimapButton.scripts.PostClick) == "function",
+    "minimap action phases were not configured")
+local function ClickMinimapButton()
+    local preClick = minimapButton.scripts.PreClick
+    if preClick then preClick(minimapButton, "LeftButton") end
+    local clickTarget = minimapButton:GetAttribute("clickbutton1")
+    if minimapButton:GetAttribute("type1") == "click" and clickTarget then
+        clickTarget:Click("LeftButton")
+    end
+    local postClick = minimapButton.scripts.PostClick
+    if postClick then postClick(minimapButton, "LeftButton") end
+end
+
+ClickMinimapButton()
+assert(ApogeePartyHealthBars_S.configMode, "minimap click did not open settings")
 assert(SpellBookFrame:IsShown(), "opening settings did not open the spellbook")
 assert(spellbookOpenCount == 1, "spellbook did not open exactly once")
+assert(directSpellbookToggleCount == 0, "add-on called ToggleSpellBook directly")
 ApogeePartyHealthBars_ConfigController.SetMode(false)
-ApogeePartyHealthBars_ConfigController.SetMode(true)
-assert(spellbookOpenCount == 1, "opening settings toggled an already-open spellbook closed")
-ApogeePartyHealthBars_ConfigController.SetMode(false)
+ClickMinimapButton()
+assert(SpellBookFrame:IsShown() and spellbookOpenCount == 1,
+    "opening settings toggled an already-open spellbook closed")
+router.Dispatch("PLAYER_REGEN_DISABLED")
+assert(not ApogeePartyHealthBars_S.configMode, "combat did not close add-on settings")
+assert(SpellBookFrame:IsShown(), "combat settings cleanup hid the protected spellbook")
+SpellBookFrame:Hide()
 
 ApogeePartyHealthBars_S.configMode = true
 for _, key in ipairs({ "general", "bindings", "spells", "macros" }) do
@@ -206,9 +243,39 @@ end
 assert(type(ApogeePartyHealthBars_S.sv) == "table", "saved variables did not initialize")
 assert(ApogeePartyHealthBars_S.sv.clickableBuffIcons == true, "clickable buff icons should default on")
 assert(ApogeePartyHealthBars_S.sv.spellTrackerEnabled == true, "player spell tracker should default on")
-local existingPreferences = { spellTrackerEnabled = false }
+assert(ApogeePartyHealthBars_S.sv.lowHealthSoundEnabled == nil, "retired low-health checkbox state persisted")
+assert(ApogeePartyHealthBars_S.sv.lowHealthSoundKey == "alarm_soft", "low-health sound choice should default soft")
+assert(ApogeePartyHealthBars_S.sv.lowHealthThreshold == 50, "low-health threshold should default to 50%")
+local existingPreferences = {
+    schemaVersion = 3,
+    spellTrackerEnabled = false,
+    lowHealthSoundKey = "alarm_bell",
+    lowHealthThreshold = 65,
+}
 ApogeePartyHealthBars_Effects.InitializeSavedVariables(existingPreferences, {})
 assert(existingPreferences.spellTrackerEnabled == false, "saved tracker preference was overwritten")
+assert(existingPreferences.lowHealthSoundKey == "alarm_bell", "saved low-health sound choice was overwritten")
+assert(existingPreferences.lowHealthThreshold == 65, "saved low-health threshold was overwritten")
+local legacyPreferences = {
+    schemaVersion = 2,
+    lowHealthSoundEnabled = false,
+    lowHealthSoundKey = "alarm_bell",
+}
+ApogeePartyHealthBars_Effects.InitializeSavedVariables(legacyPreferences, {})
+assert(legacyPreferences.schemaVersion == 3, "low-health setting migration did not advance the schema")
+assert(legacyPreferences.lowHealthSoundEnabled == nil, "retired low-health checkbox was not removed")
+assert(legacyPreferences.lowHealthSoundKey == "none",
+    "disabled low-health checkbox was not migrated to the None sound")
+local legacyEnabledPreferences = {
+    schemaVersion = 2,
+    lowHealthSoundEnabled = true,
+    lowHealthSoundKey = "alarm_high",
+}
+ApogeePartyHealthBars_Effects.InitializeSavedVariables(legacyEnabledPreferences, {})
+assert(legacyEnabledPreferences.lowHealthSoundEnabled == nil,
+    "enabled legacy low-health checkbox was not removed")
+assert(legacyEnabledPreferences.lowHealthSoundKey == "alarm_high",
+    "enabled legacy low-health sound choice was not preserved")
 assert(ApogeePartyHealthBars_MinimapController.IsCreated(), "minimap controller did not create")
 for _, message in ipairs(messages) do
     assert(not message:find("error", 1, true), "captured runtime failure: " .. message)

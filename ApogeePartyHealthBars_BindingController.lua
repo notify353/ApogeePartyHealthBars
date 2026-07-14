@@ -55,27 +55,41 @@ local function ClearBinding(slotKey)
     D.ForceRefresh()
 end
 
-local function HookSpellButton(btn)
-    if not btn or btn._PHSpellHooked then return false end
-    btn._PHSpellHooked = true
-    btn:HookScript("PreClick", function(self)
-        if not S.configMode or (not S.selectedBindingKey and not S.selectedTrackerSlot)
-            or not IsShiftKeyDown() then return end
-        local spellID, spellName = D.GetSpellFromSpellButton(self)
-        if spellID or spellName then
-            if S.selectedTrackerSlot then
-                local ok, message = T.AssignSpell(S.selectedTrackerSlot, spellID, spellName)
-                if message then D.Print(message) end
-                if ok then
-                    D.SyncVisualTicker()
-                    local ui = D.GetConfigUI(); if ui and ui.RefreshSpellPanel then ui.RefreshSpellPanel() end
-                end
-            else
-                AssignBinding(spellID or spellName, spellName)
-            end
-        else
-            D.Print("could not read that spell — try another click.")
+local function AssignFromSpellButton(spellButton)
+    if not S.configMode or (not S.selectedBindingKey and not S.selectedTrackerSlot)
+        or not IsShiftKeyDown() or InCombatLockdown() then
+        return false
+    end
+
+    local spellID, spellName = D.GetSpellFromSpellButton(spellButton)
+    if not spellID and not spellName then
+        D.Print("could not read that spell — try another click.")
+        return false
+    end
+
+    if S.selectedTrackerSlot then
+        local ok, message = T.AssignSpell(S.selectedTrackerSlot, spellID, spellName)
+        if message then D.Print(message) end
+        if ok then
+            D.SyncVisualTicker()
+            local ui = D.GetConfigUI()
+            if ui and ui.RefreshSpellPanel then ui.RefreshSpellPanel() end
         end
+        return ok
+    end
+
+    AssignBinding(spellID or spellName, spellName)
+    return true
+end
+
+local function HookSpellButton(button)
+    if not button or button._PHSpellHooked then return false end
+    button._PHSpellHooked = true
+    -- HookScript is a secure post-hook: Blizzard finishes its protected click
+    -- handler before this callback observes a Shift-click. Never use PreClick
+    -- or replace the Spellbook button's OnClick script.
+    button:HookScript("OnClick", function(self)
+        AssignFromSpellButton(self)
     end)
     return true
 end
@@ -95,18 +109,6 @@ local function HookSpellbook()
     return foundButton
 end
 
-local function OpenSpellbook()
-    local alreadyOpen = SpellBookFrame and SpellBookFrame.IsShown and SpellBookFrame:IsShown()
-    if not alreadyOpen and ToggleSpellBook then
-        ToggleSpellBook(BOOKTYPE_SPELL)
-    elseif not alreadyOpen and SpellBookFrame and ShowUIPanel then
-        ShowUIPanel(SpellBookFrame)
-    end
-    HookSpellbook()
-    return SpellBookFrame and SpellBookFrame.IsShown and SpellBookFrame:IsShown() or false
-end
-
 function B.Initialize(deps) D = deps end
 B.ClearBinding = ClearBinding
 B.HookSpellbook = HookSpellbook
-B.OpenSpellbook = OpenSpellbook

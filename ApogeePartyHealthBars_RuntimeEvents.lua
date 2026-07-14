@@ -28,6 +28,7 @@ function R.Register(eventRouter, deps)
     
     for _, event in ipairs({
         "SPELLS_CHANGED",
+        "ADDON_LOADED",
         "UNIT_ABSORB_AMOUNT_CHANGED", "UNIT_HEAL_PREDICTION", "UNIT_POWER_UPDATE",
         "UNIT_POWER_FREQUENT", "UNIT_MAXPOWER", "UNIT_DISPLAYPOWER",
         "UPDATE_SHAPESHIFT_FORM", "UNIT_TARGET", "UNIT_CONNECTION",
@@ -87,7 +88,12 @@ function R.Register(eventRouter, deps)
             D.EnsureMinimapButton()
             D.SeedShieldTrackerFromAuras()
             D.ForceRefresh()
-    
+
+        elseif event == "ADDON_LOADED" then
+            if unit == "Blizzard_UIPanels_Game" or unit == "Blizzard_SpellBook" then
+                D.HookSpellbook()
+            end
+
         elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
             M.OnCombatLogEvent()
             if D.IsShieldEnabled() then

@@ -1,6 +1,6 @@
 -- Constants and mutable state (separate file — Lua main-chunk 200 local limit).
 ApogeePartyHealthBars_C = {
-    SAVED_VARIABLES_VERSION = 2,
+    SAVED_VARIABLES_VERSION = 3,
     ADDON_PREFIX         = "|cffFFD700Party Health:|r",
     FRAME_W              = 200,
     ROW_H                = 26,
@@ -40,6 +40,13 @@ ApogeePartyHealthBars_C = {
     TRACKER_TOP_GAP      = 2,
     TRACKER_READY_PULSE  = 0.65,
     TRACKER_SOUND_DEBOUNCE = 2.0,
+    LOW_HEALTH_DEFAULT_THRESHOLD = 50,
+    LOW_HEALTH_MIN_THRESHOLD = 10,
+    LOW_HEALTH_MAX_THRESHOLD = 90,
+    LOW_HEALTH_THRESHOLD_STEP = 5,
+    LOW_HEALTH_REARM_MARGIN = 10,
+    LOW_HEALTH_SOUND_DEBOUNCE = 2.0,
+    LOW_HEALTH_DEFAULT_SOUND = "alarm_soft",
     TRACKER_DEFAULTS_VERSION = 1,
     TRACKER_CLASS_DEFAULTS = {
         MAGE = { "Fireball", "Frostbolt", "Fire Blast" },

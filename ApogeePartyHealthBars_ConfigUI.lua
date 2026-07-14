@@ -130,6 +130,7 @@ local function IsGeneralRowVisible(svKey)
 end
 
 local function SetConfigTab(tabName)
+    UIH.CloseActiveDropdown()
     if not tabs[tabName] then tabName = "general" end
     S.configTab = tabName
     for _, key in ipairs(tabOrder) do
@@ -173,6 +174,27 @@ local function LayoutGeneralTab()
                     if option.key == currentKey then currentLabel = option.label; break end
                 end
                 row.frame.value.label:SetText(currentLabel .. "  |cff777777(click to change)|r")
+            elseif row.svKey == "lowHealthSoundKey" then
+                local soundKey = D.HealthAlerts.GetSoundKey()
+                row.frame.value:SetSelectedKey(soundKey)
+                UIH.SetButtonEnabled(row.frame.preview, soundKey ~= "none")
+            elseif row.svKey == "lowHealthThreshold" then
+                local threshold = D.HealthAlerts.GetThreshold()
+                row.frame.value:SetText(threshold .. "%")
+
+                local canDecrease = threshold > C.LOW_HEALTH_MIN_THRESHOLD
+                if canDecrease then row.frame.decrease:Enable() else row.frame.decrease:Disable() end
+                row.frame.decrease.label:SetTextColor(
+                    canDecrease and 1 or 0.45,
+                    canDecrease and 0.82 or 0.45,
+                    canDecrease and 0 or 0.45)
+
+                local canIncrease = threshold < C.LOW_HEALTH_MAX_THRESHOLD
+                if canIncrease then row.frame.increase:Enable() else row.frame.increase:Disable() end
+                row.frame.increase.label:SetTextColor(
+                    canIncrease and 1 or 0.45,
+                    canIncrease and 0.82 or 0.45,
+                    canIncrease and 0 or 0.45)
             else
                 SetCheckboxChecked(row.frame.check, D.IsSavedFeatureEnabled(row.svKey))
             end
@@ -242,8 +264,8 @@ local function RefreshBindPanel()
         end
     end
     bindHintFS:SetText(S.selectedBindingKey
-        and "|cff00ff00Selected.|r Shift-click a spell in your spellbook."
-        or  "Select a row, then shift-click a spell. Right-click row to clear.")
+        and "|cff00ff00Selected.|r Shift-click a spell in the open Spellbook."
+        or  "Select a row, then Shift-click a spell in the open Spellbook. Right-click to clear.")
 end
 
 local function RefreshConfigPanel()
@@ -389,8 +411,74 @@ local function BuildGeneralTab(parent)
         generalRows[#generalRows + 1] = { frame = frame, svKey = "selfBuffPreference" }
     end
 
+    local function addLowHealthSoundPreference()
+        local frame = CreateFrame("Frame", nil, generalScrollChild)
+        frame:SetSize(C.CONFIG_CONTENT_W, C.CONFIG_CHECK_ROW_H)
+        local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+        label:SetPoint("LEFT", frame, "LEFT", 2, 0)
+        label:SetWidth(125)
+        label:SetJustifyH("LEFT")
+        label:SetText("Low-health sound")
+
+        local preview = UIH.CreateButton(frame, "Play", 48, C.CONFIG_CHECK_ROW_H)
+        preview:SetPoint("RIGHT", frame, "RIGHT", 0, 0)
+        preview:SetScript("OnClick", D.HealthAlerts.PreviewSound)
+
+        local value = UIH.CreateDropdown(frame, 213, C.CONFIG_CHECK_ROW_H)
+        value:SetOptions(D.Sounds.GetOptions(true))
+        value:SetPoint("LEFT", label, "RIGHT", 4, 0)
+        value:SetPoint("RIGHT", preview, "LEFT", -4, 0)
+        value:SetSelectionCallback(function(soundKey)
+            if refreshing then return end
+            D.HealthAlerts.SetSoundKey(soundKey)
+            RefreshConfigPanel()
+        end)
+
+        frame.value = value
+        frame.preview = preview
+        generalRows[#generalRows + 1] = { frame = frame, svKey = "lowHealthSoundKey" }
+    end
+
+    local function addLowHealthThresholdPreference()
+        local frame = CreateFrame("Frame", nil, generalScrollChild)
+        frame:SetSize(C.CONFIG_CONTENT_W, C.CONFIG_CHECK_ROW_H)
+        local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+        label:SetPoint("LEFT", frame, "LEFT", 2, 0)
+        label:SetWidth(125)
+        label:SetJustifyH("LEFT")
+        label:SetText("Alert below")
+
+        local decrease = UIH.CreateButton(frame, "-5%", 52, C.CONFIG_CHECK_ROW_H)
+        decrease:SetPoint("LEFT", label, "RIGHT", 4, 0)
+        decrease:SetScript("OnClick", function()
+            if refreshing then return end
+            D.HealthAlerts.AdjustThreshold(-1)
+            RefreshConfigPanel()
+        end)
+
+        local value = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+        value:SetPoint("LEFT", decrease, "RIGHT", 4, 0)
+        value:SetWidth(58)
+        value:SetJustifyH("CENTER")
+
+        local increase = UIH.CreateButton(frame, "+5%", 52, C.CONFIG_CHECK_ROW_H)
+        increase:SetPoint("LEFT", value, "RIGHT", 4, 0)
+        increase:SetScript("OnClick", function()
+            if refreshing then return end
+            D.HealthAlerts.AdjustThreshold(1)
+            RefreshConfigPanel()
+        end)
+
+        frame.decrease = decrease
+        frame.value = value
+        frame.increase = increase
+        generalRows[#generalRows + 1] = { frame = frame, svKey = "lowHealthThreshold" }
+    end
+
     addCheckbox("Enable addon", "enabled")
     addCheckbox("Show all 5 slots when solo", "showAllSlots")
+    addLowHealthThresholdPreference()
+    addLowHealthSoundPreference()
     addCheckbox("Missing party buff icons", "partyBuffEnabled")
     addCheckbox("Missing self-buff or aura icon", "selfBuffEnabled")
     addSelfBuffPreference()
@@ -520,6 +608,7 @@ function UI.Build(deps)
         RefreshConfigPanel()
     end
     UI.Hide = function()
+        UIH.CloseActiveDropdown()
         configPanel:Hide()
     end
 

@@ -97,8 +97,33 @@ combatLog = { 0, "UNIT_DIED", false, nil, nil, nil, nil, "Creature-1" }
 markers.OnCombatLogEvent()
 assert(skull.shown and not cross.shown and not moon.shown, "only the released skull marker should return after its mob died")
 
+skull.scripts.OnClick()
+assert(markers.GetAssignedGuid(8) == "Creature-4", "skull was not assigned to the current target")
+combatLog = { 0, "UNIT_DIED", false, nil, nil, nil, nil, "Creature-4" }
+markers.OnCombatLogEvent()
+assert(markers.GetAssignedGuid(8) == nil,
+    "death cleanup re-added the marker from the still-targeted mob")
+
+targetDead = true
+markers.Refresh()
+assert(markers.GetAssignedGuid(8) == nil, "a dead target repopulated its marker assignment")
+
+targetDead = false
+currentMarker = nil
+targetGuid = "Creature-5"
+markers.Refresh()
+assert(skull.shown and not cross.shown and not moon.shown,
+    "the marker released from the targeted corpse did not return for the next target")
+
+skull.scripts.OnClick()
+assert(markers.GetAssignedGuid(8) == "Creature-5", "skull was not tracked for defensive cleanup")
+targetDead = true
+markers.Refresh()
+assert(markers.GetAssignedGuid(8) == nil,
+    "refreshing a dead marked target did not defensively clear its assignment")
+
 targetExists = false
 skull.scripts.OnClick()
-assert(#applied == 3, "marker was applied without a target")
+assert(#applied == 5, "marker was applied without a target")
 
 print("PASS raid markers")

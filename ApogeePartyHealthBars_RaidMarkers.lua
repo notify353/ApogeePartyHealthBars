@@ -72,33 +72,47 @@ function M.Attach(playerRow)
     M.Refresh()
 end
 
-function M.Refresh()
+local function ClearGuidAssignments(guid)
+    if not guid then return end
+    for index, assignedGuid in pairs(assignedGuids) do
+        if assignedGuid == guid then assignedGuids[index] = nil end
+    end
+end
+
+local function RefreshInternal(ignoredGuid)
     local targetExists = UnitExists and UnitExists("target")
     local guid = targetExists and UnitGUID and UnitGUID("target")
     local currentMarker = targetExists and GetRaidTargetIndex and GetRaidTargetIndex("target")
+    local targetDead = targetExists and UnitIsDeadOrGhost and UnitIsDeadOrGhost("target")
 
     if guid then
-        for index, assignedGuid in pairs(assignedGuids) do
-            if assignedGuid == guid and currentMarker ~= index then assignedGuids[index] = nil end
+        if targetDead then
+            ClearGuidAssignments(guid)
+        elseif guid ~= ignoredGuid then
+            for index, assignedGuid in pairs(assignedGuids) do
+                if assignedGuid == guid and currentMarker ~= index then assignedGuids[index] = nil end
+            end
+            if supportedMarkers[currentMarker] then assignedGuids[currentMarker] = guid end
         end
-        if supportedMarkers[currentMarker] then assignedGuids[currentMarker] = guid end
     end
 
     local visible = targetExists
         and UnitCanAttack and UnitCanAttack("player", "target")
-        and not (UnitIsDeadOrGhost and UnitIsDeadOrGhost("target"))
+        and not targetDead
         and not currentMarker
     for position, definition in ipairs(MARKERS) do
         buttons[position]:SetShown((visible and not assignedGuids[definition.index]) and true or false)
     end
 end
 
+function M.Refresh()
+    RefreshInternal()
+end
+
 function M.ReleaseGuid(guid)
     if not guid then return end
-    for index, assignedGuid in pairs(assignedGuids) do
-        if assignedGuid == guid then assignedGuids[index] = nil end
-    end
-    M.Refresh()
+    ClearGuidAssignments(guid)
+    RefreshInternal(guid)
 end
 
 function M.OnCombatLogEvent()

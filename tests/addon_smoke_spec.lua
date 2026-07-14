@@ -9,7 +9,7 @@ local frames = {}
 local function widget()
     local object = {
         scripts = {}, shown = true, attributes = {}, pointWrites = 0,
-        mutations = 0, mouseEnabled = false,
+        mutations = 0, mouseEnabled = false, alpha = 1,
     }
     local methods = {
         SetScript = function(self, name, callback) self.scripts[name] = callback end,
@@ -58,7 +58,8 @@ local function widget()
         GetWidth = function() return 200 end, GetHeight = function() return 26 end,
         GetMinMaxValues = function() return 0, 100 end,
         GetValue = function() return 50 end,
-        GetAlpha = function() return 1 end,
+        GetAlpha = function(self) return self.alpha end,
+        SetAlpha = function(self, value) self.alpha = value end,
         GetChecked = function() return false end,
     }
     local noopMethods = {
@@ -70,7 +71,7 @@ local function widget()
         "SetStatusBarTexture", "SetStatusBarColor", "SetMinMaxValues", "SetValue",
         "SetFontObject", "SetFont", "SetText", "SetTextColor", "SetJustifyH",
         "SetJustifyV", "SetWidth", "SetHeight", "SetWordWrap", "SetMaxLines",
-        "SetAlpha", "SetVertexColor", "SetColorTexture", "SetScrollChild",
+        "SetVertexColor", "SetColorTexture", "SetScrollChild",
         "SetVerticalScroll", "SetMultiLine", "SetAutoFocus", "SetTextInsets",
         "SetFocus", "ClearFocus", "HighlightText", "SetChecked", "Enable", "Disable",
         "SetDesaturated", "SetCooldown", "Clear", "SetDuration", "SetFromAlpha", "SetToAlpha", "SetOrder",
@@ -89,6 +90,7 @@ function CreateFrame(_, name, _, template)
     if name then _G[name] = frame end
     return frame
 end
+function GetMouseFoci() return {} end
 
 Enum = { PowerType = { Mana = 0 }, SpellBookSpellBank = { Player = 0, Pet = 1 } }
 C_EventUtils = { IsEventValid = function() return true end }
@@ -321,6 +323,7 @@ ApogeePartyHealthBars_S.configMode = false
 RunFrameUpdates()
 
 assert(type(ApogeePartyHealthBars_S.sv) == "table", "saved variables did not initialize")
+assert(ApogeePartyHealthBars_S.sv.combatUIAutoHide == false, "combat UI fade should default off")
 assert(ApogeePartyHealthBars_S.sv.clickableBuffIcons == true, "clickable buff icons should default on")
 assert(ApogeePartyHealthBars_S.sv.spellTrackerEnabled == true, "player spell tracker should default on")
 assert(ApogeePartyHealthBars_S.sv.lowHealthSoundEnabled == nil, "retired low-health checkbox state persisted")
@@ -328,11 +331,13 @@ assert(ApogeePartyHealthBars_S.sv.lowHealthSoundKey == "alarm_soft", "low-health
 assert(ApogeePartyHealthBars_S.sv.lowHealthThreshold == 50, "low-health threshold should default to 50%")
 local existingPreferences = {
     schemaVersion = 3,
+    combatUIAutoHide = true,
     spellTrackerEnabled = false,
     lowHealthSoundKey = "alarm_bell",
     lowHealthThreshold = 65,
 }
 ApogeePartyHealthBars_Effects.InitializeSavedVariables(existingPreferences, {})
+assert(existingPreferences.combatUIAutoHide == true, "saved combat UI fade preference was overwritten")
 assert(existingPreferences.spellTrackerEnabled == false, "saved tracker preference was overwritten")
 assert(existingPreferences.lowHealthSoundKey == "alarm_bell", "saved low-health sound choice was overwritten")
 assert(existingPreferences.lowHealthThreshold == 65, "saved low-health threshold was overwritten")

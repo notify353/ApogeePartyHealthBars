@@ -29,7 +29,49 @@ Left-click the minimap button to open settings; the Spellbook opens alongside it
 
 ## Develop
 
-From an elevated PowerShell, install Lua for Windows 5.1.5. Restart PowerShell so the updated `PATH` is available, then run the complete local validation suite:
+### Set up a development checkout on Windows
+
+The repository is the development copy; cloning or downloading it does not automatically place it in WoW's add-on directory. Keep the repository outside the WoW installation and create a Windows directory junction so WoW loads the same files you edit.
+
+1. Install the Anniversary client and [Git](https://git-scm.com/download/win).
+2. Clone the repository to a normal development directory:
+
+   ```powershell
+   New-Item -ItemType Directory -Path C:\Dev\WoW -Force
+   Set-Location C:\Dev\WoW
+   git clone https://github.com/notify353/ApogeePartyHealthBars.git
+   Set-Location ApogeePartyHealthBars
+   ```
+
+3. Close WoW. Open PowerShell as Administrator and create the junction below. Change `$Repo` or `$WoW` first if either location is different on your computer.
+
+   ```powershell
+   $Repo = (Resolve-Path 'C:\Dev\WoW\ApogeePartyHealthBars').Path
+   $WoW = 'C:\Program Files (x86)\World of Warcraft\_anniversary_'
+   $AddOns = Join-Path $WoW 'Interface\AddOns'
+   $Link = Join-Path $AddOns 'ApogeePartyHealthBars'
+
+   if (Test-Path -LiteralPath $Link) {
+       throw "The add-on path already exists: $Link. Back it up or remove it intentionally before continuing."
+   }
+
+   New-Item -ItemType Junction -Path $Link -Target $Repo
+   ```
+
+   Do not initialize another Git repository inside the WoW directory, copy the development repository there, or replace an existing path without first checking whether it contains files you need.
+
+4. Verify the junction and TOC from the same PowerShell window:
+
+   ```powershell
+   Get-Item -LiteralPath $Link | Select-Object FullName, LinkType, Target
+   Test-Path -LiteralPath (Join-Path $Link 'ApogeePartyHealthBars.toc')
+   ```
+
+   `LinkType` must be `Junction`, `Target` must be the development repository, and `Test-Path` must return `True`. WoW now sees repository edits immediately; use `/reload` after ordinary source changes. Secure-frame or initialization changes may require logging out or restarting the client.
+
+### Install development prerequisites and validate
+
+From an elevated PowerShell, install Lua for Windows 5.1.5. Restart PowerShell so the updated `PATH` is available, then run the complete local validation suite from the repository:
 
 ```powershell
 winget install --id rjpcomputing.luaforwindows --exact --version 5.1.5.52

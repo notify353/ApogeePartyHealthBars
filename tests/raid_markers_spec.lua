@@ -87,7 +87,7 @@ currentMarker = nil
 targetGuid = "Creature-2"
 markers.Refresh()
 assert(skull.shown and cross.shown and moon.shown, "used skull was hidden for a different target")
-assert(skull.texture.desaturated and skull.texture.alpha == 0.55,
+assert(skull.texture.desaturated and skull.texture.alpha == 0.30,
     "assigned skull was not shown as used")
 assert(not cross.texture.desaturated and cross.texture.alpha == 1,
     "unused cross was not shown in full color")
@@ -130,7 +130,7 @@ markers.Refresh()
 assert(skull.shown and cross.shown and moon.shown, "controls disappeared after all markers were assigned")
 assert(skull.texture.desaturated and cross.texture.desaturated and moon.texture.desaturated,
     "assigned markers were not all shown as used")
-assert(skull.texture.alpha == 0.55 and cross.texture.alpha == 0.55 and moon.texture.alpha == 0.55,
+assert(skull.texture.alpha == 0.30 and cross.texture.alpha == 0.30 and moon.texture.alpha == 0.30,
     "assigned marker opacity was inconsistent")
 
 combatLog = { 0, "UNIT_DIED", false, nil, nil, nil, nil, "Creature-2" }

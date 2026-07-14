@@ -4,7 +4,7 @@ local M = ApogeePartyHealthBars_RaidMarkers
 local ICON_TEXTURE = "Interface\\TargetingFrame\\UI-RaidTargetingIcons"
 local ICON_SIZE = 20
 local ICON_GAP = 3
-local ASSIGNED_ALPHA = 0.55
+local ASSIGNED_ALPHA = 0.30
 
 local MARKERS = {
     { index = 8, label = "Skull", left = 0.75, right = 1.00, top = 0.50, bottom = 1.00 },

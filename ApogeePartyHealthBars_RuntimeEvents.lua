@@ -5,6 +5,7 @@ local T = ApogeePartyHealthBars_SpellTracker
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 local F = ApogeePartyHealthBars_SecureFrames
+local U = ApogeePartyHealthBars_CombatUIFader
 
 ApogeePartyHealthBars_RuntimeEvents = {}
 local R = ApogeePartyHealthBars_RuntimeEvents
@@ -73,6 +74,7 @@ function R.Register(eventRouter, deps)
             end
             S.charSv = ApogeePartyHealthCharSV
             E.InitializeSavedVariables(S.sv, S.charSv)
+            U.Initialize(S.sv.combatUIAutoHide)
             ApogeePartyHealthBars_MacroInstaller.Initialize(S.charSv)
             local macrosValid, macroErrors = ApogeePartyHealthBars_MacroLibrary.ValidateAll()
             if not macrosValid then
@@ -101,6 +103,7 @@ function R.Register(eventRouter, deps)
             end
     
         elseif event == "PLAYER_REGEN_DISABLED" then
+            U.OnCombatStart()
             if S.configMode then
                 D.Print("config closed - combat started.")
                 D.SetConfigMode(false)
@@ -108,6 +111,7 @@ function R.Register(eventRouter, deps)
             D.ForceRefresh()
     
         elseif event == "PLAYER_REGEN_ENABLED" then
+            U.OnCombatEnd()
             F.FlushDeferredUpdates()
             T.RefreshSecureActions()
             H.Refresh()

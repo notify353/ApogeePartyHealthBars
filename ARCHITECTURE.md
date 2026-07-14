@@ -8,6 +8,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `Sounds`: shared sound catalog, saved-key normalization, and SFX playback
 - `HealthAlerts`: configurable party low-health threshold state, recovery hysteresis, and sound throttling
 - `SecureFrames`: combat-safe visibility, position, and mouse mutations
+- `CombatUIFader`: opt-in Blizzard UI alpha fading and mouseover reveal during combat
 - `UnitFrames`: frame construction and stable secure frame names
 - `UnitDisplay`: displayed values
 - `Layout`: geometry and secure overlay placement

@@ -589,6 +589,7 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
     SpellTracker               = T,
     HealthAlerts               = ApogeePartyHealthBars_HealthAlerts,
     Threat                     = H,
+    CombatUIFader              = ApogeePartyHealthBars_CombatUIFader,
     SyncVisualTicker           = SyncVisualTicker,
     MacroLibrary               = ApogeePartyHealthBars_MacroLibrary,
     MacroInstaller             = ApogeePartyHealthBars_MacroInstaller,

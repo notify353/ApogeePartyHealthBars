@@ -8,6 +8,7 @@ local E = ApogeePartyHealthBars_Effects
 
 local FEATURE_DEFAULTS = {
     enabled = true,
+    combatUIAutoHide = false,
     showAllSlots = false,
     partyBuffEnabled = true,
     selfBuffEnabled = true,

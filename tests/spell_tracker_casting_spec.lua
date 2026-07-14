@@ -174,8 +174,13 @@ assert(deferred > 0, "tracker secure update was not deferred")
 
 inCombat = false
 tracker.RefreshSecureActions()
-assert(castButton.attributes.type == nil and castButton.attributes.spell == nil)
-assert(not castButton.shown and not castButton.mouseEnabled, "cleared tracker action remained clickable")
+assert(castButton.attributes.type == "spell" and castButton.attributes.spell == "Frostbolt(Rank 1)",
+    "remaining tracker actions did not compact after clearing the first slot")
+assert(castButton.shown and castButton.mouseEnabled, "compacted tracker action was not clickable")
+local trailingCastButton = secureButtons[4]
+assert(trailingCastButton.attributes.type == nil and trailingCastButton.attributes.spell == nil)
+assert(not trailingCastButton.shown and not trailingCastButton.mouseEnabled,
+    "unused trailing tracker action remained clickable after clearing a slot")
 
 ApogeePartyHealthBars_S.charSv.trackerDefaultsVersion = nil
 ApogeePartyHealthBars_S.charSv.trackedSpells = {

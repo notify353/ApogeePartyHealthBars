@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.34.0] - 2026-07-13
+
 ### Added
 
 - Added an enabled-by-default, selectable sound alert when the player or a party member drops below a configurable threshold (50% by default), with General settings to adjust, preview, or disable it.

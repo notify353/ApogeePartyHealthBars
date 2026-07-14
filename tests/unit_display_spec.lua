@@ -4,7 +4,8 @@ assert(ApogeePartyHealthBars_C.TARGET_OF_TARGET_H == ApogeePartyHealthBars_C.ROW
 assert(ApogeePartyHealthBars_C.TARGET_PANE_H
     == ApogeePartyHealthBars_C.ROW_H + ApogeePartyHealthBars_C.MANA_GAP + ApogeePartyHealthBars_C.MANA_H)
 unpack = unpack or table.unpack
-ApogeePartyHealthBars_S.GetBinding = function() return nil end
+local primaryBinding
+ApogeePartyHealthBars_S.GetBinding = function() return primaryBinding end
 ApogeePartyHealthBars_SpellTracker = { IsActive = function() return false end, Refresh = function() end }
 ApogeePartyHealthBars_SecureFrames = { Hide = function(frame) if frame then frame:Hide() end end }
 
@@ -27,7 +28,11 @@ function UnitPowerMax(unit) return unit == "target" and targetPowerMax or 0 end
 function UnitPower(unit) return unit == "target" and targetPower or 0 end
 function UnitPowerType() return targetPowerType, targetPowerToken end
 function UnitIsDeadOrGhost() return false end
-function IsSpellInRange() return 1 end
+local spellInRange = 1
+local defaultInRange, defaultRangeChecked = true, true
+local function StubUnitInRange() return defaultInRange, defaultRangeChecked end
+function IsSpellInRange() return spellInRange end
+UnitInRange = StubUnitInRange
 function GetSpellInfo(value) return tostring(value) end
 
 local function widget()
@@ -39,6 +44,7 @@ local function widget()
     function object:SetValue(value) self.value = value end
     function object:SetStatusBarColor(r, g, b, a) self.color = { r, g, b, a } end
     function object:SetText(value) self.text = value end
+    function object:SetAlpha(value) self.alpha = value end
     return setmetatable(object, {
         __index = function(_, key)
             return function() end
@@ -97,4 +103,43 @@ assert(row.targetPowerBar.color[1] == 1 and row.targetPowerBar.color[2] == 0.85)
 targetPowerMax = 0
 U.PopulateHealthRow(row, "player")
 assert(not row.targetPowerVisible and not row.targetPowerBar:IsShown())
+
+row.unitId = "party1"
+row.showTargetPane = false
+primaryBinding = nil
+defaultInRange, defaultRangeChecked = false, true
+ApogeePartyHealthBars_S.RefreshRangeAlpha()
+assert(row.btn.alpha == ApogeePartyHealthBars_C.OUT_OF_RANGE_ALPHA,
+    "unbound party member must use the default out-of-range result")
+
+defaultInRange = true
+ApogeePartyHealthBars_S.RefreshRangeAlpha()
+assert(row.btn.alpha == 1, "unbound in-range party member must remain opaque")
+
+primaryBinding = { name = "Flash Heal" }
+spellInRange = 0
+defaultInRange = true
+ApogeePartyHealthBars_S.RefreshRangeAlpha()
+assert(row.btn.alpha == ApogeePartyHealthBars_C.OUT_OF_RANGE_ALPHA,
+    "a definitive bound-spell result must take precedence over the default range")
+
+spellInRange = nil
+defaultInRange = false
+ApogeePartyHealthBars_S.RefreshRangeAlpha()
+assert(row.btn.alpha == ApogeePartyHealthBars_C.OUT_OF_RANGE_ALPHA,
+    "an indeterminate spell result must fall back to the default range")
+
+primaryBinding = {}
+ApogeePartyHealthBars_S.RefreshRangeAlpha()
+assert(row.btn.alpha == ApogeePartyHealthBars_C.OUT_OF_RANGE_ALPHA,
+    "an invalid binding must fall back to the default range")
+
+primaryBinding = nil
+defaultRangeChecked = false
+ApogeePartyHealthBars_S.RefreshRangeAlpha()
+assert(row.btn.alpha == 1, "an unchecked default range must fail open")
+
+UnitInRange = nil
+ApogeePartyHealthBars_S.RefreshRangeAlpha()
+assert(row.btn.alpha == 1, "an unavailable default range API must fail open")
 print("PASS unit display target path")

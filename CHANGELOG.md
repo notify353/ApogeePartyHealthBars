@@ -6,6 +6,16 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Changed
+
+- Kept raid marker controls visible in gray on marked targets and when assigned elsewhere so markers can be replaced or moved directly.
+
+### Fixed
+
+- Kept party-member range fading active without a primary click binding by falling back to the client's standard group range check.
+- Released raid-marker choices when their assigned mobs die, including while the marked corpse remains targeted.
+- Kept tracked-spell icons clickable after adding or changing spells without altering the tracker row's height.
+
 ## [0.32.0] - 2026-07-12
 
 ### Added

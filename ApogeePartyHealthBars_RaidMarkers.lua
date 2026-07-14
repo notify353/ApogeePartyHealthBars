@@ -4,6 +4,7 @@ local M = ApogeePartyHealthBars_RaidMarkers
 local ICON_TEXTURE = "Interface\\TargetingFrame\\UI-RaidTargetingIcons"
 local ICON_SIZE = 20
 local ICON_GAP = 3
+local ASSIGNED_ALPHA = 0.30
 
 local MARKERS = {
     { index = 8, label = "Skull", left = 0.75, right = 1.00, top = 0.50, bottom = 1.00 },
@@ -15,16 +16,31 @@ local buttons = {}
 local assignedGuids = {}
 local supportedMarkers = { [5] = true, [7] = true, [8] = true }
 
-local function SetButtonsShown(shown)
-    for _, button in ipairs(buttons) do button:SetShown(shown) end
+local function SetMarkerState(button, assigned, targetMarked, currentTargetMarker)
+    button.markerAssigned = assigned and true or false
+    button.targetMarked = targetMarked and true or false
+    button.currentTargetMarker = currentTargetMarker and true or false
+    local faded = button.targetMarked or button.markerAssigned
+    button.texture:SetDesaturated(faded)
+    button.texture:SetAlpha(faded and ASSIGNED_ALPHA or 1)
+end
+
+local function ClearGuidAssignments(guid)
+    if not guid then return end
+    for index, assignedGuid in pairs(assignedGuids) do
+        if assignedGuid == guid then assignedGuids[index] = nil end
+    end
 end
 
 local function ApplyMarker(index)
     if not UnitExists or not UnitExists("target") or not SetRaidTarget then return end
     local guid = UnitGUID and UnitGUID("target")
-    if guid then assignedGuids[index] = guid end
+    if guid then
+        ClearGuidAssignments(guid)
+        assignedGuids[index] = guid
+    end
     SetRaidTarget("target", index)
-    SetButtonsShown(false)
+    M.Refresh()
 end
 
 local function CreateMarkerButton(parent, definition)
@@ -47,7 +63,17 @@ local function CreateMarkerButton(parent, definition)
         if not GameTooltip then return end
         GameTooltip:SetOwner(self, "ANCHOR_TOP")
         GameTooltip:AddLine(definition.label .. " target marker")
-        GameTooltip:AddLine("Click to apply.", 0.85, 0.85, 0.85)
+        if self.targetMarked then
+            if self.currentTargetMarker then
+                GameTooltip:AddLine("Currently applied to this target.", 0.85, 0.85, 0.85)
+            else
+                GameTooltip:AddLine("Click to replace the current marker.", 0.85, 0.85, 0.85)
+            end
+        elseif self.markerAssigned then
+            GameTooltip:AddLine("Currently assigned. Click to move it here.", 0.85, 0.85, 0.85)
+        else
+            GameTooltip:AddLine("Click to apply.", 0.85, 0.85, 0.85)
+        end
         GameTooltip:Show()
     end)
     button:SetScript("OnLeave", function()
@@ -72,33 +98,46 @@ function M.Attach(playerRow)
     M.Refresh()
 end
 
-function M.Refresh()
+local function RefreshInternal(ignoredGuid)
     local targetExists = UnitExists and UnitExists("target")
     local guid = targetExists and UnitGUID and UnitGUID("target")
     local currentMarker = targetExists and GetRaidTargetIndex and GetRaidTargetIndex("target")
+    local targetDead = targetExists and UnitIsDeadOrGhost and UnitIsDeadOrGhost("target")
 
     if guid then
-        for index, assignedGuid in pairs(assignedGuids) do
-            if assignedGuid == guid and currentMarker ~= index then assignedGuids[index] = nil end
+        if targetDead then
+            ClearGuidAssignments(guid)
+        elseif guid ~= ignoredGuid then
+            for index, assignedGuid in pairs(assignedGuids) do
+                if assignedGuid == guid and currentMarker ~= index then assignedGuids[index] = nil end
+            end
+            if supportedMarkers[currentMarker] then assignedGuids[currentMarker] = guid end
         end
-        if supportedMarkers[currentMarker] then assignedGuids[currentMarker] = guid end
     end
 
     local visible = targetExists
         and UnitCanAttack and UnitCanAttack("player", "target")
-        and not (UnitIsDeadOrGhost and UnitIsDeadOrGhost("target"))
-        and not currentMarker
+        and not targetDead
+    local targetMarked = currentMarker ~= nil
     for position, definition in ipairs(MARKERS) do
-        buttons[position]:SetShown((visible and not assignedGuids[definition.index]) and true or false)
+        local button = buttons[position]
+        SetMarkerState(
+            button,
+            assignedGuids[definition.index] ~= nil,
+            targetMarked,
+            currentMarker == definition.index)
+        button:SetShown(visible and true or false)
     end
+end
+
+function M.Refresh()
+    RefreshInternal()
 end
 
 function M.ReleaseGuid(guid)
     if not guid then return end
-    for index, assignedGuid in pairs(assignedGuids) do
-        if assignedGuid == guid then assignedGuids[index] = nil end
-    end
-    M.Refresh()
+    ClearGuidAssignments(guid)
+    RefreshInternal(guid)
 end
 
 function M.OnCombatLogEvent()

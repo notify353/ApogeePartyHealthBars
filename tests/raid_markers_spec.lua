@@ -8,12 +8,15 @@ local currentMarker
 local combatLog = { 0, "SPELL_DAMAGE" }
 
 local function widget()
-    local value = { points = {}, scripts = {}, shown = true }
-    local noops = { "SetSize", "RegisterForClicks", "SetAllPoints", "AddLine", "SetFrameLevel" }
+    local value = { points = {}, scripts = {}, shown = true, lines = {} }
+    local noops = { "SetSize", "RegisterForClicks", "SetAllPoints", "SetFrameLevel" }
     for _, name in ipairs(noops) do value[name] = function() end end
     function value:CreateTexture() return widget() end
     function value:SetTexture(path) self.texturePath = path end
     function value:SetTexCoord(...) self.texCoord = { ... } end
+    function value:SetDesaturated(desaturated) self.desaturated = desaturated end
+    function value:SetAlpha(alpha) self.alpha = alpha end
+    function value:AddLine(text) self.lines[#self.lines + 1] = text end
     function value:SetScript(name, callback) self.scripts[name] = callback end
     function value:HookScript(name, callback) self.scripts[name] = callback end
     function value:SetPoint(...) self.points[#self.points + 1] = { ... } end
@@ -59,6 +62,12 @@ assert(moon.points[1][2] == targetBtn, "moon was not right-aligned above target 
 assert(cross.points[1][5] == 3 and skull.points[1][5] == 3, "marker row was vertically misaligned")
 assert(skull.points[1][4] == 0 and cross.points[1][4] == -23, "marker order or spacing changed")
 assert(skull.shown and cross.shown and moon.shown, "markers were hidden for a living hostile target")
+assert(not skull.texture.desaturated and skull.texture.alpha == 1,
+    "unused skull marker was not shown in full color")
+assert(not cross.texture.desaturated and cross.texture.alpha == 1,
+    "unused cross marker was not shown in full color")
+assert(not moon.texture.desaturated and moon.texture.alpha == 1,
+    "unused moon marker was not shown in full color")
 
 targetHostile = false
 markers.Refresh()
@@ -70,35 +79,142 @@ targetDead = false
 markers.Refresh()
 assert(skull.shown and cross.shown and moon.shown, "markers did not return for a living hostile target")
 
+currentMarker = 1
+markers.Refresh()
+assert(skull.shown and cross.shown and moon.shown,
+    "markers were hidden for a hostile target with an unsupported marker")
+assert(skull.texture.desaturated and cross.texture.desaturated and moon.texture.desaturated,
+    "controls were not faded for a target with an unsupported marker")
+assert(skull.texture.alpha == 0.30 and cross.texture.alpha == 0.30 and moon.texture.alpha == 0.30,
+    "unsupported marked-target opacity was inconsistent")
+GameTooltip.lines = {}
+skull.scripts.OnEnter(skull)
+assert(GameTooltip.lines[2] == "Click to replace the current marker.",
+    "unsupported marked-target tooltip did not explain replacement")
+
+currentMarker = nil
+markers.Refresh()
 skull.scripts.OnClick()
 assert(applied[1][1] == "target" and applied[1][2] == 8, "skull click did not mark target")
 assert(markers.GetAssignedGuid(8) == "Creature-1", "skull assignment was not tracked")
-assert(not skull.shown and not cross.shown and not moon.shown, "marker controls remained after applying skull")
+assert(skull.shown and cross.shown and moon.shown, "marker controls disappeared after applying skull")
+assert(skull.texture.desaturated and cross.texture.desaturated and moon.texture.desaturated,
+    "marked-target controls were not all faded")
+assert(skull.texture.alpha == 0.30 and cross.texture.alpha == 0.30 and moon.texture.alpha == 0.30,
+    "marked-target opacity was inconsistent")
+GameTooltip.lines = {}
+skull.scripts.OnEnter(skull)
+assert(GameTooltip.lines[2] == "Currently applied to this target.",
+    "current marker tooltip did not identify the applied marker")
+GameTooltip.lines = {}
+cross.scripts.OnEnter(cross)
+assert(GameTooltip.lines[2] == "Click to replace the current marker.",
+    "alternate marker tooltip did not explain replacement")
+
 currentMarker = nil
 targetGuid = "Creature-2"
 markers.Refresh()
-assert(not skull.shown and cross.shown and moon.shown, "assigned skull was suggested for a different target")
+assert(skull.shown and cross.shown and moon.shown, "used skull was hidden for a different target")
+assert(skull.texture.desaturated and skull.texture.alpha == 0.30,
+    "assigned skull was not shown as used")
+assert(not cross.texture.desaturated and cross.texture.alpha == 1,
+    "unused cross was not shown in full color")
+
+GameTooltip.lines = {}
+skull.scripts.OnEnter(skull)
+assert(GameTooltip.lines[2] == "Currently assigned. Click to move it here.",
+    "assigned marker tooltip did not explain reassignment")
+GameTooltip.lines = {}
+cross.scripts.OnEnter(cross)
+assert(GameTooltip.lines[2] == "Click to apply.", "unused marker tooltip did not explain assignment")
+
+skull.scripts.OnClick()
+assert(applied[2][2] == 8, "used skull click did not move the marker")
+assert(markers.GetAssignedGuid(8) == "Creature-2", "moved skull did not replace its cached GUID")
+assert(skull.shown and cross.shown and moon.shown,
+    "marker controls disappeared on a marked target after reassignment")
+
 cross.scripts.OnClick()
-assert(applied[2][2] == 7, "cross click did not mark target")
+assert(applied[3][2] == 7 and currentMarker == 7, "cross did not replace skull on the marked target")
+assert(markers.GetAssignedGuid(8) == nil, "replaced skull remained cached")
+assert(markers.GetAssignedGuid(7) == "Creature-2", "replacement cross was not cached")
+assert(skull.shown and cross.shown and moon.shown,
+    "marker controls disappeared after replacing skull with cross")
+assert(skull.texture.alpha == 0.30 and cross.texture.alpha == 0.30 and moon.texture.alpha == 0.30,
+    "replacement controls did not remain faded")
+
+skull.scripts.OnClick()
+assert(applied[4][2] == 8 and currentMarker == 8, "skull did not replace cross on the marked target")
+assert(markers.GetAssignedGuid(7) == nil, "replaced cross remained cached")
+assert(markers.GetAssignedGuid(8) == "Creature-2", "restored skull was not cached")
 
 currentMarker = nil
 targetGuid = "Creature-3"
 markers.Refresh()
-assert(not skull.shown and not cross.shown and moon.shown, "only moon should remain available")
-moon.scripts.OnClick()
-assert(applied[3][2] == 5, "moon click did not mark target")
+assert(skull.shown and cross.shown and moon.shown, "controls were hidden with one assigned marker")
+assert(skull.texture.desaturated and not cross.texture.desaturated and not moon.texture.desaturated,
+    "one-marker availability styling was incorrect")
+cross.scripts.OnClick()
+assert(applied[5][2] == 7, "cross click did not mark target")
 
 currentMarker = nil
 targetGuid = "Creature-4"
 markers.Refresh()
-assert(not skull.shown and not cross.shown and not moon.shown, "controls appeared after all markers were assigned")
+assert(skull.shown and cross.shown and moon.shown, "controls were hidden with two assigned markers")
+assert(skull.texture.desaturated and cross.texture.desaturated and not moon.texture.desaturated,
+    "two-marker availability styling was incorrect")
+moon.scripts.OnClick()
+assert(applied[6][2] == 5, "moon click did not mark target")
 
-combatLog = { 0, "UNIT_DIED", false, nil, nil, nil, nil, "Creature-1" }
+currentMarker = nil
+targetGuid = "Creature-5"
+markers.Refresh()
+assert(skull.shown and cross.shown and moon.shown, "controls disappeared after all markers were assigned")
+assert(skull.texture.desaturated and cross.texture.desaturated and moon.texture.desaturated,
+    "assigned markers were not all shown as used")
+assert(skull.texture.alpha == 0.30 and cross.texture.alpha == 0.30 and moon.texture.alpha == 0.30,
+    "assigned marker opacity was inconsistent")
+
+combatLog = { 0, "UNIT_DIED", false, nil, nil, nil, nil, "Creature-2" }
 markers.OnCombatLogEvent()
-assert(skull.shown and not cross.shown and not moon.shown, "only the released skull marker should return after its mob died")
+assert(skull.shown and cross.shown and moon.shown, "marker controls changed visibility after off-target death")
+assert(not skull.texture.desaturated and skull.texture.alpha == 1,
+    "released skull marker did not return to full color")
+assert(cross.texture.desaturated and moon.texture.desaturated,
+    "unreleased markers lost their assigned styling")
+
+skull.scripts.OnClick()
+assert(markers.GetAssignedGuid(8) == "Creature-5", "skull was not assigned to the current target")
+combatLog = { 0, "UNIT_DIED", false, nil, nil, nil, nil, "Creature-5" }
+markers.OnCombatLogEvent()
+assert(markers.GetAssignedGuid(8) == nil,
+    "death cleanup re-added the marker from the still-targeted mob")
+
+targetDead = true
+markers.Refresh()
+assert(markers.GetAssignedGuid(8) == nil, "a dead target repopulated its marker assignment")
+
+targetDead = false
+currentMarker = nil
+targetGuid = "Creature-6"
+markers.Refresh()
+assert(skull.shown and cross.shown and moon.shown,
+    "the marker released from the targeted corpse did not return for the next target")
+assert(not skull.texture.desaturated and cross.texture.desaturated and moon.texture.desaturated,
+    "released marker styling was not preserved after changing targets")
+
+skull.scripts.OnClick()
+assert(markers.GetAssignedGuid(8) == "Creature-6", "skull was not tracked for defensive cleanup")
+targetDead = true
+markers.Refresh()
+assert(markers.GetAssignedGuid(8) == nil,
+    "refreshing a dead marked target did not defensively clear its assignment")
 
 targetExists = false
+markers.Refresh()
+assert(not skull.shown and not cross.shown and not moon.shown,
+    "marker controls remained visible without a target")
 skull.scripts.OnClick()
-assert(#applied == 3, "marker was applied without a target")
+assert(#applied == 8, "marker was applied without a target")
 
 print("PASS raid markers")

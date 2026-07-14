@@ -123,13 +123,20 @@ local function UpdateRowPowerVisual(row, unitId)
     end
 end
 
+local function IsUnitInDefaultRange(unitId)
+    if not UnitInRange then return true end
+    local inRange, checkedRange = UnitInRange(unitId)
+    if not checkedRange then return true end
+    return inRange == true or inRange == 1
+end
+
 local function IsUnitInPrimarySpellRange(unitId)
     if not D.IsSavedFeatureEnabled("rangeCheckEnabled") then return true end
     if S.configMode then return true end
-    local binding = S.GetBinding("1")
-    if not binding then return true end
     if not unitId or not UnitExists(unitId) or UnitIsDeadOrGhost(unitId) then return true end
-    if not IsSpellInRange then return true end
+
+    local binding = S.GetBinding("1")
+    if not binding or not IsSpellInRange then return IsUnitInDefaultRange(unitId) end
 
     local spellId, spellName
     if type(binding) == "table" then
@@ -140,16 +147,16 @@ local function IsUnitInPrimarySpellRange(unitId)
     elseif type(binding) == "string" and binding ~= "" then
         spellName = binding
     else
-        return true
+        return IsUnitInDefaultRange(unitId)
     end
 
     -- Classic's three-argument form expects a spellbook slot, not a spell ID.
     -- Resolve legacy numeric bindings to a name and use the stable name form.
     spellName = spellName or (spellId and GetSpellInfo(spellId))
-    if not spellName then return true end
+    if not spellName then return IsUnitInDefaultRange(unitId) end
     local inRange = IsSpellInRange(spellName, unitId)
-    if inRange == nil then return true end
-    return inRange == 1
+    if inRange == nil then return IsUnitInDefaultRange(unitId) end
+    return inRange == 1 or inRange == true
 end
 
 function S.RefreshRangeAlpha()

@@ -55,11 +55,24 @@ end
 local inCombat = false
 function InCombatLockdown() return inCombat end
 function UnitClass() return "Mage", "MAGE" end
+local spellbook = {
+    { name = "Fireball", id = 133, icon = 135812 },
+    { name = "Frostbolt", id = 116, icon = 135846 },
+    { name = "Fire Blast", id = 2136, icon = 135807 },
+    { name = "Arcane Missiles", id = 5143, icon = 136096 },
+}
 function GetNumSpellTabs() return 1 end
-function GetSpellTabInfo() return nil, nil, 0, 1 end
-function GetSpellBookItemName() return "Fireball", "Rank 1" end
-function GetSpellBookItemInfo() return "SPELL", 133 end
-function GetSpellInfo() return "Fireball", nil, 135812, nil, nil, nil, 133 end
+function GetSpellTabInfo() return nil, nil, 0, #spellbook end
+function GetSpellBookItemName(slot) return spellbook[slot].name, "Rank 1" end
+function GetSpellBookItemInfo(slot) return "SPELL", spellbook[slot].id end
+function GetSpellInfo(identifier)
+    for _, spell in ipairs(spellbook) do
+        if identifier == spell.id or identifier == spell.name or identifier == spell.name .. "(Rank 1)" then
+            return spell.name, nil, spell.icon, nil, nil, nil, spell.id
+        end
+    end
+    return tostring(identifier), nil, 135812
+end
 function GetSpellCooldown() return 0, 0, 1 end
 function GetSpellCharges() return nil, nil end
 function IsUsableSpell() return true, false end
@@ -89,10 +102,14 @@ dofile("ApogeePartyHealthBars_SpellTracker.lua")
 local tracker = ApogeePartyHealthBars_SpellTracker
 local deferred = 0
 local layoutRequests = 0
+local geometryNeedsLayout = false
 tracker.Attach({ btn = widget() }, {
-    RequestLayout = function() layoutRequests = layoutRequests + 1 end,
+    RequestLayout = function()
+        layoutRequests = layoutRequests + 1
+        geometryNeedsLayout = false
+    end,
     SyncTicker = function() end,
-    PositionSecureOverlay = function() return true end,
+    PositionSecureOverlay = function() return not geometryNeedsLayout end,
     ShowSecureFrame = function(frame) frame:Show() end,
     HideSecureFrame = function(frame) frame:Hide() end,
     SetSecureMouseEnabled = function(frame, enabled) frame.mouseEnabled = enabled end,
@@ -112,6 +129,24 @@ assert(castButton.attributes.spell == "Fireball(Rank 1)")
 assert(castButton.attributes.type1 == "spell")
 assert(castButton.attributes.spell1 == "Fireball(Rank 1)")
 assert(castButton.shown and castButton.mouseEnabled, "tracker cast button is not clickable")
+
+geometryNeedsLayout = true
+local beforeAssignmentLayout = layoutRequests
+local assigned, assignMessage = tracker.AssignSpell(4, 5143, "Arcane Missiles")
+assert(assigned, assignMessage or "fourth tracked spell was not assigned")
+assert(layoutRequests == beforeAssignmentLayout + 1,
+    "adding a spell without changing tracker height did not request a fresh layout")
+local expectedCastNames = {
+    "Fireball(Rank 1)", "Frostbolt(Rank 1)",
+    "Fire Blast(Rank 1)", "Arcane Missiles(Rank 1)",
+}
+for index, expectedCastName in ipairs(expectedCastNames) do
+    local assignedButton = assert(secureButtons[index], "missing secure tracker button " .. index)
+    assert(assignedButton.attributes.type == "spell" and assignedButton.attributes.spell == expectedCastName,
+        "secure tracker button " .. index .. " lost its spell after assignment")
+    assert(assignedButton.shown and assignedButton.mouseEnabled,
+        "secure tracker button " .. index .. " stopped receiving clicks after assignment")
+end
 
 castButton.scripts.OnEnter()
 assert(tooltipShows == 1, "tracker spell tooltip did not show out of combat")
@@ -139,8 +174,13 @@ assert(deferred > 0, "tracker secure update was not deferred")
 
 inCombat = false
 tracker.RefreshSecureActions()
-assert(castButton.attributes.type == nil and castButton.attributes.spell == nil)
-assert(not castButton.shown and not castButton.mouseEnabled, "cleared tracker action remained clickable")
+assert(castButton.attributes.type == "spell" and castButton.attributes.spell == "Frostbolt(Rank 1)",
+    "remaining tracker actions did not compact after clearing the first slot")
+assert(castButton.shown and castButton.mouseEnabled, "compacted tracker action was not clickable")
+local trailingCastButton = secureButtons[4]
+assert(trailingCastButton.attributes.type == nil and trailingCastButton.attributes.spell == nil)
+assert(not trailingCastButton.shown and not trailingCastButton.mouseEnabled,
+    "unused trailing tracker action remained clickable after clearing a slot")
 
 ApogeePartyHealthBars_S.charSv.trackerDefaultsVersion = nil
 ApogeePartyHealthBars_S.charSv.trackedSpells = {

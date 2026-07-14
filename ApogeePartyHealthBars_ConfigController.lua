@@ -60,4 +60,5 @@ function C.SetMode(active)
     D.UpdateHeader()
     D.UpdateMinimapButtonStyle()
     D.ForceRefresh()
+    D.ScheduleSecureReconcile()
 end

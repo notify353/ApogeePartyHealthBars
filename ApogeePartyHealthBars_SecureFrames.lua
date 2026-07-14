@@ -2,6 +2,9 @@ local S = ApogeePartyHealthBars_S
 
 ApogeePartyHealthBars_SecureFrames = {}
 local F = ApogeePartyHealthBars_SecureFrames
+local reconcileCallback
+local reconcileFrame = CreateFrame("Frame")
+reconcileFrame:Hide()
 
 function F.RequestSecureUpdate()
     S.secureUpdatePending = true
@@ -12,6 +15,23 @@ function F.FlushDeferredUpdates()
     S.secureUpdatePending = false
     return pending
 end
+
+function F.InitializeReconciler(callback)
+    reconcileCallback = assert(callback)
+end
+
+function F.RequestReconcile()
+    reconcileFrame:Show()
+end
+
+reconcileFrame:SetScript("OnUpdate", function(self)
+    self:Hide()
+    if InCombatLockdown() then
+        F.RequestSecureUpdate()
+        return
+    end
+    if reconcileCallback then reconcileCallback() end
+end)
 
 function F.Hide(frame)
     if not frame then return end
@@ -45,4 +65,3 @@ function F.PositionOverlay(overlay, anchor)
     if not ok then F.RequestSecureUpdate(); F.Hide(overlay); return false end
     return true
 end
-

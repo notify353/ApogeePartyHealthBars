@@ -6,6 +6,10 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Changed
+
+- Kept already-assigned raid marker controls visible in gray so they can be moved directly to a new target.
+
 ### Fixed
 
 - Kept party-member range fading active without a primary click binding by falling back to the client's standard group range check.

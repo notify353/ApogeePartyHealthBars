@@ -4,6 +4,7 @@ local M = ApogeePartyHealthBars_RaidMarkers
 local ICON_TEXTURE = "Interface\\TargetingFrame\\UI-RaidTargetingIcons"
 local ICON_SIZE = 20
 local ICON_GAP = 3
+local ASSIGNED_ALPHA = 0.55
 
 local MARKERS = {
     { index = 8, label = "Skull", left = 0.75, right = 1.00, top = 0.50, bottom = 1.00 },
@@ -17,6 +18,12 @@ local supportedMarkers = { [5] = true, [7] = true, [8] = true }
 
 local function SetButtonsShown(shown)
     for _, button in ipairs(buttons) do button:SetShown(shown) end
+end
+
+local function SetMarkerAssigned(button, assigned)
+    button.markerAssigned = assigned and true or false
+    button.texture:SetDesaturated(button.markerAssigned)
+    button.texture:SetAlpha(button.markerAssigned and ASSIGNED_ALPHA or 1)
 end
 
 local function ApplyMarker(index)
@@ -47,7 +54,11 @@ local function CreateMarkerButton(parent, definition)
         if not GameTooltip then return end
         GameTooltip:SetOwner(self, "ANCHOR_TOP")
         GameTooltip:AddLine(definition.label .. " target marker")
-        GameTooltip:AddLine("Click to apply.", 0.85, 0.85, 0.85)
+        if self.markerAssigned then
+            GameTooltip:AddLine("Currently assigned. Click to move it here.", 0.85, 0.85, 0.85)
+        else
+            GameTooltip:AddLine("Click to apply.", 0.85, 0.85, 0.85)
+        end
         GameTooltip:Show()
     end)
     button:SetScript("OnLeave", function()
@@ -101,7 +112,9 @@ local function RefreshInternal(ignoredGuid)
         and not targetDead
         and not currentMarker
     for position, definition in ipairs(MARKERS) do
-        buttons[position]:SetShown((visible and not assignedGuids[definition.index]) and true or false)
+        local button = buttons[position]
+        SetMarkerAssigned(button, assignedGuids[definition.index] ~= nil)
+        button:SetShown(visible and true or false)
     end
 end
 

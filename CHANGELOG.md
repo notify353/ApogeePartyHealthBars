@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.33.0] - 2026-07-13
+
 ### Changed
 
 - Kept raid marker controls visible in gray on marked targets and when assigned elsewhere so markers can be replaced or moved directly.

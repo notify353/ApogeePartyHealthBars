@@ -192,7 +192,18 @@ assert(ApogeePartyHealthBars_SpellTracker.GetDisplayLane(2) == "target", "automa
 router.Dispatch("PLAYER_ENTERING_WORLD")
 router.Dispatch("SPELLS_CHANGED")
 router.Dispatch("PLAYER_TARGET_CHANGED")
+local tracker = ApogeePartyHealthBars_SpellTracker
+local originalTrackerRefresh = tracker.Refresh
+local unitFlagsRefreshCount = 0
+tracker.Refresh = function(...)
+    unitFlagsRefreshCount = unitFlagsRefreshCount + 1
+    return originalTrackerRefresh(...)
+end
 router.Dispatch("UNIT_FLAGS", "target")
+assert(unitFlagsRefreshCount == 1, "target UNIT_FLAGS did not refresh the spell tracker")
+router.Dispatch("UNIT_FLAGS", "party1")
+assert(unitFlagsRefreshCount == 1, "non-target UNIT_FLAGS refreshed the spell tracker")
+tracker.Refresh = originalTrackerRefresh
 router.Dispatch("UNIT_HEALTH", "player")
 router.Dispatch("UNIT_AURA", "player")
 router.Dispatch("UNIT_POWER_UPDATE", "player")

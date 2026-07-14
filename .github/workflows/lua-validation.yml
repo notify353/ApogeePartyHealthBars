@@ -18,6 +18,11 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Install Lua 5.1
         run: sudo apt-get update && sudo apt-get install -y lua5.1
+      - name: Test and validate WoW API export baseline
+        shell: pwsh
+        run: |
+          ./scripts/test-wow-api-export.ps1
+          ./scripts/check-wow-api-export.ps1
       - name: Parse add-on files and run Lua test suite
         shell: pwsh
         run: ./scripts/test-lua.ps1

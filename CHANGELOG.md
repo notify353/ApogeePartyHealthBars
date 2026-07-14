@@ -9,6 +9,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 ### Fixed
 
 - Kept tracked spells and other secure overlays clickable after closing the add-on settings without requiring a UI reload.
+- Refreshed target-dependent spell-tracker states when the target's unit flags change.
 
 ## [0.34.0] - 2026-07-13
 

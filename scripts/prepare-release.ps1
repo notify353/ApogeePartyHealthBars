@@ -19,6 +19,8 @@ if ((git rev-parse HEAD) -ne (git rev-parse origin/main)) { throw 'main must exa
 git rev-parse --verify --quiet "refs/tags/v$Version" | Out-Null
 if ($LASTEXITCODE -eq 0) { throw "Tag v$Version already exists." }
 
+& (Join-Path $PSScriptRoot 'check-wow-api-export.ps1')
+
 $changelogPath = Join-Path $repoRoot 'CHANGELOG.md'
 $changelog = [System.IO.File]::ReadAllText($changelogPath)
 $match = [regex]::Match($changelog, '(?ms)^## \[Unreleased\]\r?\n(?<body>.*?)(?=^## \[)')

@@ -14,6 +14,7 @@ ignore:
   - tests
   - ARCHITECTURE.md
   - CHANGELOG.md
+  - docs
   - MACRO_LIBRARY_STYLE.md
   - RELEASING.md
   - ApogeePartyHealthBars-v*.zip

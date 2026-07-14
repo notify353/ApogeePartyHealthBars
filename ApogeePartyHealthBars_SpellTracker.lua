@@ -1,5 +1,6 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
+local Sounds = ApogeePartyHealthBars_Sounds
 
 ApogeePartyHealthBars_SpellTracker = {}
 local T = ApogeePartyHealthBars_SpellTracker
@@ -38,28 +39,6 @@ local function GetCrowdControlDefinition(spellName)
     end
     return nil
 end
-
-local SOUND_OPTIONS = {
-    { key = "none", label = "None" },
-    { key = "alarm_high", label = "Alarm High", kit = "ALARM_CLOCK_WARNING_1", fallback = 18871 },
-    { key = "alarm_soft", label = "Alarm Soft", kit = "ALARM_CLOCK_WARNING_2", fallback = 12867 },
-    { key = "alarm_bell", label = "Alarm Bell", kit = "ALARM_CLOCK_WARNING_3", fallback = 12889 },
-    { key = "ability", label = "Ability Confirm", kit = "IG_ABILITY_ICON_DROP", fallback = 838 },
-    { key = "page", label = "Page Turn", kit = "IG_ABILITY_PAGE_TURN", fallback = 836 },
-    { key = "quest_add", label = "Quest Added", kit = "QUEST_ADDED", fallback = 618 },
-    { key = "quest_done", label = "Quest Complete", kit = "QUEST_COMPLETED", fallback = 619 },
-    { key = "button", label = "Button Press", kit = "GAME_GENERIC_BUTTON_PRESS", fallback = 624 },
-    { key = "toggle", label = "Soft Toggle", kit = "IG_MAINMENU_OPTION_CHECKBOX_ON", fallback = 856 },
-}
-
-local SOUND_BY_KEY = {}
-for _, option in ipairs(SOUND_OPTIONS) do SOUND_BY_KEY[option.key] = option end
--- Preserve early tracker selections while retiring chat, ping, and raid cues.
-SOUND_BY_KEY.ready = SOUND_BY_KEY.alarm_high
-SOUND_BY_KEY.ping = SOUND_BY_KEY.ability
-SOUND_BY_KEY.tell = SOUND_BY_KEY.quest_add
-SOUND_BY_KEY.warning = SOUND_BY_KEY.alarm_bell
-SOUND_BY_KEY.click = SOUND_BY_KEY.toggle
 
 local STATE_COLORS = {
     ready       = { 0.45, 0.45, 0.48, 1 },
@@ -536,12 +515,7 @@ local function ApplyState(icon, state, start, duration, charges)
 end
 
 local function PlayReadySound(key)
-    local option = SOUND_BY_KEY[key or "none"]
-    if not option or option.key == "none" or not PlaySound then return false end
-    local sound = (SOUNDKIT and option.kit and SOUNDKIT[option.kit]) or option.fallback
-    if not sound then return false end
-    PlaySound(sound, "SFX")
-    return true
+    return Sounds.Play(key or "none")
 end
 
 function T.GetHeight(unitId)
@@ -744,29 +718,33 @@ function T.MoveSlot(slot, direction)
     T.ResolveAndRefresh()
 end
 
+function T.SetSlotSound(slot, key)
+    local entry = GetEntries() and GetEntries()[slot]
+    if not entry then return nil end
+    entry.soundKey = Sounds.NormalizeKey(key, "none", true)
+    return entry.soundKey
+end
+
+function T.GetSlotSoundKey(slot)
+    local entry = GetEntries() and GetEntries()[slot]
+    if not entry then return nil end
+    local normalized = Sounds.NormalizeKey(entry.soundKey, "none", true)
+    if entry.soundKey ~= normalized then entry.soundKey = normalized end
+    return normalized
+end
+
 function T.CycleSlotSound(slot, direction)
     local entry = GetEntries() and GetEntries()[slot]
-    if not entry then return end
-    local current = entry.soundKey or "none"
-    local nextIndex = 1
-    for i, option in ipairs(SOUND_OPTIONS) do
-        if option.key == current then
-            if direction == -1 then
-                nextIndex = ((i - 2) % #SOUND_OPTIONS) + 1
-            else
-                nextIndex = (i % #SOUND_OPTIONS) + 1
-            end
-            break
-        end
-    end
-    entry.soundKey = SOUND_OPTIONS[nextIndex].key
+    if not entry then return nil end
+    return T.SetSlotSound(slot,
+        Sounds.CycleKey(entry.soundKey or "none", direction, true, "none"))
 end
 
 function T.GetSoundLabel(key)
-    return (SOUND_BY_KEY[key or "none"] or SOUND_BY_KEY.none).label
+    return Sounds.GetLabel(key or "none", "none", true)
 end
 
-function T.PreviewSound(key) return PlayReadySound(key) end
+function T.PreviewSound(key) return Sounds.Play(key or "none") end
 
 function T.OnTrackerSettingChanged()
     T.ResolveAndRefresh()

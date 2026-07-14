@@ -5,6 +5,8 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 ## Ownership
 
 - `EventRouter`: event frame and isolated subscribers
+- `Sounds`: shared sound catalog, saved-key normalization, and SFX playback
+- `HealthAlerts`: configurable party low-health threshold state, recovery hysteresis, and sound throttling
 - `SecureFrames`: combat-safe visibility, position, and mouse mutations
 - `UnitFrames`: frame construction and stable secure frame names
 - `UnitDisplay`: displayed values
@@ -21,10 +23,11 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 
 - Preserve TOC dependency order and Lua 5.1 compatibility.
 - Never mutate secure attributes, position, visibility, or mouse state during combat.
+- Never call Blizzard Spellbook toggles, replace spell-button scripts, or use spell-button pre-hooks; use the minimap action template and secure post-hooks.
 - Do not rename saved variables or named secure frames without migration.
 - Add settings through the tab registry.
 - Keep feature data out of the main orchestration file.
 
 ## Validation
 
-Run Lua parsing and all specs, `scripts/validate-package.ps1`, `scripts/validate-release-workflow.ps1`, and `git diff --check`. In-game testing remains mandatory for combat, secure actions, and taint.
+Run `pwsh ./scripts/test-local.ps1` for Lua parsing, all specs, package and workflow validation, a verified local ZIP, and `git diff --check`. In-game testing remains mandatory for combat, secure actions, and taint.

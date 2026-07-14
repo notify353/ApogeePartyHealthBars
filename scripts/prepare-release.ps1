@@ -39,21 +39,7 @@ try {
 
     & (Join-Path $PSScriptRoot 'validate-package.ps1') -ExpectedVersion $Version
 
-    $lua = Get-Command lua5.1 -ErrorAction SilentlyContinue
-    $luac = Get-Command luac5.1 -ErrorAction SilentlyContinue
-    if ($lua -and $luac) {
-        Get-ChildItem -Filter '*.lua' | ForEach-Object {
-            & $luac.Source -p $_.FullName
-            if ($LASTEXITCODE -ne 0) { throw "Lua parsing failed for $($_.Name)." }
-        }
-        Get-ChildItem tests -Filter '*_spec.lua' | ForEach-Object {
-            & $lua.Source $_.FullName
-            if ($LASTEXITCODE -ne 0) { throw "Lua test failed: $($_.Name)." }
-        }
-    }
-    else {
-        Write-Warning 'Lua 5.1 is not installed locally; GitHub CI remains the authoritative Lua validation.'
-    }
+    & (Join-Path $PSScriptRoot 'test-lua.ps1')
 
     git diff --check
     if ($LASTEXITCODE -ne 0) { throw 'Whitespace validation failed.' }

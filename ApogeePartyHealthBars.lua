@@ -503,7 +503,6 @@ bindingController.Initialize({
 })
 local ClearBinding = bindingController.ClearBinding
 HookSpellbook = bindingController.HookSpellbook
-local OpenSpellbook = bindingController.OpenSpellbook
 
 -- Minimap controller
 minimapController = ApogeePartyHealthBars_MinimapController
@@ -550,7 +549,6 @@ configController.Initialize({
     SavePosition = SavePosition,
     UpdateHeader = function() UpdateHeader() end,
     UpdateMinimapButtonStyle = UpdateMinimapButtonStyle,
-    OpenSpellbook = OpenSpellbook,
     HookSpellbook = function() HookSpellbook() end,
     Print = Print,
 })
@@ -577,7 +575,9 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
     GetBindingDisplayName       = GetBindingDisplayName,
     GetBinding                  = S.GetBinding,
     ClearBinding                = ClearBinding,
+    Sounds                     = ApogeePartyHealthBars_Sounds,
     SpellTracker               = T,
+    HealthAlerts               = ApogeePartyHealthBars_HealthAlerts,
     Threat                     = H,
     SyncVisualTicker           = SyncVisualTicker,
     MacroLibrary               = ApogeePartyHealthBars_MacroLibrary,
@@ -610,3 +610,4 @@ ApogeePartyHealthBars_RuntimeEvents.Register(ApogeePartyHealthBars_EventRouter, 
     AuraEventNeedsLayout = AuraEventNeedsLayout,
     GetConfigUI = function() return configUI end,
 })
+ApogeePartyHealthBars_HealthAlerts.Register(ApogeePartyHealthBars_EventRouter)

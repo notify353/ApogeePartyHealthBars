@@ -6,6 +6,18 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Added
+
+- Added an enabled-by-default, selectable sound alert when the player or a party member drops below a configurable threshold (50% by default), with General settings to adjust, preview, or disable it.
+
+### Changed
+
+- Replaced click-to-cycle sound selectors with dropdown menus for low-health alerts and spell-tracker ready sounds; choosing `None` now disables the low-health alert without a separate checkbox.
+
+### Fixed
+
+- Prevented Blizzard action-bar and spell-casting taint while preserving automatic Spellbook opening by delegating the minimap action through Blizzard's out-of-combat action template, observing Shift-clicks only through secure post-hooks, and keeping dropdown dismissal out of Blizzard's shared special-frame registry.
+
 ## [0.33.0] - 2026-07-13
 
 ### Changed

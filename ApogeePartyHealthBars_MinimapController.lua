@@ -70,13 +70,18 @@ local function CreateMinimapButton()
     local parent = GetMinimapParent()
     if not parent then return false end
 
-    minimapBtn = CreateFrame("Button", "ApogeePartyHealthBarsMinimapButton", parent)
+    -- This template delegates the protected micro-button click through
+    -- Blizzard's action handler without promoting the minimap hierarchy to
+    -- protected frames. It is intentionally usable only out of combat.
+    minimapBtn = CreateFrame("Button", "ApogeePartyHealthBarsMinimapButton", parent,
+        "InsecureActionButtonTemplate")
     minimapBtn:SetSize(C.MINIMAP_BTN_SIZE, C.MINIMAP_BTN_SIZE)
     minimapBtn:SetFrameStrata(parent:GetFrameStrata() or "LOW")
     minimapBtn:SetFrameLevel((parent:GetFrameLevel() or 0) + 20)
     minimapBtn:EnableMouse(true)
     minimapBtn:RegisterForClicks("LeftButtonUp")
     minimapBtn:RegisterForDrag("RightButton")
+    minimapBtn:SetAttribute("useOnKeyDown", false)
 
     local border = minimapBtn:CreateTexture(nil, "OVERLAY")
     border:SetSize(53, 53)
@@ -98,7 +103,19 @@ local function CreateMinimapButton()
         highlight:SetPoint("TOPLEFT", icon, "TOPLEFT")
     end
 
-    minimapBtn:SetScript("OnClick", function()
+    minimapBtn:SetScript("PreClick", function(self, mouseButton)
+        if mouseButton ~= "LeftButton" or InCombatLockdown() then return end
+
+        self:SetAttribute("type1", nil)
+        self:SetAttribute("clickbutton1", nil)
+        local spellbookOpen = SpellBookFrame and SpellBookFrame.IsShown and SpellBookFrame:IsShown()
+        if not S.configMode and not spellbookOpen and _G.SpellbookMicroButton then
+            self:SetAttribute("type1", "click")
+            self:SetAttribute("clickbutton1", _G.SpellbookMicroButton)
+        end
+    end)
+
+    minimapBtn:SetScript("PostClick", function()
         if not D.IsEnabled() then
             D.SetAddonEnabled(true)
         end

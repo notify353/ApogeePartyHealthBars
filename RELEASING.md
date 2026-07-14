@@ -1,12 +1,12 @@
 # Releasing
 
-Requirements: PowerShell 7, Git, and an authenticated GitHub CLI. GitHub Actions is the only publisher.
+Requirements: PowerShell 7, Git, Lua 5.1 with its compiler, and an authenticated GitHub CLI. GitHub Actions is the only publisher.
 
 ## Development
 
 1. Work on a short-lived branch and open a pull request into `main`.
 2. Add user-visible changes under `CHANGELOG.md` -> `Unreleased`.
-3. Run the Lua tests, package checks, workflow-safety check, and `git diff --check`.
+3. Run `pwsh ./scripts/test-local.ps1` to execute the Lua tests, package checks, workflow-safety check, ZIP validation, and `git diff --check`.
 4. Merge only after CI passes.
 
 ## Prepare

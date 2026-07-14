@@ -1,5 +1,6 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
+local UIH = ApogeePartyHealthBars_UIHelpers
 
 ApogeePartyHealthBars_SpellTrackerConfig = {}
 local SC = ApogeePartyHealthBars_SpellTrackerConfig
@@ -41,16 +42,17 @@ function SC.Refresh()
         local ui = slotRows[i]
         local entry = entries[i]
         if entry then
+            local soundKey = tracker.GetSlotSoundKey(i) or "none"
             local name, icon, available = tracker.GetSlotDisplay(i)
             ui.icon:SetTexture(icon or "Interface\\Icons\\INV_Misc_QuestionMark")
             ui.icon:SetDesaturated(not available)
             ui.name:SetText((available and "|cffAAAAFF" or "|cff777777")
                 .. (name or entry.name or "Unknown") .. "|r")
-            ui.sound.label:SetText(tracker.GetSoundLabel(entry.soundKey))
+            ui.sound:SetSelectedKey(soundKey)
             SetCheckboxChecked(ui.check, entry.enabled ~= false)
             ui.check:Enable()
             ui.sound:Enable()
-            ui.preview:Enable()
+            UIH.SetButtonEnabled(ui.preview, soundKey ~= "none")
             ui.clear:Enable()
             if i > 1 then ui.up:Enable() else ui.up:Disable() end
             if i < C.TRACKER_MAX_SLOTS then ui.down:Enable() else ui.down:Disable() end
@@ -58,11 +60,11 @@ function SC.Refresh()
             ui.icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
             ui.icon:SetDesaturated(true)
             ui.name:SetText("|cff666666- empty -|r")
-            ui.sound.label:SetText("None")
+            ui.sound:SetSelectedKey("none")
             SetCheckboxChecked(ui.check, false)
             ui.check:Disable()
             ui.sound:Disable()
-            ui.preview:Disable()
+            UIH.SetButtonEnabled(ui.preview, false)
             ui.clear:Disable()
             ui.up:Disable()
             ui.down:Disable()
@@ -73,8 +75,8 @@ function SC.Refresh()
         ui.accent:SetShown(S.selectedTrackerSlot == i)
     end
     hint:SetText(S.selectedTrackerSlot
-        and "|cff00ff00Selected.|r Shift-click a spell in your spellbook."
-        or "Select a slot, then shift-click a spell in your spellbook.")
+        and "|cff00ff00Selected.|r Shift-click a spell in the open Spellbook."
+        or "Select a slot, then Shift-click a spell in the open Spellbook.")
 end
 
 function SC.Build(parent, deps)
@@ -140,11 +142,12 @@ function SC.Build(parent, deps)
         icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         local name = button:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
         name:SetPoint("LEFT", icon, "RIGHT", 4, 0)
-        name:SetWidth(100)
+        name:SetWidth(88)
         name:SetJustifyH("LEFT")
         name:SetWordWrap(false)
 
-        local sound = CreateSmallButton(button, "None", 88)
+        local sound = UIH.CreateDropdown(button, 100, 20, 140)
+        sound:SetOptions(D.Sounds.GetOptions(true))
         sound:SetPoint("LEFT", name, "RIGHT", 3, 0)
         local preview = CreateSmallButton(button, "Play", 30)
         preview:SetPoint("LEFT", sound, "RIGHT", 2, 0)
@@ -164,9 +167,8 @@ function SC.Build(parent, deps)
             tracker.SetSlotEnabled(slot, self:GetChecked())
             SC.Refresh()
         end)
-        sound:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-        sound:SetScript("OnClick", function(_, mouseButton)
-            tracker.CycleSlotSound(slot, mouseButton == "RightButton" and -1 or 1)
+        sound:SetSelectionCallback(function(soundKey)
+            tracker.SetSlotSound(slot, soundKey)
             SC.Refresh()
         end)
         preview:SetScript("OnClick", function()

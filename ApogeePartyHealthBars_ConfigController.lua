@@ -53,7 +53,6 @@ function C.SetMode(active)
             D.SavePosition()
         end)
         D.GetConfigUI().Show()
-        D.OpenSpellbook()
         D.HookSpellbook()
     else
         C.Exit()

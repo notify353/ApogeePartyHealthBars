@@ -5,6 +5,7 @@ Compact five-player healing frames for World of Warcraft Anniversary and Burning
 ## Features
 
 - Player and party health, power, shields, incoming heals, HoTs, and threat
+- Selectable sound and threshold when the player or a party member drops low on health
 - Inline unit targets and target-of-target health
 - Secure click-casting and clickable buff reminders
 - Player spell and crowd-control tracking
@@ -24,7 +25,18 @@ Interface/AddOns/ApogeePartyHealthBars/ApogeePartyHealthBars.toc
 
 ## Use
 
-Left-click the minimap button to open settings. Shift-click a spellbook spell when assigning click bindings or tracker slots. Secure changes may wait until combat ends.
+Left-click the minimap button to open settings; the Spellbook opens alongside it. Shift-click a spell when assigning click bindings or tracker slots. Secure changes may wait until combat ends.
+
+## Develop
+
+From an elevated PowerShell, install Lua for Windows 5.1.5. Restart PowerShell so the updated `PATH` is available, then run the complete local validation suite:
+
+```powershell
+winget install --id rjpcomputing.luaforwindows --exact --version 5.1.5.52
+pwsh ./scripts/test-local.ps1
+```
+
+The runner rejects other Lua versions, parses every add-on source file, runs every Lua specification, validates the package and release workflow, builds and inspects a local ZIP, and checks the Git diff for whitespace errors.
 
 ## Compatibility
 

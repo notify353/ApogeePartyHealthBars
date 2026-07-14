@@ -36,10 +36,9 @@ jobs:
 
       - name: Install Lua 5.1
         run: sudo apt-get update && sudo apt-get install -y lua5.1
-      - name: Parse add-on files
-        run: for file in *.lua; do luac5.1 -p "$file"; done
-      - name: Run Lua test suite
-        run: for spec in tests/*_spec.lua; do lua5.1 "$spec"; done
+      - name: Parse add-on files and run Lua test suite
+        shell: pwsh
+        run: ./scripts/test-lua.ps1
 
       - name: Build package without publishing
         uses: BigWigsMods/packager@6d50adb6e8517eefef63f4afb16a6518166a6b28 # v2.5.1

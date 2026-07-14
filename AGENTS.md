@@ -16,6 +16,7 @@ These instructions apply to every file in this repository.
 - Add user-visible changes to the `Unreleased` section of `CHANGELOG.md`.
 - Preserve compatibility with the WoW interface declared in `ApogeePartyHealthBars.toc` unless the user explicitly requests, tests, and documents a compatibility change.
 - Before proposing a merge, run the Lua tests, TOC/reference checks, package-layout validation, and `git diff --check` as documented by the repository workflows.
+- Use `pwsh ./scripts/test-local.ps1` as the canonical full local validation command.
 
 ## Release Workflow
 

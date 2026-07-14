@@ -2,6 +2,11 @@ local C = ApogeePartyHealthBars_C
 
 ApogeePartyHealthBars_UIHelpers = {}
 local H = ApogeePartyHealthBars_UIHelpers
+local activeDropdown
+
+function H.CloseActiveDropdown()
+    if activeDropdown then activeDropdown:Close() end
+end
 
 function H.StyleTabButton(button, active)
     button.bg:SetColorTexture(active and 0.22 or 0.10, active and 0.22 or 0.10, active and 0.26 or 0.12, 1)
@@ -23,6 +28,187 @@ function H.CreateButton(parent, labelText, width, height)
     label:SetPoint("CENTER"); label:SetText(labelText)
     button.bg, button.label, button.border = bg, label, border
     return button
+end
+
+function H.SetButtonEnabled(button, enabled)
+    if enabled then button:Enable() else button:Disable() end
+    if button.label then
+        local color = enabled and 0.85 or 0.45
+        button.label:SetTextColor(color, color, color)
+    end
+end
+
+function H.CreateDropdown(parent, width, height, popupWidth)
+    width = width or C.CONFIG_CONTENT_W
+    height = height or C.CONFIG_BTN_H
+    popupWidth = popupWidth or width
+
+    local dropdown = H.CreateButton(parent, "Select...", width, height)
+    dropdown.label:ClearAllPoints()
+    dropdown.label:SetPoint("LEFT", dropdown, "LEFT", 6, 0)
+    dropdown.label:SetPoint("RIGHT", dropdown, "RIGHT", -18, 0)
+    dropdown.label:SetJustifyH("LEFT")
+    dropdown.label:SetWordWrap(false)
+
+    local arrow = dropdown:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    arrow:SetPoint("RIGHT", dropdown, "RIGHT", -6, 0)
+    arrow:SetText("v")
+
+    local dismiss = CreateFrame("Button", nil, UIParent)
+    dismiss:SetAllPoints(UIParent)
+    dismiss:SetFrameStrata("DIALOG")
+    dismiss:SetFrameLevel(100)
+    dismiss:EnableMouse(true)
+    dismiss:Hide()
+
+    local popup = CreateFrame("Frame", nil, UIParent)
+    popup:SetWidth(popupWidth)
+    popup:SetFrameStrata("DIALOG")
+    popup:SetFrameLevel(101)
+    popup:SetClampedToScreen(true)
+    popup:EnableMouse(true)
+    popup:Hide()
+
+    local supportsKeyboardPropagation = dismiss.SetPropagateKeyboardInput ~= nil
+    if supportsKeyboardPropagation then
+        dismiss:SetPropagateKeyboardInput(true)
+    end
+
+    local popupBg = popup:CreateTexture(nil, "BACKGROUND")
+    popupBg:SetAllPoints()
+    popupBg:SetColorTexture(0.06, 0.06, 0.08, 0.98)
+    for _, edge in ipairs({ "TOP", "BOTTOM", "LEFT", "RIGHT" }) do
+        local border = popup:CreateTexture(nil, "BORDER")
+        if edge == "TOP" or edge == "BOTTOM" then
+            border:SetPoint(edge .. "LEFT", popup, edge .. "LEFT")
+            border:SetPoint(edge .. "RIGHT", popup, edge .. "RIGHT")
+            border:SetHeight(1)
+        else
+            border:SetPoint("TOP" .. edge, popup, "TOP" .. edge)
+            border:SetPoint("BOTTOM" .. edge, popup, "BOTTOM" .. edge)
+            border:SetWidth(1)
+        end
+        border:SetColorTexture(0.36, 0.36, 0.40, 0.9)
+    end
+
+    dropdown.arrow = arrow
+    dropdown.dismiss = dismiss
+    dropdown.popup = popup
+    dropdown.options = {}
+    dropdown.optionButtons = {}
+
+    function dropdown:Close()
+        popup:Hide()
+        if supportsKeyboardPropagation then dismiss:EnableKeyboard(false) end
+        dismiss:Hide()
+        arrow:SetText("v")
+        if activeDropdown == self then activeDropdown = nil end
+    end
+
+    function dropdown:SetSelectionCallback(callback)
+        assert(callback == nil or type(callback) == "function", "dropdown callback must be a function")
+        self.onSelect = callback
+    end
+
+    function dropdown:SetSelectedKey(key)
+        local selectedLabel
+        for index, option in ipairs(self.options) do
+            local selected = option.key == key
+            local optionButton = self.optionButtons[index]
+            optionButton.bg:SetColorTexture(
+                selected and 0.22 or 0.10,
+                selected and 0.22 or 0.10,
+                selected and 0.26 or 0.12,
+                1)
+            optionButton.label:SetTextColor(
+                selected and 1 or 0.85,
+                selected and 0.82 or 0.85,
+                selected and 0 or 0.85)
+            if selected then selectedLabel = option.label end
+        end
+        self.selectedKey = selectedLabel and key or nil
+        self.label:SetText(selectedLabel or "Select...")
+        return self.selectedKey
+    end
+
+    function dropdown:SetOptions(options)
+        assert(type(options) == "table", "dropdown options must be a table")
+        local seen = {}
+        self.options = {}
+
+        for index, option in ipairs(options) do
+            assert(type(option) == "table" and type(option.key) == "string"
+                and type(option.label) == "string", "invalid dropdown option")
+            assert(not seen[option.key], "duplicate dropdown option: " .. option.key)
+            seen[option.key] = true
+            self.options[index] = { key = option.key, label = option.label }
+
+            local optionButton = self.optionButtons[index]
+            if not optionButton then
+                optionButton = H.CreateButton(popup, "", popupWidth - 4, height)
+                optionButton:SetPoint("TOPLEFT", popup, "TOPLEFT", 2, -(2 + (index - 1) * height))
+                optionButton.label:ClearAllPoints()
+                optionButton.label:SetPoint("LEFT", optionButton, "LEFT", 6, 0)
+                optionButton.label:SetPoint("RIGHT", optionButton, "RIGHT", -6, 0)
+                optionButton.label:SetJustifyH("LEFT")
+                optionButton.label:SetWordWrap(false)
+                optionButton:SetScript("OnClick", function(self)
+                    local selectedKey = self.optionKey
+                    dropdown:SetSelectedKey(selectedKey)
+                    dropdown:Close()
+                    if dropdown.onSelect then dropdown.onSelect(selectedKey) end
+                end)
+                self.optionButtons[index] = optionButton
+            end
+            optionButton.optionKey = option.key
+            optionButton.label:SetText(option.label)
+            optionButton:Show()
+        end
+
+        for index = #options + 1, #self.optionButtons do
+            self.optionButtons[index]:Hide()
+        end
+        popup:SetHeight(#options * height + 4)
+        self:SetSelectedKey(self.selectedKey)
+    end
+
+    function dropdown:Open()
+        if #self.options == 0 then return end
+        if activeDropdown and activeDropdown ~= self then H.CloseActiveDropdown() end
+        activeDropdown = self
+        popup:ClearAllPoints()
+        popup:SetPoint("TOPLEFT", self, "BOTTOMLEFT", 0, -2)
+        self:SetSelectedKey(self.selectedKey)
+        if supportsKeyboardPropagation then
+            dismiss:SetPropagateKeyboardInput(true)
+            dismiss:EnableKeyboard(true)
+        end
+        dismiss:Show()
+        popup:Show()
+        arrow:SetText("^")
+    end
+
+    dropdown:SetScript("OnClick", function(self)
+        if popup:IsShown() then self:Close() else self:Open() end
+    end)
+    dropdown:SetScript("OnHide", function(self) self:Close() end)
+    dropdown:SetScript("OnDisable", function(self) self:Close() end)
+    dismiss:SetScript("OnClick", function() dropdown:Close() end)
+    if supportsKeyboardPropagation then
+        dismiss:SetScript("OnKeyDown", function(self, key)
+            local isEscape = key == "ESCAPE"
+            self:SetPropagateKeyboardInput(not isEscape)
+            if isEscape then dropdown:Close() end
+        end)
+    end
+    popup:SetScript("OnHide", function()
+        if supportsKeyboardPropagation then dismiss:EnableKeyboard(false) end
+        dismiss:Hide()
+        arrow:SetText("v")
+        if activeDropdown == dropdown then activeDropdown = nil end
+    end)
+
+    return dropdown
 end
 
 function H.CreateTabButton(parent, text, xOffset, width)

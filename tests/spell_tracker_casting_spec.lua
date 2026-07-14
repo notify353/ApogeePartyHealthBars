@@ -98,6 +98,7 @@ GameTooltip.AddLine = function() end
 GameTooltip.Show = function() tooltipShows = tooltipShows + 1 end
 GameTooltip.Hide = function() tooltipHides = tooltipHides + 1 end
 
+dofile("ApogeePartyHealthBars_Sounds.lua")
 dofile("ApogeePartyHealthBars_SpellTracker.lua")
 local tracker = ApogeePartyHealthBars_SpellTracker
 local deferred = 0
@@ -122,6 +123,18 @@ assert(seeded[1].name == "Fireball")
 assert(seeded[2].name == "Frostbolt")
 assert(seeded[3].name == "Fire Blast")
 assert(ApogeePartyHealthBars_S.charSv.trackerDefaultsVersion == 1)
+assert(tracker.SetSlotSound(1, "quest_done") == "quest_done",
+    "tracker dropdown sound selection did not persist")
+assert(tracker.GetSlots()[1].soundKey == "quest_done")
+assert(tracker.SetSlotSound(1, "invalid") == "none",
+    "invalid tracker dropdown sound did not normalize")
+tracker.GetSlots()[1].soundKey = "warning"
+assert(tracker.GetSlotSoundKey(1) == "alarm_bell"
+    and tracker.GetSlots()[1].soundKey == "alarm_bell",
+    "legacy tracker sound was not normalized for the dropdown")
+assert(tracker.SetSlotSound(1, "none") == "none")
+assert(tracker.SetSlotSound(99, "alarm_soft") == nil,
+    "missing tracker slot accepted a dropdown sound")
 
 local castButton = assert(secureButtons[1], "tracker did not create a secure cast button")
 assert(castButton.attributes.type == "spell")

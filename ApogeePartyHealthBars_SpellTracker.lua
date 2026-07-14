@@ -634,13 +634,13 @@ function T.Rebaseline()
     T.Refresh(true)
 end
 
-function T.ResolveAndRefresh(forceLayout)
-    local oldHeight = T.GetHeight("player")
+function T.ResolveAndRefresh()
     ResolveEntries()
-    local newHeight = T.GetHeight("player")
     wipe(previousStates)
     initialized = false
-    if (forceLayout or oldHeight ~= newHeight) and requestLayout then requestLayout() end
+    -- Icon count, order, or lane can change without changing tracker height.
+    -- Always queue the authoritative row layout before secure overlays are reused.
+    if requestLayout then requestLayout() end
     if syncTicker then syncTicker() end
     T.Layout()
     T.Refresh(true)
@@ -769,7 +769,5 @@ end
 function T.PreviewSound(key) return PlayReadySound(key) end
 
 function T.OnTrackerSettingChanged()
-    -- The saved setting is changed before this callback runs, so height comparisons
-    -- alone cannot observe the disabled-to-enabled layout transition.
-    T.ResolveAndRefresh(true)
+    T.ResolveAndRefresh()
 end

@@ -36,6 +36,9 @@ jobs:
 
       - name: Install Lua 5.1
         run: sudo apt-get update && sudo apt-get install -y lua5.1
+      - name: Validate WoW API export baseline
+        shell: pwsh
+        run: ./scripts/check-wow-api-export.ps1
       - name: Parse add-on files and run Lua test suite
         shell: pwsh
         run: ./scripts/test-lua.ps1

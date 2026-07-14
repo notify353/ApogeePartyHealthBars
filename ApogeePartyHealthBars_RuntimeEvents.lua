@@ -44,7 +44,7 @@ function R.Register(eventRouter, deps)
         eventRouter.RegisterOptional(event, "SpellTracker", function() T.Refresh(false) end)
     end
 
-    eventRouter.RegisterOptional("UNIT_FLAGS", "SpellTrackerTarget", function(unit)
+    eventRouter.RegisterOptional("UNIT_FLAGS", "SpellTrackerTarget", function(_, unit)
         if unit == "target" then T.Refresh(false) end
     end)
 

@@ -27,6 +27,9 @@ foreach ($entry in @(
     if ($entry.Content -notmatch 'test-lua\.ps1') {
         throw "$($entry.Name) must use the shared Lua 5.1 test runner."
     }
+    if ($entry.Content -notmatch 'check-wow-api-export\.ps1') {
+        throw "$($entry.Name) must validate the recorded WoW API export baseline."
+    }
 }
 
 Write-Host 'Release workflow safety validation passed.'

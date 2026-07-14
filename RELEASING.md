@@ -6,8 +6,9 @@ Requirements: PowerShell 7, Git, Lua 5.1 with its compiler, and an authenticated
 
 1. Work on a short-lived branch and open a pull request into `main`.
 2. Add user-visible changes under `CHANGELOG.md` -> `Unreleased`.
-3. Run `pwsh ./scripts/test-local.ps1` to execute the Lua tests, package checks, workflow-safety check, ZIP validation, and `git diff --check`.
-4. Merge only after CI passes.
+3. Run `pwsh ./scripts/check-wow-api-export.ps1`. If the installed client build is newer than the recorded export, follow `docs/WOW_INTERFACE_EXPORT.md` and record the fresh export before continuing.
+4. Run `pwsh ./scripts/test-local.ps1` to execute the WoW API export guard, Lua tests, package checks, workflow-safety check, ZIP validation, and `git diff --check`.
+5. Merge only after CI passes.
 
 ## Prepare
 
@@ -16,6 +17,8 @@ From clean, synchronized `main`:
 ```powershell
 pwsh ./scripts/prepare-release.ps1 -Version X.Y.Z
 ```
+
+Release preparation validates that the TOC interface matches the recorded Blizzard export. On a machine with WoW installed, it also requires the installed Anniversary build and local export to be current.
 
 Push the preparation commit and wait for CI. Then verify in game:
 

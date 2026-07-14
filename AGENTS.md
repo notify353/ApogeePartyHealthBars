@@ -6,8 +6,18 @@ These instructions apply to every file in this repository.
 
 - Read `README.md` for the add-on's supported features and installation model.
 - Read `RELEASING.md` before preparing, tagging, publishing, or repairing a release.
+- Read `docs/WOW_INTERFACE_EXPORT.md` before creating, changing, reviewing, or troubleshooting code that depends on the WoW interface.
 - Treat `CHANGELOG.md`, `.pkgmeta`, the TOC, the scripts under `scripts/`, and the workflows under `.github/workflows/` as the authoritative release configuration.
 - Use GitHub CLI for GitHub repository operations. Do not use browser automation for pull requests, tags, releases, asset uploads, Actions monitoring, or publishing.
+
+## WoW API Authority
+
+- Treat the matching local `BlizzardInterfaceCode` export as the primary authority for WoW APIs, events, arguments, return values, enums, structures, frame templates, and secure UI behavior.
+- Before API-dependent implementation, review, or troubleshooting, run `pwsh ./scripts/check-wow-api-export.ps1` and search the relevant files under `Blizzard_APIDocumentationGenerated`.
+- When generated documentation does not establish practical usage, search the matching exported Blizzard Lua and XML source, especially for secure actions, combat lockdown, and frame templates.
+- Never substitute Retail, another Classic branch, remembered behavior, or unverified online documentation for the export from the client targeted by `ApogeePartyHealthBars.toc`.
+- If the checker reports that the export is missing or stale, stop API-dependent work and ask the owner to follow `docs/WOW_INTERFACE_EXPORT.md`; do not guess. If the environment cannot access the local WoW installation, disclose that the authoritative export could not be checked.
+- After a client update or fresh export, run `pwsh ./scripts/record-wow-api-export.ps1` and commit the resulting `docs/wow-api-export.json` update with any compatibility changes.
 
 ## Development Workflow
 
@@ -15,6 +25,7 @@ These instructions apply to every file in this repository.
 - Do not develop directly on a release tag.
 - Add user-visible changes to the `Unreleased` section of `CHANGELOG.md`.
 - Preserve compatibility with the WoW interface declared in `ApogeePartyHealthBars.toc` unless the user explicitly requests, tests, and documents a compatibility change.
+- Refresh the Blizzard interface export after targeted client patches, PTR/beta changes, major releases, or TOC interface changes.
 - Before proposing a merge, run the Lua tests, TOC/reference checks, package-layout validation, and `git diff --check` as documented by the repository workflows.
 - Use `pwsh ./scripts/test-local.ps1` as the canonical full local validation command.
 

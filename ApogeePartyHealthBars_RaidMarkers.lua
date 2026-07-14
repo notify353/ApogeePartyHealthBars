@@ -16,22 +16,31 @@ local buttons = {}
 local assignedGuids = {}
 local supportedMarkers = { [5] = true, [7] = true, [8] = true }
 
-local function SetButtonsShown(shown)
-    for _, button in ipairs(buttons) do button:SetShown(shown) end
+local function SetMarkerState(button, assigned, targetMarked, currentTargetMarker)
+    button.markerAssigned = assigned and true or false
+    button.targetMarked = targetMarked and true or false
+    button.currentTargetMarker = currentTargetMarker and true or false
+    local faded = button.targetMarked or button.markerAssigned
+    button.texture:SetDesaturated(faded)
+    button.texture:SetAlpha(faded and ASSIGNED_ALPHA or 1)
 end
 
-local function SetMarkerAssigned(button, assigned)
-    button.markerAssigned = assigned and true or false
-    button.texture:SetDesaturated(button.markerAssigned)
-    button.texture:SetAlpha(button.markerAssigned and ASSIGNED_ALPHA or 1)
+local function ClearGuidAssignments(guid)
+    if not guid then return end
+    for index, assignedGuid in pairs(assignedGuids) do
+        if assignedGuid == guid then assignedGuids[index] = nil end
+    end
 end
 
 local function ApplyMarker(index)
     if not UnitExists or not UnitExists("target") or not SetRaidTarget then return end
     local guid = UnitGUID and UnitGUID("target")
-    if guid then assignedGuids[index] = guid end
+    if guid then
+        ClearGuidAssignments(guid)
+        assignedGuids[index] = guid
+    end
     SetRaidTarget("target", index)
-    SetButtonsShown(false)
+    M.Refresh()
 end
 
 local function CreateMarkerButton(parent, definition)
@@ -54,7 +63,13 @@ local function CreateMarkerButton(parent, definition)
         if not GameTooltip then return end
         GameTooltip:SetOwner(self, "ANCHOR_TOP")
         GameTooltip:AddLine(definition.label .. " target marker")
-        if self.markerAssigned then
+        if self.targetMarked then
+            if self.currentTargetMarker then
+                GameTooltip:AddLine("Currently applied to this target.", 0.85, 0.85, 0.85)
+            else
+                GameTooltip:AddLine("Click to replace the current marker.", 0.85, 0.85, 0.85)
+            end
+        elseif self.markerAssigned then
             GameTooltip:AddLine("Currently assigned. Click to move it here.", 0.85, 0.85, 0.85)
         else
             GameTooltip:AddLine("Click to apply.", 0.85, 0.85, 0.85)
@@ -83,13 +98,6 @@ function M.Attach(playerRow)
     M.Refresh()
 end
 
-local function ClearGuidAssignments(guid)
-    if not guid then return end
-    for index, assignedGuid in pairs(assignedGuids) do
-        if assignedGuid == guid then assignedGuids[index] = nil end
-    end
-end
-
 local function RefreshInternal(ignoredGuid)
     local targetExists = UnitExists and UnitExists("target")
     local guid = targetExists and UnitGUID and UnitGUID("target")
@@ -110,10 +118,14 @@ local function RefreshInternal(ignoredGuid)
     local visible = targetExists
         and UnitCanAttack and UnitCanAttack("player", "target")
         and not targetDead
-        and not currentMarker
+    local targetMarked = currentMarker ~= nil
     for position, definition in ipairs(MARKERS) do
         local button = buttons[position]
-        SetMarkerAssigned(button, assignedGuids[definition.index] ~= nil)
+        SetMarkerState(
+            button,
+            assignedGuids[definition.index] ~= nil,
+            targetMarked,
+            currentMarker == definition.index)
         button:SetShown(visible and true or false)
     end
 end

@@ -8,7 +8,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
-- Kept already-assigned raid marker controls visible in gray so they can be moved directly to a new target.
+- Kept raid marker controls visible in gray on marked targets and when assigned elsewhere so markers can be replaced or moved directly.
 
 ### Fixed
 

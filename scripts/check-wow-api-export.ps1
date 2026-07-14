@@ -28,9 +28,11 @@ function Find-WowRoot([string]$StartPath) {
         $current = $current.Parent
     }
 
-    $standardRoot = 'C:\Program Files (x86)\World of Warcraft'
-    if (Test-Path -LiteralPath (Join-Path $standardRoot '.build.info') -PathType Leaf) {
-        return $standardRoot
+    if ([System.IO.Path]::DirectorySeparatorChar -eq '\') {
+        $standardRoot = 'C:\Program Files (x86)\World of Warcraft'
+        if (Test-Path -LiteralPath (Join-Path $standardRoot '.build.info') -PathType Leaf) {
+            return $standardRoot
+        }
     }
 
     return $null

@@ -487,6 +487,15 @@ ApplyAllSecureBindings = function()
     ApplyAllSelfBuffBindings()
 end
 
+local function ReconcileAllSecureOverlays()
+    SyncCastOverlays()
+    ApplyAllPartyBuffBindings()
+    ApplyAllSelfBuffBindings()
+    T.RefreshSecureActions()
+end
+
+secureFrames.InitializeReconciler(ReconcileAllSecureOverlays)
+
 local playerSpells = ApogeePartyHealthBars_PlayerSpells
 local GetSpellFromSpellButton = playerSpells.GetSpellFromButton
 
@@ -550,6 +559,7 @@ configController.Initialize({
     UpdateHeader = function() UpdateHeader() end,
     UpdateMinimapButtonStyle = UpdateMinimapButtonStyle,
     HookSpellbook = function() HookSpellbook() end,
+    ScheduleSecureReconcile = secureFrames.RequestReconcile,
     Print = Print,
 })
 ExitConfigMode = configController.Exit

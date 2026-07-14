@@ -6,6 +6,10 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Fixed
+
+- Kept tracked spells and other secure overlays clickable after closing the add-on settings without requiring a UI reload.
+
 ## [0.34.0] - 2026-07-13
 
 ### Added

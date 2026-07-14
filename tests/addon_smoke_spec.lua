@@ -7,7 +7,10 @@ function print(message) messages[#messages + 1] = tostring(message) end
 
 local frames = {}
 local function widget()
-    local object = { scripts = {}, shown = true, attributes = {} }
+    local object = {
+        scripts = {}, shown = true, attributes = {}, pointWrites = 0,
+        mutations = 0, mouseEnabled = false,
+    }
     local methods = {
         SetScript = function(self, name, callback) self.scripts[name] = callback end,
         GetScript = function(self, name) return self.scripts[name] end,
@@ -31,11 +34,24 @@ local function widget()
         GetVerticalScrollRange = function() return 0 end,
         GetID = function() return 1 end,
         IsShown = function(self) return self.shown end,
-        Show = function(self) self.shown = true end,
-        Hide = function(self) self.shown = false end,
+        Show = function(self) self.shown = true; self.mutations = self.mutations + 1 end,
+        Hide = function(self) self.shown = false; self.mutations = self.mutations + 1 end,
         SetShown = function(self, value) self.shown = value end,
-        SetAttribute = function(self, key, value) self.attributes[key] = value end,
+        SetAttribute = function(self, key, value)
+            self.attributes[key] = value
+            self.mutations = self.mutations + 1
+        end,
         GetAttribute = function(self, key) return self.attributes[key] end,
+        SetPoint = function(self)
+            self.pointWrites = self.pointWrites + 1
+            self.mutations = self.mutations + 1
+        end,
+        ClearAllPoints = function(self) self.mutations = self.mutations + 1 end,
+        SetSize = function(self) self.mutations = self.mutations + 1 end,
+        EnableMouse = function(self, enabled)
+            self.mouseEnabled = enabled
+            self.mutations = self.mutations + 1
+        end,
         IsEnabled = function() return true end,
         GetName = function() return nil end,
         GetParent = function() return UIParent end,
@@ -46,10 +62,10 @@ local function widget()
         GetChecked = function() return false end,
     }
     local noopMethods = {
-        "SetSize", "SetPoint", "ClearAllPoints", "SetAllPoints", "SetTexture",
+        "SetAllPoints", "SetTexture",
         "SetTexCoord", "SetDrawLayer", "SetHorizTile", "SetVertTile",
         "SetFrameStrata", "SetFrameLevel",
-        "EnableMouse", "EnableMouseWheel", "SetMovable", "SetClampedToScreen",
+        "EnableMouseWheel", "SetMovable", "SetClampedToScreen",
         "SetHighlightTexture", "SetBackdrop", "SetBackdropColor", "SetBackdropBorderColor",
         "SetStatusBarTexture", "SetStatusBarColor", "SetMinMaxValues", "SetValue",
         "SetFontObject", "SetFont", "SetText", "SetTextColor", "SetJustifyH",
@@ -82,7 +98,8 @@ PowerBarColor = { MANA = { r = 0, g = 0, b = 1 } }
 FACTION_HORDE, FACTION_ALLIANCE = "Horde", "Alliance"
 MAX_ACCOUNT_MACROS, MAX_CHARACTER_MACROS = 120, 18
 
-function InCombatLockdown() return false end
+local inCombat = false
+function InCombatLockdown() return inCombat end
 function UnitClass() return "Warrior", "WARRIOR" end
 function UnitLevel() return 70 end
 function UnitExists(unit) return unit == "player" or unit == "target" end
@@ -110,7 +127,11 @@ function UnitGetTotalAbsorbs() return 0 end
 function UnitAura() return nil end
 function UnitBuff() return nil end
 function UnitDebuff() return nil end
-local smokeSpells = { [1] = { "Fireball", 9001 }, [2] = { "Polymorph", 9002 } }
+local smokeSpells = {
+    [1] = { "Fireball", 9001 },
+    [2] = { "Polymorph", 9002 },
+    [3] = { "Frostbolt", 9003 },
+}
 function GetNumSpellTabs() return 1 end
 function GetSpellTabInfo() return nil, nil, 0, #smokeSpells end
 function GetSpellBookItemName(slot) return smokeSpells[slot][1], "Rank 1" end
@@ -212,18 +233,69 @@ local function ClickMinimapButton()
     if postClick then postClick(minimapButton, "LeftButton") end
 end
 
+local function RunFrameUpdates()
+    for _, frame in ipairs(frames) do
+        local update = frame.scripts.OnUpdate
+        if update and frame:IsShown() then update(frame, 0.25) end
+    end
+end
+
+local function GetTrackerCastButtons()
+    local named = {}
+    for name, frame in pairs(_G) do
+        if type(name) == "string" and name:match("^ApogeePartyHealthBarsTrackerCast%d+$") then
+            named[#named + 1] = { name = name, frame = frame }
+        end
+    end
+    table.sort(named, function(left, right) return left.name < right.name end)
+    local result = {}
+    for index, entry in ipairs(named) do result[index] = entry.frame end
+    return result
+end
+
 ClickMinimapButton()
 assert(ApogeePartyHealthBars_S.configMode, "minimap click did not open settings")
 assert(SpellBookFrame:IsShown(), "opening settings did not open the spellbook")
 assert(spellbookOpenCount == 1, "spellbook did not open exactly once")
 assert(directSpellbookToggleCount == 0, "add-on called ToggleSpellBook directly")
+assert(ApogeePartyHealthBars_SpellTracker.AssignSpell(2, 9003, "Frostbolt"),
+    "could not assign a tracked spell while settings were open")
+local trackerButtons = GetTrackerCastButtons()
+local existingTrackerButton = assert(trackerButtons[1], "missing existing tracker secure button")
+local addedTrackerButton = assert(trackerButtons[2], "missing newly assigned tracker secure button")
+assert(existingTrackerButton.attributes.spell == "Fireball(Rank 1)")
+assert(addedTrackerButton.attributes.spell == "Frostbolt(Rank 1)")
 ApogeePartyHealthBars_ConfigController.SetMode(false)
+local existingImmediatePoints = existingTrackerButton.pointWrites
+local addedImmediatePoints = addedTrackerButton.pointWrites
+RunFrameUpdates()
+assert(existingTrackerButton.pointWrites > existingImmediatePoints
+        and addedTrackerButton.pointWrites > addedImmediatePoints,
+    "settings close did not reconcile tracker overlays on the next frame")
+assert(existingTrackerButton.attributes.spell == "Fireball(Rank 1)"
+        and addedTrackerButton.attributes.spell == "Frostbolt(Rank 1)",
+    "settings close changed tracked-spell secure attributes")
+assert(existingTrackerButton.shown and existingTrackerButton.mouseEnabled
+        and addedTrackerButton.shown and addedTrackerButton.mouseEnabled,
+    "tracked spells stopped receiving clicks after settings close")
 ClickMinimapButton()
 assert(SpellBookFrame:IsShown() and spellbookOpenCount == 1,
     "opening settings toggled an already-open spellbook closed")
+local combatTrackerMutations = existingTrackerButton.mutations + addedTrackerButton.mutations
+inCombat = true
 router.Dispatch("PLAYER_REGEN_DISABLED")
 assert(not ApogeePartyHealthBars_S.configMode, "combat did not close add-on settings")
 assert(SpellBookFrame:IsShown(), "combat settings cleanup hid the protected spellbook")
+RunFrameUpdates()
+assert(existingTrackerButton.mutations + addedTrackerButton.mutations == combatTrackerMutations,
+    "combat settings close mutated protected tracker overlays")
+assert(ApogeePartyHealthBars_S.secureUpdatePending,
+    "combat settings close did not defer secure reconciliation")
+inCombat = false
+router.Dispatch("PLAYER_REGEN_ENABLED")
+assert(existingTrackerButton.shown and existingTrackerButton.mouseEnabled
+        and addedTrackerButton.shown and addedTrackerButton.mouseEnabled,
+    "leaving combat did not restore tracked-spell clickability")
 SpellBookFrame:Hide()
 
 ApogeePartyHealthBars_S.configMode = true
@@ -235,10 +307,7 @@ ApogeePartyHealthBars_ConfigUI.Show()
 ApogeePartyHealthBars_ConfigUI.Hide()
 ApogeePartyHealthBars_S.configMode = false
 
-for _, frame in ipairs(frames) do
-    local update = frame.scripts.OnUpdate
-    if update then update(frame, 0.25) end
-end
+RunFrameUpdates()
 
 assert(type(ApogeePartyHealthBars_S.sv) == "table", "saved variables did not initialize")
 assert(ApogeePartyHealthBars_S.sv.clickableBuffIcons == true, "clickable buff icons should default on")

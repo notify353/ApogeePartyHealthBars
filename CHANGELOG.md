@@ -14,6 +14,11 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Fixed
 
+- Matched wheel display-spell feedback to the tracker: active casts use its yellow border, invalid targets and missing resources gray the icon, while cooldown and range states retain their distinct visuals.
+- Added per-slot ready sounds, ready pulses, shared compact spell tooltips, and tracker-equivalent cooldown behavior to wheel display spells.
+- Replaced empty wheel-slot question marks with plain grey boxes.
+- Restored Blizzard's standard spell details above the shared tracker and wheel status tooltip lines.
+- Removed invalid-target X overlays from tracked spells; invalid targets now use the shared grey/desaturated treatment only.
 - Kept tracked spells and other secure overlays clickable after closing the add-on settings without requiring a UI reload.
 - Refreshed target-dependent spell-tracker states when the target's unit flags change.
 

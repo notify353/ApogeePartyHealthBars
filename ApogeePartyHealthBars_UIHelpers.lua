@@ -38,6 +38,26 @@ function H.SetButtonEnabled(button, enabled)
     end
 end
 
+-- Keep spell-icon tooltips compact and consistent without modifying Blizzard's
+-- shared tooltip frame styling or protected UI state.
+function H.ShowSpellTooltip(anchor, spellId, title, stateLabel, reason, contextLines)
+    if not GameTooltip then return end
+    if GameTooltip.ClearLines then GameTooltip:ClearLines() end
+    GameTooltip:SetOwner(anchor, "ANCHOR_TOP")
+    if spellId and GameTooltip.SetSpellByID then
+        GameTooltip:SetSpellByID(spellId)
+    else
+        GameTooltip:SetText(title or "Spell", 1, 0.82, 0.15)
+    end
+    GameTooltip:AddLine(" ")
+    if stateLabel and stateLabel ~= "" then GameTooltip:AddLine(stateLabel, 0.72, 0.72, 0.76) end
+    if reason and reason ~= "" then GameTooltip:AddLine(reason, 1, 0.45, 0.35, true) end
+    for _, line in ipairs(contextLines or {}) do
+        GameTooltip:AddLine(line.text or line, line.r or 0.72, line.g or 0.72, line.b or 0.76, line.wrap)
+    end
+    GameTooltip:Show()
+end
+
 function H.CreateDropdown(parent, width, height, popupWidth)
     width = width or C.CONFIG_CONTENT_W
     height = height or C.CONFIG_BTN_H

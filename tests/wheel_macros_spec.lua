@@ -1,6 +1,7 @@
 unpack = unpack or table.unpack
 
-ApogeePartyHealthBars_C = { TRACKER_ICON_SIZE = 20, OUT_OF_RANGE_ALPHA = 0.35, ROW_CONTENT_W = 184 }
+ApogeePartyHealthBars_C = { TRACKER_ICON_SIZE = 20, TRACKER_ICON_GAP = 3, TRACKER_READY_PULSE = 0.65,
+    TRACKER_SOUND_DEBOUNCE = 2, OUT_OF_RANGE_ALPHA = 0.35, ROW_CONTENT_W = 184 }
 ApogeePartyHealthBars_S = { charSv = {} }
 
 local function widget()
@@ -12,6 +13,10 @@ local function widget()
         "SetFrameStrata", "SetFrameLevel",
     }
     for _, name in ipairs(noops) do value[name] = function() end end
+    function value:SetDesaturated(desaturated) self.desaturated = desaturated end
+    function value:SetColorTexture(r, g, b, a) self.color = { r, g, b, a } end
+    function value:SetCooldown(start, duration) self.cooldown = { start, duration } end
+    function value:SetText(text) self.text = text end
     function value:SetAlpha(alpha) self.alpha = alpha end
     function value:EnableMouse(enabled) self.mouseEnabled = enabled end
     function value:CreateTexture() return widget() end
@@ -56,11 +61,27 @@ function GetSpellInfo(identifier)
     local name = type(identifier) == "string" and identifier or "Heroic Strike"
     return name, nil, 135274, nil, nil, nil, type(identifier) == "number" and identifier or nil
 end
-function GetSpellCooldown() return 0, 0, 1 end
-function GetSpellCharges() return nil, nil end
-function IsUsableSpell() return true, false end
+local cooldownStart, cooldownDuration, currentCharges, maximumCharges = 0, 0, nil, nil
+local usable, noResource = true, false
+local currentSpell = false
+local rangeResult = 1
+local targetExists, targetDead, targetAttackable, targetAssistable = true, false, true, true
+function GetSpellCooldown() return cooldownStart, cooldownDuration, 1 end
+function GetSpellCharges() return currentCharges, maximumCharges end
+function IsUsableSpell() return usable, noResource end
+function IsCurrentSpell() return currentSpell end
 function SpellHasRange() return 1 end
-function IsSpellInRange() return 1 end
+function IsSpellInRange() return rangeResult end
+function UnitExists() return targetExists end
+function UnitIsDeadOrGhost() return targetDead end
+function IsHarmfulSpell() return true end
+function IsHelpfulSpell() return false end
+function UnitCanAttack() return targetAttackable end
+function UnitCanAssist() return targetAssistable end
+function UnitPowerType() return 1, "RAGE" end
+PowerBarColor = { RAGE = { r = 0.90, g = 0.18, b = 0.18 } }
+local playedSounds = {}
+function PlaySound(sound, channel) playedSounds[#playedSounds + 1] = { sound, channel } end
 function GetTime() return 10 end
 BOOKTYPE_SPELL = "spell"
 
@@ -82,6 +103,8 @@ end
 function SaveBindings(set) assert(set == 2); saveCount = saveCount + 1 end
 
 dofile("ApogeePartyHealthBars_WheelData.lua")
+dofile("ApogeePartyHealthBars_UIHelpers.lua")
+dofile("ApogeePartyHealthBars_Sounds.lua")
 dofile("ApogeePartyHealthBars_WheelMacros.lua")
 local data, wheel = ApogeePartyHealthBars_WheelData, ApogeePartyHealthBars_WheelMacros
 
@@ -107,6 +130,9 @@ for _, slot in ipairs(data.SLOTS) do
     local entry = assert(wheel.GetSlot(slot.id), "missing empty slot " .. slot.id)
     assert(entry.cleared == nil and entry.displaySpellName == nil and entry.macroText == "",
         "new wheel slot did not start as a blank no-op")
+    local icon = wheel.GetHudIcon(slot.id)
+    assert(icon and not icon.texture.shown and icon.emptyFill.shown,
+        "empty wheel slot did not render as a plain grey box")
 end
 local conflicts = wheel.GetConflicts()
 assert(#conflicts == 2, "camera zoom conflicts were not detected")
@@ -134,6 +160,52 @@ assert(normalUpIcon.template ~= "SecureActionButtonTemplate" and normalUpIcon.pa
     "wheel HUD visual icon became a protected descendant of the player-row layout")
 assert(type(normalUpIcon.scripts.OnEnter) == "function" and type(normalUpIcon.scripts.OnLeave) == "function",
     "wheel HUD icon has no tooltip scripts")
+wheel.Refresh()
+assert(not normalUpIcon.texture.desaturated and normalUpIcon.alpha == 1,
+    "ready wheel spell did not use tracker-ready styling")
+currentSpell = true; wheel.Refresh()
+assert(not normalUpIcon.texture.desaturated and normalUpIcon.alpha == 1
+    and normalUpIcon.borders[1].color[1] == 1.00 and normalUpIcon.borders[1].color[2] == 0.82,
+    "current wheel spell did not use the tracker-yellow casting border")
+currentSpell = false
+rangeResult = nil; targetExists = false; wheel.Refresh()
+assert(normalUpIcon.texture.desaturated and normalUpIcon.alpha == 0.48
+    and normalUpIcon.borders[1].color[1] == 0.45,
+    "missing target did not use the grey invalid-target style")
+targetExists = true; rangeResult = 0; wheel.Refresh()
+assert(not normalUpIcon.texture.desaturated and normalUpIcon.alpha == 0.35
+    and normalUpIcon.borders[1].color[1] == 1.00,
+    "out-of-range wheel spell did not retain range styling")
+rangeResult = 1; usable = false; noResource = true; wheel.Refresh()
+assert(normalUpIcon.texture.desaturated, "insufficient rage did not desaturate the wheel spell")
+assert(normalUpIcon.alpha == 0.48, "insufficient rage did not fade the wheel spell")
+assert(normalUpIcon.borders[1].color[1] == 0.90,
+    "insufficient rage did not use the rage-color resource border")
+usable = true; noResource = false; cooldownStart = 5; cooldownDuration = 8; currentCharges = 0; maximumCharges = 2; wheel.Refresh()
+assert(not normalUpIcon.texture.desaturated, "cooldown wheel spell was unexpectedly desaturated")
+assert(normalUpIcon.cooldown.cooldown[1] == 5, "cooldown wheel spell did not preserve its swipe")
+assert(normalUpIcon.count.text == "0", "cooldown wheel spell did not preserve its charge count")
+cooldownStart, cooldownDuration, currentCharges, maximumCharges = 0, 0, nil, nil
+wheel.GetSlot("normalUp").displaySpellName = "Unknown Wheel Spell"; wheel.Refresh()
+assert(normalUpIcon.texture.desaturated and normalUpIcon.alpha == 0.48,
+    "unavailable wheel display spell did not use tracker-unusable styling")
+wheel.GetSlot("normalUp").displaySpellName = nil; wheel.Refresh()
+assert(normalUpIcon.texture.desaturated and normalUpIcon.alpha == 0.48,
+    "invalid wheel display spell did not use tracker-invalid styling")
+wheel.GetSlot("normalUp").displaySpellName = warriorSpells[1]; wheel.Refresh()
+assert(wheel.SetSlotSound("normalUp", "quest_done") == "quest_done", "wheel sound selection did not persist")
+rangeResult = 0; wheel.Refresh()
+rangeResult = 1; wheel.Refresh()
+assert(normalUpIcon.pulseUntil ~= nil, "wheel ready transition did not set a pulse")
+assert(normalUpIcon.pulseBorder[1].alpha and normalUpIcon.pulseBorder[1].alpha > 0.99,
+    "wheel ready pulse did not start fully visible")
+assert(#playedSounds == 1, "wheel ready transition did not play its selected sound")
+cooldownStart, cooldownDuration, currentCharges, maximumCharges = 11, 1.5, nil, nil; wheel.Refresh()
+assert(normalUpIcon.cooldown.shown == false, "wheel displayed the global cooldown swipe")
+cooldownStart, cooldownDuration, currentCharges, maximumCharges = 12, 8, 1, 2; wheel.Refresh()
+assert(normalUpIcon.cooldown.shown == false and normalUpIcon.count.text == "1",
+    "wheel treated a recharging spell with a usable charge as unavailable")
+cooldownStart, cooldownDuration, currentCharges, maximumCharges = 0, 0, nil, nil
 normalUpIcon.scripts.OnEnter(normalUpIcon)
 assert(tooltipShows == 1, "wheel spell tooltip did not show out of combat")
 inCombat = true

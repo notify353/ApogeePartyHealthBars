@@ -99,6 +99,7 @@ GameTooltip.Show = function() tooltipShows = tooltipShows + 1 end
 GameTooltip.Hide = function() tooltipHides = tooltipHides + 1 end
 
 dofile("ApogeePartyHealthBars_Sounds.lua")
+dofile("ApogeePartyHealthBars_UIHelpers.lua")
 dofile("ApogeePartyHealthBars_SpellTracker.lua")
 local tracker = ApogeePartyHealthBars_SpellTracker
 local deferred = 0

@@ -96,6 +96,7 @@ GameTooltip.SetSpellByID = function() end
 GameTooltip.AddLine = function() end
 
 dofile("ApogeePartyHealthBars_Sounds.lua")
+dofile("ApogeePartyHealthBars_UIHelpers.lua")
 dofile("ApogeePartyHealthBars_SpellTracker.lua")
 local tracker = ApogeePartyHealthBars_SpellTracker
 local playerBtn, targetBtn = widget(), widget()

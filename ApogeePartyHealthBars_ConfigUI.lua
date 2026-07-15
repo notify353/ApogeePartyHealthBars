@@ -185,7 +185,6 @@ local function LayoutGeneralTab()
             elseif row.svKey == "lowHealthSoundKey" then
                 local soundKey = D.HealthAlerts.GetSoundKey()
                 row.frame.value:SetSelectedKey(soundKey)
-                UIH.SetButtonEnabled(row.frame.preview, soundKey ~= "none")
             elseif row.svKey == "lowHealthThreshold" then
                 local threshold = D.HealthAlerts.GetThreshold()
                 row.frame.value:SetText(threshold .. "%")
@@ -433,22 +432,19 @@ local function BuildGeneralTab(parent)
         label:SetJustifyH("LEFT")
         label:SetText("Low-health sound")
 
-        local preview = UIH.CreateButton(frame, "Play", 48, C.CONFIG_CHECK_ROW_H)
-        preview:SetPoint("RIGHT", frame, "RIGHT", 0, 0)
-        preview:SetScript("OnClick", D.HealthAlerts.PreviewSound)
-
-        local value = UIH.CreateDropdown(frame, 213, C.CONFIG_CHECK_ROW_H)
+        local value = UIH.CreateDropdown(frame, 265, C.CONFIG_CHECK_ROW_H)
         value:SetOptions(D.Sounds.GetOptions(true))
+        value:SetArrowShown(false)
         value:SetPoint("LEFT", label, "RIGHT", 4, 0)
-        value:SetPoint("RIGHT", preview, "LEFT", -4, 0)
+        value:SetPoint("RIGHT", frame, "RIGHT", 0, 0)
         value:SetSelectionCallback(function(soundKey)
             if refreshing then return end
             D.HealthAlerts.SetSoundKey(soundKey)
+            D.HealthAlerts.PreviewSound()
             RefreshConfigPanel()
         end)
 
         frame.value = value
-        frame.preview = preview
         generalRows[#generalRows + 1] = { frame = frame, svKey = "lowHealthSoundKey" }
     end
 

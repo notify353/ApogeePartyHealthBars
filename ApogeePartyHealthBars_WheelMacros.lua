@@ -19,8 +19,9 @@ local FEEDBACK_GLOBAL = "ApogeeWheelFeedback"
 local QUESTION_MARK = "Interface\\Icons\\INV_Misc_QuestionMark"
 local HUD_PANEL_W = C.ROW_CONTENT_W
 local HUD_PANEL_H = C.TRACKER_ICON_SIZE * 6 + C.TRACKER_ICON_GAP * 5
-local HUD_HEIGHT = HUD_PANEL_H + C.TRACKER_TOP_GAP
-local HUD_ICON_X = 2
+local HUD_TRACKER_GAP = 10
+local HUD_HEIGHT = HUD_PANEL_H + HUD_TRACKER_GAP
+local HUD_ICON_X = 0
 local HUD_RAIL_W = C.TRACKER_ICON_SIZE + 4
 local HUD_DISPLAY_ORDER = {
     "ctrlUp", "shiftUp", "normalUp", "normalDown", "shiftDown", "ctrlDown",
@@ -553,6 +554,7 @@ end
 
 function W.ApplyMacro(slotId, body)
     if InCombatLockdown and InCombatLockdown() then return false, "Leave combat before applying a wheel macro." end
+    if type(body) == "string" and not body:find("%S") then return W.ClearSlot(slotId) end
     local ok, err = W.ValidateMacro(slotId, body)
     if not ok then return false, err end
     local entry = W.GetSlot(slotId)

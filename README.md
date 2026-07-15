@@ -28,7 +28,7 @@ Interface/AddOns/ApogeePartyHealthBars/ApogeePartyHealthBars.toc
 
 Left-click the minimap button to open settings; the Spellbook opens alongside it. Shift-click a spell when assigning click bindings, tracker slots, or wheel display spells. Secure changes may wait until combat ends.
 
-The Wheel tab configures six normal gameplay macros for scroll up/down with no modifier, Shift, or Ctrl. Enabling Wheel reserves all six keys as blank no-ops; Shift-click a Spellbook spell to configure each slot, or use Clear Slot to release an individual key. Wheel macros use normal WoW targeting and are separate from health-bar mouseover click bindings.
+The Wheel tab configures six normal gameplay macros for scroll up/down with no modifier, Shift, or Ctrl. Enabling Wheel reserves all six keys as blank no-ops. Shift-click a Spellbook spell to configure a slot, edit its macro if needed, then select Save. Saving a blank macro clears that slot and restores its previous binding. Wheel macros use normal WoW targeting and are separate from health-bar mouseover click bindings.
 
 The General tab includes a Factory Reset control for restoring wheel keys, clearing account and current-character add-on settings, and reloading through the first-run initialization path.
 

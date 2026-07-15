@@ -12,8 +12,19 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 - Added an opt-in six-slot mouse-wheel macro system for normal, Shift, and Ctrl scrolling. It provides manual Spellbook assignment, editable macros, clickable HUD icons, spell-state feedback, activation flashes, out-of-combat tooltips, and restoration of replaced bindings when disabled.
 - Added a General-tab Factory Reset control that restores wheel bindings, clears account and current-character settings, and reloads the add-on as a first-time setup.
 
+### Changed
+
+- Removed Mage-specific player spell-tracker defaults so every class starts with empty configurable tracker slots.
+
 ### Fixed
 
+- Aligned the wheel HUD icons horizontally with the spell-tracker icons below them and added spacing between the two groups.
+- Increased wheel and spell-tracker icons to improve cooldown and charge-text readability.
+- Refined the Wheel configuration with clearer slot hierarchy, cleaner typography, and text labels in place of arrow glyphs.
+- Selected the normal wheel-up slot by default so the Wheel editor never opens in an unnecessary unselected state.
+- Removed separate sound-preview buttons; selecting a sound now previews it immediately throughout the add-on settings.
+- Removed arrows from sound selectors and added a clearly muted appearance when a sound dropdown is unavailable.
+- Replaced the Wheel editor's Apply and Clear actions with one Save button; saving a blank macro now clears the slot and restores its previous binding.
 - Matched wheel display-spell feedback to the tracker: active casts use its yellow border, invalid targets and missing resources gray the icon, while cooldown and range states retain their distinct visuals.
 - Added per-slot ready sounds, ready pulses, shared compact spell tooltips, and tracker-equivalent cooldown behavior to wheel display spells.
 - Replaced empty wheel-slot question marks with plain grey boxes.

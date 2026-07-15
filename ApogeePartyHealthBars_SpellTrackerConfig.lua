@@ -52,7 +52,6 @@ function SC.Refresh()
             SetCheckboxChecked(ui.check, entry.enabled ~= false)
             ui.check:Enable()
             ui.sound:Enable()
-            UIH.SetButtonEnabled(ui.preview, soundKey ~= "none")
             ui.clear:Enable()
             if i > 1 then ui.up:Enable() else ui.up:Disable() end
             if i < C.TRACKER_MAX_SLOTS then ui.down:Enable() else ui.down:Disable() end
@@ -64,7 +63,6 @@ function SC.Refresh()
             SetCheckboxChecked(ui.check, false)
             ui.check:Disable()
             ui.sound:Disable()
-            UIH.SetButtonEnabled(ui.preview, false)
             ui.clear:Disable()
             ui.up:Disable()
             ui.down:Disable()
@@ -146,13 +144,12 @@ function SC.Build(parent, deps)
         name:SetJustifyH("LEFT")
         name:SetWordWrap(false)
 
-        local sound = UIH.CreateDropdown(button, 100, 20, 140)
+        local sound = UIH.CreateDropdown(button, 132, 20, 140)
         sound:SetOptions(D.Sounds.GetOptions(true))
+        sound:SetArrowShown(false)
         sound:SetPoint("LEFT", name, "RIGHT", 3, 0)
-        local preview = CreateSmallButton(button, "Play", 30)
-        preview:SetPoint("LEFT", sound, "RIGHT", 2, 0)
         local up = CreateSmallButton(button, "Up", 28)
-        up:SetPoint("LEFT", preview, "RIGHT", 2, 0)
+        up:SetPoint("LEFT", sound, "RIGHT", 2, 0)
         local down = CreateSmallButton(button, "Dn", 28)
         down:SetPoint("LEFT", up, "RIGHT", 2, 0)
         local clear = CreateSmallButton(button, "Clear", 48)
@@ -169,12 +166,9 @@ function SC.Build(parent, deps)
             SC.Refresh()
         end)
         sound:SetSelectionCallback(function(soundKey)
-            tracker.SetSlotSound(slot, soundKey)
+            local selectedKey = tracker.SetSlotSound(slot, soundKey)
+            tracker.PreviewSound(selectedKey)
             SC.Refresh()
-        end)
-        preview:SetScript("OnClick", function()
-            local entry = tracker.GetSlots()[slot]
-            if entry then tracker.PreviewSound(entry.soundKey) end
         end)
         up:SetScript("OnClick", function() tracker.MoveSlot(slot, -1); SC.Refresh() end)
         down:SetScript("OnClick", function() tracker.MoveSlot(slot, 1); SC.Refresh() end)
@@ -182,7 +176,7 @@ function SC.Build(parent, deps)
 
         slotRows[i] = {
             bg = bg, accent = accent, check = check, icon = icon, name = name,
-            sound = sound, preview = preview, up = up, down = down, clear = clear,
+            sound = sound, up = up, down = down, clear = clear,
         }
     end
 

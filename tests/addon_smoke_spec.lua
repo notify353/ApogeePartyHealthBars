@@ -339,6 +339,8 @@ assert(ApogeePartyHealthBars_S.sv.clickableBuffIcons == true, "clickable buff ic
 assert(ApogeePartyHealthBars_S.sv.spellTrackerEnabled == true, "player spell tracker should default on")
 assert(ApogeePartyHealthBars_S.sv.lowHealthSoundEnabled == nil, "retired low-health checkbox state persisted")
 assert(ApogeePartyHealthBars_S.sv.lowHealthSoundKey == "alarm_soft", "low-health sound choice should default soft")
+assert(next(ApogeePartyHealthBars_C.TRACKER_CLASS_DEFAULTS) == nil,
+    "player tracker slots should start empty for every class")
 assert(ApogeePartyHealthBars_S.sv.lowHealthThreshold == 50, "low-health threshold should default to 50%")
 local existingPreferences = {
     schemaVersion = 3,

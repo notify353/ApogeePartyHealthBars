@@ -527,8 +527,12 @@ function T.IsActive()
     return IsEnabled() and visibleCount > 0
 end
 
-function T.Layout()
+function T.Layout(topOffset)
     if not row then return end
+    if topOffset == nil and ApogeePartyHealthBars_WheelMacros then
+        topOffset = ApogeePartyHealthBars_WheelMacros.GetHeight("player")
+    end
+    topOffset = tonumber(topOffset) or 0
     local laneX = { player = 0, target = 0 }
     for i = 1, MAX_DISPLAY_ICONS do
         local icon = icons[i]
@@ -537,7 +541,7 @@ function T.Layout()
         if IsEnabled() and info then
             local lane = info.lane or "player"
             local anchor = lane == "target" and row.targetBtn or row.btn
-            local y = lane == "target" and (C.TRACKER_ICON_SIZE + C.TRACKER_TOP_GAP) or 0
+            local y = lane == "target" and (C.TRACKER_ICON_SIZE + C.TRACKER_TOP_GAP) or -topOffset
             icon:SetPoint("TOPLEFT", anchor, "TOPLEFT", laneX[lane], y)
             icon:Show()
             laneX[lane] = laneX[lane] + C.TRACKER_ICON_SIZE + C.TRACKER_ICON_GAP

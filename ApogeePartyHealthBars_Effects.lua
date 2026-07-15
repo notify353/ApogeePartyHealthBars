@@ -73,6 +73,9 @@ function E.InitializeSavedVariables(saved, characterSaved)
     if type(characterSaved.selfBuffSelections) ~= "table" then
         characterSaved.selfBuffSelections = {}
     end
+    if type(characterSaved.wheelMacros) ~= "table" then
+        characterSaved.wheelMacros = {}
+    end
 
     saved.schemaVersion = math.max(version, C.SAVED_VARIABLES_VERSION)
 end

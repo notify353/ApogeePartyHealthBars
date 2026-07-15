@@ -1,6 +1,7 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local SC = ApogeePartyHealthBars_SpellTrackerConfig
+local WC = ApogeePartyHealthBars_WheelConfig
 local MC = ApogeePartyHealthBars_MacroConfig
 local UIH = ApogeePartyHealthBars_UIHelpers
 
@@ -11,14 +12,15 @@ local built = false
 local D
 
 local configPanel
-local generalTab, bindingsTab, spellsTab, macrosTab
+local generalTab, bindingsTab, spellsTab, wheelTab, macrosTab
 local generalScroll, generalScrollChild
 local bindScroll, bindScrollChild, bindHintFS
 local tabs, tabOrder = {}, {}
 local bindSlotRows = {}
 local generalRows = {}
 local hotRows = {}
-local resetBarBtn, resetSettingsBtn, resetMinimapBtn, generalHintFS
+local resetBarBtn, resetSettingsBtn, resetMinimapBtn, factoryResetBtn, generalHintFS
+local factoryResetArmed, factoryResetToken = false, 0
 local refreshing = false
 
 local function SaveConfigPosition()
@@ -107,6 +109,12 @@ end
 
 local function CreateActionButton(parent, labelText)
     return UIH.CreateButton(parent, labelText)
+end
+
+local function DisarmFactoryReset()
+    factoryResetArmed = false
+    factoryResetToken = factoryResetToken + 1
+    if factoryResetBtn then factoryResetBtn.label:SetText("Factory reset addon") end
 end
 
 local function AttachScrollWheel(scroll, step)
@@ -239,6 +247,10 @@ local function LayoutGeneralTab()
     resetMinimapBtn:SetPoint("TOPLEFT", generalScrollChild, "TOPLEFT", 0, -y)
     y = y + C.CONFIG_BTN_H + 4
 
+    factoryResetBtn:ClearAllPoints()
+    factoryResetBtn:SetPoint("TOPLEFT", generalScrollChild, "TOPLEFT", 0, -y)
+    y = y + C.CONFIG_BTN_H + 4
+
     generalHintFS:ClearAllPoints()
     generalHintFS:SetPoint("TOPLEFT", generalScrollChild, "TOPLEFT", 0, -y)
     y = y + 28
@@ -349,6 +361,7 @@ local function BuildBindingsTab(parent)
             else
                 S.selectedBindingKey = slotKey
                 S.selectedTrackerSlot = nil
+                S.selectedWheelSlot = nil
                 RefreshBindPanel()
             end
         end)
@@ -524,6 +537,25 @@ local function BuildGeneralTab(parent)
         D.ApplyDefaultMinimapPosition()
     end)
 
+    factoryResetBtn = CreateActionButton(generalScrollChild, "Factory reset addon")
+    factoryResetBtn:SetScript("OnClick", function()
+        if not factoryResetArmed then
+            factoryResetArmed = true
+            factoryResetToken = factoryResetToken + 1
+            local token = factoryResetToken
+            factoryResetBtn.label:SetText("Click again to erase all settings")
+            if C_Timer and C_Timer.After then
+                C_Timer.After(5, function()
+                    if factoryResetToken == token then DisarmFactoryReset() end
+                end)
+            end
+            return
+        end
+
+        DisarmFactoryReset()
+        D.FactoryReset()
+    end)
+
     generalHintFS = generalScrollChild:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     generalHintFS:SetWidth(C.CONFIG_CONTENT_W)
     generalHintFS:SetJustifyH("LEFT")
@@ -575,11 +607,13 @@ function UI.Build(deps)
     BuildGeneralTab(configPanel)
     BuildBindingsTab(configPanel)
     spellsTab = SC.Build(configPanel, D)
+    wheelTab = WC.Build(configPanel, D)
     macrosTab = MC.Build(configPanel, D)
 
     RegisterTab({ key = "general", label = "General", frame = generalTab, refresh = RefreshConfigPanel })
     RegisterTab({ key = "bindings", label = "Bindings", frame = bindingsTab, refresh = RefreshBindPanel })
     RegisterTab({ key = "spells", label = "Spells", frame = spellsTab, refresh = SC.Refresh })
+    RegisterTab({ key = "wheel", label = "Wheel", frame = wheelTab, refresh = WC.Refresh })
     RegisterTab({ key = "macros", label = "Macros", frame = macrosTab, refresh = MC.Refresh })
 
     local tabWidth = (C.BIND_PANEL_W - C.BIND_PAD * 2 - (#tabOrder - 1) * 4) / #tabOrder
@@ -599,11 +633,13 @@ function UI.Build(deps)
     UI.RefreshConfigPanel = RefreshConfigPanel
     UI.RefreshBindPanel = RefreshBindPanel
     UI.RefreshSpellPanel = SC.Refresh
+    UI.RefreshWheelPanel = WC.Refresh
     UI.RefreshMacroPanel = MC.Refresh
     UI.RegisterTab = RegisterTab
     UI.ActivateTab = SetConfigTab
     UI.RefreshTab = RefreshTab
     UI.RefreshActiveTab = RefreshActiveTab
+    UI.factoryResetButton = factoryResetBtn
     UI.Show = function()
         RestoreConfigPosition()
         SetConfigTab(S.configTab)

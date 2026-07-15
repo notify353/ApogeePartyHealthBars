@@ -1,6 +1,7 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local T = ApogeePartyHealthBars_SpellTracker
+local W = ApogeePartyHealthBars_WheelMacros
 
 ApogeePartyHealthBars_BindingController = {}
 local B = ApogeePartyHealthBars_BindingController
@@ -56,7 +57,7 @@ local function ClearBinding(slotKey)
 end
 
 local function AssignFromSpellButton(spellButton)
-    if not S.configMode or (not S.selectedBindingKey and not S.selectedTrackerSlot)
+    if not S.configMode or (not S.selectedBindingKey and not S.selectedTrackerSlot and not S.selectedWheelSlot)
         or not IsShiftKeyDown() or InCombatLockdown() then
         return false
     end
@@ -67,7 +68,15 @@ local function AssignFromSpellButton(spellButton)
         return false
     end
 
-    if S.selectedTrackerSlot then
+    if S.selectedWheelSlot then
+        local ok, message = W.AssignDisplaySpell(S.selectedWheelSlot, spellID, spellName)
+        if message then D.Print(message) end
+        if ok then
+            local ui = D.GetConfigUI()
+            if ui and ui.RefreshWheelPanel then ui.RefreshWheelPanel(true) end
+        end
+        return ok
+    elseif S.selectedTrackerSlot then
         local ok, message = T.AssignSpell(S.selectedTrackerSlot, spellID, spellName)
         if message then D.Print(message) end
         if ok then

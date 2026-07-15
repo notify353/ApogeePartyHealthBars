@@ -1,6 +1,6 @@
 -- Constants and mutable state (separate file — Lua main-chunk 200 local limit).
 ApogeePartyHealthBars_C = {
-    SAVED_VARIABLES_VERSION = 3,
+    SAVED_VARIABLES_VERSION = 4,
     ADDON_PREFIX         = "|cffFFD700Party Health:|r",
     FRAME_W              = 200,
     ROW_H                = 26,
@@ -419,6 +419,7 @@ ApogeePartyHealthBars_S = {
     auraCache                = {},
     selectedBindingKey       = nil,
     selectedTrackerSlot      = nil,
+    selectedWheelSlot        = nil,
     spellbookHooked          = false,
     castBtnSerial            = 0,
     secureUpdatePending      = false,

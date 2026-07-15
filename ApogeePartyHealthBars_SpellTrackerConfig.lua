@@ -161,6 +161,7 @@ function SC.Build(parent, deps)
         button:SetScript("OnClick", function()
             S.selectedTrackerSlot = slot
             S.selectedBindingKey = nil
+            S.selectedWheelSlot = nil
             SC.Refresh()
         end)
         check:SetScript("OnClick", function(self)

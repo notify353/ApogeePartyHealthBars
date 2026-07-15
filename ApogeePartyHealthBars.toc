@@ -7,12 +7,14 @@
 ## SavedVariablesPerCharacter: ApogeePartyHealthCharSV
 
 ApogeePartyHealthBars_Data.lua
+ApogeePartyHealthBars_WheelData.lua
 ApogeePartyHealthBars_UIHelpers.lua
 ApogeePartyHealthBars_MacroData.lua
 ApogeePartyHealthBars_MacroLibrary.lua
 ApogeePartyHealthBars_MacroInstaller.lua
 ApogeePartyHealthBars_EventRouter.lua
 ApogeePartyHealthBars_SecureFrames.lua
+ApogeePartyHealthBars_WheelMacros.lua
 ApogeePartyHealthBars_CombatUIFader.lua
 ApogeePartyHealthBars_Sounds.lua
 ApogeePartyHealthBars_Effects.lua
@@ -32,6 +34,7 @@ ApogeePartyHealthBars_EffectsTracker.lua
 ApogeePartyHealthBars_UnitFrames.lua
 ApogeePartyHealthBars_Layout.lua
 ApogeePartyHealthBars_SpellTrackerConfig.lua
+ApogeePartyHealthBars_WheelConfig.lua
 ApogeePartyHealthBars_MacroConfig.lua
 ApogeePartyHealthBars_ConfigUI.lua
 ApogeePartyHealthBars_RuntimeEvents.lua

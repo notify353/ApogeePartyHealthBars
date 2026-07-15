@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.35.0] - 2026-07-14
+
 ### Added
 
 - Added an optional combat UI fade that reveals the hidden Blizzard interface on mouseover.

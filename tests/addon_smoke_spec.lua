@@ -61,6 +61,8 @@ local function widget()
         GetAlpha = function(self) return self.alpha end,
         SetAlpha = function(self, value) self.alpha = value end,
         GetChecked = function() return false end,
+        SetText = function(self, value) self.text = value or "" end,
+        GetText = function(self) return self.text or "" end,
     }
     local noopMethods = {
         "SetAllPoints", "SetTexture",
@@ -69,7 +71,7 @@ local function widget()
         "EnableMouseWheel", "SetMovable", "SetClampedToScreen",
         "SetHighlightTexture", "SetBackdrop", "SetBackdropColor", "SetBackdropBorderColor",
         "SetStatusBarTexture", "SetStatusBarColor", "SetMinMaxValues", "SetValue",
-        "SetFontObject", "SetFont", "SetText", "SetTextColor", "SetJustifyH",
+        "SetFontObject", "SetFont", "SetTextColor", "SetJustifyH",
         "SetJustifyV", "SetWidth", "SetHeight", "SetWordWrap", "SetMaxLines",
         "SetVertexColor", "SetColorTexture", "SetScrollChild",
         "SetVerticalScroll", "SetMultiLine", "SetAutoFocus", "SetTextInsets",
@@ -268,6 +270,8 @@ end
 
 ClickMinimapButton()
 assert(ApogeePartyHealthBars_S.configMode, "minimap click did not open settings")
+assert(ApogeePartyHealthBars_ConfigUI.factoryResetButton,
+    "General settings did not create the factory reset control")
 assert(SpellBookFrame:IsShown(), "opening settings did not open the spellbook")
 assert(spellbookOpenCount == 1, "spellbook did not open exactly once")
 assert(directSpellbookToggleCount == 0, "add-on called ToggleSpellBook directly")
@@ -312,7 +316,7 @@ assert(existingTrackerButton.shown and existingTrackerButton.mouseEnabled
 SpellBookFrame:Hide()
 
 ApogeePartyHealthBars_S.configMode = true
-for _, key in ipairs({ "general", "bindings", "spells", "macros" }) do
+for _, key in ipairs({ "general", "bindings", "spells", "wheel", "macros" }) do
     ApogeePartyHealthBars_ConfigUI.ActivateTab(key)
     ApogeePartyHealthBars_ConfigUI.RefreshTab(key, true)
 end
@@ -347,7 +351,7 @@ local legacyPreferences = {
     lowHealthSoundKey = "alarm_bell",
 }
 ApogeePartyHealthBars_Effects.InitializeSavedVariables(legacyPreferences, {})
-assert(legacyPreferences.schemaVersion == 3, "low-health setting migration did not advance the schema")
+assert(legacyPreferences.schemaVersion == 4, "saved-variable migration did not advance the schema")
 assert(legacyPreferences.lowHealthSoundEnabled == nil, "retired low-health checkbox was not removed")
 assert(legacyPreferences.lowHealthSoundKey == "none",
     "disabled low-health checkbox was not migrated to the None sound")

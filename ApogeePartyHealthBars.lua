@@ -10,6 +10,7 @@ local S = ApogeePartyHealthBars_S
 local A = ApogeePartyHealthBars_Auras
 local E = ApogeePartyHealthBars_Effects
 local T = ApogeePartyHealthBars_SpellTracker
+local W = ApogeePartyHealthBars_WheelMacros
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 
@@ -75,6 +76,7 @@ local UpdateRowContent
 local SetConfigMode
 local ExitConfigMode
 local SetAddonEnabled
+local FactoryReset
 local SetSavedFeature
 local RefreshConfigPanel
 local ApplyAllBindings
@@ -264,6 +266,16 @@ local GetBindingSpellName = bindingStore.GetSpellName
 local GetBindingDisplayName = bindingStore.GetDisplayName
 local GetBindingsTable = bindingStore.GetTable
 
+W.Configure({
+    Print = Print,
+    RequestLayout = S.RequestLayoutUpdate,
+    SyncTicker = SyncVisualTicker,
+    PositionSecureOverlay = PositionSecureOverlay,
+    ShowSecureFrame = ShowSecureFrame,
+    HideSecureFrame = HideSecureFrame,
+    SetSecureMouseEnabled = SetSecureMouseEnabled,
+})
+
 
 local unitFrames = ApogeePartyHealthBars_UnitFrames.Build({
     rows = rows,
@@ -326,7 +338,7 @@ local function ComputeRowLayoutKey(unitId, row)
     local targetReserve = row and GetTargetColumnWidth(row) or 0
     return string.format("%s|%s|%s|%d|%d|%d|%d",
         tostring(showPartyBuff), tostring(showSelfBuff), GetHotStripHeight(), targetReserve,
-        GetRowPowerChromeHeight(unitId), T.GetHeight(unitId), H.GetGutterWidth())
+        GetRowPowerChromeHeight(unitId), T.GetHeight(unitId) + W.GetHeight(unitId), H.GetGutterWidth())
 end
 
 local function AuraEventNeedsLayout(unitId)
@@ -372,6 +384,7 @@ UpdateUI = function()
         if LayoutRows() ~= false then
             UpdateRowContent()
             SyncCastOverlays()
+            W.RefreshSecureActions()
         end
     elseif doValues then
         UpdateRowValues()
@@ -414,6 +427,7 @@ visualTickerFrame:SetScript("OnUpdate", function(_, elapsed)
         S.rangeTimer = C.RANGE_UPDATE_RATE
         S.RefreshRangeAlpha()
         H.Refresh()
+        W.Refresh()
     end
 end)
 
@@ -450,8 +464,8 @@ L.Register({
     GetRowBtnWidth = GetRowBtnWidth,
     GetRowTotalHeight = GetRowTotalHeight,
     GetRowPowerChromeHeight = GetRowPowerChromeHeight,
-    GetTrackerHeight = T.GetHeight,
-    LayoutTracker = T.Layout,
+    GetTrackerHeight = function(unitId) return T.GetHeight(unitId) + W.GetHeight(unitId) end,
+    LayoutTracker = function() W.Layout(); T.Layout(W.GetHeight("player")) end,
     GetThreatGutterWidth = H.GetGutterWidth,
     RefreshThreat = H.Refresh,
     GetHotStripHeight = GetHotStripHeight,
@@ -492,6 +506,8 @@ local function ReconcileAllSecureOverlays()
     ApplyAllPartyBuffBindings()
     ApplyAllSelfBuffBindings()
     T.RefreshSecureActions()
+    W.RefreshSecureActions()
+    W.ReconcileBindings()
 end
 
 secureFrames.InitializeReconciler(ReconcileAllSecureOverlays)
@@ -560,11 +576,13 @@ configController.Initialize({
     UpdateMinimapButtonStyle = UpdateMinimapButtonStyle,
     HookSpellbook = function() HookSpellbook() end,
     ScheduleSecureReconcile = secureFrames.RequestReconcile,
+    WheelMacros = W,
     Print = Print,
 })
 ExitConfigMode = configController.Exit
 SetAddonEnabled = configController.SetAddonEnabled
 SetConfigMode = configController.SetMode
+FactoryReset = configController.FactoryReset
 
 configUI = ApogeePartyHealthBars_ConfigUI.Build({
     ApplyBackdrop               = ApplyBackdrop,
@@ -572,6 +590,7 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
     InitHotSpells               = InitHotSpells,
     SetAddonEnabled             = SetAddonEnabled,
     SetConfigMode              = SetConfigMode,
+    FactoryReset               = FactoryReset,
     SetSavedFeature             = SetSavedFeature,
     ApplyAllSecureBindings      = ApplyAllSecureBindings,
     GetSelfBuffPreferenceOptions = GetSelfBuffPreferenceOptions,
@@ -587,6 +606,7 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
     ClearBinding                = ClearBinding,
     Sounds                     = ApogeePartyHealthBars_Sounds,
     SpellTracker               = T,
+    WheelMacros                = W,
     HealthAlerts               = ApogeePartyHealthBars_HealthAlerts,
     Threat                     = H,
     CombatUIFader              = ApogeePartyHealthBars_CombatUIFader,
@@ -620,5 +640,6 @@ ApogeePartyHealthBars_RuntimeEvents.Register(ApogeePartyHealthBars_EventRouter, 
     ShieldTrackerSyncUnit = ShieldTrackerSyncUnit,
     AuraEventNeedsLayout = AuraEventNeedsLayout,
     GetConfigUI = function() return configUI end,
+    WheelMacros = W,
 })
 ApogeePartyHealthBars_HealthAlerts.Register(ApogeePartyHealthBars_EventRouter)

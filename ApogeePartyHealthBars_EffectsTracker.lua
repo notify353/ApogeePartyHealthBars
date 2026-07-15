@@ -3,6 +3,7 @@ local S = ApogeePartyHealthBars_S
 local A = ApogeePartyHealthBars_Auras
 local E = ApogeePartyHealthBars_Effects
 local T = ApogeePartyHealthBars_SpellTracker
+local W = ApogeePartyHealthBars_WheelMacros
 local H = ApogeePartyHealthBars_Threat
 local F = ApogeePartyHealthBars_SecureFrames
 
@@ -281,7 +282,8 @@ end
 
 local function GetRowTotalHeight(rowOrUnit)
     local unitId = type(rowOrUnit) == "table" and rowOrUnit.unitId or rowOrUnit
-    return C.ROW_H + GetHotStripHeight() + GetRowPowerChromeHeight(unitId) + T.GetHeight(unitId)
+    return C.ROW_H + GetHotStripHeight() + GetRowPowerChromeHeight(unitId)
+        + T.GetHeight(unitId) + W.GetHeight(unitId)
 end
 
 local function ScanUnitPlayerHots(unitId)
@@ -351,7 +353,7 @@ local function SyncVisualTicker()
     local rangeActive = D.IsSavedFeatureEnabled("enabled")
         and D.IsSavedFeatureEnabled("rangeCheckEnabled")
         and not S.configMode
-    if HasActiveHotMeta() or rangeActive or H.IsActive() or T.IsActive() then
+    if HasActiveHotMeta() or rangeActive or H.IsActive() or T.IsActive() or W.IsEnabled() then
         D.visualTickerFrame:Show()
     else
         D.visualTickerFrame:Hide()
@@ -372,6 +374,7 @@ local function RefreshVisualTicker()
         end
     end
     T.Tick()
+    W.Refresh()
     SyncVisualTicker()
 end
 

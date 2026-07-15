@@ -18,6 +18,7 @@ function C.Exit()
     D.SavePosition()
     S.selectedBindingKey = nil
     S.selectedTrackerSlot = nil
+    S.selectedWheelSlot = nil
     local ui = D.GetConfigUI()
     if ui then ui.Hide() end
     D.UpdateHeader()
@@ -35,6 +36,29 @@ function C.SetAddonEnabled(enabled)
         C.Exit()
     end
     D.UpdateMinimapButtonStyle()
+end
+
+function C.FactoryReset()
+    if InCombatLockdown and InCombatLockdown() then
+        D.Print("leave combat before resetting the addon.")
+        return false
+    end
+
+    if D.WheelMacros then
+        local restored, message = D.WheelMacros.Disable()
+        if not restored then
+            D.Print(message or "could not restore the wheel bindings.")
+            return false
+        end
+    end
+
+    ApogeePartyHealthSV = nil
+    ApogeePartyHealthCharSV = nil
+    S.sv = nil
+    S.charSv = nil
+
+    ReloadUI()
+    return true
 end
 
 function C.SetMode(active)

@@ -2,6 +2,7 @@ local S = ApogeePartyHealthBars_S
 local A = ApogeePartyHealthBars_Auras
 local E = ApogeePartyHealthBars_Effects
 local T = ApogeePartyHealthBars_SpellTracker
+local W = ApogeePartyHealthBars_WheelMacros
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 local F = ApogeePartyHealthBars_SecureFrames
@@ -29,6 +30,7 @@ function R.Register(eventRouter, deps)
     
     for _, event in ipairs({
         "SPELLS_CHANGED",
+        "UPDATE_BINDINGS",
         "ADDON_LOADED",
         "UNIT_ABSORB_AMOUNT_CHANGED", "UNIT_HEAL_PREDICTION", "UNIT_POWER_UPDATE",
         "UNIT_POWER_FREQUENT", "UNIT_MAXPOWER", "UNIT_DISPLAYPOWER",
@@ -42,7 +44,7 @@ function R.Register(eventRouter, deps)
         "ACTIONBAR_UPDATE_USABLE", "ACTIONBAR_UPDATE_COOLDOWN", "ACTIONBAR_UPDATE_STATE",
         "CURRENT_SPELL_CAST_CHANGED", "PLAYER_EQUIPMENT_CHANGED",
     }) do
-        eventRouter.RegisterOptional(event, "SpellTracker", function() T.Refresh(false) end)
+        eventRouter.RegisterOptional(event, "SpellTracker", function() T.Refresh(false); W.Refresh() end)
     end
 
     eventRouter.RegisterOptional("UNIT_FLAGS", "SpellTrackerTarget", function(_, unit)
@@ -82,6 +84,7 @@ function R.Register(eventRouter, deps)
             end
             S.InitializeClassDefaultBindings()
             T.Initialize()
+            W.InitializeSaved()
     
             D.InitPlayerSpells()
             D.RestorePosition()
@@ -104,6 +107,7 @@ function R.Register(eventRouter, deps)
     
         elseif event == "PLAYER_REGEN_DISABLED" then
             U.OnCombatStart()
+            W.OnCombatStarted()
             if S.configMode then
                 D.Print("config closed - combat started.")
                 D.SetConfigMode(false)
@@ -114,18 +118,20 @@ function R.Register(eventRouter, deps)
             U.OnCombatEnd()
             F.FlushDeferredUpdates()
             T.RefreshSecureActions()
+            W.OnCombatEnded()
             H.Refresh()
             if D.GetConfigUI().RefreshMacroPanel then D.GetConfigUI().RefreshMacroPanel() end
             D.ForceRefresh()
     
         elseif event == "PLAYER_TARGET_CHANGED" then
             T.Rebaseline()
+            W.Refresh()
             H.Refresh()
             S.RequestUpdate()
     
         elseif event == "PLAYER_ENTERING_WORLD"
             or event == "GROUP_ROSTER_UPDATE" then
-            if event == "PLAYER_ENTERING_WORLD" then T.Rebaseline() end
+            if event == "PLAYER_ENTERING_WORLD" then T.Rebaseline(); W.ReconcileBindings() end
             D.InitPlayerSpells()
             D.EnsureMinimapButton()
             D.SeedShieldTrackerFromAuras()
@@ -136,8 +142,13 @@ function R.Register(eventRouter, deps)
             S.InitializeClassDefaultBindings()
             D.InitPlayerSpells()
             T.ResolveAndRefresh()
+            W.Refresh()
             if D.GetConfigUI().RefreshMacroPanel then D.GetConfigUI().RefreshMacroPanel(true) end
             S.RequestUpdate()
+
+        elseif event == "UPDATE_BINDINGS" then
+            W.ReconcileBindings()
+            if D.GetConfigUI().RefreshWheelPanel then D.GetConfigUI().RefreshWheelPanel() end
     
         elseif event == "UNIT_AURA"
             or event == "UNIT_ABSORB_AMOUNT_CHANGED" then

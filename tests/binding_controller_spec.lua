@@ -7,6 +7,7 @@ ApogeePartyHealthBars_S = {
     configMode = true,
     selectedBindingKey = "1",
     selectedTrackerSlot = nil,
+    selectedWheelSlot = nil,
     spellbookHooked = false,
 }
 
@@ -14,6 +15,13 @@ local assignedTrackerSpell
 ApogeePartyHealthBars_SpellTracker = {
     AssignSpell = function(slot, spellId, spellName)
         assignedTrackerSpell = { slot = slot, spellId = spellId, spellName = spellName }
+        return true
+    end,
+}
+local assignedWheelSpell
+ApogeePartyHealthBars_WheelMacros = {
+    AssignDisplaySpell = function(slot, spellId, spellName)
+        assignedWheelSpell = { slot = slot, spellId = spellId, spellName = spellName }
         return true
     end,
 }
@@ -63,6 +71,13 @@ spellButton.scripts.OnClick(spellButton)
 assert(assignedTrackerSpell and assignedTrackerSpell.slot == 3
     and assignedTrackerSpell.spellId == 2061 and assignedTrackerSpell.spellName == "Flash Heal",
     "secure post-hook did not assign a tracker spell")
+
+ApogeePartyHealthBars_S.selectedTrackerSlot = nil
+ApogeePartyHealthBars_S.selectedWheelSlot = "shiftUp"
+spellButton.scripts.OnClick(spellButton)
+assert(assignedWheelSpell and assignedWheelSpell.slot == "shiftUp"
+    and assignedWheelSpell.spellId == 2061 and assignedWheelSpell.spellName == "Flash Heal",
+    "secure post-hook did not assign a wheel display spell")
 
 inCombat = true
 assignedTrackerSpell = nil

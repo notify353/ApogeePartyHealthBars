@@ -9,6 +9,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 ### Added
 
 - Added an optional combat UI fade that reveals the hidden Blizzard interface on mouseover.
+- Added an opt-in six-slot mouse-wheel macro system for normal, Shift, and Ctrl scrolling. It provides manual Spellbook assignment, editable macros, clickable HUD icons, spell-state feedback, activation flashes, out-of-combat tooltips, and restoration of replaced bindings when disabled.
+- Added a General-tab Factory Reset control that restores wheel bindings, clears account and current-character settings, and reloads the add-on as a first-time setup.
 
 ### Fixed
 

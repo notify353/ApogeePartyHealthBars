@@ -1,6 +1,6 @@
 unpack = unpack or table.unpack
 
-ApogeePartyHealthBars_C = { TRACKER_ICON_SIZE = 20, TRACKER_ICON_GAP = 3, TRACKER_READY_PULSE = 0.65,
+ApogeePartyHealthBars_C = { TRACKER_ICON_SIZE = 20, TRACKER_ICON_GAP = 3, TRACKER_TOP_GAP = 2, TRACKER_READY_PULSE = 0.65,
     TRACKER_SOUND_DEBOUNCE = 2, OUT_OF_RANGE_ALPHA = 0.35, ROW_CONTENT_W = 184 }
 ApogeePartyHealthBars_S = { charSv = {} }
 
@@ -200,6 +200,11 @@ assert(normalUpIcon.pulseUntil ~= nil, "wheel ready transition did not set a pul
 assert(normalUpIcon.pulseBorder[1].alpha and normalUpIcon.pulseBorder[1].alpha > 0.99,
     "wheel ready pulse did not start fully visible")
 assert(#playedSounds == 1, "wheel ready transition did not play its selected sound")
+local soundsBeforeReassign = #playedSounds
+rangeResult = 0; wheel.Refresh()
+rangeResult = 1
+assert(wheel.AssignDisplaySpell("normalUp", nil, warriorSpells[1]))
+assert(#playedSounds == soundsBeforeReassign, "reassigning a ready wheel spell emitted a false ready sound")
 cooldownStart, cooldownDuration, currentCharges, maximumCharges = 11, 1.5, nil, nil; wheel.Refresh()
 assert(normalUpIcon.cooldown.shown == false, "wheel displayed the global cooldown swipe")
 cooldownStart, cooldownDuration, currentCharges, maximumCharges = 12, 8, 1, 2; wheel.Refresh()

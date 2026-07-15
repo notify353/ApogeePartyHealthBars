@@ -173,10 +173,10 @@ function WC.Build(parent, deps)
     end)
 
     local macroLabel = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    macroLabel:SetPoint("TOPLEFT", soundLabel, "BOTTOMLEFT", 0, -5)
+    macroLabel:SetPoint("TOPLEFT", selectionTitle, "BOTTOMLEFT", 0, -30)
     macroLabel:SetText("MACRO  |cff777777blank = no action|r")
     byteCount = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    byteCount:SetPoint("TOPRIGHT", selectionTitle, "BOTTOMRIGHT", 0, -5)
+    byteCount:SetPoint("TOPRIGHT", selectionTitle, "BOTTOMRIGHT", 0, -30)
 
     local editorFrame = CreateFrame("Frame", nil, tab, "BackdropTemplate")
     editorFrame:SetSize(EDITOR_W, 118)

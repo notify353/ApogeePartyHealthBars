@@ -18,9 +18,8 @@ local FEEDBACK_DURATION = 0.75
 local FEEDBACK_GLOBAL = "ApogeeWheelFeedback"
 local QUESTION_MARK = "Interface\\Icons\\INV_Misc_QuestionMark"
 local HUD_PANEL_W = C.ROW_CONTENT_W
-local HUD_PANEL_H = 136
-local HUD_BOTTOM_GAP = C.TRACKER_ICON_SIZE
-local HUD_HEIGHT = HUD_PANEL_H + HUD_BOTTOM_GAP
+local HUD_PANEL_H = C.TRACKER_ICON_SIZE * 6 + C.TRACKER_ICON_GAP * 5
+local HUD_HEIGHT = HUD_PANEL_H + C.TRACKER_TOP_GAP
 local HUD_ICON_X = 2
 local HUD_RAIL_W = C.TRACKER_ICON_SIZE + 4
 local HUD_DISPLAY_ORDER = {
@@ -98,6 +97,19 @@ end
 local function requestLayout()
     if D and D.RequestLayout then D.RequestLayout() end
     if D and D.SyncTicker then D.SyncTicker() end
+end
+
+local function clearSlotFeedback(slotId)
+    previousStates[slotId], lastSoundAt[slotId] = nil, nil
+    local icon = hudIcons[slotId]
+    if not icon then return end
+    icon.pulseUntil = nil
+    for _, edge in ipairs(icon.pulseBorder or {}) do edge:SetAlpha(0) end
+end
+
+local function rebaselineFeedback()
+    for _, slot in ipairs(WD.SLOTS) do clearSlotFeedback(slot.id) end
+    initialized = false
 end
 
 local function printMessage(message)
@@ -515,6 +527,7 @@ function W.AssignDisplaySpell(slotId, spellId, spellName)
     entry.cleared = nil
     entry.soundKey = Sounds.NormalizeKey(entry.soundKey, "none", true)
     W.GetSlots()[slotId] = entry
+    clearSlotFeedback(slotId)
     W.RefreshSecureActions(); W.Refresh(); W.ClaimSlotIfSafe(slot); W.ReconcileBindings(); requestLayout()
     return true, "assigned |cff00ff00" .. spellName .. "|r to " .. slot.label .. "."
 end
@@ -623,6 +636,7 @@ function W.Enable()
     saved.enabled = true
     saved.bindingVersion = 1
     reconciling = false
+    rebaselineFeedback()
     saveBindings(); W.RefreshSecureActions(); W.Refresh(); requestLayout()
     return true, "enabled", "Wheel bindings enabled."
 end
@@ -643,7 +657,9 @@ function W.Disable()
     if not saved then return false, "Character settings are not ready." end
     saved.enabled = false
     for _, slot in ipairs(WD.SLOTS) do restoreSlotBinding(slot) end
+    rebaselineFeedback()
     saveBindings(); W.RefreshSecureActions(); W.Refresh(); requestLayout()
+    rebaselineFeedback()
     return true, "Wheel bindings disabled and previous bindings restored."
 end
 
@@ -652,6 +668,7 @@ function W.ClearSlot(slotId)
     local slot = slotById[slotId]
     if not slot then return false, "Unknown wheel slot." end
     W.GetSlots()[slotId] = { cleared = true }
+    clearSlotFeedback(slotId)
     restoreSlotBinding(slot); saveBindings()
     W.RefreshSecureActions(); W.Refresh(); requestLayout()
     return true, slot.label .. " cleared."

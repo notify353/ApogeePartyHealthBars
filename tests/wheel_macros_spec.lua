@@ -1,18 +1,19 @@
 unpack = unpack or table.unpack
 
-ApogeePartyHealthBars_C = { TRACKER_ICON_SIZE = 20, TRACKER_ICON_GAP = 3, TRACKER_TOP_GAP = 2, TRACKER_READY_PULSE = 0.65,
+ApogeePartyHealthBars_C = { TRACKER_ICON_SIZE = 24, TRACKER_ICON_GAP = 3, TRACKER_TOP_GAP = 2, TRACKER_READY_PULSE = 0.65,
     TRACKER_SOUND_DEBOUNCE = 2, OUT_OF_RANGE_ALPHA = 0.35, ROW_CONTENT_W = 184 }
 ApogeePartyHealthBars_S = { charSv = {} }
 
 local function widget()
     local value = { shown = true, attributes = {}, mutations = 0, scripts = {} }
     local noops = {
-        "SetSize", "SetPoint", "SetAllPoints", "SetColorTexture",
+        "SetSize", "SetAllPoints", "SetColorTexture",
         "SetTexCoord", "SetWidth", "SetHeight", "SetJustifyH", "SetText", "SetTexture",
         "SetTextColor", "SetDesaturated", "SetAlpha", "SetCooldown", "Clear", "ClearAllPoints", "SetDrawEdge",
         "SetFrameStrata", "SetFrameLevel",
     }
     for _, name in ipairs(noops) do value[name] = function() end end
+    function value:SetPoint(...) self.point = { ... } end
     function value:SetDesaturated(desaturated) self.desaturated = desaturated end
     function value:SetColorTexture(r, g, b, a) self.color = { r, g, b, a } end
     function value:SetCooldown(start, duration) self.cooldown = { start, duration } end
@@ -139,6 +140,8 @@ assert(#conflicts == 2, "camera zoom conflicts were not detected")
 assert(wheel.Enable(), "first-run wheel enable failed")
 wheel.Layout()
 assert(wheel.IsEnabled() and saveCount == 1, "first-run enable did not persist bindings")
+assert(wheel.GetHeight("player") == 169,
+    "wheel HUD did not reserve a gap before the tracker icons")
 for _, slot in ipairs(data.SLOTS) do
     assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. "Hud:LeftButton",
         "first-run enable did not claim " .. slot.key)
@@ -156,6 +159,8 @@ for index, slot in ipairs(data.SLOTS) do
         "manual setup failed for " .. slot.id)
 end
 local normalUpIcon = assert(wheel.GetHudIcon("normalUp"), "wheel HUD icon was not created")
+assert(normalUpIcon.point[1] == "TOPLEFT" and normalUpIcon.point[4] == 0,
+    "wheel HUD icons did not align with the tracker icon centerline")
 assert(normalUpIcon.template ~= "SecureActionButtonTemplate" and normalUpIcon.parent ~= UIParent,
     "wheel HUD visual icon became a protected descendant of the player-row layout")
 assert(type(normalUpIcon.scripts.OnEnter) == "function" and type(normalUpIcon.scripts.OnLeave) == "function",
@@ -269,13 +274,14 @@ assert(normalUpIcon.feedbackOverlay and normalUpIcon.flash.alpha == 0.55,
 assert(wheel.ApplyMacro("normalUp", "#showtooltip Heroic Strike\n/cast [mod] Heroic Strike"))
 assert(wheel.GetSlot("normalUp").customized == nil, "obsolete customization metadata was retained")
 assert(not wheel.ApplyMacro("normalUp", string.rep("x", 256)), "oversized macro was accepted")
-assert(wheel.ApplyMacro("normalUp", ""), "blank no-op macro was rejected")
-assert(wheel.GetSlot("normalUp").macroText == "", "blank macro did not persist")
-assert(wheel.GetSecureButton("normalUp").attributes.type == "macro"
-    and wheel.GetSecureButton("normalUp").attributes.macrotext == "/run ApogeeWheelFeedback(1)",
-    "blank macro did not remain an active feedback-enabled secure no-op")
-assert(bindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton",
-    "blank macro incorrectly released its wheel binding")
+assert(wheel.ApplyMacro("normalUp", "  \n\t"), "blank macro did not use the slot-clear path")
+assert(wheel.GetSlot("normalUp").cleared == true,
+    "blank macro save did not remove the display spell and saved macro")
+local blankName, blankIcon, blankMacro = wheel.GetSlotDisplay("normalUp")
+assert(blankName == nil and blankIcon == nil and blankMacro == false,
+    "blank macro save retained slot display metadata")
+assert(bindings.MOUSEWHEELUP == "CAMERAZOOMIN",
+    "blank macro save did not restore the slot's previous binding")
 
 assert(wheel.ClearSlot("shiftUp"), "wheel slot could not be cleared")
 assert(wheel.GetSlot("shiftUp").cleared == true, "cleared slot did not retain a saved tombstone")
@@ -288,6 +294,8 @@ assert(wheel.AssignDisplaySpell("shiftUp", nil, "Battle Shout"),
     "cleared wheel slot could not be configured manually")
 assert(bindings["SHIFT-MOUSEWHEELUP"]:find("CLICK ApogeePartyHealthBarsWheelShiftUpHud", 1, true),
     "manually configuring a cleared slot did not safely reclaim its unbound key")
+assert(wheel.AssignDisplaySpell("normalUp", nil, warriorSpells[1]),
+    "blank-cleared wheel slot could not be configured again")
 
 for _, slot in ipairs(data.SLOTS) do
     bindings[slot.key] = (slot.id == "normalUp" and "CAMERAZOOMIN")

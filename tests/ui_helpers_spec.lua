@@ -60,6 +60,10 @@ dropdown:SetOptions({
     { key = "two", label = "Option Two" },
 })
 dropdown:SetSelectionCallback(function(key) selected = key end)
+dropdown:SetArrowShown(false)
+assert(not dropdown.arrow:IsShown() and dropdown.arrowShown == false,
+    "dropdown could not hide its direction arrow")
+dropdown:SetArrowShown(true)
 
 assert(#UISpecialFrames == 0, "dropdown tainted Blizzard's shared special-frame registry")
 assert(dropdown:SetSelectedKey("two") == "two" and dropdown.label.text == "Option Two",
@@ -96,6 +100,8 @@ assert(not second.popup:IsShown(), "shared dropdown close did not dismiss the ac
 second.scripts.OnClick(second)
 second:Disable()
 assert(not second.popup:IsShown(), "disabling a dropdown left its popup open")
+assert(second.label.textColor[1] == 0.42 and second.bg.color[1] == 0.055,
+    "disabled dropdown did not use its muted visual state")
 assert(dropdown:SetSelectedKey("missing") == nil and dropdown.label.text == "Select...",
     "invalid dropdown selection did not fail closed")
 

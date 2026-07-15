@@ -35,7 +35,7 @@ ApogeePartyHealthBars_C = {
     CONFIG_BTN_H         = 22,
     CONFIG_CONTENT_W     = 396, -- BIND_PANEL_W - BIND_PAD*2 - scrollbar
     TRACKER_MAX_SLOTS    = 8,
-    TRACKER_ICON_SIZE    = 20,
+    TRACKER_ICON_SIZE    = 24,
     TRACKER_ICON_GAP     = 3,
     TRACKER_TOP_GAP      = 2,
     TRACKER_READY_PULSE  = 0.65,
@@ -48,9 +48,7 @@ ApogeePartyHealthBars_C = {
     LOW_HEALTH_SOUND_DEBOUNCE = 2.0,
     LOW_HEALTH_DEFAULT_SOUND = "alarm_soft",
     TRACKER_DEFAULTS_VERSION = 1,
-    TRACKER_CLASS_DEFAULTS = {
-        MAGE = { "Fireball", "Frostbolt", "Fire Blast" },
-    },
+    TRACKER_CLASS_DEFAULTS = {},
     -- Targeted crowd-control spells use the target tracker lane and conservative
     -- client-visible eligibility checks. Patterns match every learned rank.
     CROWD_CONTROL_DEFINITIONS = {

@@ -117,6 +117,25 @@ function H.CreateDropdown(parent, width, height, popupWidth)
     dropdown.options = {}
     dropdown.optionButtons = {}
 
+    local function styleEnabled(enabled)
+        dropdown.label:SetTextColor(enabled and 0.85 or 0.42,
+            enabled and 0.85 or 0.42, enabled and 0.85 or 0.44)
+        arrow:SetTextColor(enabled and 0.85 or 0.38,
+            enabled and 0.85 or 0.38, enabled and 0.85 or 0.40)
+        dropdown.bg:SetColorTexture(enabled and 0.12 or 0.055,
+            enabled and 0.12 or 0.055, enabled and 0.14 or 0.065, 1)
+        dropdown.border:SetColorTexture(enabled and 0.36 or 0.20,
+            enabled and 0.36 or 0.20, enabled and 0.40 or 0.23, enabled and 0.75 or 0.55)
+    end
+
+    function dropdown:SetArrowShown(shown)
+        self.arrowShown = shown ~= false
+        if self.arrowShown then arrow:Show() else arrow:Hide() end
+        self.label:ClearAllPoints()
+        self.label:SetPoint("LEFT", self, "LEFT", 6, 0)
+        self.label:SetPoint("RIGHT", self, "RIGHT", self.arrowShown and -18 or -6, 0)
+    end
+
     function dropdown:Close()
         popup:Hide()
         if supportsKeyboardPropagation then dismiss:EnableKeyboard(false) end
@@ -193,7 +212,7 @@ function H.CreateDropdown(parent, width, height, popupWidth)
     end
 
     function dropdown:Open()
-        if #self.options == 0 then return end
+        if not self:IsEnabled() or #self.options == 0 then return end
         if activeDropdown and activeDropdown ~= self then H.CloseActiveDropdown() end
         activeDropdown = self
         popup:ClearAllPoints()
@@ -212,7 +231,8 @@ function H.CreateDropdown(parent, width, height, popupWidth)
         if popup:IsShown() then self:Close() else self:Open() end
     end)
     dropdown:SetScript("OnHide", function(self) self:Close() end)
-    dropdown:SetScript("OnDisable", function(self) self:Close() end)
+    dropdown:SetScript("OnEnable", function() styleEnabled(true) end)
+    dropdown:SetScript("OnDisable", function(self) self:Close(); styleEnabled(false) end)
     dismiss:SetScript("OnClick", function() dropdown:Close() end)
     if supportsKeyboardPropagation then
         dismiss:SetScript("OnKeyDown", function(self, key)
@@ -228,6 +248,8 @@ function H.CreateDropdown(parent, width, height, popupWidth)
         if activeDropdown == dropdown then activeDropdown = nil end
     end)
 
+    dropdown:SetArrowShown(true)
+    styleEnabled(true)
     return dropdown
 end
 

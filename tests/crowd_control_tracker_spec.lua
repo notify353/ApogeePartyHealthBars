@@ -117,10 +117,13 @@ assert(tracker.GetDisplayCount() == 1 + #definitions, "not every known CC spell 
 for displayIndex = 2, tracker.GetDisplayCount() do
     assert(tracker.GetDisplayLane(displayIndex) == "target", "automatic CC used the wrong lane")
 end
-assert(tracker.GetHeight("player") == 22 and tracker.GetHeight("party1") == 0)
+assert(tracker.GetHeight("player") == ApogeePartyHealthBars_C.TRACKER_ICON_SIZE + ApogeePartyHealthBars_C.TRACKER_TOP_GAP
+    and tracker.GetHeight("party1") == 0)
 assert(visualButtons[1].points[1][2] == playerBtn, "ordinary spell was not anchored to player lane")
 assert(visualButtons[2].points[1][2] == targetBtn, "CC spell was not anchored to target lane")
-assert(visualButtons[2].points[1][4] == 0 and visualButtons[3].points[1][4] == 23, "target-lane order was not stable")
+assert(visualButtons[2].points[1][4] == 0
+    and visualButtons[3].points[1][4] == ApogeePartyHealthBars_C.TRACKER_ICON_SIZE + ApogeePartyHealthBars_C.TRACKER_ICON_GAP,
+    "target-lane order was not stable")
 assert(secureButtons[1].attributes.unit == nil)
 assert(secureButtons[2].attributes.unit == "target" and secureButtons[2].attributes.spell == "Localized Polymorph(Rank 1)")
 

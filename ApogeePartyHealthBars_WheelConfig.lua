@@ -5,23 +5,37 @@ local UIH = ApogeePartyHealthBars_UIHelpers
 ApogeePartyHealthBars_WheelConfig = {}
 local WC = ApogeePartyHealthBars_WheelConfig
 
-local tab, W, D, enableButton, statusText, hint, editor, byteCount, selectionTitle
-local applyButton, clearSlotButton
-local readySound, previewSound
+local tab, W, D, enableButton, statusText, hint, editor, byteCount, selectionTitle, selectionSpell
+local applyButton
+local readySound
 local slotButtons = {}
 local slotDefinitions = {}
 local configurationControls = {}
 local collapsedMessage
 local editorDirty, loadingEditor, lastEditorSlot = false, false, nil
-local SLOT_RAIL_W = 128
-local COLUMN_GAP = 10
+local SLOT_RAIL_W = 142
+local COLUMN_GAP = 12
 local EDITOR_W = C.CONFIG_CONTENT_W - SLOT_RAIL_W - COLUMN_GAP
-local SLOT_H = 31
+local SLOT_H = 28
+local SLOT_GAP = 4
+local GROUP_GAP = 12
+local CONTENT_TOP_GAP = 10
+local CONTROL_GAP = 7
+local CONTROL_H = 22
+local EDITOR_H = 112
+local CARD_PAD = 10
 local DISPLAY_ORDER = { "ctrlUp", "shiftUp", "normalUp", "normalDown", "shiftDown", "ctrlDown" }
-local DISPLAY_LABELS = {
-    ctrlUp = "|cffFFD700^|r  Ctrl", shiftUp = "|cffFFD700^|r  Shift",
-    normalUp = "|cffFFD700^|r  Normal", normalDown = "|cffFFD700v|r  Normal",
-    shiftDown = "|cffFFD700v|r  Shift", ctrlDown = "|cffFFD700v|r  Ctrl",
+local DISPLAY_GROUPS = {
+    { "ctrlUp", "shiftUp", "normalUp" },
+    { "normalDown", "shiftDown", "ctrlDown" },
+}
+local SLOT_PRESENTATION = {
+    ctrlUp = { direction = "WHEEL UP", modifier = "Ctrl" },
+    shiftUp = { direction = "WHEEL UP", modifier = "Shift" },
+    normalUp = { direction = "WHEEL UP", modifier = "" },
+    normalDown = { direction = "WHEEL DOWN", modifier = "" },
+    shiftDown = { direction = "WHEEL DOWN", modifier = "Shift" },
+    ctrlDown = { direction = "WHEEL DOWN", modifier = "Ctrl" },
 }
 
 local function setStatus(message, good)
@@ -31,6 +45,11 @@ end
 
 local function selectedEntry()
     return S.selectedWheelSlot and W.GetSlot(S.selectedWheelSlot)
+end
+
+local function displaySpellLabel(name)
+    if not name then return nil end
+    return (name:gsub("%s*%([Rr]ank%s+[%dIVX]+%)$", ""))
 end
 
 local function renderSelected()
@@ -46,15 +65,22 @@ local function renderSelected()
     local body = editor:GetText() or ""
     byteCount:SetText(#body .. " / " .. W.GetMaxBodyBytes() .. " bytes")
     if entry and entry.displaySpellName then applyButton:Enable() else applyButton:Disable() end
-    if entry and entry.displaySpellName then clearSlotButton:Enable() else clearSlotButton:Disable() end
     local soundKey = entry and W.GetSlotSoundKey(S.selectedWheelSlot) or "none"
     readySound:SetSelectedKey(soundKey)
     if entry and entry.displaySpellName then readySound:Enable() else readySound:Disable() end
-    UIH.SetButtonEnabled(previewSound, entry and entry.displaySpellName and soundKey ~= "none")
     local slot = slotDefinitions[S.selectedWheelSlot]
-    selectionTitle:SetText(slot and entry and entry.displaySpellName
-        and ("|cffFFD700" .. slot.label .. "|r  " .. entry.displaySpellName)
-        or "SELECT A SLOT")
+    local presentation = SLOT_PRESENTATION[S.selectedWheelSlot]
+    if slot and presentation and entry then
+        selectionTitle:SetText(presentation.modifier == "" and presentation.direction
+            or ("|cffFFD700" .. string.upper(presentation.modifier) .. "|r  ·  " .. presentation.direction))
+        selectionSpell:SetText(displaySpellLabel(entry.displaySpellName) or "Empty slot")
+        selectionSpell:SetTextColor(entry.displaySpellName and 1 or 0.58,
+            entry.displaySpellName and 0.82 or 0.58, entry.displaySpellName and 0 or 0.62)
+    else
+        selectionTitle:SetText("SELECTED SLOT")
+        selectionSpell:SetText("Choose a wheel binding")
+        selectionSpell:SetTextColor(0.58, 0.58, 0.62)
+    end
     hint:SetText(S.selectedWheelSlot
         and "Shift-click a Spellbook spell to replace this slot."
         or "Choose a slot in scroll order.")
@@ -64,8 +90,14 @@ function WC.Refresh(forceEditorReload)
     if not tab then return end
     if forceEditorReload then editorDirty = false end
     local enabled = W.IsEnabled()
-    if enabled then enableButton.label:SetText("Disable Wheel Bindings")
-    else enableButton.label:SetText("Enable Wheel Bindings") end
+    if enabled then enableButton.label:SetText("DISABLE")
+    else enableButton.label:SetText("ENABLE") end
+    enableButton:ClearAllPoints()
+    if enabled then
+        enableButton:SetPoint("BOTTOMLEFT", tab, "BOTTOMLEFT", 0, 0)
+    else
+        enableButton:SetPoint("TOPLEFT", hint, "BOTTOMLEFT", 0, -12)
+    end
     for _, control in ipairs(configurationControls) do control:SetShown(enabled) end
     if not enabled then
         S.selectedWheelSlot = nil
@@ -74,13 +106,23 @@ function WC.Refresh(forceEditorReload)
             or "Enable this feature to configure its six normal gameplay wheel macros and HUD.")
         return
     end
+    if not slotDefinitions[S.selectedWheelSlot] then
+        S.selectedWheelSlot = "normalUp"
+        editorDirty = false
+    end
     for _, slotId in ipairs(DISPLAY_ORDER) do
         local button = slotButtons[slotId]
         local name = W.GetSlotDisplay(slotId)
-        button.label:SetText(DISPLAY_LABELS[slotId] .. "\n" .. (name or "|cff777777Empty|r"))
-        button.bg:SetColorTexture(S.selectedWheelSlot == slotId and 0.22 or 0.08,
-            S.selectedWheelSlot == slotId and 0.22 or 0.08,
-            S.selectedWheelSlot == slotId and 0.22 or 0.08, 1)
+        local selected = S.selectedWheelSlot == slotId
+        button.spell:SetText(displaySpellLabel(name) or "Empty")
+        button.spell:SetTextColor(name and (selected and 1 or 0.86) or 0.42,
+            name and (selected and 1 or 0.86) or 0.42,
+            name and (selected and 1 or 0.88) or 0.44)
+        button.bg:SetColorTexture(selected and 0.12 or 0.045, selected and 0.12 or 0.045,
+            selected and 0.145 or 0.055, 1)
+        button.border:SetColorTexture(selected and 0.34 or 0.22, selected and 0.34 or 0.22,
+            selected and 0.38 or 0.25, selected and 0.9 or 0.7)
+        button.accent:SetShown(selected)
     end
     renderSelected()
 end
@@ -94,13 +136,13 @@ function WC.Build(parent, deps)
     tab:Hide()
 
     local heading = tab:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    heading:SetPoint("TOPLEFT"); heading:SetText("|cffFFD700Mouse-Wheel Macros|r")
+    heading:SetPoint("TOPLEFT"); heading:SetText("|cffFFD700Mouse wheel macros|r")
     hint = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     hint:SetPoint("TOPLEFT", heading, "BOTTOMLEFT", 0, -3)
     hint:SetWidth(C.CONFIG_CONTENT_W); hint:SetJustifyH("LEFT")
 
-    enableButton = UIH.CreateButton(tab, "Enable Wheel Bindings", C.CONFIG_CONTENT_W, 22)
-    enableButton:SetPoint("TOPLEFT", hint, "BOTTOMLEFT", 0, -7)
+    enableButton = UIH.CreateButton(tab, "ENABLE", C.CONFIG_CONTENT_W, 22)
+    enableButton:SetPoint("BOTTOMLEFT", tab, "BOTTOMLEFT", 0, 0)
     enableButton:SetScript("OnClick", function()
         if W.IsEnabled() then
             local ok, message = W.Disable()
@@ -112,75 +154,67 @@ function WC.Build(parent, deps)
         local ok, _, detail = W.Enable()
         collapsedMessage = not ok and ("|cffffaa00" .. tostring(detail) .. "|r") or nil
         WC.Refresh()
-        if ok then setStatus("Enabled.", true) end
     end)
 
     for _, slot in ipairs(W.GetDefinitions()) do slotDefinitions[slot.id] = slot end
 
-    local slotHeader = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    slotHeader:SetPoint("TOPLEFT", enableButton, "BOTTOMLEFT", 0, -9)
-    slotHeader:SetText("SCROLL ORDER")
-    configurationControls[#configurationControls + 1] = slotHeader
-
-    for displayIndex, slotId in ipairs(DISPLAY_ORDER) do
-        local slot = slotDefinitions[slotId]
-        local boundSlot = slot
-        local button = UIH.CreateButton(tab, slot.label, SLOT_RAIL_W, SLOT_H)
-        local extraGap = displayIndex > 3 and 5 or 0
-        button:SetPoint("TOPLEFT", slotHeader, "BOTTOMLEFT", 0,
-            -4 - (displayIndex - 1) * (SLOT_H + 2) - extraGap)
-        button.label:SetJustifyH("CENTER")
-        local bg = button:CreateTexture(nil, "BACKGROUND")
-        bg:SetAllPoints(); bg:SetColorTexture(0.08, 0.08, 0.08, 1)
-        button:SetScript("OnClick", function()
-            S.selectedWheelSlot = boundSlot.id
-            S.selectedBindingKey = nil
-            S.selectedTrackerSlot = nil
-            editorDirty = false
-            statusText:SetText("")
-            WC.Refresh()
-        end)
-        button.bg = bg
-        slotButtons[slotId] = button
-        configurationControls[#configurationControls + 1] = button
+    local previousControl = hint
+    for groupIndex, group in ipairs(DISPLAY_GROUPS) do
+        for slotIndex, slotId in ipairs(group) do
+            local slot = slotDefinitions[slotId]
+            local boundSlot = slot
+            local button = UIH.CreateButton(tab, "", SLOT_RAIL_W, SLOT_H)
+            local gap = slotIndex > 1 and SLOT_GAP
+                or (groupIndex == 1 and CONTENT_TOP_GAP or GROUP_GAP)
+            button:SetPoint("TOPLEFT", previousControl, "BOTTOMLEFT", 0, -gap)
+            local bg = button:CreateTexture(nil, "BACKGROUND")
+            bg:SetAllPoints(); bg:SetColorTexture(0.055, 0.055, 0.065, 1)
+            local accent = button:CreateTexture(nil, "OVERLAY")
+            accent:SetWidth(3)
+            accent:SetPoint("TOPLEFT", button, "TOPLEFT")
+            accent:SetPoint("BOTTOMLEFT", button, "BOTTOMLEFT")
+            accent:SetColorTexture(1, 0.82, 0, 1)
+            accent:Hide()
+            local spell = button:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+            spell:SetPoint("LEFT", button, "LEFT", CARD_PAD, 0)
+            spell:SetPoint("RIGHT", button, "RIGHT", -CARD_PAD, 0)
+            spell:SetJustifyH("LEFT"); spell:SetWordWrap(false)
+            button:SetScript("OnClick", function()
+                S.selectedWheelSlot = boundSlot.id
+                S.selectedBindingKey = nil
+                S.selectedTrackerSlot = nil
+                editorDirty = false
+                statusText:SetText("")
+                WC.Refresh()
+            end)
+            button.bg, button.accent = bg, accent
+            button.spell = spell
+            slotButtons[slotId] = button
+            configurationControls[#configurationControls + 1] = button
+            previousControl = button
+        end
     end
 
-    local directionDivider = tab:CreateTexture(nil, "ARTWORK")
-    directionDivider:SetSize(SLOT_RAIL_W - 12, 1)
-    directionDivider:SetPoint("TOPLEFT", slotHeader, "BOTTOMLEFT", 6, -102)
-    directionDivider:SetColorTexture(0.4, 0.4, 0.42, 0.8)
-    configurationControls[#configurationControls + 1] = directionDivider
-
-    selectionTitle = tab:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    selectionTitle:SetPoint("TOPLEFT", slotHeader, "TOPLEFT", SLOT_RAIL_W + COLUMN_GAP, 0)
+    selectionTitle = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    selectionTitle:SetPoint("TOPLEFT", hint, "BOTTOMLEFT", SLOT_RAIL_W + COLUMN_GAP, -CONTENT_TOP_GAP)
     selectionTitle:SetWidth(EDITOR_W); selectionTitle:SetJustifyH("LEFT")
-    selectionTitle:SetText("SELECT A SLOT")
+    selectionTitle:SetText("SELECTED SLOT")
+    selectionTitle:SetTextColor(0.58, 0.58, 0.62)
     configurationControls[#configurationControls + 1] = selectionTitle
 
-    local soundLabel = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    soundLabel:SetPoint("TOPLEFT", selectionTitle, "BOTTOMLEFT", 0, -5)
-    soundLabel:SetText("READY SOUND")
-    readySound = UIH.CreateDropdown(tab, 145, 20, 170)
-    readySound:SetOptions(D.Sounds.GetOptions(true))
-    readySound:SetPoint("LEFT", soundLabel, "RIGHT", 8, 0)
-    previewSound = UIH.CreateButton(tab, "Play", 34, 20)
-    previewSound:SetPoint("LEFT", readySound, "RIGHT", 4, 0)
-    readySound:SetSelectionCallback(function(soundKey)
-        if S.selectedWheelSlot then W.SetSlotSound(S.selectedWheelSlot, soundKey); WC.Refresh() end
-    end)
-    previewSound:SetScript("OnClick", function()
-        if S.selectedWheelSlot then W.PreviewSound(S.selectedWheelSlot) end
-    end)
+    selectionSpell = tab:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    selectionSpell:SetPoint("TOPLEFT", selectionTitle, "BOTTOMLEFT", 0, -2)
+    selectionSpell:SetWidth(EDITOR_W); selectionSpell:SetJustifyH("LEFT"); selectionSpell:SetWordWrap(false)
+    selectionSpell:SetText("Choose a wheel binding")
+    selectionSpell:SetTextColor(1, 0.82, 0)
+    configurationControls[#configurationControls + 1] = selectionSpell
 
-    local macroLabel = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    macroLabel:SetPoint("TOPLEFT", selectionTitle, "BOTTOMLEFT", 0, -30)
-    macroLabel:SetText("MACRO  |cff777777blank = no action|r")
     byteCount = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    byteCount:SetPoint("TOPRIGHT", selectionTitle, "BOTTOMRIGHT", 0, -30)
+    byteCount:SetPoint("TOPRIGHT", selectionSpell, "BOTTOMRIGHT", 0, -8)
 
     local editorFrame = CreateFrame("Frame", nil, tab, "BackdropTemplate")
-    editorFrame:SetSize(EDITOR_W, 118)
-    editorFrame:SetPoint("TOPLEFT", macroLabel, "BOTTOMLEFT", 0, -4)
+    editorFrame:SetSize(EDITOR_W, EDITOR_H)
+    editorFrame:SetPoint("TOPLEFT", selectionSpell, "BOTTOMLEFT", 0, -22)
     D.ApplyBackdrop(editorFrame, 0.92, { 0.35, 0.35, 0.38, 1 })
     editor = CreateFrame("EditBox", nil, editorFrame)
     editor:SetMultiLine(true); editor:SetAutoFocus(false); editor:SetFontObject("ChatFontNormal")
@@ -196,33 +230,34 @@ function WC.Build(parent, deps)
             #body > W.GetMaxBodyBytes() and 0.2 or 0.6, 0.6)
     end)
 
-    local actionWidth = (EDITOR_W - 6) / 2
-    applyButton = UIH.CreateButton(tab, "Apply Macro", actionWidth, 22)
-    applyButton:SetPoint("TOPLEFT", editorFrame, "BOTTOMLEFT", 0, -6)
-    clearSlotButton = UIH.CreateButton(tab, "Clear Slot", actionWidth, 22)
-    clearSlotButton:SetPoint("LEFT", applyButton, "RIGHT", 6, 0)
+    local soundRow = CreateFrame("Frame", nil, tab)
+    soundRow:SetSize(EDITOR_W, CONTROL_H)
+    soundRow:SetPoint("TOPLEFT", editorFrame, "BOTTOMLEFT", 0, -CONTROL_GAP)
+    readySound = UIH.CreateDropdown(soundRow, EDITOR_W, CONTROL_H, EDITOR_W)
+    readySound:SetOptions(D.Sounds.GetOptions(true))
+    readySound:SetArrowShown(false)
+    readySound:SetPoint("TOPLEFT", soundRow, "TOPLEFT", 0, 0)
+    readySound:SetSelectionCallback(function(soundKey)
+        if not S.selectedWheelSlot then return end
+        W.SetSlotSound(S.selectedWheelSlot, soundKey)
+        W.PreviewSound(S.selectedWheelSlot)
+        WC.Refresh()
+    end)
+
+    applyButton = UIH.CreateButton(tab, "Save", EDITOR_W, CONTROL_H)
+    applyButton:SetPoint("TOPLEFT", soundRow, "BOTTOMLEFT", 0, -CONTROL_GAP)
     applyButton:SetScript("OnClick", function()
         local ok, message = W.ApplyMacro(S.selectedWheelSlot, editor:GetText() or "")
         setStatus(message, ok)
         if ok then WC.Refresh(true) end
     end)
-    clearSlotButton:SetScript("OnClick", function()
-        local ok, message = W.ClearSlot(S.selectedWheelSlot)
-        setStatus(message, ok)
-        if ok then editorDirty = false end
-        WC.Refresh(true)
-    end)
     statusText = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     statusText:SetPoint("TOPLEFT", applyButton, "BOTTOMLEFT", 0, -7)
     statusText:SetWidth(EDITOR_W); statusText:SetJustifyH("LEFT")
-    configurationControls[#configurationControls + 1] = macroLabel
-    configurationControls[#configurationControls + 1] = soundLabel
-    configurationControls[#configurationControls + 1] = readySound
-    configurationControls[#configurationControls + 1] = previewSound
     configurationControls[#configurationControls + 1] = byteCount
     configurationControls[#configurationControls + 1] = editorFrame
+    configurationControls[#configurationControls + 1] = soundRow
     configurationControls[#configurationControls + 1] = applyButton
-    configurationControls[#configurationControls + 1] = clearSlotButton
     configurationControls[#configurationControls + 1] = statusText
     WC.Refresh()
     return tab

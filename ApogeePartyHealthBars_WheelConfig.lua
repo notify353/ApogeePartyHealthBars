@@ -7,6 +7,7 @@ local WC = ApogeePartyHealthBars_WheelConfig
 
 local tab, W, D, enableButton, statusText, hint, editor, byteCount, selectionTitle
 local applyButton, clearSlotButton
+local readySound, previewSound
 local slotButtons = {}
 local slotDefinitions = {}
 local configurationControls = {}
@@ -46,6 +47,10 @@ local function renderSelected()
     byteCount:SetText(#body .. " / " .. W.GetMaxBodyBytes() .. " bytes")
     if entry and entry.displaySpellName then applyButton:Enable() else applyButton:Disable() end
     if entry and entry.displaySpellName then clearSlotButton:Enable() else clearSlotButton:Disable() end
+    local soundKey = entry and W.GetSlotSoundKey(S.selectedWheelSlot) or "none"
+    readySound:SetSelectedKey(soundKey)
+    if entry and entry.displaySpellName then readySound:Enable() else readySound:Disable() end
+    UIH.SetButtonEnabled(previewSound, entry and entry.displaySpellName and soundKey ~= "none")
     local slot = slotDefinitions[S.selectedWheelSlot]
     selectionTitle:SetText(slot and entry and entry.displaySpellName
         and ("|cffFFD700" .. slot.label .. "|r  " .. entry.displaySpellName)
@@ -152,11 +157,26 @@ function WC.Build(parent, deps)
     selectionTitle:SetText("SELECT A SLOT")
     configurationControls[#configurationControls + 1] = selectionTitle
 
+    local soundLabel = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    soundLabel:SetPoint("TOPLEFT", selectionTitle, "BOTTOMLEFT", 0, -5)
+    soundLabel:SetText("READY SOUND")
+    readySound = UIH.CreateDropdown(tab, 145, 20, 170)
+    readySound:SetOptions(D.Sounds.GetOptions(true))
+    readySound:SetPoint("LEFT", soundLabel, "RIGHT", 8, 0)
+    previewSound = UIH.CreateButton(tab, "Play", 34, 20)
+    previewSound:SetPoint("LEFT", readySound, "RIGHT", 4, 0)
+    readySound:SetSelectionCallback(function(soundKey)
+        if S.selectedWheelSlot then W.SetSlotSound(S.selectedWheelSlot, soundKey); WC.Refresh() end
+    end)
+    previewSound:SetScript("OnClick", function()
+        if S.selectedWheelSlot then W.PreviewSound(S.selectedWheelSlot) end
+    end)
+
     local macroLabel = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    macroLabel:SetPoint("TOPLEFT", selectionTitle, "BOTTOMLEFT", 0, -5)
+    macroLabel:SetPoint("TOPLEFT", selectionTitle, "BOTTOMLEFT", 0, -30)
     macroLabel:SetText("MACRO  |cff777777blank = no action|r")
     byteCount = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    byteCount:SetPoint("TOPRIGHT", selectionTitle, "BOTTOMRIGHT", 0, -5)
+    byteCount:SetPoint("TOPRIGHT", selectionTitle, "BOTTOMRIGHT", 0, -30)
 
     local editorFrame = CreateFrame("Frame", nil, tab, "BackdropTemplate")
     editorFrame:SetSize(EDITOR_W, 118)
@@ -196,6 +216,9 @@ function WC.Build(parent, deps)
     statusText:SetPoint("TOPLEFT", applyButton, "BOTTOMLEFT", 0, -7)
     statusText:SetWidth(EDITOR_W); statusText:SetJustifyH("LEFT")
     configurationControls[#configurationControls + 1] = macroLabel
+    configurationControls[#configurationControls + 1] = soundLabel
+    configurationControls[#configurationControls + 1] = readySound
+    configurationControls[#configurationControls + 1] = previewSound
     configurationControls[#configurationControls + 1] = byteCount
     configurationControls[#configurationControls + 1] = editorFrame
     configurationControls[#configurationControls + 1] = applyButton

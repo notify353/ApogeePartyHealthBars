@@ -1,6 +1,7 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local Sounds = ApogeePartyHealthBars_Sounds
+local UIH = ApogeePartyHealthBars_UIHelpers
 
 ApogeePartyHealthBars_SpellTracker = {}
 local T = ApogeePartyHealthBars_SpellTracker
@@ -264,16 +265,9 @@ local function CreateIcon(parent)
     local count = button:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
     count:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -2, 2)
 
-    local invalid = button:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    invalid:SetPoint("CENTER")
-    invalid:SetText("X")
-    invalid:SetTextColor(0.8, 0.8, 0.8, 0.9)
-    invalid:Hide()
-
     button.texture = texture
     button.cooldown = cooldown
     button.count = count
-    button.invalid = invalid
     button.border = CreateBorder(button, 0)
     button.pulseBorder = CreateBorder(button, 1)
     button.castButton = castButton
@@ -290,18 +284,8 @@ local function CreateIcon(parent)
         end
         local info = button.trackerInfo
         if not info then return end
-        GameTooltip:SetOwner(castButton, "ANCHOR_TOP")
-        if info.id and GameTooltip.SetSpellByID then
-            GameTooltip:SetSpellByID(info.id)
-        else
-            GameTooltip:SetText(info.name or "Tracked spell")
-        end
-        GameTooltip:AddLine(STATE_LABELS[button.trackerState] or "", 0.8, 0.8, 0.8)
-        if button.trackerReason then
-            GameTooltip:AddLine(button.trackerReason, 1, 0.35, 0.35, true)
-        end
-        GameTooltip:AddLine("Click to cast", 0.3, 1, 0.3)
-        GameTooltip:Show()
+        UIH.ShowSpellTooltip(castButton, info.id, info.name or "Tracked spell", STATE_LABELS[button.trackerState],
+            button.trackerReason, { { text = "Click to cast", r = 0.3, g = 1, b = 0.3 } })
     end)
     castButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
     return button
@@ -503,7 +487,6 @@ local function ApplyState(icon, state, start, duration, charges)
     end
     SetBorder(icon, state == "resource" and GetResourceBorderColor()
         or STATE_COLORS[state] or STATE_COLORS.unusable)
-    icon.invalid:SetShown(state == "invalid")
     if state == "cooldown" and duration > 0 then
         icon.cooldown:SetCooldown(start, duration)
         icon.cooldown:Show()

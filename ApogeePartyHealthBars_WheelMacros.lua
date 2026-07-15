@@ -1,6 +1,8 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local WD = ApogeePartyHealthBars_WheelData
+local Sounds = ApogeePartyHealthBars_Sounds
+local UIH = ApogeePartyHealthBars_UIHelpers
 
 ApogeePartyHealthBars_WheelMacros = {}
 local W = ApogeePartyHealthBars_WheelMacros
@@ -9,27 +11,31 @@ local D, row, container
 local secureButtons, hudIcons, slotById = {}, {}, {}
 local reconciling, pendingSecure = false, false
 local feedbackText, feedbackTicker = nil, nil
+local previousStates, lastSoundAt = {}, {}
+local initialized = false
 local feedbackSlotId, feedbackUntil = nil, 0
 local FEEDBACK_DURATION = 0.75
 local FEEDBACK_GLOBAL = "ApogeeWheelFeedback"
 local QUESTION_MARK = "Interface\\Icons\\INV_Misc_QuestionMark"
 local HUD_PANEL_W = C.ROW_CONTENT_W
-local HUD_PANEL_H = 136
-local HUD_BOTTOM_GAP = C.TRACKER_ICON_SIZE
-local HUD_HEIGHT = HUD_PANEL_H + HUD_BOTTOM_GAP
+local HUD_PANEL_H = C.TRACKER_ICON_SIZE * 6 + C.TRACKER_ICON_GAP * 5
+local HUD_HEIGHT = HUD_PANEL_H + C.TRACKER_TOP_GAP
 local HUD_ICON_X = 2
 local HUD_RAIL_W = C.TRACKER_ICON_SIZE + 4
 local HUD_DISPLAY_ORDER = {
     "ctrlUp", "shiftUp", "normalUp", "normalDown", "shiftDown", "ctrlDown",
 }
 local STATE_COLORS = {
-    ready = { 0.20, 0.85, 0.20, 1 }, cooldown = { 0.45, 0.45, 0.48, 1 },
-    resource = { 0.20, 0.55, 1.00, 1 }, range = { 0.90, 0.20, 0.20, 1 },
-    unavailable = { 0.30, 0.30, 0.32, 1 }, invalid = { 0.70, 0.20, 0.20, 1 },
+    ready = { 0.45, 0.45, 0.48, 1 }, current = { 1.00, 0.82, 0.00, 1 }, cooldown = { 0.22, 0.22, 0.24, 1 },
+    resource = { 0.20, 0.55, 1.00, 1 }, range = { 1.00, 0.12, 0.12, 1 },
+    unavailable = { 0.35, 0.35, 0.38, 1 }, invalid = { 0.45, 0.45, 0.48, 1 },
 }
 local STATE_LABELS = {
-    ready = "Ready", cooldown = "On cooldown", resource = "Not enough resource",
-    range = "Out of range", unavailable = "Spell unavailable", invalid = "Invalid spell",
+    ready = "Ready", current = "Queued or current", cooldown = "On cooldown", resource = "Not enough resource",
+    range = "Out of range", unavailable = "Spell unavailable", invalid = "Invalid current target",
+}
+local READY_TRANSITION_STATES = {
+    cooldown = true, resource = true, invalid = true, range = true, unavailable = true,
 }
 
 for index, slot in ipairs(WD.SLOTS) do
@@ -93,6 +99,19 @@ local function requestLayout()
     if D and D.SyncTicker then D.SyncTicker() end
 end
 
+local function clearSlotFeedback(slotId)
+    previousStates[slotId], lastSoundAt[slotId] = nil, nil
+    local icon = hudIcons[slotId]
+    if not icon then return end
+    icon.pulseUntil = nil
+    for _, edge in ipairs(icon.pulseBorder or {}) do edge:SetAlpha(0) end
+end
+
+local function rebaselineFeedback()
+    for _, slot in ipairs(WD.SLOTS) do clearSlotFeedback(slot.id) end
+    initialized = false
+end
+
 local function printMessage(message)
     if D and D.Print then D.Print(message) end
 end
@@ -139,6 +158,13 @@ local function updateActivationFeedback()
         else
             icon.feedbackUntil = nil
             icon.flash:SetAlpha(0)
+        end
+        if icon.pulseUntil and icon.pulseUntil > now then
+            local remaining = icon.pulseUntil - now
+            for _, edge in ipairs(icon.pulseBorder) do edge:SetAlpha(remaining / C.TRACKER_READY_PULSE) end
+        elseif icon.pulseBorder then
+            icon.pulseUntil = nil
+            for _, edge in ipairs(icon.pulseBorder) do edge:SetAlpha(0) end
         end
     end
     if feedbackText and feedbackUntil > now then
@@ -196,13 +222,13 @@ end
 local function getCooldown(identifier)
     if C_Spell and C_Spell.GetSpellCooldown then
         local info = C_Spell.GetSpellCooldown(identifier)
-        if info then return info.startTime or 0, info.duration or 0 end
+        if info then return info.startTime or 0, info.duration or 0, info.isEnabled ~= false end
     end
     if GetSpellCooldown then
-        local start, duration = GetSpellCooldown(identifier)
-        return start or 0, duration or 0
+        local start, duration, enabled = GetSpellCooldown(identifier)
+        return start or 0, duration or 0, enabled ~= 0
     end
-    return 0, 0
+    return 0, 0, true
 end
 
 local function getCharges(identifier)
@@ -213,32 +239,94 @@ local function getCharges(identifier)
     if GetSpellCharges then return GetSpellCharges(identifier) end
 end
 
+local function hasRange(identifier)
+    if C_Spell and C_Spell.SpellHasRange then return C_Spell.SpellHasRange(identifier) == true end
+    if SpellHasRange then
+        local value = SpellHasRange(identifier)
+        return value == true or value == 1
+    end
+    return false
+end
+
+local function isCurrent(identifier)
+    if C_Spell and C_Spell.IsCurrentSpell then return C_Spell.IsCurrentSpell(identifier) end
+    return IsCurrentSpell and IsCurrentSpell(identifier)
+end
+
+local function getRange(identifier)
+    if C_Spell and C_Spell.IsSpellInRange then return C_Spell.IsSpellInRange(identifier, "target") end
+    if IsSpellInRange then return IsSpellInRange(identifier, "target") end
+    return nil
+end
+
+local function isHarmful(identifier)
+    if C_Spell and C_Spell.IsSpellHarmful then return C_Spell.IsSpellHarmful(identifier) end
+    return IsHarmfulSpell and IsHarmfulSpell(identifier)
+end
+
+local function isHelpful(identifier)
+    if C_Spell and C_Spell.IsSpellHelpful then return C_Spell.IsSpellHelpful(identifier) end
+    return IsHelpfulSpell and IsHelpfulSpell(identifier)
+end
+
+local function hasValidTarget(identifier)
+    if not UnitExists or not UnitExists("target") then return false end
+    if UnitIsDeadOrGhost and UnitIsDeadOrGhost("target") then return false end
+    if isHarmful(identifier) and UnitCanAttack and not UnitCanAttack("player", "target") then return false end
+    if isHelpful(identifier) and UnitCanAssist and not UnitCanAssist("player", "target") then return false end
+    return true
+end
+
+local function getResourceBorderColor()
+    local powerType, powerToken
+    if UnitPowerType then powerType, powerToken = UnitPowerType("player") end
+    local color = PowerBarColor and (PowerBarColor[powerToken] or PowerBarColor[powerType])
+    if not color then return STATE_COLORS.resource end
+    return { color.r or color[1] or 0.20, color.g or color[2] or 0.55, color.b or color[3] or 1.00, 1 }
+end
+
+local function isGlobalCooldown(start, duration)
+    if duration <= 0 then return false end
+    local gcdStart, gcdDuration = getCooldown(61304)
+    return gcdDuration > 0 and math.abs(start - gcdStart) < 0.05 and math.abs(duration - gcdDuration) < 0.05
+end
+
+local function targetReason(identifier)
+    if not UnitExists or not UnitExists("target") then return "Select a valid target" end
+    if UnitIsDeadOrGhost and UnitIsDeadOrGhost("target") then return "Target is dead" end
+    if isHarmful(identifier) and UnitCanAttack and not UnitCanAttack("player", "target") then return "Target must be hostile and attackable" end
+    if isHelpful(identifier) and UnitCanAssist and not UnitCanAssist("player", "target") then return "Target must be friendly" end
+end
+
 local function evaluate(entry, known)
     local name, icon, spellId = spellInfo(entry)
     if not name then return "invalid", nil, 0, 0, nil, false end
     local available = known[name] == true or known[entry.displaySpellName] == true
     if not available then return "unavailable", icon, 0, 0, nil, false end
     local identifier = spellId or entry.displaySpellId or name
-    local start, duration = getCooldown(identifier)
+    if isCurrent(identifier) then return "current", icon, 0, 0, nil, true end
+    local start, duration, enabled = getCooldown(identifier)
     local charges, maxCharges = getCharges(identifier)
+    local noCharges = maxCharges and maxCharges > 0 and (charges or 0) <= 0
+    local gcdOnly = isGlobalCooldown(start, duration)
+    local rechargingWithCharge = maxCharges and maxCharges > 0 and (charges or 0) > 0
     local usable, noResource = true, false
     if C_Spell and C_Spell.IsSpellUsable then
         usable, noResource = C_Spell.IsSpellUsable(identifier)
     elseif IsUsableSpell then
         usable, noResource = IsUsableSpell(identifier)
     end
-    if not usable then return noResource and "resource" or "unavailable", icon, start, duration, charges, true end
-    local hasRange = C_Spell and C_Spell.SpellHasRange and C_Spell.SpellHasRange(identifier)
-        or (SpellHasRange and SpellHasRange(identifier))
-    if hasRange then
-        local inRange = C_Spell and C_Spell.IsSpellInRange and C_Spell.IsSpellInRange(identifier, "target")
-            or (IsSpellInRange and IsSpellInRange(identifier, "target"))
-        if inRange == false or inRange == 0 then return "range", icon, start, duration, charges, true end
+    if enabled and ((duration > 0 and not gcdOnly and not rechargingWithCharge) or noCharges) then
+        return "cooldown", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil, true, nil, gcdOnly
     end
-    if duration and duration > 1.5 and (not charges or charges == 0) then
-        return "cooldown", icon, start, duration, charges, true
+    if noResource then return "resource", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil, true, nil, gcdOnly end
+    local inRange = getRange(identifier)
+    if inRange ~= nil or hasRange(identifier) then
+        if not hasValidTarget(identifier) then return "invalid", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil, true, targetReason(identifier), gcdOnly end
+        if inRange == false or inRange == 0 then return "range", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil, true, nil, gcdOnly end
     end
-    return "ready", icon, start, duration, maxCharges and maxCharges > 1 and charges or nil, true
+    if not usable then return "unavailable", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil, true, nil, gcdOnly end
+    return "ready", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil, true, nil, gcdOnly
 end
 
 local function showWheelTooltip(slot, icon)
@@ -247,33 +335,31 @@ local function showWheelTooltip(slot, icon)
     local entry = W.GetSlot(slot.id)
     if not entry or not entry.displaySpellName then return end
     local name, _, spellId = spellInfo(entry)
-    GameTooltip:SetOwner(icon, "ANCHOR_RIGHT")
-    if spellId and GameTooltip.SetSpellByID then GameTooltip:SetSpellByID(spellId)
-    else GameTooltip:SetText(name or entry.displaySpellName) end
-    local status = evaluate(entry, knownSpellNames())
-    GameTooltip:AddLine(STATE_LABELS[status] or "", 0.8, 0.8, 0.8)
-    GameTooltip:AddLine(slot.label .. " wheel macro", 1, 0.82, 0.15)
-    GameTooltip:AddLine("Left-click to run", 0.3, 1, 0.3)
-    if entry.macroText == "" then GameTooltip:AddLine("Blank macro - no action", 0.65, 0.65, 0.65) end
-    GameTooltip:Show()
+    local status, _, _, _, _, _, reason = evaluate(entry, knownSpellNames())
+    local context = { { text = slot.label .. " wheel macro", r = 1, g = 0.82, b = 0.15 }, { text = "Left-click to run", r = 0.3, g = 1, b = 0.3 } }
+    if entry.macroText == "" then context[#context + 1] = { text = "Blank macro - no action" } end
+    UIH.ShowSpellTooltip(icon, spellId or entry.displaySpellId, name or entry.displaySpellName,
+        STATE_LABELS[status], reason, context)
 end
 
 local function createHudIcon(parent)
     local icon = CreateFrame("Button", nil, parent)
     icon:SetSize(C.TRACKER_ICON_SIZE, C.TRACKER_ICON_SIZE)
     icon:EnableMouse(false)
-    local bg = icon:CreateTexture(nil, "BACKGROUND")
-    bg:SetAllPoints()
-    bg:SetColorTexture(0.05, 0.05, 0.06, 1)
     local texture = icon:CreateTexture(nil, "ARTWORK")
     texture:SetPoint("TOPLEFT", 2, -2)
     texture:SetPoint("BOTTOMRIGHT", -2, 2)
     texture:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    local emptyFill = icon:CreateTexture(nil, "ARTWORK")
+    emptyFill:SetPoint("TOPLEFT", 2, -2)
+    emptyFill:SetPoint("BOTTOMRIGHT", -2, 2)
+    emptyFill:SetColorTexture(0.16, 0.16, 0.18, 1)
+    emptyFill:Hide()
     local cooldown = CreateFrame("Cooldown", nil, icon, "CooldownFrameTemplate")
     cooldown:SetAllPoints(texture)
     if cooldown.SetDrawEdge then cooldown:SetDrawEdge(false) end
     local count = icon:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
-    count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", -1, 1)
+    count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", -2, 2)
     local borders = {}
     -- Keep activation feedback above the cooldown child frame. A texture owned
     -- by the icon can be hidden by the cooldown swipe as soon as the cast fires.
@@ -293,7 +379,17 @@ local function createHudIcon(parent)
     left:SetPoint("TOPLEFT"); left:SetPoint("BOTTOMLEFT"); left:SetWidth(1); borders[#borders + 1] = left
     local right = icon:CreateTexture(nil, "OVERLAY")
     right:SetPoint("TOPRIGHT"); right:SetPoint("BOTTOMRIGHT"); right:SetWidth(1); borders[#borders + 1] = right
-    icon.texture, icon.cooldown, icon.count, icon.borders = texture, cooldown, count, borders
+    local pulseBorder = {}
+    for _, edge in ipairs(borders) do
+        local pulse = icon:CreateTexture(nil, "OVERLAY")
+        if edge == borders[1] then pulse:SetPoint("TOPLEFT", -1, 1); pulse:SetPoint("TOPRIGHT", 1, 1); pulse:SetHeight(1)
+        elseif edge == borders[2] then pulse:SetPoint("BOTTOMLEFT", -1, -1); pulse:SetPoint("BOTTOMRIGHT", 1, -1); pulse:SetHeight(1)
+        elseif edge == borders[3] then pulse:SetPoint("TOPLEFT", -1, 1); pulse:SetPoint("BOTTOMLEFT", -1, -1); pulse:SetWidth(1)
+        else pulse:SetPoint("TOPRIGHT", 1, 1); pulse:SetPoint("BOTTOMRIGHT", 1, -1); pulse:SetWidth(1) end
+        pulse:SetColorTexture(1, 0.82, 0, 1); pulse:SetAlpha(0); pulseBorder[#pulseBorder + 1] = pulse
+    end
+    icon.texture, icon.emptyFill, icon.cooldown, icon.count = texture, emptyFill, cooldown, count
+    icon.borders, icon.pulseBorder = borders, pulseBorder
     icon.feedbackOverlay, icon.flash = feedbackOverlay, flash
     return icon
 end
@@ -315,19 +411,6 @@ local function createHudCastButton(icon, slot)
     return castButton
 end
 
-local function createPanelBorder(parent)
-    local edges = {}
-    local top = parent:CreateTexture(nil, "BORDER")
-    top:SetPoint("TOPLEFT"); top:SetPoint("TOPRIGHT"); top:SetHeight(1); edges[#edges + 1] = top
-    local bottom = parent:CreateTexture(nil, "BORDER")
-    bottom:SetPoint("BOTTOMLEFT"); bottom:SetPoint("BOTTOMRIGHT"); bottom:SetHeight(1); edges[#edges + 1] = bottom
-    local left = parent:CreateTexture(nil, "BORDER")
-    left:SetPoint("TOPLEFT"); left:SetPoint("BOTTOMLEFT"); left:SetWidth(1); edges[#edges + 1] = left
-    local right = parent:CreateTexture(nil, "BORDER")
-    right:SetPoint("TOPRIGHT"); right:SetPoint("BOTTOMRIGHT"); right:SetWidth(1); edges[#edges + 1] = right
-    for _, edge in ipairs(edges) do edge:SetColorTexture(0.32, 0.32, 0.36, 0.95) end
-end
-
 function W.Configure(deps)
     D = deps
     ensureSecureButtons()
@@ -339,26 +422,16 @@ function W.Attach(playerRow)
     container = CreateFrame("Frame", nil, row.btn)
     container:SetSize(HUD_PANEL_W, HUD_PANEL_H)
     container:SetPoint("TOPLEFT", row.btn, "TOPLEFT", 0, 0)
-    local rail = CreateFrame("Frame", nil, container)
-    rail:SetSize(HUD_RAIL_W, HUD_PANEL_H)
-    rail:SetPoint("TOPLEFT", container, "TOPLEFT", 0, 0)
-    local background = rail:CreateTexture(nil, "BACKGROUND")
-    background:SetAllPoints(); background:SetColorTexture(0.025, 0.025, 0.035, 0.82)
-    createPanelBorder(rail)
     feedbackText = container:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     feedbackText:SetJustifyH("LEFT"); feedbackText:SetTextColor(1, 0.82, 0.15); feedbackText:Hide()
     feedbackTicker = CreateFrame("Frame")
     feedbackTicker:Hide()
     feedbackTicker:SetScript("OnUpdate", updateActivationFeedback)
-    local directionDivider = container:CreateTexture(nil, "BORDER")
-    directionDivider:SetPoint("LEFT", rail, "TOPLEFT", 2, -68)
-    directionDivider:SetPoint("RIGHT", rail, "TOPRIGHT", -2, -68)
-    directionDivider:SetHeight(1); directionDivider:SetColorTexture(0.28, 0.28, 0.32, 0.9)
     for _, slot in ipairs(WD.SLOTS) do
         local boundSlot = slot
         local displayIndex = hudPosition[slot.id]
         local icon = createHudIcon(container)
-        local rowY = -2 - (displayIndex - 1) * 22 - (displayIndex > 3 and 2 or 0)
+        local rowY = -(displayIndex - 1) * (C.TRACKER_ICON_SIZE + C.TRACKER_ICON_GAP)
         icon:SetPoint("TOPLEFT", container, "TOPLEFT", HUD_ICON_X, rowY)
         icon:SetScript("OnEnter", function(self) showWheelTooltip(boundSlot, self) end)
         icon:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
@@ -391,9 +464,10 @@ function W.InitializeSaved()
     for _, slot in ipairs(WD.SLOTS) do
         local entry = saved.slots[slot.id]
         if type(entry) ~= "table" or entry.customized == false or allLegacySlotsCleared then
-            saved.slots[slot.id] = { macroText = "" }
+            saved.slots[slot.id] = { macroText = "", soundKey = "none" }
         else
             entry.customized = nil
+            entry.soundKey = Sounds.NormalizeKey(entry.soundKey, "none", true)
         end
     end
     saved.slotDefaultsVersion = 1
@@ -451,9 +525,30 @@ function W.AssignDisplaySpell(slotId, spellId, spellName)
     entry.displaySpellName = spellName
     entry.macroText = "/targetenemy [noexists][dead][help]\n/startattack\n/cast " .. spellName
     entry.cleared = nil
+    entry.soundKey = Sounds.NormalizeKey(entry.soundKey, "none", true)
     W.GetSlots()[slotId] = entry
+    clearSlotFeedback(slotId)
     W.RefreshSecureActions(); W.Refresh(); W.ClaimSlotIfSafe(slot); W.ReconcileBindings(); requestLayout()
     return true, "assigned |cff00ff00" .. spellName .. "|r to " .. slot.label .. "."
+end
+
+function W.SetSlotSound(slotId, key)
+    local entry = W.GetSlot(slotId)
+    if not entry then return nil end
+    entry.soundKey = Sounds.NormalizeKey(key, "none", true)
+    return entry.soundKey
+end
+
+function W.GetSlotSoundKey(slotId)
+    local entry = W.GetSlot(slotId)
+    if not entry then return nil end
+    entry.soundKey = Sounds.NormalizeKey(entry.soundKey, "none", true)
+    return entry.soundKey
+end
+
+function W.PreviewSound(slotId)
+    local key = W.GetSlotSoundKey(slotId)
+    return key and Sounds.Play(key)
 end
 
 function W.ApplyMacro(slotId, body)
@@ -541,6 +636,7 @@ function W.Enable()
     saved.enabled = true
     saved.bindingVersion = 1
     reconciling = false
+    rebaselineFeedback()
     saveBindings(); W.RefreshSecureActions(); W.Refresh(); requestLayout()
     return true, "enabled", "Wheel bindings enabled."
 end
@@ -561,7 +657,9 @@ function W.Disable()
     if not saved then return false, "Character settings are not ready." end
     saved.enabled = false
     for _, slot in ipairs(WD.SLOTS) do restoreSlotBinding(slot) end
+    rebaselineFeedback()
     saveBindings(); W.RefreshSecureActions(); W.Refresh(); requestLayout()
+    rebaselineFeedback()
     return true, "Wheel bindings disabled and previous bindings restored."
 end
 
@@ -570,6 +668,7 @@ function W.ClearSlot(slotId)
     local slot = slotById[slotId]
     if not slot then return false, "Unknown wheel slot." end
     W.GetSlots()[slotId] = { cleared = true }
+    clearSlotFeedback(slotId)
     restoreSlotBinding(slot); saveBindings()
     W.RefreshSecureActions(); W.Refresh(); requestLayout()
     return true, slot.label .. " cleared."
@@ -668,15 +767,20 @@ end
 function W.Refresh()
     if not container then return end
     local known = knownSpellNames()
+    local now, soundPlayed = GetTime and GetTime() or 0, false
     for _, slot in ipairs(WD.SLOTS) do
         local icon, entry = hudIcons[slot.id], W.GetSlot(slot.id)
         if icon then
-            if hasMacro(entry) then
-                local status, texture, start, duration, charges, available = evaluate(entry, known)
+            if hasMacro(entry) and entry.displaySpellName then
+                local status, texture, start, duration, charges, available, reason, gcdOnly = evaluate(entry, known)
+                icon.emptyFill:Hide()
+                icon.texture:Show()
                 icon.texture:SetTexture(texture or QUESTION_MARK)
-                icon.texture:SetDesaturated(not available or status == "resource")
-                icon:SetAlpha(status == "ready" and 1 or status == "range" and C.OUT_OF_RANGE_ALPHA or 0.48)
-                local color = STATE_COLORS[status] or STATE_COLORS.invalid
+                icon.texture:SetDesaturated(not available or status == "resource" or status == "invalid" or status == "unavailable")
+                icon:SetAlpha((status == "ready" or status == "current") and 1
+                    or status == "range" and C.OUT_OF_RANGE_ALPHA or 0.48)
+                local color = status == "resource" and getResourceBorderColor()
+                    or STATE_COLORS[status] or STATE_COLORS.unavailable
                 for _, border in ipairs(icon.borders) do
                     border:SetColorTexture(color[1], color[2], color[3], color[4])
                 end
@@ -688,13 +792,25 @@ function W.Refresh()
                     icon.cooldown:Hide()
                 end
                 icon.count:SetText(charges or "")
+                local becameReady = initialized and READY_TRANSITION_STATES[previousStates[slot.id]] and status == "ready"
+                if becameReady then
+                    icon.pulseUntil = now + C.TRACKER_READY_PULSE
+                    local soundKey = W.GetSlotSoundKey(slot.id)
+                    if not soundPlayed and not gcdOnly and soundKey and soundKey ~= "none"
+                        and now - (lastSoundAt[slot.id] or 0) >= C.TRACKER_SOUND_DEBOUNCE and Sounds.Play(soundKey) then
+                        lastSoundAt[slot.id], soundPlayed = now, true
+                    end
+                end
+                previousStates[slot.id] = status
             else
-                icon.texture:SetTexture(QUESTION_MARK); icon.texture:SetDesaturated(true); icon:SetAlpha(0.25)
+                icon.texture:Hide(); icon.emptyFill:Show(); icon:SetAlpha(0.48)
                 for _, border in ipairs(icon.borders) do border:SetColorTexture(0.25, 0.25, 0.27, 1) end
                 icon.cooldown:Hide(); icon.count:SetText("")
+                previousStates[slot.id] = nil
             end
         end
     end
+    initialized = true
     updateActivationFeedback()
 end
 

@@ -182,9 +182,16 @@ function ToggleSpellBook()
     directSpellbookToggleCount = directSpellbookToggleCount + 1
 end
 
+local tocLoadOrder = {}
 for line in io.lines("ApogeePartyHealthBars.toc") do
-    if line:match("%.lua$") then dofile(line) end
+    if line:match("%.lua$") then
+        tocLoadOrder[line] = #tocLoadOrder + 1
+        tocLoadOrder[#tocLoadOrder + 1] = line
+        dofile(line)
+    end
 end
+assert(tocLoadOrder["ApogeePartyHealthBars_Sounds.lua"] < tocLoadOrder["ApogeePartyHealthBars_WheelMacros.lua"],
+    "wheel runtime loaded before its shared sounds dependency")
 
 local router = ApogeePartyHealthBars_EventRouter
 router.Dispatch("PLAYER_LOGIN")

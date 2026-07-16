@@ -69,7 +69,8 @@ local function AssignFromSpellButton(spellButton)
     end
 
     if S.selectedWheelSlot then
-        local ok, message = W.AssignDisplaySpell(S.selectedWheelSlot, spellID, spellName)
+        local ok, message = W.AssignDisplaySpell(S.selectedWheelLayout,
+            S.selectedWheelSlot, spellID, spellName)
         if message then D.Print(message) end
         if ok then
             local ui = D.GetConfigUI()

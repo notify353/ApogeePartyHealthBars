@@ -103,6 +103,10 @@ FACTION_HORDE, FACTION_ALLIANCE = "Horde", "Alliance"
 MAX_ACCOUNT_MACROS, MAX_CHARACTER_MACROS = 120, 18
 
 local inCombat = false
+local activeSpecGroup = 1
+C_SpecializationInfo = {
+    GetActiveSpecGroup = function() return activeSpecGroup end,
+}
 function InCombatLockdown() return inCombat end
 function UnitClass() return "Warrior", "WARRIOR" end
 function UnitLevel() return 70 end
@@ -192,6 +196,9 @@ for line in io.lines("ApogeePartyHealthBars.toc") do
 end
 assert(tocLoadOrder["ApogeePartyHealthBars_Sounds.lua"] < tocLoadOrder["ApogeePartyHealthBars_WheelMacros.lua"],
     "wheel runtime loaded before its shared sounds dependency")
+assert(tocLoadOrder["ApogeePartyHealthBars_WheelLayouts.lua"]
+    < tocLoadOrder["ApogeePartyHealthBars_WheelMacros.lua"],
+    "wheel runtime loaded before its stance-layout dependency")
 
 local router = ApogeePartyHealthBars_EventRouter
 router.Dispatch("PLAYER_LOGIN")
@@ -235,6 +242,30 @@ router.Dispatch("ACTIONBAR_UPDATE_STATE")
 router.Dispatch("UNIT_THREAT_SITUATION_UPDATE")
 router.Dispatch("PLAYER_LEVEL_UP")
 router.Dispatch("PLAYER_TALENT_UPDATE")
+local wheelRuntime = ApogeePartyHealthBars_WheelMacros
+local configUI = ApogeePartyHealthBars_ConfigUI
+local originalRefreshLayouts = wheelRuntime.RefreshLayouts
+local originalRefreshWheelPanel = configUI.RefreshWheelPanel
+local wheelPanelRefreshCount = 0
+wheelRuntime.RefreshLayouts = function() return true end
+configUI.RefreshWheelPanel = function() wheelPanelRefreshCount = wheelPanelRefreshCount + 1 end
+router.Dispatch("SPELLS_CHANGED")
+assert(wheelPanelRefreshCount == 1,
+    "spell-driven Wheel layout registry change did not refresh the open configuration panel")
+wheelRuntime.RefreshLayouts = originalRefreshLayouts
+configUI.RefreshWheelPanel = originalRefreshWheelPanel
+
+local originalSpecChanged = wheelRuntime.OnActiveSpecChanged
+local specChangeCount = 0
+wheelRuntime.OnActiveSpecChanged = function(...)
+    specChangeCount = specChangeCount + 1
+    return originalSpecChanged(...)
+end
+activeSpecGroup = 2
+router.Dispatch("ACTIVE_TALENT_GROUP_CHANGED", 2, 1)
+assert(specChangeCount == 1 and wheelRuntime.GetActiveSpecKey() == "2",
+    "active talent-group event did not switch the Wheel profile")
+wheelRuntime.OnActiveSpecChanged = originalSpecChanged
 
 local minimapButton = ApogeePartyHealthBarsMinimapButton
 assert(minimapButton and minimapButton.template == "InsecureActionButtonTemplate",

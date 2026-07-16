@@ -30,11 +30,12 @@ function R.Register(eventRouter, deps)
     
     for _, event in ipairs({
         "SPELLS_CHANGED",
+        "ACTIVE_TALENT_GROUP_CHANGED",
         "UPDATE_BINDINGS",
         "ADDON_LOADED",
         "UNIT_ABSORB_AMOUNT_CHANGED", "UNIT_HEAL_PREDICTION", "UNIT_POWER_UPDATE",
         "UNIT_POWER_FREQUENT", "UNIT_MAXPOWER", "UNIT_DISPLAYPOWER",
-        "UPDATE_SHAPESHIFT_FORM", "UNIT_TARGET", "UNIT_CONNECTION",
+        "UPDATE_SHAPESHIFT_FORM", "UPDATE_SHAPESHIFT_FORMS", "UNIT_TARGET", "UNIT_CONNECTION",
     }) do
         eventRouter.RegisterOptional(event, "Bootstrap", RouteMainEvent)
     end
@@ -138,11 +139,19 @@ function R.Register(eventRouter, deps)
             H.Refresh()
             S.RequestUpdate()
     
+        elseif event == "ACTIVE_TALENT_GROUP_CHANGED" then
+            W.OnActiveSpecChanged()
+            if D.GetConfigUI().RefreshWheelPanel then D.GetConfigUI().RefreshWheelPanel() end
+
         elseif event == "SPELLS_CHANGED" then
             S.InitializeClassDefaultBindings()
             D.InitPlayerSpells()
             T.ResolveAndRefresh()
-            W.Refresh()
+            local wheelLayoutsChanged = W.RefreshLayouts()
+            if not wheelLayoutsChanged then W.Refresh() end
+            if wheelLayoutsChanged and D.GetConfigUI().RefreshWheelPanel then
+                D.GetConfigUI().RefreshWheelPanel()
+            end
             if D.GetConfigUI().RefreshMacroPanel then D.GetConfigUI().RefreshMacroPanel(true) end
             S.RequestUpdate()
 
@@ -187,6 +196,12 @@ function R.Register(eventRouter, deps)
     
         elseif event == "UPDATE_SHAPESHIFT_FORM" then
             T.Refresh(false)
+            W.OnStanceChanged()
+            S.RequestLayoutUpdate()
+
+        elseif event == "UPDATE_SHAPESHIFT_FORMS" then
+            W.RefreshLayouts()
+            if D.GetConfigUI().RefreshWheelPanel then D.GetConfigUI().RefreshWheelPanel() end
             S.RequestLayoutUpdate()
     
         elseif event == "UNIT_MAXPOWER" and unit == "player" then

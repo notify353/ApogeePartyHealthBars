@@ -15,6 +15,7 @@ ApogeePartyHealthBars_MacroInstaller.lua
 ApogeePartyHealthBars_EventRouter.lua
 ApogeePartyHealthBars_SecureFrames.lua
 ApogeePartyHealthBars_Sounds.lua
+ApogeePartyHealthBars_WheelLayouts.lua
 ApogeePartyHealthBars_WheelMacros.lua
 ApogeePartyHealthBars_CombatUIFader.lua
 ApogeePartyHealthBars_Effects.lua

@@ -361,6 +361,7 @@ local function BuildBindingsTab(parent)
                 S.selectedBindingKey = slotKey
                 S.selectedTrackerSlot = nil
                 S.selectedWheelSlot = nil
+                S.selectedWheelLayout = nil
                 RefreshBindPanel()
             end
         end)

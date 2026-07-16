@@ -418,6 +418,7 @@ ApogeePartyHealthBars_S = {
     selectedBindingKey       = nil,
     selectedTrackerSlot      = nil,
     selectedWheelSlot        = nil,
+    selectedWheelLayout      = nil,
     spellbookHooked          = false,
     castBtnSerial            = 0,
     secureUpdatePending      = false,

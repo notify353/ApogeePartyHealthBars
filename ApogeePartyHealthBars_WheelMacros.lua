@@ -1,6 +1,7 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local WD = ApogeePartyHealthBars_WheelData
+local WL = ApogeePartyHealthBars_WheelLayouts
 local Sounds = ApogeePartyHealthBars_Sounds
 local UIH = ApogeePartyHealthBars_UIHelpers
 
@@ -16,6 +17,14 @@ local initialized = false
 local feedbackSlotId, feedbackUntil = nil, 0
 local FEEDBACK_DURATION = 0.75
 local FEEDBACK_GLOBAL = "ApogeeWheelFeedback"
+local SECURE_STATE = "wheelstance"
+local SECURE_STATE_SNIPPET = [[
+    local macro = self:GetAttribute("wheel-macro-" .. (newstate or 0))
+    self:SetAttribute("type", macro and "macro" or nil)
+    self:SetAttribute("macrotext", macro)
+    self:SetAttribute("type1", macro and "macro" or nil)
+    self:SetAttribute("macrotext1", macro)
+]]
 local QUESTION_MARK = "Interface\\Icons\\INV_Misc_QuestionMark"
 local HUD_PANEL_W = C.ROW_CONTENT_W
 local HUD_PANEL_H = C.TRACKER_ICON_SIZE * 6 + C.TRACKER_ICON_GAP * 5
@@ -52,7 +61,7 @@ end
 
 local function hasMacro(entry)
     return type(entry) == "table" and type(entry.macroText) == "string"
-        and entry.cleared ~= true
+        and entry.macroText:find("%S") ~= nil and entry.cleared ~= true
 end
 
 local function bindingSet()
@@ -63,12 +72,8 @@ local function ownedAction(slot)
     return "CLICK " .. slot.buttonName .. "Hud:LeftButton"
 end
 
-local function legacyOwnedAction(slot)
-    return "CLICK " .. slot.buttonName .. ":LeftButton"
-end
-
 local function isOwnedAction(slot, action)
-    return action == ownedAction(slot) or action == legacyOwnedAction(slot)
+    return action == ownedAction(slot)
 end
 
 local function defaultPreviousAction(slot)
@@ -108,8 +113,19 @@ local function clearSlotFeedback(slotId)
     for _, edge in ipairs(icon.pulseBorder or {}) do edge:SetAlpha(0) end
 end
 
+local function clearActivationFeedback()
+    feedbackSlotId, feedbackUntil = nil, 0
+    for _, icon in pairs(hudIcons) do
+        icon.feedbackUntil = nil
+        if icon.flash then icon.flash:SetAlpha(0) end
+    end
+    if feedbackText then feedbackText:Hide() end
+    if feedbackTicker then feedbackTicker:Hide() end
+end
+
 local function rebaselineFeedback()
     for _, slot in ipairs(WD.SLOTS) do clearSlotFeedback(slot.id) end
+    clearActivationFeedback()
     initialized = false
 end
 
@@ -126,7 +142,7 @@ local function showActivationFeedback(slot)
         icon.flash:SetAlpha(0.55)
     end
     if feedbackText and icon then
-        local entry = W.GetSlot(slot.id)
+        local entry = W.GetSlot(W.GetActiveLayoutKey(), slot.id)
         local spellName = entry and entry.displaySpellName or "Empty"
         feedbackText:ClearAllPoints()
         feedbackText:SetPoint("LEFT", icon, "RIGHT", 5, 0)
@@ -183,7 +199,8 @@ local function ensureSecureButtons()
     for _, slot in ipairs(WD.SLOTS) do
         if not secureButtons[slot.id] then
             local boundSlot = slot
-            local button = CreateFrame("Button", slot.buttonName, UIParent, "SecureActionButtonTemplate")
+            local button = CreateFrame("Button", slot.buttonName, UIParent,
+                "SecureActionButtonTemplate,SecureHandlerStateTemplate")
             button:SetSize(1, 1)
             button:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", -100, -100)
             button:RegisterForClicks("AnyUp", "AnyDown")
@@ -333,7 +350,7 @@ end
 local function showWheelTooltip(slot, icon)
     if not GameTooltip then return end
     if InCombatLockdown and InCombatLockdown() then GameTooltip:Hide(); return end
-    local entry = W.GetSlot(slot.id)
+    local entry = W.GetSlot(W.GetActiveLayoutKey(), slot.id)
     if not entry or not entry.displaySpellName then return end
     local name, _, spellId = spellInfo(entry)
     local status, _, _, _, _, _, reason = evaluate(entry, knownSpellNames())
@@ -397,7 +414,7 @@ end
 
 local function createHudCastButton(icon, slot)
     local castButton = CreateFrame("Button", slot.buttonName .. "Hud", UIParent,
-        "SecureActionButtonTemplate")
+        "SecureActionButtonTemplate,SecureHandlerStateTemplate")
     castButton:SetFrameStrata("TOOLTIP")
     castButton:SetFrameLevel(103)
     -- The binding and the physical icon share this one secure action. Let the
@@ -406,7 +423,10 @@ local function createHudCastButton(icon, slot)
     castButton:RegisterForClicks("LeftButtonUp", "LeftButtonDown")
     castButton:SetScript("OnEnter", function(self) showWheelTooltip(slot, self) end)
     castButton:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
-    castButton:SetScript("OnMouseDown", function() showActivationFeedback(slot) end)
+    castButton:SetScript("OnMouseDown", function()
+        local entry = W.GetSlot(W.GetActiveLayoutKey(), slot.id)
+        if hasMacro(entry) then showActivationFeedback(slot) end
+    end)
     castButton:Hide()
     icon.castButton = castButton
     return castButton
@@ -444,45 +464,11 @@ end
 
 function W.InitializeSaved()
     if not S.charSv then return end
-    local saved = S.charSv.wheelMacros
-    if type(saved) ~= "table" then saved = {}; S.charSv.wheelMacros = saved end
-    if type(saved.slots) ~= "table" then saved.slots = {} end
-    if type(saved.ownership) ~= "table" then saved.ownership = {} end
-    if saved.enabled == nil then saved.enabled = false end
-    local needsBindingRepair = saved.enabled and (tonumber(saved.bindingVersion) or 0) < 1
-    local defaultsVersion = tonumber(saved.slotDefaultsVersion) or 0
-    local allLegacySlotsCleared = defaultsVersion < 1
-    if allLegacySlotsCleared then
-        for _, slot in ipairs(WD.SLOTS) do
-            local entry = saved.slots[slot.id]
-            if type(entry) ~= "table" or entry.cleared ~= true
-                or entry.displaySpellName ~= nil or entry.macroText ~= nil then
-                allLegacySlotsCleared = false
-                break
-            end
-        end
-    end
-    for _, slot in ipairs(WD.SLOTS) do
-        local entry = saved.slots[slot.id]
-        if type(entry) ~= "table" or entry.customized == false or allLegacySlotsCleared then
-            saved.slots[slot.id] = { macroText = "", soundKey = "none" }
-        else
-            entry.customized = nil
-            entry.soundKey = Sounds.NormalizeKey(entry.soundKey, "none", true)
-        end
-    end
-    saved.slotDefaultsVersion = 1
-    saved.presetVersion = nil
+    WL.Initialize()
     local valid, errors = WD.ValidateAll()
     if not valid then for _, message in ipairs(errors) do printMessage("wheel configuration: " .. message) end end
     W.RefreshSecureActions()
-    if needsBindingRepair then
-        local repaired = W.Enable()
-        if not repaired then W.ReconcileBindings() end
-    else
-        saved.bindingVersion = 1
-        W.ReconcileBindings()
-    end
+    W.ReconcileBindings()
     W.Refresh()
     requestLayout()
 end
@@ -492,24 +478,40 @@ function W.IsEnabled()
     return saved and saved.enabled == true
 end
 
-function W.GetSlots()
-    local saved = state()
-    return saved and saved.slots or {}
+function W.GetLayouts()
+    return WL.GetLayouts()
 end
 
-function W.GetSlot(slotId)
-    return W.GetSlots()[slotId]
+function W.HasStanceLayouts()
+    return WL.HasStances()
 end
 
-function W.GetSlotDisplay(slotId)
-    local entry = W.GetSlot(slotId)
+function W.GetActiveLayoutKey()
+    return WL.GetActiveKey()
+end
+
+function W.GetActiveSpecKey()
+    return WL.GetActiveSpecKey()
+end
+
+function W.GetSlots(layoutKey)
+    return WL.GetSlots(layoutKey) or {}
+end
+
+function W.GetSlot(layoutKey, slotId)
+    return WL.GetSlot(layoutKey, slotId)
+end
+
+function W.GetSlotDisplay(layoutKey, slotId)
+    local entry = W.GetSlot(layoutKey, slotId)
     local name, icon = spellInfo(entry)
     return name or (entry and entry.displaySpellName), icon, hasMacro(entry)
 end
 
-function W.ValidateMacro(slotId, body)
+function W.ValidateMacro(layoutKey, slotId, body)
+    if not WL.IsKnownLayout(layoutKey) then return false, "Unknown wheel layout." end
     if not slotById[slotId] then return false, "Unknown wheel slot." end
-    if not W.GetSlot(slotId) or not W.GetSlot(slotId).displaySpellName then
+    if not W.GetSlot(layoutKey, slotId) or not W.GetSlot(layoutKey, slotId).displaySpellName then
         return false, "Choose a display spell from the Spellbook first."
     end
     if type(body) ~= "string" then return false, "Macro text must be text." end
@@ -517,47 +519,48 @@ function W.ValidateMacro(slotId, body)
     return true
 end
 
-function W.AssignDisplaySpell(slotId, spellId, spellName)
+function W.AssignDisplaySpell(layoutKey, slotId, spellId, spellName)
     if InCombatLockdown and InCombatLockdown() then return false, "cannot edit wheel macros in combat." end
+    if not WL.IsKnownLayout(layoutKey) then return false, "unknown wheel layout." end
     local slot = slotById[slotId]
     if not slot or not spellName or spellName == "" then return false, "could not store that spell." end
-    local entry = W.GetSlots()[slotId] or {}
+    local entry = W.GetSlot(layoutKey, slotId) or {}
     entry.displaySpellId = type(spellId) == "number" and spellId or nil
     entry.displaySpellName = spellName
     entry.macroText = "/targetenemy [noexists][dead][help]\n/startattack\n/cast " .. spellName
     entry.cleared = nil
     entry.soundKey = Sounds.NormalizeKey(entry.soundKey, "none", true)
-    W.GetSlots()[slotId] = entry
+    WL.SetSlot(layoutKey, slotId, entry)
     clearSlotFeedback(slotId)
     W.RefreshSecureActions(); W.Refresh(); W.ClaimSlotIfSafe(slot); W.ReconcileBindings(); requestLayout()
     return true, "assigned |cff00ff00" .. spellName .. "|r to " .. slot.label .. "."
 end
 
-function W.SetSlotSound(slotId, key)
-    local entry = W.GetSlot(slotId)
+function W.SetSlotSound(layoutKey, slotId, key)
+    local entry = W.GetSlot(layoutKey, slotId)
     if not entry then return nil end
     entry.soundKey = Sounds.NormalizeKey(key, "none", true)
     return entry.soundKey
 end
 
-function W.GetSlotSoundKey(slotId)
-    local entry = W.GetSlot(slotId)
+function W.GetSlotSoundKey(layoutKey, slotId)
+    local entry = W.GetSlot(layoutKey, slotId)
     if not entry then return nil end
     entry.soundKey = Sounds.NormalizeKey(entry.soundKey, "none", true)
     return entry.soundKey
 end
 
-function W.PreviewSound(slotId)
-    local key = W.GetSlotSoundKey(slotId)
+function W.PreviewSound(layoutKey, slotId)
+    local key = W.GetSlotSoundKey(layoutKey, slotId)
     return key and Sounds.Play(key)
 end
 
-function W.ApplyMacro(slotId, body)
+function W.ApplyMacro(layoutKey, slotId, body)
     if InCombatLockdown and InCombatLockdown() then return false, "Leave combat before applying a wheel macro." end
-    if type(body) == "string" and not body:find("%S") then return W.ClearSlot(slotId) end
-    local ok, err = W.ValidateMacro(slotId, body)
+    if type(body) == "string" and not body:find("%S") then return W.ClearSlot(layoutKey, slotId) end
+    local ok, err = W.ValidateMacro(layoutKey, slotId, body)
     if not ok then return false, err end
-    local entry = W.GetSlot(slotId)
+    local entry = W.GetSlot(layoutKey, slotId)
     entry.macroText = body
     W.RefreshSecureActions()
     return true, "Applied " .. slotById[slotId].label .. "."
@@ -572,16 +575,11 @@ local function ownershipForCurrentSet(create)
 end
 
 function W.ClaimSlotIfSafe(slot)
-    if not W.IsEnabled() or not slot or not hasMacro(W.GetSlot(slot.id)) then return false end
+    if not W.IsEnabled() or not slot then return false end
     local ownership = ownershipForCurrentSet(true)
     local current = currentAction(slot)
     if ownership[slot.id] then
         if current == ownedAction(slot) then return true end
-        if current == legacyOwnedAction(slot) then
-            if not setSlotBinding(slot, ownedAction(slot)) then return false end
-            saveBindings()
-            return true
-        end
         return false
     end
     local previousAction = isOwnedAction(slot, current) and defaultPreviousAction(slot) or current
@@ -594,10 +592,10 @@ end
 function W.GetConflicts()
     local conflicts, ownership = {}, ownershipForCurrentSet(false)
     for _, slot in ipairs(WD.SLOTS) do
-        local entry, current = W.GetSlot(slot.id), currentAction(slot)
+        local current = currentAction(slot)
         local prior = ownership and ownership[slot.id] and ownership[slot.id].previousAction
         local missingOwnership = W.IsEnabled() and not (ownership and ownership[slot.id])
-        if hasMacro(entry) and not isOwnedAction(slot, current)
+        if not isOwnedAction(slot, current)
             and (missingOwnership or (current ~= "" and current ~= prior)) then
             conflicts[#conflicts + 1] = { slot = slot, action = current,
                 label = current == "" and "Unbound" or (GetBindingName and GetBindingName(current) or current) }
@@ -614,24 +612,21 @@ function W.Enable()
     local snapshots, pendingOwnership = {}, {}
     reconciling = true
     for _, slot in ipairs(WD.SLOTS) do
-        local entry = W.GetSlot(slot.id)
-        if hasMacro(entry) then
-            local current = currentAction(slot)
-            snapshots[#snapshots + 1] = { slot = slot, action = current }
-            if not isOwnedAction(slot, current) then
-                pendingOwnership[slot.id] = { previousAction = current }
-            else
-                pendingOwnership[slot.id] = ownership[slot.id]
-                    or { previousAction = defaultPreviousAction(slot) }
+        local current = currentAction(slot)
+        snapshots[#snapshots + 1] = { slot = slot, action = current }
+        if not isOwnedAction(slot, current) then
+            pendingOwnership[slot.id] = { previousAction = current }
+        else
+            pendingOwnership[slot.id] = ownership[slot.id]
+                or { previousAction = defaultPreviousAction(slot) }
+        end
+        if current ~= ownedAction(slot) and not setSlotBinding(slot, ownedAction(slot)) then
+            for _, snapshot in ipairs(snapshots) do
+                setSlotBinding(snapshot.slot, snapshot.action)
             end
-            if current ~= ownedAction(slot) and not setSlotBinding(slot, ownedAction(slot)) then
-                for _, snapshot in ipairs(snapshots) do
-                    setSlotBinding(snapshot.slot, snapshot.action)
-                end
-                reconciling = false
-                saveBindings()
-                return false, "binding_failed", "WoW rejected the " .. slot.label .. " binding."
-            end
+            reconciling = false
+            saveBindings()
+            return false, "binding_failed", "WoW rejected the " .. slot.label .. " binding."
         end
     end
     for slotId, record in pairs(pendingOwnership) do ownership[slotId] = record end
@@ -665,13 +660,13 @@ function W.Disable()
     return true, "Wheel bindings disabled and previous bindings restored."
 end
 
-function W.ClearSlot(slotId)
+function W.ClearSlot(layoutKey, slotId)
     if InCombatLockdown and InCombatLockdown() then return false, "Leave combat before clearing a wheel slot." end
+    if not WL.IsKnownLayout(layoutKey) then return false, "Unknown wheel layout." end
     local slot = slotById[slotId]
     if not slot then return false, "Unknown wheel slot." end
-    W.GetSlots()[slotId] = { cleared = true }
+    WL.SetSlot(layoutKey, slotId, { cleared = true })
     clearSlotFeedback(slotId)
-    restoreSlotBinding(slot); saveBindings()
     W.RefreshSecureActions(); W.Refresh(); requestLayout()
     return true, slot.label .. " cleared."
 end
@@ -693,10 +688,10 @@ function W.ReconcileBindings()
     reconciling = true
     local changed, conflicts = false, {}
     for _, slot in ipairs(WD.SLOTS) do
-        local entry, record = W.GetSlot(slot.id), ownership[slot.id]
-        if hasMacro(entry) and record then
+        local record = ownership[slot.id]
+        if record then
             local current = currentAction(slot)
-            if current == "" or current == record.previousAction or current == legacyOwnedAction(slot) then
+            if current == "" or current == record.previousAction then
                 if setSlotBinding(slot, ownedAction(slot)) then
                     changed = true
                 else
@@ -705,16 +700,9 @@ function W.ReconcileBindings()
             elseif current ~= ownedAction(slot) then
                 conflicts[#conflicts + 1] = { slot = slot, action = current }
             end
-        elseif hasMacro(entry) and isOwnedAction(slot, currentAction(slot)) then
-            if currentAction(slot) ~= legacyOwnedAction(slot)
-                or setSlotBinding(slot, ownedAction(slot)) then
-                ownership[slot.id] = { previousAction = defaultPreviousAction(slot) }
-                changed = true
-            else
-                conflicts[#conflicts + 1] = { slot = slot, action = currentAction(slot) }
-            end
-        elseif not hasMacro(entry) and record then
-            restoreSlotBinding(slot); changed = true
+        elseif isOwnedAction(slot, currentAction(slot)) then
+            ownership[slot.id] = { previousAction = defaultPreviousAction(slot) }
+            changed = true
         end
     end
     if changed then saveBindings() end
@@ -722,30 +710,57 @@ function W.ReconcileBindings()
     return #conflicts == 0, conflicts
 end
 
+local function configureSecureAction(button, slot)
+    if not button then return end
+    if button.apogeeStateDriver and UnregisterStateDriver then
+        UnregisterStateDriver(button, SECURE_STATE)
+    end
+    local priorCount = button.apogeeStateCount or 0
+    for index = 0, priorCount do
+        button:SetAttribute("wheel-macro-" .. index, nil)
+    end
+    button:SetAttribute("_onstate-" .. SECURE_STATE, nil)
+    button:SetAttribute("type", nil); button:SetAttribute("macrotext", nil)
+    button:SetAttribute("type1", nil); button:SetAttribute("macrotext1", nil)
+
+    local definitions = WL.GetLayouts()
+    local activeIndex = WL.GetActiveIndex()
+    local activeMacro
+    if W.IsEnabled() then
+        for _, definition in ipairs(definitions) do
+            local index, layoutKey = definition.index, definition.key
+            local entry = W.GetSlot(layoutKey, slot.id)
+            local runtimeMacro = hasMacro(entry) and secureMacroText(slot, entry) or nil
+            button:SetAttribute("wheel-macro-" .. index, runtimeMacro)
+            if index == activeIndex then activeMacro = runtimeMacro end
+        end
+    end
+    button.apogeeStateCount = math.max(priorCount, WL.GetMaxStateIndex())
+    button:SetAttribute("type", activeMacro and "macro" or nil)
+    button:SetAttribute("macrotext", activeMacro)
+    button:SetAttribute("type1", activeMacro and "macro" or nil)
+    button:SetAttribute("macrotext1", activeMacro)
+
+    if W.IsEnabled() and WL.HasStances() and RegisterStateDriver then
+        button:SetAttribute("_onstate-" .. SECURE_STATE, SECURE_STATE_SNIPPET)
+        RegisterStateDriver(button, SECURE_STATE, WL.GetStateDriver())
+        button.apogeeStateDriver = true
+    else
+        button.apogeeStateDriver = false
+    end
+end
+
 function W.RefreshSecureActions()
     ensureSecureButtons()
     if InCombatLockdown and InCombatLockdown() then pendingSecure = true; return false end
     pendingSecure = false
     for _, slot in ipairs(WD.SLOTS) do
-        local button, entry = secureButtons[slot.id], W.GetSlot(slot.id)
+        local button = secureButtons[slot.id]
         local icon = hudIcons[slot.id]
         local castButton = icon and icon.castButton
-        button:SetAttribute("type", nil); button:SetAttribute("macrotext", nil)
-        button:SetAttribute("type1", nil); button:SetAttribute("macrotext1", nil)
-        if castButton then
-            castButton:SetAttribute("type", nil); castButton:SetAttribute("macrotext", nil)
-            castButton:SetAttribute("type1", nil); castButton:SetAttribute("macrotext1", nil)
-        end
-        if W.IsEnabled() and hasMacro(entry) then
-            local runtimeMacro = secureMacroText(slot, entry)
-            button:SetAttribute("type", "macro"); button:SetAttribute("macrotext", runtimeMacro)
-            button:SetAttribute("type1", "macro"); button:SetAttribute("macrotext1", runtimeMacro)
-            if castButton then
-                castButton:SetAttribute("type", "macro"); castButton:SetAttribute("macrotext", runtimeMacro)
-                castButton:SetAttribute("type1", "macro"); castButton:SetAttribute("macrotext1", runtimeMacro)
-            end
-        end
-        if castButton and W.IsEnabled() and hasMacro(entry) and container and container:IsShown()
+        configureSecureAction(button, slot)
+        configureSecureAction(castButton, slot)
+        if castButton and W.IsEnabled() and container and container:IsShown()
             and D and D.PositionSecureOverlay and D.PositionSecureOverlay(castButton, icon) then
             D.ShowSecureFrame(castButton)
             D.SetSecureMouseEnabled(castButton, true)
@@ -766,12 +781,39 @@ function W.OnCombatStarted()
     if GameTooltip then GameTooltip:Hide() end
 end
 
+local function refreshActiveContext()
+    rebaselineFeedback()
+    W.RefreshSecureActions()
+    W.Refresh()
+    requestLayout()
+end
+
+function W.RefreshLayouts()
+    local changed = WL.RefreshActiveContext()
+    if changed then
+        refreshActiveContext()
+    end
+    return changed
+end
+
+function W.OnActiveSpecChanged()
+    local changed = WL.RefreshActiveContext()
+    if changed then refreshActiveContext() end
+    return changed
+end
+
+function W.OnStanceChanged()
+    rebaselineFeedback()
+    W.Refresh()
+end
+
 function W.Refresh()
     if not container then return end
     local known = knownSpellNames()
     local now, soundPlayed = GetTime and GetTime() or 0, false
+    local activeLayoutKey = W.GetActiveLayoutKey()
     for _, slot in ipairs(WD.SLOTS) do
-        local icon, entry = hudIcons[slot.id], W.GetSlot(slot.id)
+        local icon, entry = hudIcons[slot.id], W.GetSlot(activeLayoutKey, slot.id)
         if icon then
             if hasMacro(entry) and entry.displaySpellName then
                 local status, texture, start, duration, charges, available, reason, gcdOnly = evaluate(entry, known)
@@ -797,7 +839,7 @@ function W.Refresh()
                 local becameReady = initialized and READY_TRANSITION_STATES[previousStates[slot.id]] and status == "ready"
                 if becameReady then
                     icon.pulseUntil = now + C.TRACKER_READY_PULSE
-                    local soundKey = W.GetSlotSoundKey(slot.id)
+                    local soundKey = W.GetSlotSoundKey(activeLayoutKey, slot.id)
                     if not soundPlayed and not gcdOnly and soundKey and soundKey ~= "none"
                         and now - (lastSoundAt[slot.id] or 0) >= C.TRACKER_SOUND_DEBOUNCE and Sounds.Play(soundKey) then
                         lastSoundAt[slot.id], soundPlayed = now, true
@@ -837,6 +879,8 @@ end
 
 W.GetDefinitions = function() return WD.SLOTS end
 W.GetMaxBodyBytes = function() return WD.MAX_BODY_BYTES end
+W.GetLayoutOptions = function() return WL.GetOptions() end
+W.IsKnownLayout = function(layoutKey) return WL.IsKnownLayout(layoutKey) end
 W.GetSecureButton = function(slotId) return secureButtons[slotId] end
 W.GetHudIcon = function(slotId) return hudIcons[slotId] end
 W.GetHudCastButton = function(slotId) return hudIcons[slotId] and hudIcons[slotId].castButton end

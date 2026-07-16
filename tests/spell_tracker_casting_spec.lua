@@ -124,9 +124,9 @@ assert(seeded[1].name == "Fireball")
 assert(seeded[2].name == "Frostbolt")
 assert(seeded[3].name == "Fire Blast")
 assert(ApogeePartyHealthBars_S.charSv.trackerDefaultsVersion == 1)
-assert(tracker.SetSlotSound(1, "quest_done") == "quest_done",
+assert(tracker.SetSlotSound(1, "toast") == "toast",
     "tracker dropdown sound selection did not persist")
-assert(tracker.GetSlots()[1].soundKey == "quest_done")
+assert(tracker.GetSlots()[1].soundKey == "toast")
 assert(tracker.SetSlotSound(1, "invalid") == "none",
     "invalid tracker dropdown sound did not normalize")
 tracker.GetSlots()[1].soundKey = "warning"

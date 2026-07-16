@@ -6,6 +6,11 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Added
+
+- Added 11 dependency-free bundled ready sounds: Glass, Sonar, Robot Blip, Water Drop, Temple Bell, Focus, Torch, Blast, Shotgun, Boxing Arena Gong, and Squish.
+- Refined the built-in sound-kit choices to the three alarms and Toast.
+
 ### Changed
 
 - Replaced the talent/level opener recommendation with a curated copy-only combat macro library containing universal and current-class examples.

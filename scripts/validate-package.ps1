@@ -40,7 +40,35 @@ foreach ($line in $tocLines) {
 }
 
 if ($runtimeFiles.Count -eq 0) { Fail 'TOC contains no runtime files.' }
-$expectedFiles = @('ApogeePartyHealthBars.toc', 'LICENSE', 'README.md') + $runtimeFiles
+$mediaRoot = Join-Path $repoRoot 'Media'
+$requiredMediaFiles = @(
+    'Media/ATTRIBUTION.md'
+    'Media/LICENSE-CC-BY-3.0.txt'
+    'Media/LICENSE-CC-SAMPLING-PLUS-1.0.txt'
+    'Media/Sounds/Blast.ogg'
+    'Media/Sounds/BoxingArenaSound.ogg'
+    'Media/Sounds/Focus.ogg'
+    'Media/Sounds/Glass.mp3'
+    'Media/Sounds/RobotBlip.ogg'
+    'Media/Sounds/Shotgun.ogg'
+    'Media/Sounds/sonar.ogg'
+    'Media/Sounds/SquishFart.ogg'
+    'Media/Sounds/TempleBellHuge.ogg'
+    'Media/Sounds/Torch.ogg'
+    'Media/Sounds/WaterDrop.ogg'
+)
+foreach ($file in $requiredMediaFiles) {
+    if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $file) -PathType Leaf)) {
+        Fail "required bundled media file '$file' is missing."
+    }
+}
+$mediaFiles = if (Test-Path -LiteralPath $mediaRoot -PathType Container) {
+    Get-ChildItem -LiteralPath $mediaRoot -File -Recurse | ForEach-Object {
+        $_.FullName.Substring($repoRoot.Length + 1).Replace('\', '/')
+    }
+}
+else { @() }
+$expectedFiles = @('ApogeePartyHealthBars.toc', 'LICENSE', 'README.md') + $runtimeFiles + $mediaFiles
 $expectedFiles = $expectedFiles | Sort-Object -Unique
 
 if ($PackageRoot) {

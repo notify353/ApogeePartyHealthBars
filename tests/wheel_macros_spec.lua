@@ -294,7 +294,7 @@ wheel.GetSlot(PRIMARY, "normalUp").displaySpellName = nil; wheel.Refresh()
 assert(normalUpIcon.texture.desaturated and normalUpIcon.alpha == 0.48,
     "invalid wheel display spell did not use tracker-invalid styling")
 wheel.GetSlot(PRIMARY, "normalUp").displaySpellName = warriorSpells[1]; wheel.Refresh()
-assert(wheel.SetSlotSound(PRIMARY, "normalUp", "quest_done") == "quest_done", "wheel sound selection did not persist")
+assert(wheel.SetSlotSound(PRIMARY, "normalUp", "toast") == "toast", "wheel sound selection did not persist")
 rangeResult = 0; wheel.Refresh()
 rangeResult = 1; wheel.Refresh()
 assert(normalUpIcon.pulseUntil ~= nil, "wheel ready transition did not set a pulse")

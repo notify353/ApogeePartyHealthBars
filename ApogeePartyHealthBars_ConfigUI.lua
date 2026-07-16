@@ -621,7 +621,7 @@ function UI.Build(deps)
         AttachConfigDragHandle(spec.button)
         spec.button:SetScript("OnClick", function()
             SetConfigTab(key)
-            RefreshTab(key, key == "macros")
+            RefreshTab(key)
         end)
     end
     SetConfigTab(S.configTab)

@@ -1,87 +1,31 @@
-# Apogee Macro Library Style Guide
+# Apogee Combat Macro Library Style Guide
 
 ## Purpose
 
-Library macros are dependable combat openers for ordinary solo play. They should reduce setup work without automating rotations, choosing actions for the player, or making assumptions about specialized gear and group content.
+Library entries are practical combat examples for the supported TBC Anniversary client. They teach dependable patterns without automating rotations or assuming specialized gear. Universal entries are available to every character; class entries appear only for the logged-in class.
 
-Every macro must remain understandable when read as plain text. Prefer predictable behavior over clever or compressed conditionals.
+## Recipe metadata
 
-## Entry metadata
+Every recipe provides a stable ID, category, title, explanation, and body of at most 255 bytes. Class recipes declare their supported class. Spell-dependent recipes list required spells and plain-language requirements. Add a verification note when forms, pets, talents, range, or other client behavior needs targeted in-game testing.
 
-Each library entry must provide:
+## Copy-only presentation
 
-- A concise player-facing title
-- A short description of what the macro does
-- A macro name no longer than 16 characters
-- The intended class, talent tree, and minimum level
-- An explicit primary icon and a class-appropriate fallback icon
-- A list of spells required by the macro
-- A macro body within the client's 255-byte limit
+- Recipe bodies are curated catalog data. The Macros tab displays, selects, and copies the body, but it must not accept or persist user edits.
+- The library never creates, updates, picks up, inspects, or tracks game macros.
+- The feature owns no macro saved state. Users paste the selected text into WoW's Macro window themselves.
 
-The library and installer own icon selection. Resolve the primary spell icon when that spell is learned and use the configured fallback otherwise. A managed macro must never intentionally use the generic question-mark icon.
+## Combat policy
 
-Do not add `#showtooltip`. It duplicates icon or conditional logic already represented in metadata and can drift away from the actual macro body. Library validation rejects it.
-
-## Target handling
-
-A macro must preserve an existing living hostile target. It may acquire a replacement only when the current target is missing, dead, or friendly:
-
-```text
-/targetenemy [noexists][dead][help]
-```
-
-Do not use unconditional `/targetenemy`; repeated presses must not cycle away from a valid enemy.
-
-Any command directed at the current target should use conditions such as `[@target,harm,nodead]` when the command could otherwise affect an unintended unit.
-
-## Combat behavior
-
-- Add `/startattack` for melee and other weapon-based openers.
-- Put spell selection in one `/cast` line whenever practical.
-- Ensure every conditional branch resolves to an intentional spell or action.
-- Use only WoW secure macro commands and conditionals.
-- Never embed Lua combat automation or attempt to choose a rotation dynamically.
-- Use `!Spell Name` only when preventing an unwanted toggle, such as Auto Shot.
-- Add `/petattack [@target,harm,nodead]` only for builds expected to fight with a pet.
-- Avoid gear, racial, consumable, profession, raid, arena, and battleground assumptions.
-
-Repeated presses must remain safe. They may continue auto-attacking, retry an unavailable action, or advance through explicit player-controlled macro conditions, but they must not replace a valid target unexpectedly.
-
-## Canonical patterns
-
-Melee opener:
-
-```text
-/targetenemy [noexists][dead][help]
-/startattack
-/cast [nocombat] Charge; Heroic Strike
-```
-
-Pet-assisted opener:
-
-```text
-/targetenemy [noexists][dead][help]
-/petattack [@target,harm,nodead]
-/cast Hunter's Mark
-```
-
-The action-bar name and icon are assigned through entry metadata, not the macro body.
+- Repeated presses must be safe and predictable.
+- Preserve a living hostile target and acquire a replacement only with `/targetenemy [noexists][dead][help]`.
+- Use `!Shoot` and `!Auto Shot` when repeated presses must not toggle the ranged attack off.
+- Put `/stopcasting` immediately before the emergency spell it is intended to enable.
+- Target hostile actions explicitly when unintended units would be dangerous.
+- Use `/petattack [@target,harm,nodead]` only in recipes that require an active pet.
+- Use only secure macro commands and conditionals supported by the matching local interface export.
+- Do not add Lua automation, rotation selection, gear assumptions, or `#showtooltip`; keep examples focused on the combat commands being taught.
+- Explain required spells, talents, forms, pets, weapons, range, and other limitations.
 
 ## Review checklist
 
-Before adding or changing an entry, verify:
-
-1. Class, talent tree, and minimum level are accurate.
-2. Every required spell exists on the supported Anniversary client.
-3. The macro name fits the client limit and does not collide with another managed entry.
-4. Primary and fallback icons resolve without producing the question-mark icon.
-5. The description matches the macro's actual behavior.
-6. A living hostile target is preserved.
-7. Missing, dead, and friendly targets are handled intentionally.
-8. Every conditional branch has a deliberate result.
-9. Repeated presses remain safe and predictable.
-10. Pet and auto-attack commands appear only where appropriate.
-11. The body contains no `#showtooltip` or Lua automation.
-12. The final macro body is no more than 255 bytes.
-
-Run the macro library and installer specs after every content or policy change. In-game verification is required when client macro parsing or spell behavior could differ from the test stubs.
+Before changing a recipe, verify its ID is unique, its class and category are correct, its commands and spell names exist on the supported client, and its body is nonblank and no more than 255 bytes. Confirm that the description matches the body and that spamming the macro cannot toggle off an intended attack or unexpectedly replace a valid target. Run the macro library and config specs, then test client-sensitive recipes in game.

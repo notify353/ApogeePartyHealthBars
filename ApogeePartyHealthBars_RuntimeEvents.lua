@@ -57,12 +57,14 @@ function R.Register(eventRouter, deps)
     for _, event in ipairs({ "UNIT_THREAT_SITUATION_UPDATE", "UNIT_THREAT_LIST_UPDATE" }) do
         eventRouter.RegisterOptional(event, "Threat", H.Refresh)
     end
-    
-    for _, event in ipairs({ "PLAYER_LEVEL_UP", "CHARACTER_POINTS_CHANGED", "PLAYER_TALENT_UPDATE" }) do
-        eventRouter.RegisterOptional(event, "MacroLibrary", function()
-            if D.GetConfigUI().RefreshMacroPanel then D.GetConfigUI().RefreshMacroPanel(true) end
-        end)
+
+    local function RefreshMacroRequirements()
+        if D.GetConfigUI().RefreshMacroPanel then D.GetConfigUI().RefreshMacroPanel() end
     end
+    eventRouter.RegisterOptional("UNIT_PET", "MacroLibraryPet", function(_, unit)
+        if unit == "player" then RefreshMacroRequirements() end
+    end)
+    eventRouter.RegisterOptional("PET_BAR_UPDATE", "MacroLibraryPetBar", RefreshMacroRequirements)
     
     HandleEvent = function(event, unit)
         local ok, err = pcall(function()
@@ -78,7 +80,6 @@ function R.Register(eventRouter, deps)
             S.charSv = ApogeePartyHealthCharSV
             E.InitializeSavedVariables(S.sv, S.charSv)
             U.Initialize(S.sv.combatUIAutoHide)
-            ApogeePartyHealthBars_MacroInstaller.Initialize(S.charSv)
             local macrosValid, macroErrors = ApogeePartyHealthBars_MacroLibrary.ValidateAll()
             if not macrosValid then
                 for _, message in ipairs(macroErrors) do D.Print("macro validation: " .. message) end
@@ -121,7 +122,6 @@ function R.Register(eventRouter, deps)
             T.RefreshSecureActions()
             W.OnCombatEnded()
             H.Refresh()
-            if D.GetConfigUI().RefreshMacroPanel then D.GetConfigUI().RefreshMacroPanel() end
             D.ForceRefresh()
     
         elseif event == "PLAYER_TARGET_CHANGED" then
@@ -152,7 +152,7 @@ function R.Register(eventRouter, deps)
             if wheelLayoutsChanged and D.GetConfigUI().RefreshWheelPanel then
                 D.GetConfigUI().RefreshWheelPanel()
             end
-            if D.GetConfigUI().RefreshMacroPanel then D.GetConfigUI().RefreshMacroPanel(true) end
+            RefreshMacroRequirements()
             S.RequestUpdate()
 
         elseif event == "UPDATE_BINDINGS" then

@@ -1,197 +1,150 @@
--- Curated, data-driven grinding opener library for TBC Anniversary.
 ApogeePartyHealthBars_MacroLibrary = {}
 local L = ApogeePartyHealthBars_MacroLibrary
-
-L.BRACKETS = ApogeePartyHealthBars_MacroData.BRACKETS
-L.MAX_BODY_BYTES = 255
-
 local D = ApogeePartyHealthBars_MacroData
-local TARGET = D.TARGET
-local ATTACK = D.ATTACK
-local classes = D.Classes
-local classFallbackIcons = D.ClassFallbackIcons
-local entries = D.Entries
 
-function L.GetBuildsForClass(classToken)
-    local class = classes[classToken]
-    if not class then return {} end
+L.MAX_BODY_BYTES = 255
+L.Categories = type(D.Categories) == "table" and D.Categories or {}
+
+local recipesById = {}
+for _, recipe in ipairs(type(D.Recipes) == "table" and D.Recipes or {}) do
+    if type(recipe) == "table" and type(recipe.id) == "string" then recipesById[recipe.id] = recipe end
+end
+
+local validClasses = {
+    DRUID = true, HUNTER = true, MAGE = true, PALADIN = true, PRIEST = true,
+    ROGUE = true, SHAMAN = true, WARLOCK = true, WARRIOR = true,
+}
+
+function L.GetRecipe(recipeId) return recipesById[recipeId] end
+
+function L.GetRecipesForClass(classToken, category)
     local result = {}
-    for i, name in ipairs(class.builds) do result[i] = { treeIndex = i, name = name } end
+    for _, recipe in ipairs(type(D.Recipes) == "table" and D.Recipes or {}) do
+        local valid = L.ValidateRecipe and L.ValidateRecipe(recipe)
+        if valid then
+            local classMatches = not recipe.classes or recipe.classes[classToken] == true
+            local categoryMatches = not category or category == "all" or recipe.category == category
+            if classMatches and categoryMatches then result[#result + 1] = recipe end
+        end
+    end
     return result
 end
 
-function L.GetDefaultTree(classToken)
-    return classes[classToken] and classes[classToken].default or 1
-end
-
-function L.GetDetectedTree(classToken)
-    local class = classes[classToken]
-    if not class then return 1 end
-    local best, bestPoints, tied = class.default, -1, false
-    for i = 1, #class.builds do
-        local _, _, points = GetTalentTabInfo and GetTalentTabInfo(i)
-        points = tonumber(points) or 0
-        if points > bestPoints then best, bestPoints, tied = i, points, false
-        elseif points == bestPoints then tied = true end
-    end
-    if bestPoints <= 0 or tied then return class.default end
-    return best
-end
-
-function L.ValidateEntry(entry)
-    if type(entry) ~= "table" or type(entry.id) ~= "string" or type(entry.body) ~= "string" then
-        return false, "Entry is missing its ID or macro body."
-    end
-    if #entry.body > L.MAX_BODY_BYTES then return false, "Macro exceeds 255 bytes." end
-    if type(entry.title) ~= "string" or entry.title == "" then return false, "Macro needs a display title." end
-    if type(entry.explanation) ~= "string" or entry.explanation == "" then return false, "Macro needs a description." end
-    if entry.body:find("#showtooltip", 1, true) then return false, "Icon logic belongs in metadata, not #showtooltip." end
-    if not classFallbackIcons[entry.classToken] then return false, "Macro needs a class icon fallback." end
-    if not entry.body:find("/targetenemy %[%s*noexists%]%[dead%]%[help%]") then
-        return false, "Macro is missing the safe target line."
-    end
+function L.ValidateBody(body)
+    if type(body) ~= "string" or not body:find("%S") then return false, "Macro text cannot be blank." end
+    if #body > L.MAX_BODY_BYTES then return false, "Macro exceeds 255 bytes." end
     return true
 end
 
-function L.Resolve(classToken, treeIndex, level, knownSpellPredicate)
-    local list = entries[classToken] and entries[classToken][treeIndex]
-    if not list then return nil end
-    local best
-    for _, entry in ipairs(list) do
-        if entry.minLevel <= (level or 1) then
-            local known = true
-            if knownSpellPredicate and entry.requiredSpells then
-                for _, spell in ipairs(entry.requiredSpells) do
-                    if not knownSpellPredicate(spell) then known = false break end
-                end
-            end
-            if known then best = entry end
-        end
-    end
-    -- The preview remains useful before a spell is trained; installation is
-    -- allowed because the macro becomes functional as soon as it is learned.
-    return best or list[1]
-end
-
-function L.GetEligibleHistory(classToken, treeIndex, level, knownSpellPredicate)
-    local resolved = L.Resolve(classToken, treeIndex, level, knownSpellPredicate)
-    if not resolved then return {} end
-    local history = {}
-    local lastEntryId
-    for _, bracket in ipairs(L.BRACKETS) do
-        if bracket <= (level or 1) then
-            local entry = L.Resolve(classToken, treeIndex, bracket, knownSpellPredicate)
-            -- Brackets commonly inherit the prior recommendation. Navigation
-            -- should visit actual revisions, not several identical copies.
-            if entry and entry.id ~= lastEntryId then
-                history[#history + 1] = { bracket = bracket, entry = entry }
-                lastEntryId = entry.id
-            end
-        end
-    end
-    return history
-end
-
--- Browsing is intentionally separate from eligibility. Players may inspect
--- future revisions, while the UI prevents installing entries they cannot use.
-function L.GetMacroHistory(classToken, treeIndex)
-    local list = entries[classToken] and entries[classToken][treeIndex]
-    local history = {}
-    for _, entry in ipairs(list or {}) do
-        history[#history + 1] = { bracket = entry.minLevel, entry = entry }
-    end
-    return history
-end
-
-function L.IsSpellKnownByName(wanted)
-    if not wanted or not GetNumSpellTabs or not GetSpellTabInfo or not GetSpellBookItemName then return true end
-    local tabs = GetNumSpellTabs() or 0
-    for tab = 1, tabs do
-        local _, _, offset, count = GetSpellTabInfo(tab)
-        for slot = (offset or 0) + 1, (offset or 0) + (count or 0) do
-            local name = GetSpellBookItemName(slot, BOOKTYPE_SPELL or "spell")
-            if name == wanted then return true end
-        end
+local function categoryExists(categoryId)
+    if categoryId == "all" then return false end
+    for _, category in ipairs(type(D.Categories) == "table" and D.Categories or {}) do
+        if type(category) == "table" and category.id == categoryId then return true end
     end
     return false
 end
 
-function L.GetIconForEntry(entry)
-    local wanted = entry and entry.requiredSpells and entry.requiredSpells[1]
-    if wanted and GetSpellTexture then
-        local texture = GetSpellTexture(wanted)
-        if texture then return texture end
+local function validateSpellList(spells, fieldName)
+    if spells == nil then return true end
+    if type(spells) ~= "table" then return false, fieldName .. " must be a table." end
+    local count = 0
+    for index, spell in pairs(spells) do
+        if type(index) ~= "number" or index < 1 or index % 1 ~= 0 then return false, fieldName .. " must be an array." end
+        if type(spell) ~= "string" or spell == "" then return false, fieldName .. " contains an invalid spell." end
+        count = count + 1
     end
-    if wanted and GetSpellInfo then
-        local _, _, texture = GetSpellInfo(wanted)
-        if texture then return texture end
+    for index = 1, count do
+        if spells[index] == nil then return false, fieldName .. " must not contain gaps." end
     end
-    if wanted and GetNumSpellTabs and GetSpellTabInfo and GetSpellBookItemName and GetSpellBookItemTexture then
-        for tab = 1, GetNumSpellTabs() do
-            local _, _, offset, count = GetSpellTabInfo(tab)
-            for slot = (offset or 0) + 1, (offset or 0) + (count or 0) do
-                local name = GetSpellBookItemName(slot, BOOKTYPE_SPELL or "spell")
-                if name == wanted then
-                    local texture = GetSpellBookItemTexture(slot, BOOKTYPE_SPELL or "spell")
-                    if texture then return texture end
-                end
-            end
-        end
-    end
-    return classFallbackIcons[entry and entry.classToken] or "Interface\\Icons\\INV_Sword_04"
+    return true
 end
 
-function L.GetMacroName(entry)
-    local spell = entry and entry.requiredSpells and entry.requiredSpells[1]
-    local name = spell or (entry and entry.title) or "Opener"
-    if name == "Heroic Strike" then name = "Heroic Opener"
-    elseif name == "Shadow Word: Pain" then name = "Shadow Opener"
-    elseif name == "Sinister Strike" then name = "Sinister Open"
-    elseif name == "Arcane Missiles" then name = "Arcane Open"
-    elseif name == "Lightning Bolt" then name = "Lightning Open"
-    elseif name == "Raptor Strike" then name = "Raptor Opener"
-    elseif name == "Judgement" then name = "Judge Opener"
-    elseif #name <= 11 then name = name .. " Open" end
-    return name:sub(1, 16)
+function L.ValidateRecipe(recipe)
+    if type(recipe) ~= "table" or type(recipe.id) ~= "string" or recipe.id == "" then return false, "Recipe needs a stable ID." end
+    if type(recipe.category) ~= "string" or not categoryExists(recipe.category) then return false, "Recipe needs a valid category." end
+    if type(recipe.title) ~= "string" or recipe.title == "" then return false, "Recipe needs a display title." end
+    if type(recipe.explanation) ~= "string" or recipe.explanation == "" then return false, "Recipe needs a description." end
+    if recipe.requirements ~= nil and (type(recipe.requirements) ~= "string" or recipe.requirements == "") then return false, "Recipe requirements must be a nonempty string." end
+    if recipe.verificationNote ~= nil and (type(recipe.verificationNote) ~= "string" or recipe.verificationNote == "") then return false, "Recipe verification note must be a nonempty string." end
+    if recipe.classes then
+        if type(recipe.classes) ~= "table" then return false, "Recipe classes must be a table." end
+        local classCount = 0
+        for classToken, enabled in pairs(recipe.classes) do
+            classCount = classCount + 1
+            if not validClasses[classToken] or enabled ~= true then return false, "Recipe contains an invalid class." end
+        end
+        if classCount == 0 then return false, "Recipe class list cannot be empty." end
+        if type(recipe.requirements) ~= "string" or recipe.requirements == "" then return false, "Class recipe needs requirements." end
+    end
+    local spellsOk, spellsError = validateSpellList(recipe.requiredSpells, "Required spells")
+    if not spellsOk then return false, spellsError end
+    local petSpellsOk, petSpellsError = validateSpellList(recipe.requiredPetSpells, "Required pet spells")
+    if not petSpellsOk then return false, petSpellsError end
+    if type(recipe.body) == "string" and recipe.body:find("#showtooltip", 1, true) then return false, "Recipe text must omit #showtooltip." end
+    return L.ValidateBody(recipe.body)
+end
+
+local function spellBookContains(wanted, bookType, count)
+    if not wanted or not GetSpellBookItemName then return true end
+    for slot = 1, count or 0 do
+        if GetSpellBookItemName(slot, bookType) == wanted then return true end
+    end
+    return false
+end
+
+function L.IsSpellKnownByName(wanted)
+    if not wanted or not GetNumSpellTabs or not GetSpellTabInfo or not GetSpellBookItemName then return true end
+    for tab = 1, GetNumSpellTabs() or 0 do
+        local _, _, offset, count = GetSpellTabInfo(tab)
+        local first = (offset or 0) + 1
+        local last = (offset or 0) + (count or 0)
+        for slot = first, last do if GetSpellBookItemName(slot, BOOKTYPE_SPELL or "spell") == wanted then return true end end
+    end
+    return false
+end
+
+function L.IsPetSpellKnownByName(wanted)
+    if not wanted or not HasPetSpells or not GetSpellBookItemName then return true end
+    return spellBookContains(wanted, BOOKTYPE_PET or "pet", HasPetSpells() or 0)
+end
+
+function L.GetUnavailableReason(recipe)
+    if type(recipe) ~= "table" then return end
+    for _, spell in ipairs(type(recipe.requiredSpells) == "table" and recipe.requiredSpells or {}) do
+        if not L.IsSpellKnownByName(spell) then return "Learn " .. spell .. " to use this example." end
+    end
+    for _, spell in ipairs(type(recipe.requiredPetSpells) == "table" and recipe.requiredPetSpells or {}) do
+        if not L.IsPetSpellKnownByName(spell) then return "Summon a pet that knows " .. spell .. " to use this example." end
+    end
 end
 
 function L.ValidateAll()
-    local errors = {}
-    local seenIds = {}
-    local validBrackets = {}
-    for _, bracket in ipairs(L.BRACKETS) do validBrackets[bracket] = true end
-    for classToken, trees in pairs(entries) do
-        local class = classes[classToken]
-        if not class then errors[#errors + 1] = "unsupported class: " .. tostring(classToken) end
-        for treeIndex, list in pairs(trees) do
-            if not class or not class.builds[treeIndex] then
-                errors[#errors + 1] = classToken .. "/" .. treeIndex .. ": unsupported talent tree"
-            end
-            for _, entry in ipairs(list) do
-                local ok, err = L.ValidateEntry(entry)
-                if not ok then errors[#errors + 1] = classToken .. "/" .. treeIndex .. ": " .. err end
-                if seenIds[entry.id] then errors[#errors + 1] = "duplicate macro ID: " .. entry.id end
-                seenIds[entry.id] = true
-                if not validBrackets[entry.minLevel] then
-                    errors[#errors + 1] = entry.id .. ": invalid level bracket " .. tostring(entry.minLevel)
-                end
-                if entry.classToken ~= classToken or entry.treeIndex ~= treeIndex then
-                    errors[#errors + 1] = entry.id .. ": class/tree metadata mismatch"
-                end
-                local macroName = L.GetMacroName(entry)
-                if macroName == "" or #macroName > 16 then errors[#errors + 1] = entry.id .. ": invalid macro name" end
+    local errors, seenIds, categories = {}, {}, {}
+    if type(D.Categories) ~= "table" then
+        errors[#errors + 1] = "categories must be a table"
+    else
+        for _, category in ipairs(D.Categories) do
+            local categoryId = type(category) == "table" and category.id or nil
+            if type(categoryId) ~= "string" or categoryId == "" or type(category.label) ~= "string" or category.label == "" then
+                errors[#errors + 1] = "invalid category metadata"
+            elseif categories[categoryId] then
+                errors[#errors + 1] = "duplicate category ID: " .. categoryId
+            else
+                categories[categoryId] = true
             end
         end
+        if not categories.all then errors[#errors + 1] = "missing all category" end
     end
-    for classToken, class in pairs(classes) do
-        if not entries[classToken] then errors[#errors + 1] = "missing class entries: " .. classToken end
-        local icon = classFallbackIcons[classToken]
-        if type(icon) ~= "string" or icon == "" or icon:lower():find("questionmark", 1, true) then
-            errors[#errors + 1] = classToken .. ": invalid fallback icon"
-        end
-        for treeIndex = 1, #class.builds do
-            if not entries[classToken] or not entries[classToken][treeIndex] or not entries[classToken][treeIndex][1] then
-                errors[#errors + 1] = classToken .. "/" .. treeIndex .. ": missing starter entry"
+    if type(D.Recipes) ~= "table" then
+        errors[#errors + 1] = "recipes must be a table"
+    else
+        for _, recipe in ipairs(D.Recipes) do
+            local recipeId = type(recipe) == "table" and type(recipe.id) == "string" and recipe.id or "<invalid recipe>"
+            local ok, err = L.ValidateRecipe(recipe)
+            if not ok then errors[#errors + 1] = recipeId .. ": " .. err end
+            if type(recipe) == "table" and type(recipe.id) == "string" then
+                if seenIds[recipe.id] then errors[#errors + 1] = "duplicate recipe ID: " .. recipe.id end
+                seenIds[recipe.id] = true
             end
         end
     end

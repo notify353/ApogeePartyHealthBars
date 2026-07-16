@@ -611,8 +611,6 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
     Threat                     = H,
     CombatUIFader              = ApogeePartyHealthBars_CombatUIFader,
     SyncVisualTicker           = SyncVisualTicker,
-    MacroLibrary               = ApogeePartyHealthBars_MacroLibrary,
-    MacroInstaller             = ApogeePartyHealthBars_MacroInstaller,
 })
 
 RefreshConfigPanel = configUI.RefreshConfigPanel

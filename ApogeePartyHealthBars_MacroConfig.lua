@@ -1,81 +1,83 @@
 local C = ApogeePartyHealthBars_C
 local L = ApogeePartyHealthBars_MacroLibrary
-local I = ApogeePartyHealthBars_MacroInstaller
 local UIH = ApogeePartyHealthBars_UIHelpers
 
 ApogeePartyHealthBars_MacroConfig = {}
 local M = ApogeePartyHealthBars_MacroConfig
-local tab, D, buildButton, autoButton, title, description, editorFrame, editor
-local statusText, installButton, selectButton, prevButton, nextButton
-local selectedTree, historyIndex, currentEntry
+local tab, D, categoryDropdown, title, description, requirements, recipeState
+local macroText, macroFrame, statusText
+local selectButton, prevButton, nextButton
+local selectedCategory, recipeIndex, recipes, currentRecipe, loadingText = "all", 1, {}, nil, false
 
-local function entryIsUsable(entry, level)
-    if entry.minLevel > level then return false, "Available at level " .. entry.minLevel .. "." end
-    for _, spell in ipairs(entry.requiredSpells or {}) do
-        if not L.IsSpellKnownByName(spell) then return false, "Learn " .. spell .. " to use this macro." end
-    end
-    return true
+local function button(parent, text, width) return UIH.CreateButton(parent, text, width, 22) end
+local function playerClass()
+    local localized, token = UnitClass("player")
+    return token, localized or token or "your class"
 end
 
-local function button(parent, text, width)
-    return UIH.CreateButton(parent, text, width, 22)
+local function setMacroText(text)
+    loadingText = true
+    macroText:SetText(text or "")
+    loadingText = false
 end
 
-local function playerContext()
-    local _, classToken = UnitClass("player")
-    local level = UnitLevel("player") or 1
-    local detected = L.GetDetectedTree(classToken)
-    return classToken, level, detected
+local function setSecondaryEnabled(control, enabled)
+    UIH.SetButtonEnabled(control, enabled)
 end
 
-local function render()
-    if not tab then return end
-    local classToken, level, detected = playerContext()
-    local tree = selectedTree or detected
-    local builds = L.GetBuildsForClass(classToken)
-    local history = L.GetMacroHistory(classToken, tree)
-    local recommended = L.Resolve(classToken, tree, level, L.IsSpellKnownByName)
-    if not historyIndex then
-        historyIndex = 1
-        for i, candidate in ipairs(history) do
-            if recommended and candidate.entry.id == recommended.id then historyIndex = i end
+local function categoryOptions()
+    local classToken = playerClass()
+    local options = {}
+    for _, category in ipairs(L.Categories) do
+        if type(category) == "table" and type(category.id) == "string" and type(category.label) == "string" then
+            local count = #L.GetRecipesForClass(classToken, category.id)
+            if count > 0 then
+                options[#options + 1] = { key = category.id, label = category.label .. " (" .. count .. ")" }
+            end
         end
     end
-    historyIndex = math.max(1, math.min(historyIndex, #history))
-    local item = history[historyIndex]
-    currentEntry = item and item.entry or recommended
-    local buildName = builds[tree] and builds[tree].name or "Unknown"
-    buildButton.label:SetText((selectedTree and "Manual: " or "Auto: ") .. buildName)
-    if selectedTree then
-        autoButton:Enable()
-        autoButton.label:SetTextColor(1, 0.82, 0)
-    else
-        autoButton:Disable()
-        autoButton.label:SetTextColor(0.45, 0.45, 0.45)
+    return options
+end
+
+local function render(resetRecipe)
+    if not tab then return end
+    if resetRecipe then recipeIndex = 1 end
+    local classToken = playerClass()
+    recipes = L.GetRecipesForClass(classToken, selectedCategory)
+    recipeIndex = math.max(1, math.min(recipeIndex, math.max(1, #recipes)))
+    currentRecipe = recipes[recipeIndex]
+    categoryDropdown:SetSelectedKey(selectedCategory)
+
+    if not currentRecipe then
+        title:SetText("No examples in this category")
+        description:SetText("Choose another category to continue.")
+        requirements:SetText(""); recipeState:SetText(""); setMacroText("")
+        setSecondaryEnabled(prevButton, false); setSecondaryEnabled(nextButton, false)
+        setSecondaryEnabled(selectButton, false)
+        statusText:SetText("Choose another category.")
+        return
     end
-    if not currentEntry then
-        title:SetText("No opener is available for this character.")
-        description:SetText(""); editor:SetText(""); installButton:Disable(); return
-    end
-    local bracket = item and item.bracket or 1
-    title:SetText("|cffFFD700" .. currentEntry.title .. "|r  |cff999999(Level " .. bracket .. "+)|r")
-    description:SetText(currentEntry.explanation)
-    editor:SetText(currentEntry.body)
-    local usable, unavailableReason = entryIsUsable(currentEntry, level)
-    installButton:Enable()
-    if historyIndex > 1 then prevButton:Enable() else prevButton:Disable() end
-    if historyIndex < #history then nextButton:Enable() else nextButton:Disable() end
-    if not usable then
-        statusText:SetText("|cffffaa00You can create this now; it becomes usable when ready. " .. unavailableReason .. "|r")
-    elseif InCombatLockdown() then
-        statusText:SetText("|cffffaa00Leave combat to create or update this macro.|r")
+
+    title:SetText("|cffFFD700" .. currentRecipe.title .. "|r")
+    description:SetText(currentRecipe.explanation)
+    local detail = currentRecipe.requirements or "No class-specific requirements."
+    if currentRecipe.verificationNote then detail = detail .. " " .. currentRecipe.verificationNote end
+    requirements:SetText("|cff999999" .. detail .. "|r")
+    setMacroText(currentRecipe.body)
+    setSecondaryEnabled(prevButton, recipeIndex > 1)
+    setSecondaryEnabled(nextButton, recipeIndex < #recipes)
+    setSecondaryEnabled(selectButton, true)
+    recipeState:SetText("Example " .. recipeIndex .. " of " .. #recipes)
+
+    local unavailable = L.GetUnavailableReason(currentRecipe)
+    if unavailable then
+        statusText:SetText("|cffffaa00" .. unavailable .. " You can still copy the example.|r")
     else
-        statusText:SetText("Create it, then drop the macro from your cursor onto an action bar.")
+        statusText:SetText("Select the text, press Ctrl+C, then paste it into WoW's Macro window.")
     end
 end
 
-function M.Refresh(resetHistory)
-    if resetHistory then historyIndex = nil end
+function M.Refresh()
     render()
 end
 
@@ -87,64 +89,70 @@ function M.Build(parent, deps)
     tab:Hide()
 
     local heading = tab:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    heading:SetPoint("TOPLEFT"); heading:SetText("|cffFFD700Opening Macro Library|r")
-    local detected = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    detected:SetPoint("TOPLEFT", heading, "BOTTOMLEFT", 0, -3); detected:SetText("Recommended for your class, talents, and level.")
+    heading:SetPoint("TOPLEFT"); heading:SetText("|cffFFD700Combat Macro Library|r")
+    local subtitle = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    subtitle:SetPoint("TOPLEFT", heading, "BOTTOMLEFT", 0, -3)
+    local _, className = playerClass()
+    subtitle:SetText("Browse and copy curated universal examples and combat macros for " .. className .. ".")
 
-    buildButton = button(tab, "Auto", 230); buildButton:SetPoint("TOPLEFT", detected, "BOTTOMLEFT", 0, -8)
-    autoButton = button(tab, "Return to Auto", 154); autoButton:SetPoint("LEFT", buildButton, "RIGHT", 8, 0)
-    buildButton:SetScript("OnClick", function()
-        local classToken, _, detectedTree = playerContext()
-        local builds = L.GetBuildsForClass(classToken)
-        local current = selectedTree or detectedTree
-        selectedTree = current % #builds + 1
-        historyIndex = nil; render()
+    categoryDropdown = UIH.CreateDropdown(tab, C.CONFIG_CONTENT_W, 22, C.CONFIG_CONTENT_W)
+    categoryDropdown:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -8)
+    categoryDropdown:SetOptions(categoryOptions())
+    categoryDropdown:SetSelectedKey(selectedCategory)
+    categoryDropdown:SetSelectionCallback(function(categoryKey)
+        selectedCategory = categoryKey
+        statusText:SetText("")
+        render(true)
     end)
-    autoButton:SetScript("OnClick", function() selectedTree = nil; historyIndex = nil; render() end)
 
     title = tab:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    title:SetPoint("TOPLEFT", buildButton, "BOTTOMLEFT", 0, -12); title:SetWidth(C.CONFIG_CONTENT_W); title:SetJustifyH("LEFT")
+    title:SetPoint("TOPLEFT", categoryDropdown, "BOTTOMLEFT", 0, -10)
+    title:SetWidth(C.CONFIG_CONTENT_W); title:SetJustifyH("LEFT")
     description = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    description:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4); description:SetWidth(C.CONFIG_CONTENT_W); description:SetJustifyH("LEFT")
+    description:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -3)
+    description:SetWidth(C.CONFIG_CONTENT_W); description:SetJustifyH("LEFT"); description:SetWordWrap(true)
+    requirements = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    requirements:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -3)
+    requirements:SetWidth(C.CONFIG_CONTENT_W); requirements:SetJustifyH("LEFT"); requirements:SetWordWrap(true)
+    recipeState = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    recipeState:SetPoint("TOPLEFT", requirements, "BOTTOMLEFT", 0, -4)
+    recipeState:SetWidth(C.CONFIG_CONTENT_W); recipeState:SetJustifyH("LEFT")
 
     local macroLabel = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    macroLabel:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -10)
-    macroLabel:SetText("MACRO TEXT")
+    macroLabel:SetPoint("TOPLEFT", recipeState, "BOTTOMLEFT", 0, -8)
+    macroLabel:SetText("MACRO TEXT (COPY-ONLY)")
 
-    editorFrame = CreateFrame("Frame", nil, tab, "BackdropTemplate")
-    editorFrame:SetSize(C.CONFIG_CONTENT_W, 104)
-    editorFrame:SetPoint("TOPLEFT", macroLabel, "BOTTOMLEFT", 0, -4)
-    D.ApplyBackdrop(editorFrame, 0.92, { 0.35, 0.35, 0.38, 1 })
-
-    editor = CreateFrame("EditBox", nil, editorFrame)
-    editor:SetMultiLine(true); editor:SetAutoFocus(false); editor:SetFontObject("ChatFontNormal")
-    editor:SetJustifyH("LEFT"); editor:SetJustifyV("TOP")
-    editor:SetPoint("TOPLEFT", editorFrame, "TOPLEFT", 10, -8)
-    editor:SetPoint("BOTTOMRIGHT", editorFrame, "BOTTOMRIGHT", -10, 8)
-    editor:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-    editor:SetScript("OnTextChanged", function(self, user) if user and currentEntry then self:SetText(currentEntry.body); self:HighlightText() end end)
-
-    prevButton = button(tab, "Previous Macro", 120); prevButton:SetPoint("TOPLEFT", editorFrame, "BOTTOMLEFT", 0, -8)
-    nextButton = button(tab, "Next Macro", 120); nextButton:SetPoint("LEFT", prevButton, "RIGHT", 8, 0)
-    selectButton = button(tab, "Select Text", 140); selectButton:SetPoint("LEFT", nextButton, "RIGHT", 8, 0)
-    prevButton:SetScript("OnClick", function() historyIndex = math.max(1, (historyIndex or 1) - 1); render() end)
-    nextButton:SetScript("OnClick", function() historyIndex = (historyIndex or 1) + 1; render() end)
-    selectButton:SetScript("OnClick", function() editor:SetFocus(); editor:HighlightText(); statusText:SetText("Press Ctrl+C to copy the selected macro text.") end)
-
-    installButton = button(tab, "Create & Pick Up", C.CONFIG_CONTENT_W); installButton:SetPoint("TOPLEFT", prevButton, "BOTTOMLEFT", 0, -8)
-    installButton:SetScript("OnClick", function()
-        local replace = installButton.replaceEdited == true
-        local ok, result, detail = I.CreateOrUpdate(currentEntry, replace)
-        if not ok and result == "edited" then
-            installButton.replaceEdited = true; installButton.label:SetText("Replace Edited Macro")
-            statusText:SetText("|cffffaa00" .. detail .. "|r"); return
-        elseif not ok then statusText:SetText("|cffff5555" .. tostring(result) .. "|r"); return end
-        installButton.replaceEdited = nil; installButton.label:SetText("Create & Pick Up")
-        local picked, err = I.PickupManagedMacro()
-        statusText:SetText(picked and "|cff00ff00Macro is on your cursor - drop it onto an action bar.|r" or "|cffff5555" .. err .. "|r")
+    macroFrame = CreateFrame("Frame", nil, tab, "BackdropTemplate")
+    macroFrame:SetSize(C.CONFIG_CONTENT_W, 88)
+    macroFrame:SetPoint("TOPLEFT", macroLabel, "BOTTOMLEFT", 0, -4)
+    D.ApplyBackdrop(macroFrame, 0.92, { 0.35, 0.35, 0.38, 1 })
+    macroText = CreateFrame("EditBox", nil, macroFrame)
+    macroText:SetMultiLine(true); macroText:SetAutoFocus(false); macroText:SetFontObject("ChatFontNormal")
+    macroText:SetJustifyH("LEFT"); macroText:SetJustifyV("TOP")
+    macroText:SetPoint("TOPLEFT", macroFrame, "TOPLEFT", 10, -8)
+    macroText:SetPoint("BOTTOMRIGHT", macroFrame, "BOTTOMRIGHT", -10, 8)
+    macroText:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+    macroText:SetScript("OnTextChanged", function(self, user)
+        if not loadingText and user and currentRecipe then
+            setMacroText(currentRecipe.body)
+            statusText:SetText("Library macro text is read-only. Use Select Text to Copy for manual copying.")
+        end
     end)
+
+    -- These widths plus the two 8px gaps exactly fill CONFIG_CONTENT_W.
+    prevButton = button(tab, "< Previous", 100); prevButton:SetPoint("TOPLEFT", macroFrame, "BOTTOMLEFT", 0, -8)
+    nextButton = button(tab, "Next >", 100); nextButton:SetPoint("LEFT", prevButton, "RIGHT", 8, 0)
+    selectButton = button(tab, "Select Text to Copy", 180); selectButton:SetPoint("LEFT", nextButton, "RIGHT", 8, 0)
+    prevButton:SetScript("OnClick", function() recipeIndex = recipeIndex - 1; render() end)
+    nextButton:SetScript("OnClick", function() recipeIndex = recipeIndex + 1; render() end)
+    selectButton:SetScript("OnClick", function()
+        macroText:SetFocus(); macroText:HighlightText()
+        statusText:SetText("Macro text selected. Press Ctrl+C to copy it.")
+    end)
+
     statusText = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    statusText:SetPoint("TOPLEFT", installButton, "BOTTOMLEFT", 0, -7); statusText:SetWidth(C.CONFIG_CONTENT_W); statusText:SetJustifyH("LEFT")
+    statusText:SetPoint("TOPLEFT", prevButton, "BOTTOMLEFT", 0, -7)
+    statusText:SetWidth(C.CONFIG_CONTENT_W); statusText:SetJustifyH("LEFT"); statusText:SetWordWrap(true)
     render()
     return tab
 end

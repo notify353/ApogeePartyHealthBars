@@ -11,7 +11,7 @@ Compact five-player healing frames for World of Warcraft Anniversary and Burning
 - Player spell and crowd-control tracking
 - Editable mouse-wheel macros with six manually configured spell slots
 - Missing party-buff and self-buff reminders
-- Class-aware macro library
+- Copy-only combat macro library with universal and class-specific examples
 - Movable minimap button and tabbed settings
 
 ## Install
@@ -31,6 +31,8 @@ Left-click the minimap button to open settings; the Spellbook opens alongside it
 The Wheel tab configures six normal gameplay macros for scroll up/down with no modifier, Shift, or Ctrl. Enabling Wheel reserves all six keys as blank no-ops. Each talent spec has an independent Wheel profile that follows the equipped spec automatically; a newly activated second spec starts empty, while Wheel enablement and key ownership remain character-wide. Characters with stances or forms reported by the client receive a complete six-slot layout for each known state; classes with a valid no-form state also receive a Base layout, while Warriors see only Battle, Defensive, and Berserker Stance. The active layout switches automatically, including during combat. Classes without stances see the original single-layout editor. Shift-click a Spellbook spell to configure a slot in the selected layout, edit its macro if needed, then select Save. Saving a blank macro clears that layout's slot. Wheel macros use normal WoW targeting and are separate from health-bar mouseover click bindings.
 
 The General tab includes a Factory Reset control for restoring wheel keys, clearing account and current-character add-on settings, and reloading through the first-run initialization path.
+
+The Macros tab contains universal combat examples plus examples for the logged-in character's class. Browse by category, select the curated text, press Ctrl+C, and paste it into WoW's Macro window. The library never creates, updates, or tracks game macros. Examples include safe target acquisition, spam-safe wand or Auto Shot attacks, pet attacks, and stopcasting emergency abilities. Unlearned recipes remain visible with their requirements.
 
 ## Develop
 

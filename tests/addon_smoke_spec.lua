@@ -100,7 +100,6 @@ BOOKTYPE_SPELL, BOOKTYPE_PET = "spell", "pet"
 RAID_CLASS_COLORS = { WARRIOR = { r = 0.8, g = 0.6, b = 0.4 } }
 PowerBarColor = { MANA = { r = 0, g = 0, b = 1 } }
 FACTION_HORDE, FACTION_ALLIANCE = "Horde", "Alliance"
-MAX_ACCOUNT_MACROS, MAX_CHARACTER_MACROS = 120, 18
 
 local inCombat = false
 local activeSpecGroup = 1
@@ -163,17 +162,9 @@ function GetSpellCooldown() return 0, 0, 1 end
 function GetSpellCharges() return nil, nil end
 function GetTime() return 1 end
 function GetCursorPosition() return 100, 100 end
-function GetCursorInfo() return nil end
 function IsShiftKeyDown() return false end
 function GetMouseFocus() return nil end
 function CombatLogGetCurrentEventInfo() return 0, "SPELL_DAMAGE" end
-function GetNumMacros() return 0, 0 end
-function GetMacroInfo() return nil end
-function GetMacroIndexByName() return 0 end
-function ClearCursor() end
-function PickupMacro() end
-function CreateMacro() return 121 end
-function EditMacro(index) return index end
 function hooksecurefunc() end
 local spellbookOpenCount = 0
 local directSpellbookToggleCount = 0
@@ -254,6 +245,16 @@ assert(wheelPanelRefreshCount == 1,
     "spell-driven Wheel layout registry change did not refresh the open configuration panel")
 wheelRuntime.RefreshLayouts = originalRefreshLayouts
 configUI.RefreshWheelPanel = originalRefreshWheelPanel
+
+local originalRefreshMacroPanel = configUI.RefreshMacroPanel
+local macroPanelRefreshCount = 0
+configUI.RefreshMacroPanel = function() macroPanelRefreshCount = macroPanelRefreshCount + 1 end
+router.Dispatch("UNIT_PET", "party1")
+router.Dispatch("UNIT_PET", "player")
+router.Dispatch("PET_BAR_UPDATE")
+assert(macroPanelRefreshCount == 2,
+    "player pet changes did not refresh pet-dependent macro requirements")
+configUI.RefreshMacroPanel = originalRefreshMacroPanel
 
 local originalSpecChanged = wheelRuntime.OnActiveSpecChanged
 local specChangeCount = 0

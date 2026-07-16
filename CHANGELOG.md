@@ -6,6 +6,15 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Changed
+
+- Replaced the talent/level opener recommendation with a curated copy-only combat macro library containing universal and current-class examples.
+- Polished the combat macro library with counted category filtering, selectable read-only macro text, clear copy instructions, and compact exact-fit controls.
+
+### Fixed
+
+- Preserved the selected macro category and example when switching tabs, refreshed pet-dependent requirements when the player's pet changes, and hardened catalog validation against malformed recipe metadata.
+
 ## [0.36.0] - 2026-07-15
 
 ### Added

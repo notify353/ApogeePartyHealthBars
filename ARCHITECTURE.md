@@ -19,7 +19,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `Threat`: party and target threat
 - `BindingStore`, `BindingController`, `ClickBindings`: persistence, assignment, and secure bindings
 - `ConfigUI`, `ConfigController`, `MinimapController`: settings lifecycle
-- `MacroData`, `MacroLibrary`, `MacroInstaller`: macro content, policy, and installation
+- `MacroData`, `MacroLibrary`, `MacroConfig`: immutable universal/current-class combat recipe catalog, validation, filtering, and copy-only presentation
 
 ## Invariants
 

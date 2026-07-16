@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.36.0] - 2026-07-15
+
 ### Added
 
 - Added stance-aware Wheel layouts. Characters with client-reported stances or forms can configure an independent six-slot layout for each known state, with Base shown only when the class has a valid no-form state and secure automatic switching during combat; classes without forms retain the single-layout editor.

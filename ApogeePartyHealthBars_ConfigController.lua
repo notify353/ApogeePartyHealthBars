@@ -19,6 +19,7 @@ function C.Exit()
     S.selectedBindingKey = nil
     S.selectedTrackerSlot = nil
     S.selectedWheelSlot = nil
+    S.selectedWheelLayout = nil
     local ui = D.GetConfigUI()
     if ui then ui.Hide() end
     D.UpdateHeader()

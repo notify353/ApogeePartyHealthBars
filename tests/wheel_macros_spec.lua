@@ -24,6 +24,7 @@ local function widget()
     function value:CreateFontString() return widget() end
     function value:RegisterForClicks(...) self.registeredClicks = { ... } end
     function value:SetAttribute(key, item) self.attributes[key] = item; self.mutations = self.mutations + 1 end
+    function value:GetAttribute(key) return self.attributes[key] end
     function value:HookScript(name, callback) self.scripts[name] = callback end
     function value:SetScript(name, callback) self.scripts[name] = callback end
     function value:Show() self.shown = true; self.mutations = self.mutations + 1 end
@@ -52,6 +53,33 @@ local inCombat = false
 function InCombatLockdown() return inCombat end
 function UnitClass() return "Warrior", "WARRIOR" end
 
+local activeStance = 1
+local activeSpecGroup = 1
+C_SpecializationInfo = {
+    GetActiveSpecGroup = function(isInspect, isPet)
+        assert(isInspect == false and isPet == false, "active spec lookup used unexpected flags")
+        return activeSpecGroup
+    end,
+}
+local forms = {
+    { texture = 132349, spellId = 2457, name = "Battle Stance" },
+    { texture = 132341, spellId = 71, name = "Defensive Stance" },
+    { texture = 132275, spellId = 2458, name = "Berserker Stance" },
+}
+function GetNumShapeshiftForms() return #forms end
+function GetShapeshiftForm() return activeStance end
+function GetShapeshiftFormInfo(index)
+    local form = forms[index]
+    return form and form.texture, activeStance == index, true, form and form.spellId
+end
+function RegisterStateDriver(frame, state, driver)
+    frame.stateDrivers = frame.stateDrivers or {}
+    frame.stateDrivers[state] = driver
+end
+function UnregisterStateDriver(frame, state)
+    if frame.stateDrivers then frame.stateDrivers[state] = nil end
+end
+
 local warriorSpells = {
     "Heroic Strike", "Sunder Armor", "Battle Shout", "Hamstring", "Charge", "Pummel",
 }
@@ -59,6 +87,9 @@ function GetNumSpellTabs() return 1 end
 function GetSpellTabInfo() return nil, nil, 0, #warriorSpells end
 function GetSpellBookItemName(index) return warriorSpells[index], "Rank 1" end
 function GetSpellInfo(identifier)
+    for _, form in ipairs(forms) do
+        if identifier == form.spellId then return form.name, nil, form.texture, nil, nil, nil, form.spellId end
+    end
     local name = type(identifier) == "string" and identifier or "Heroic Strike"
     return name, nil, 135274, nil, nil, nil, type(identifier) == "number" and identifier or nil
 end
@@ -106,8 +137,10 @@ function SaveBindings(set) assert(set == 2); saveCount = saveCount + 1 end
 dofile("ApogeePartyHealthBars_WheelData.lua")
 dofile("ApogeePartyHealthBars_UIHelpers.lua")
 dofile("ApogeePartyHealthBars_Sounds.lua")
+dofile("ApogeePartyHealthBars_WheelLayouts.lua")
 dofile("ApogeePartyHealthBars_WheelMacros.lua")
 local data, wheel = ApogeePartyHealthBars_WheelData, ApogeePartyHealthBars_WheelMacros
+local PRIMARY = "spell:2457"
 
 local valid, errors = data.ValidateAll()
 assert(valid, table.concat(errors, "; "))
@@ -128,7 +161,7 @@ wheel.Attach({ btn = widget() })
 wheel.InitializeSaved()
 assert(not wheel.IsEnabled(), "wheel bindings should require opt-in")
 for _, slot in ipairs(data.SLOTS) do
-    local entry = assert(wheel.GetSlot(slot.id), "missing empty slot " .. slot.id)
+    local entry = assert(wheel.GetSlot(PRIMARY, slot.id), "missing empty slot " .. slot.id)
     assert(entry.cleared == nil and entry.displaySpellName == nil and entry.macroText == "",
         "new wheel slot did not start as a blank no-op")
     local icon = wheel.GetHudIcon(slot.id)
@@ -146,18 +179,81 @@ for _, slot in ipairs(data.SLOTS) do
     assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. "Hud:LeftButton",
         "first-run enable did not claim " .. slot.key)
 end
-assert(wheel.AssignDisplaySpell("normalUp", 2061, "Flash Heal"), "wheel display spell assignment failed")
-assert(wheel.GetSlot("normalUp").macroText
+assert(wheel.AssignDisplaySpell(PRIMARY, "normalUp", 2061, "Flash Heal"), "wheel display spell assignment failed")
+assert(wheel.GetSlot(PRIMARY, "normalUp").macroText
     == "/targetenemy [noexists][dead][help]\n/startattack\n/cast Flash Heal",
     "Spellbook assignment seeded unexpected wheel macro text")
-assert(not wheel.GetSlot("normalUp").macroText:find("#showtooltip", 1, true),
+assert(not wheel.GetSlot(PRIMARY, "normalUp").macroText:find("#showtooltip", 1, true),
     "Spellbook assignment still seeded #showtooltip")
 assert(wheel.ResetSlot == nil and wheel.ResetClassPreset == nil,
     "wheel runtime still exposes preset reset actions")
 for index, slot in ipairs(data.SLOTS) do
-    assert(wheel.AssignDisplaySpell(slot.id, nil, warriorSpells[index]),
+    assert(wheel.AssignDisplaySpell(PRIMARY, slot.id, nil, warriorSpells[index]),
         "manual setup failed for " .. slot.id)
 end
+assert(wheel.HasStanceLayouts(), "Warrior forms did not enable stance layouts")
+assert(#wheel.GetLayouts() == 3 and wheel.GetLayouts()[1].key == PRIMARY
+    and not wheel.IsKnownLayout("base"),
+    "Warrior stance registry exposed a nonexistent Base layout")
+local defensive = "spell:71"
+assert(wheel.GetSlot(defensive, "normalUp").macroText == "",
+    "initial Warrior stance layout was not copied from the first stance")
+assert(wheel.AssignDisplaySpell(defensive, "normalUp", nil, "Charge"),
+    "stance-specific wheel spell assignment failed")
+assert(wheel.GetSlot(PRIMARY, "normalUp").displaySpellName == warriorSpells[1],
+    "editing one Warrior stance layout mutated another")
+wheel.RefreshSecureActions()
+local stanceSecure = wheel.GetSecureButton("normalUp")
+assert(stanceSecure.stateDrivers.wheelstance
+    == "[stance:1] 1; [stance:2] 2; [stance:3] 3; 1",
+    "secure stance driver did not cover every detected form")
+assert(stanceSecure.attributes["wheel-macro-1"]:find(warriorSpells[1], 1, true)
+    and stanceSecure.attributes["wheel-macro-2"]:find("Charge", 1, true),
+    "secure action did not preload independent Warrior stance macros")
+
+local bindingSavesBeforeSpecChange = saveCount
+local ownershipBeforeSpecChange = ApogeePartyHealthBars_S.charSv.wheelMacros.ownership
+activeSpecGroup = 2
+assert(wheel.OnActiveSpecChanged(), "active talent-group change was not detected")
+assert(wheel.GetActiveSpecKey() == "2" and wheel.IsEnabled(),
+    "talent-group change did not preserve the character-wide Wheel state")
+assert(wheel.GetSlot(PRIMARY, "normalUp").macroText == ""
+    and stanceSecure.attributes["wheel-macro-1"] == nil
+    and stanceSecure.attributes.macrotext == nil,
+    "new talent-group profile did not start as a secure no-op")
+assert(saveCount == bindingSavesBeforeSpecChange
+    and ApogeePartyHealthBars_S.charSv.wheelMacros.ownership == ownershipBeforeSpecChange,
+    "talent-group change rewrote global Wheel binding ownership")
+for _, slot in ipairs(data.SLOTS) do
+    assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. "Hud:LeftButton",
+        "talent-group change modified " .. slot.key)
+end
+local mutationsAfterSpecChange = stanceSecure.mutations
+assert(not wheel.OnActiveSpecChanged() and stanceSecure.mutations == mutationsAfterSpecChange,
+    "duplicate talent-group event rebuilt secure actions")
+assert(wheel.AssignDisplaySpell(PRIMARY, "normalUp", nil, "Charge"),
+    "second talent-group profile could not be configured")
+activeSpecGroup = 1
+assert(wheel.OnActiveSpecChanged()
+    and wheel.GetSlot(PRIMARY, "normalUp").displaySpellName == warriorSpells[1]
+    and stanceSecure.attributes.macrotext:find(warriorSpells[1], 1, true),
+    "returning to the first talent group did not restore its secure macro")
+activeSpecGroup = 2
+assert(wheel.OnActiveSpecChanged()
+    and wheel.GetSlot(PRIMARY, "normalUp").displaySpellName == "Charge",
+    "second talent-group Wheel profile did not persist independently")
+activeSpecGroup = 1
+wheel.OnActiveSpecChanged()
+
+activeStance = 2
+wheel.OnStanceChanged()
+wheel.RefreshSecureActions()
+assert(wheel.GetActiveLayoutKey() == defensive
+    and stanceSecure.attributes.macrotext:find("Charge", 1, true),
+    "active stance did not select its secure macro layout")
+activeStance = 1
+wheel.OnStanceChanged()
+wheel.RefreshSecureActions()
 local normalUpIcon = assert(wheel.GetHudIcon("normalUp"), "wheel HUD icon was not created")
 assert(normalUpIcon.point[1] == "TOPLEFT" and normalUpIcon.point[4] == 0,
     "wheel HUD icons did not align with the tracker icon centerline")
@@ -191,14 +287,14 @@ assert(not normalUpIcon.texture.desaturated, "cooldown wheel spell was unexpecte
 assert(normalUpIcon.cooldown.cooldown[1] == 5, "cooldown wheel spell did not preserve its swipe")
 assert(normalUpIcon.count.text == "0", "cooldown wheel spell did not preserve its charge count")
 cooldownStart, cooldownDuration, currentCharges, maximumCharges = 0, 0, nil, nil
-wheel.GetSlot("normalUp").displaySpellName = "Unknown Wheel Spell"; wheel.Refresh()
+wheel.GetSlot(PRIMARY, "normalUp").displaySpellName = "Unknown Wheel Spell"; wheel.Refresh()
 assert(normalUpIcon.texture.desaturated and normalUpIcon.alpha == 0.48,
     "unavailable wheel display spell did not use tracker-unusable styling")
-wheel.GetSlot("normalUp").displaySpellName = nil; wheel.Refresh()
+wheel.GetSlot(PRIMARY, "normalUp").displaySpellName = nil; wheel.Refresh()
 assert(normalUpIcon.texture.desaturated and normalUpIcon.alpha == 0.48,
     "invalid wheel display spell did not use tracker-invalid styling")
-wheel.GetSlot("normalUp").displaySpellName = warriorSpells[1]; wheel.Refresh()
-assert(wheel.SetSlotSound("normalUp", "quest_done") == "quest_done", "wheel sound selection did not persist")
+wheel.GetSlot(PRIMARY, "normalUp").displaySpellName = warriorSpells[1]; wheel.Refresh()
+assert(wheel.SetSlotSound(PRIMARY, "normalUp", "quest_done") == "quest_done", "wheel sound selection did not persist")
 rangeResult = 0; wheel.Refresh()
 rangeResult = 1; wheel.Refresh()
 assert(normalUpIcon.pulseUntil ~= nil, "wheel ready transition did not set a pulse")
@@ -208,7 +304,7 @@ assert(#playedSounds == 1, "wheel ready transition did not play its selected sou
 local soundsBeforeReassign = #playedSounds
 rangeResult = 0; wheel.Refresh()
 rangeResult = 1
-assert(wheel.AssignDisplaySpell("normalUp", nil, warriorSpells[1]))
+assert(wheel.AssignDisplaySpell(PRIMARY, "normalUp", nil, warriorSpells[1]))
 assert(#playedSounds == soundsBeforeReassign, "reassigning a ready wheel spell emitted a false ready sound")
 cooldownStart, cooldownDuration, currentCharges, maximumCharges = 11, 1.5, nil, nil; wheel.Refresh()
 assert(normalUpIcon.cooldown.shown == false, "wheel displayed the global cooldown swipe")
@@ -234,7 +330,8 @@ for _, slot in ipairs(data.SLOTS) do
     local castButton = assert(wheel.GetHudCastButton(slot.id), "wheel HUD icon has no secure cast overlay")
     assert(namedFrames[slot.buttonName .. "Hud"] == castButton,
         "wheel binding does not target the working HUD action button")
-    assert(castButton.template == "SecureActionButtonTemplate" and castButton.parent == UIParent,
+    assert(castButton.template == "SecureActionButtonTemplate,SecureHandlerStateTemplate"
+        and castButton.parent == UIParent,
         "wheel HUD secure cast overlay is not isolated from the player-row layout")
     assert(castButton.shown and castButton.mouseEnabled and castButton.anchor == wheel.GetHudIcon(slot.id),
         "wheel HUD secure cast overlay is not active over its visual icon")
@@ -242,21 +339,6 @@ for _, slot in ipairs(data.SLOTS) do
         and castButton.attributes.macrotext == button.attributes.macrotext,
         "wheel HUD icon does not execute the same macro as its wheel binding")
 end
-
-ApogeePartyHealthBars_S.charSv.wheelMacros.ownership["2"] = {}
-for _, slot in ipairs(data.SLOTS) do
-    bindings[slot.key] = "CLICK " .. slot.buttonName .. ":LeftButton"
-end
-assert(wheel.ReconcileBindings(), "legacy off-screen wheel bindings were not reconciled")
-for _, slot in ipairs(data.SLOTS) do
-    assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. "Hud:LeftButton",
-        "legacy off-screen wheel binding was not migrated to the working HUD action button")
-    assert(ApogeePartyHealthBars_S.charSv.wheelMacros.ownership["2"][slot.id],
-        "legacy wheel binding with missing ownership was not repaired")
-end
-assert(ApogeePartyHealthBars_S.charSv.wheelMacros.ownership["2"].normalUp.previousAction == "CAMERAZOOMIN"
-    and ApogeePartyHealthBars_S.charSv.wheelMacros.ownership["2"].normalDown.previousAction == "CAMERAZOOMOUT",
-    "legacy wheel binding repair did not retain camera zoom defaults")
 
 normalUpIcon.castButton.scripts.OnMouseDown(normalUpIcon.castButton)
 local clickedSlot, clickedFeedbackEnd = wheel.GetLastActivation()
@@ -270,31 +352,41 @@ assert(activatedSlot == "normalUp" and feedbackEnd > GetTime(),
     "wheel activation did not identify the clicked slot")
 assert(normalUpIcon.feedbackOverlay and normalUpIcon.flash.alpha == 0.55,
     "wheel activation glow was not raised and shown above the cooldown")
+activeStance = 2
+wheel.OnStanceChanged()
+local clearedFeedbackSlot, clearedFeedbackUntil = wheel.GetLastActivation()
+assert(clearedFeedbackSlot == nil and clearedFeedbackUntil == 0 and normalUpIcon.flash.alpha == 0,
+    "stance change retained activation feedback from the previous layout")
+activeStance = 1
+wheel.OnStanceChanged()
 
-assert(wheel.ApplyMacro("normalUp", "#showtooltip Heroic Strike\n/cast [mod] Heroic Strike"))
-assert(wheel.GetSlot("normalUp").customized == nil, "obsolete customization metadata was retained")
-assert(not wheel.ApplyMacro("normalUp", string.rep("x", 256)), "oversized macro was accepted")
-assert(wheel.ApplyMacro("normalUp", "  \n\t"), "blank macro did not use the slot-clear path")
-assert(wheel.GetSlot("normalUp").cleared == true,
+assert(wheel.ApplyMacro(PRIMARY, "normalUp", "#showtooltip Heroic Strike\n/cast [mod] Heroic Strike"))
+assert(not wheel.ApplyMacro(PRIMARY, "normalUp", string.rep("x", 256)), "oversized macro was accepted")
+assert(wheel.ApplyMacro(PRIMARY, "normalUp", "  \n\t"), "blank macro did not use the slot-clear path")
+assert(wheel.GetSlot(PRIMARY, "normalUp").cleared == true,
     "blank macro save did not remove the display spell and saved macro")
-local blankName, blankIcon, blankMacro = wheel.GetSlotDisplay("normalUp")
+local blankName, blankIcon, blankMacro = wheel.GetSlotDisplay(PRIMARY, "normalUp")
 assert(blankName == nil and blankIcon == nil and blankMacro == false,
     "blank macro save retained slot display metadata")
-assert(bindings.MOUSEWHEELUP == "CAMERAZOOMIN",
-    "blank macro save did not restore the slot's previous binding")
+assert(bindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton",
+    "blank active-layout macro released a globally owned wheel binding")
+normalUpIcon.castButton.scripts.OnMouseDown(normalUpIcon.castButton)
+local blankFeedbackSlot, blankFeedbackUntil = wheel.GetLastActivation()
+assert(blankFeedbackSlot == nil and blankFeedbackUntil == 0,
+    "blank active-layout HUD slot emitted false activation feedback")
 
-assert(wheel.ClearSlot("shiftUp"), "wheel slot could not be cleared")
-assert(wheel.GetSlot("shiftUp").cleared == true, "cleared slot did not retain a saved tombstone")
-local clearedName, clearedIcon, clearedMacro = wheel.GetSlotDisplay("shiftUp")
+assert(wheel.ClearSlot(PRIMARY, "shiftUp"), "wheel slot could not be cleared")
+assert(wheel.GetSlot(PRIMARY, "shiftUp").cleared == true, "cleared slot did not retain a saved tombstone")
+local clearedName, clearedIcon, clearedMacro = wheel.GetSlotDisplay(PRIMARY, "shiftUp")
 assert(clearedName == nil and clearedIcon == nil and clearedMacro == false,
     "clearing a wheel slot did not remove its display spell and icon")
 wheel.InitializeSaved()
-assert(wheel.GetSlot("shiftUp").cleared == true, "cleared slot did not remain empty on reload")
-assert(wheel.AssignDisplaySpell("shiftUp", nil, "Battle Shout"),
+assert(wheel.GetSlot(PRIMARY, "shiftUp").cleared == true, "cleared slot did not remain empty on reload")
+assert(wheel.AssignDisplaySpell(PRIMARY, "shiftUp", nil, "Battle Shout"),
     "cleared wheel slot could not be configured manually")
 assert(bindings["SHIFT-MOUSEWHEELUP"]:find("CLICK ApogeePartyHealthBarsWheelShiftUpHud", 1, true),
     "manually configuring a cleared slot did not safely reclaim its unbound key")
-assert(wheel.AssignDisplaySpell("normalUp", nil, warriorSpells[1]),
+assert(wheel.AssignDisplaySpell(PRIMARY, "normalUp", nil, warriorSpells[1]),
     "blank-cleared wheel slot could not be configured again")
 
 for _, slot in ipairs(data.SLOTS) do
@@ -313,11 +405,18 @@ assert(bindings["CTRL-MOUSEWHEELUP"] == "SOMEOTHERADDONACTION", "foreign binding
 local secure = wheel.GetSecureButton("normalUp")
 local beforeCombat = secure.mutations
 inCombat = true
-assert(not wheel.ApplyMacro("normalUp", "#showtooltip Charge\n/cast Charge"), "combat macro edit was accepted")
+assert(not wheel.ApplyMacro(PRIMARY, "normalUp", "#showtooltip Charge\n/cast Charge"), "combat macro edit was accepted")
 assert(not wheel.RefreshSecureActions(), "combat secure refresh was not deferred")
 assert(secure.mutations == beforeCombat, "secure attributes changed in combat")
+activeSpecGroup = 2
+assert(wheel.OnActiveSpecChanged(), "combat-safe talent-group transition was not recorded")
+assert(secure.mutations == beforeCombat, "talent-group transition mutated secure attributes in combat")
 inCombat = false
 wheel.OnCombatEnded()
+assert(secure.attributes.macrotext and secure.attributes.macrotext:find("Charge", 1, true),
+    "deferred talent-group secure refresh did not flush after combat")
+activeSpecGroup = 1
+wheel.OnActiveSpecChanged()
 
 bindings["CTRL-MOUSEWHEELUP"] = "CLICK ApogeePartyHealthBarsWheelCtrlUpHud:LeftButton"
 assert(wheel.Disable(), "wheel disable failed")
@@ -335,52 +434,16 @@ wheel.ReconcileBindings()
 assert(bindings.MOUSEWHEELUP == "CAMERAZOOMIN",
     "disabled feature did not restore ownership left in the active binding set")
 
-local custom = { displaySpellName = "Custom Spell", macroText = "#showtooltip Custom Spell\n/cast Custom Spell", customized = true }
-local cleared = { cleared = true, customized = true }
-local stalePreset = { displaySpellName = "Sunder Armor",
-    macroText = "#showtooltip Sunder Armor\n/targetenemy [noexists][dead][help]\n/cast Sunder Armor",
-    customized = false }
 ApogeePartyHealthBars_S.charSv.wheelMacros = {
-    enabled = false, presetVersion = 1, ownership = {},
-    slots = { normalUp = custom, normalDown = stalePreset, shiftUp = cleared },
-}
-wheel.InitializeSaved()
-assert(wheel.GetSlot("normalUp") == custom and custom.customized == nil,
-    "blank-default migration did not preserve a manually configured slot")
-assert(wheel.GetSlot("shiftUp") == cleared and cleared.customized == nil,
-    "blank-default migration did not preserve an intentionally cleared slot")
-assert(wheel.GetSlot("normalDown") ~= stalePreset,
-    "blank-default migration did not remove an untouched class preset")
-assert(ApogeePartyHealthBars_S.charSv.wheelMacros.presetVersion == nil,
-    "obsolete preset version metadata was retained")
-assert(wheel.GetSlot("normalDown").macroText == "" and wheel.GetSlot("normalDown").cleared == nil,
-    "blank-default migration did not replace an untouched preset with a blank no-op")
-assert(wheel.GetSlot("shiftDown").macroText == "" and wheel.GetSlot("shiftDown").cleared == nil,
-    "blank-default migration did not initialize a missing slot as a blank no-op")
-
-local legacyClearedSlots = {}
-for _, slot in ipairs(data.SLOTS) do legacyClearedSlots[slot.id] = { cleared = true } end
-ApogeePartyHealthBars_S.charSv.wheelMacros = {
-    enabled = true, ownership = {}, slots = legacyClearedSlots,
-}
-wheel.InitializeSaved()
-for _, slot in ipairs(data.SLOTS) do
-    assert(wheel.GetSlot(slot.id).macroText == "" and wheel.GetSlot(slot.id).cleared == nil,
-        "legacy first-run tombstone was not migrated for " .. slot.id)
-    assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. "Hud:LeftButton",
-        "enabled legacy character did not repair " .. slot.key)
-end
-assert(ApogeePartyHealthBars_S.charSv.wheelMacros.bindingVersion == 1,
-    "binding repair version was not recorded")
-
-ApogeePartyHealthBars_S.charSv.wheelMacros = {
-    enabled = false, bindingVersion = 1, slotDefaultsVersion = 1, ownership = {}, slots = {},
+    schemaVersion = 3, enabled = false, bindingVersion = 1, ownership = {},
+    profiles = { ["1"] = { layouts = { base = { slots = {} } } } },
 }
 for _, slot in ipairs(data.SLOTS) do
-    ApogeePartyHealthBars_S.charSv.wheelMacros.slots[slot.id] = { macroText = "" }
+    ApogeePartyHealthBars_S.charSv.wheelMacros.profiles["1"].layouts.base.slots[slot.id] = { macroText = "" }
     bindings[slot.key] = (slot.id == "normalUp" and "CAMERAZOOMIN")
         or (slot.id == "normalDown" and "CAMERAZOOMOUT") or ""
 end
+wheel.InitializeSaved()
 rejectedBindingKey = "CTRL-MOUSEWHEELUP"
 local enabled, failure = wheel.Enable()
 assert(not enabled and failure == "binding_failed", "rejected wheel binding reported success")

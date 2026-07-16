@@ -6,6 +6,16 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Added
+
+- Added stance-aware Wheel layouts. Characters with client-reported stances or forms can configure an independent six-slot layout for each known state, with Base shown only when the class has a valid no-form state and secure automatic switching during combat; classes without forms retain the single-layout editor.
+- Added independent Wheel profiles for dual talent specs. The Wheel editor and secure runtime follow the equipped spec automatically, newly activated specs start empty, and the six physical bindings remain character-wide.
+
+### Fixed
+
+- Preserved unsaved Wheel macro drafts when moving between talent specs, stances, and wheel slots.
+- Refreshed an open Wheel editor when spell changes alter the available stance or form layouts.
+
 ## [0.35.0] - 2026-07-14
 
 ### Added

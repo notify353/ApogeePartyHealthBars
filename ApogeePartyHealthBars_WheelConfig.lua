@@ -6,13 +6,15 @@ ApogeePartyHealthBars_WheelConfig = {}
 local WC = ApogeePartyHealthBars_WheelConfig
 
 local tab, W, D, enableButton, statusText, hint, editor, byteCount, selectionTitle, selectionSpell
+local layoutSelector
 local applyButton
 local readySound
 local slotButtons = {}
 local slotDefinitions = {}
 local configurationControls = {}
 local collapsedMessage
-local editorDirty, loadingEditor, lastEditorSlot = false, false, nil
+local editorDirty, loadingEditor, lastEditorContext = false, false, nil
+local editorDrafts = {}
 local SLOT_RAIL_W = 142
 local COLUMN_GAP = 12
 local EDITOR_W = C.CONFIG_CONTENT_W - SLOT_RAIL_W - COLUMN_GAP
@@ -44,7 +46,19 @@ local function setStatus(message, good)
 end
 
 local function selectedEntry()
-    return S.selectedWheelSlot and W.GetSlot(S.selectedWheelSlot)
+    return S.selectedWheelLayout and S.selectedWheelSlot
+        and W.GetSlot(S.selectedWheelLayout, S.selectedWheelSlot)
+end
+
+local function selectedContext()
+    if not S.selectedWheelLayout or not S.selectedWheelSlot then return nil end
+    return W.GetActiveSpecKey() .. ":" .. S.selectedWheelLayout .. ":" .. S.selectedWheelSlot
+end
+
+local function captureEditorDraft()
+    if editorDirty and editor and lastEditorContext then
+        editorDrafts[lastEditorContext] = editor:GetText() or ""
+    end
 end
 
 local function displaySpellLabel(name)
@@ -54,10 +68,17 @@ end
 
 local function renderSelected()
     local entry = selectedEntry()
-    if lastEditorSlot ~= S.selectedWheelSlot then
-        lastEditorSlot, editorDirty = S.selectedWheelSlot, false
-    end
-    if not editorDirty then
+    local context = selectedContext()
+    if lastEditorContext ~= context then
+        captureEditorDraft()
+        lastEditorContext = context
+        if statusText then statusText:SetText("") end
+        local draft = context and editorDrafts[context]
+        loadingEditor = true
+        editor:SetText(draft ~= nil and draft or (entry and entry.macroText or ""))
+        loadingEditor = false
+        editorDirty = draft ~= nil
+    elseif not editorDirty then
         loadingEditor = true
         editor:SetText(entry and entry.macroText or "")
         loadingEditor = false
@@ -65,7 +86,7 @@ local function renderSelected()
     local body = editor:GetText() or ""
     byteCount:SetText(#body .. " / " .. W.GetMaxBodyBytes() .. " bytes")
     if entry and entry.displaySpellName then applyButton:Enable() else applyButton:Disable() end
-    local soundKey = entry and W.GetSlotSoundKey(S.selectedWheelSlot) or "none"
+    local soundKey = entry and W.GetSlotSoundKey(S.selectedWheelLayout, S.selectedWheelSlot) or "none"
     readySound:SetSelectedKey(soundKey)
     if entry and entry.displaySpellName then readySound:Enable() else readySound:Disable() end
     local slot = slotDefinitions[S.selectedWheelSlot]
@@ -88,7 +109,10 @@ end
 
 function WC.Refresh(forceEditorReload)
     if not tab then return end
-    if forceEditorReload then editorDirty = false end
+    if forceEditorReload then
+        if lastEditorContext then editorDrafts[lastEditorContext] = nil end
+        editorDirty = false
+    end
     local enabled = W.IsEnabled()
     if enabled then enableButton.label:SetText("DISABLE")
     else enableButton.label:SetText("ENABLE") end
@@ -101,18 +125,37 @@ function WC.Refresh(forceEditorReload)
     for _, control in ipairs(configurationControls) do control:SetShown(enabled) end
     if not enabled then
         S.selectedWheelSlot = nil
+        S.selectedWheelLayout = nil
         editorDirty = false
+        lastEditorContext = nil
+        editorDrafts = {}
+        if layoutSelector then layoutSelector:Hide() end
         hint:SetText(collapsedMessage
             or "Enable this feature to configure its six normal gameplay wheel macros and HUD.")
         return
     end
+    local hasStances = W.HasStanceLayouts()
+    layoutSelector:SetOptions(W.GetLayoutOptions())
+    if not W.IsKnownLayout(S.selectedWheelLayout) then
+        S.selectedWheelLayout = W.GetActiveLayoutKey()
+    end
+    layoutSelector:SetSelectedKey(S.selectedWheelLayout)
+    layoutSelector:SetShown(hasStances)
+    local railAnchor = hasStances and layoutSelector or hint
+    local firstButton = slotButtons[DISPLAY_ORDER[1]]
+    if firstButton then
+        firstButton:ClearAllPoints()
+        firstButton:SetPoint("TOPLEFT", railAnchor, "BOTTOMLEFT", 0, -CONTENT_TOP_GAP)
+    end
+    selectionTitle:ClearAllPoints()
+    selectionTitle:SetPoint("TOPLEFT", railAnchor, "BOTTOMLEFT",
+        SLOT_RAIL_W + COLUMN_GAP, -CONTENT_TOP_GAP)
     if not slotDefinitions[S.selectedWheelSlot] then
         S.selectedWheelSlot = "normalUp"
-        editorDirty = false
     end
     for _, slotId in ipairs(DISPLAY_ORDER) do
         local button = slotButtons[slotId]
-        local name = W.GetSlotDisplay(slotId)
+        local name = W.GetSlotDisplay(S.selectedWheelLayout, slotId)
         local selected = S.selectedWheelSlot == slotId
         button.spell:SetText(displaySpellLabel(name) or "Empty")
         button.spell:SetTextColor(name and (selected and 1 or 0.86) or 0.42,
@@ -156,6 +199,16 @@ function WC.Build(parent, deps)
         WC.Refresh()
     end)
 
+    layoutSelector = UIH.CreateDropdown(tab, C.CONFIG_CONTENT_W, CONTROL_H, C.CONFIG_CONTENT_W)
+    layoutSelector:SetPoint("TOPLEFT", hint, "BOTTOMLEFT", 0, -CONTENT_TOP_GAP)
+    layoutSelector:SetSelectionCallback(function(layoutKey)
+        if not W.IsKnownLayout(layoutKey) then return end
+        S.selectedWheelLayout = layoutKey
+        statusText:SetText("")
+        WC.Refresh()
+    end)
+    layoutSelector:Hide()
+
     for _, slot in ipairs(W.GetDefinitions()) do slotDefinitions[slot.id] = slot end
 
     local previousControl = hint
@@ -183,7 +236,6 @@ function WC.Build(parent, deps)
                 S.selectedWheelSlot = boundSlot.id
                 S.selectedBindingKey = nil
                 S.selectedTrackerSlot = nil
-                editorDirty = false
                 statusText:SetText("")
                 WC.Refresh()
             end)
@@ -238,16 +290,17 @@ function WC.Build(parent, deps)
     readySound:SetArrowShown(false)
     readySound:SetPoint("TOPLEFT", soundRow, "TOPLEFT", 0, 0)
     readySound:SetSelectionCallback(function(soundKey)
-        if not S.selectedWheelSlot then return end
-        W.SetSlotSound(S.selectedWheelSlot, soundKey)
-        W.PreviewSound(S.selectedWheelSlot)
+        if not S.selectedWheelLayout or not S.selectedWheelSlot then return end
+        W.SetSlotSound(S.selectedWheelLayout, S.selectedWheelSlot, soundKey)
+        W.PreviewSound(S.selectedWheelLayout, S.selectedWheelSlot)
         WC.Refresh()
     end)
 
     applyButton = UIH.CreateButton(tab, "Save", EDITOR_W, CONTROL_H)
     applyButton:SetPoint("TOPLEFT", soundRow, "BOTTOMLEFT", 0, -CONTROL_GAP)
     applyButton:SetScript("OnClick", function()
-        local ok, message = W.ApplyMacro(S.selectedWheelSlot, editor:GetText() or "")
+        local ok, message = W.ApplyMacro(S.selectedWheelLayout,
+            S.selectedWheelSlot, editor:GetText() or "")
         setStatus(message, ok)
         if ok then WC.Refresh(true) end
     end)

@@ -14,7 +14,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `Layout`: geometry and secure overlay placement
 - `EffectsTracker`: buffs, HoTs, shields, power geometry, and incoming heals
 - `SpellTracker`: player and crowd-control spell icons and secure actions
-- `WheelData`, `WheelMacros`, `WheelConfig`: wheel slot definitions, persistent binding ownership, secure HUD actions, spell-state display, and manual macro editing
+- `WheelData`, `WheelLayouts`, `WheelMacros`, `WheelConfig`: wheel slot definitions, active talent-spec profiles, class-agnostic stance discovery, per-form layouts, persistent binding ownership, secure state-driven HUD actions, spell-state display, and manual macro editing
 - `RaidMarkers`: target marker controls
 - `Threat`: party and target threat
 - `BindingStore`, `BindingController`, `ClickBindings`: persistence, assignment, and secure bindings

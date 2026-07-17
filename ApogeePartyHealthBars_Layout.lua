@@ -224,12 +224,12 @@ function L.RefreshRowBuffs(row, unitId)
     local targetReserve = D.GetTargetColumnWidth(row)
     local hotStripH = D.GetHotStripHeight()
     local powerChrome = D.GetRowPowerChromeHeight(unitId)
-    local shortcutAreaHeight = D.GetShortcutAreaHeight(unitId)
+    local actionAreaHeight = D.GetActionAreaHeight(unitId)
     local bottomChrome = powerChrome + hotStripH
 
     if row.barBg then
         row.barBg:ClearAllPoints()
-        row.barBg:SetPoint("TOPLEFT", row.btn, "TOPLEFT", 0, -shortcutAreaHeight)
+        row.barBg:SetPoint("TOPLEFT", row.btn, "TOPLEFT", 0, -actionAreaHeight)
         row.barBg:SetPoint("BOTTOMRIGHT", row.btn, "BOTTOMRIGHT", -(targetReserve + rightReserve), bottomChrome)
     end
     row.bar:ClearAllPoints()
@@ -243,12 +243,12 @@ function L.RefreshRowBuffs(row, unitId)
             row.targetBtn:SetPoint(
                 "TOPRIGHT", row.targetOfTargetBtn, "TOPLEFT", -C.TARGET_GAP, 0)
         else
-            row.targetBtn:SetPoint("TOPRIGHT", row.btn, "TOPRIGHT", 0, -shortcutAreaHeight)
+            row.targetBtn:SetPoint("TOPRIGHT", row.btn, "TOPRIGHT", 0, -actionAreaHeight)
         end
     end
     if row.targetOfTargetBtn then
         row.targetOfTargetBtn:ClearAllPoints()
-        row.targetOfTargetBtn:SetPoint("TOPRIGHT", row.btn, "TOPRIGHT", 0, -shortcutAreaHeight)
+        row.targetOfTargetBtn:SetPoint("TOPRIGHT", row.btn, "TOPRIGHT", 0, -actionAreaHeight)
     end
     if unitId == "player" then D.LayoutShortcuts() end
 
@@ -299,12 +299,12 @@ function L.RefreshRowBuffs(row, unitId)
     local offset = -targetReserve - C.BUFF_EDGE_INSET
     if showPartyBuff then
         row.partyBuffIcon:ClearAllPoints()
-        row.partyBuffIcon:SetPoint("RIGHT", row.btn, "RIGHT", offset, -shortcutAreaHeight / 2)
+        row.partyBuffIcon:SetPoint("RIGHT", row.btn, "RIGHT", offset, -actionAreaHeight / 2)
         offset = offset - C.BUFF_SLOT_STEP
     end
     if showSelfBuff then
         row.selfBuffIcon:ClearAllPoints()
-        row.selfBuffIcon:SetPoint("RIGHT", row.btn, "RIGHT", offset, -shortcutAreaHeight / 2)
+        row.selfBuffIcon:SetPoint("RIGHT", row.btn, "RIGHT", offset, -actionAreaHeight / 2)
     end
 end
 

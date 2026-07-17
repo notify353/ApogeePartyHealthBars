@@ -19,6 +19,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Extracted row sizing and cross-feature visual ticking into dedicated coordinators, with one authoritative action-area formula and a single Wheel refresh per visual frame.
 - Consolidated the Keys and Wheel execution engines into one isolated shared runtime while preserving saved actions, secure frame names, physical bindings, HUD geometry, and public behavior.
 - Added a subtle dark backing and padding to the shared Keys/Wheel activation-feedback line, and standardized action tooltip and validation wording.
 - Extracted shared bound-action layout, binding-ownership, and activation-feedback components while preserving Wheel saved data, secure-frame names, bindings, and public behavior.
@@ -39,6 +40,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Fixed
 
+- Fixed party-row overlap when Keys was enabled without Wheel by including the Keys HUD in the player row's authoritative height.
 - Prevented Shortcut clear and move operations from changing saved actions during combat, recovered tracked spells after an interrupted migration, and refreshed localized Wheel item macros before secure initialization.
 - Preserved the selected macro category and example when switching tabs, refreshed pet-dependent requirements when the player's pet changes, and hardened catalog validation against malformed recipe metadata.
 - Prevented Shortcuts and Wheel macro drafts from surviving shortcut replacement or Wheel profile changes, while keeping the settings tabs and close control reachable from the focused editor.

@@ -72,7 +72,7 @@ ApogeePartyHealthBars_S.charSv = characterSaved
 
 tracker.Initialize({
     rows = rows,
-    visualTickerFrame = widget(),
+    SyncVisualTicker = function() end,
     IsSavedFeatureEnabled = function() return true end,
     GetUnitTargetToken = function() return "target" end,
     ApplyAllPartyBuffBindings = function() end,

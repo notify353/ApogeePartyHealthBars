@@ -279,6 +279,21 @@ assert(tocLoadOrder["ApogeePartyHealthBars_Threat.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_VisualTicker.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"],
     "VisualTicker loaded outside its dependency-safe initialization order")
+assert(tocLoadOrder["ApogeePartyHealthBars_Auras.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_ShieldTracker.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_Auras.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_IncomingHeals.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_ShieldTracker.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_IncomingHeals.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars.lua"],
+    "health-overlay modules loaded outside their dependency-safe order")
+assert(type(ApogeePartyHealthBars_ShieldTracker.GetRemaining) == "function"
+        and type(ApogeePartyHealthBars_IncomingHeals.GetAmount) == "function",
+    "health-overlay modules did not expose their focused runtimes")
+assert(ApogeePartyHealthBars_EffectsTracker.IsShieldEnabled == nil
+        and ApogeePartyHealthBars_EffectsTracker.UpdateIncomingHealBarVisual == nil,
+    "EffectsTracker retained extracted health-overlay ownership")
 
 local router = ApogeePartyHealthBars_EventRouter
 router.Dispatch("PLAYER_LOGIN")

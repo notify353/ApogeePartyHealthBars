@@ -440,7 +440,6 @@ ApogeePartyHealthBars_S = {
     selfBuffFamilyLabel     = nil,
     selfBuffPreferenceKey   = nil,
     selfBuffPreferenceOptions = {},
-    shieldRemaining          = {},
     activeHotTracks          = {},
     hotSpellKnown            = {},
 }

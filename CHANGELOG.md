@@ -19,6 +19,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Extracted shield tracking and incoming-heal prediction from `EffectsTracker` into focused health-overlay modules while preserving absorb depletion, aura fallbacks, alias handling, and visual geometry.
 - Extracted row sizing and cross-feature visual ticking into dedicated coordinators, with one authoritative action-area formula and a single Wheel refresh per visual frame.
 - Consolidated the Keys and Wheel execution engines into one isolated shared runtime while preserving saved actions, secure frame names, physical bindings, HUD geometry, and public behavior.
 - Added a subtle dark backing and padding to the shared Keys/Wheel activation-feedback line, and standardized action tooltip and validation wording.

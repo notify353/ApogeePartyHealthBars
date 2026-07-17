@@ -16,6 +16,8 @@ local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 local rowGeometry = ApogeePartyHealthBars_RowGeometry
 local visualTicker = ApogeePartyHealthBars_VisualTicker
+local shieldTracker = ApogeePartyHealthBars_ShieldTracker
+local incomingHeals = ApogeePartyHealthBars_IncomingHeals
 
 local panel, configUI, minimapController
 local rows = {}
@@ -169,14 +171,27 @@ InitHotSpells = effectsTracker.InitHotSpells
 local HasActiveHotVisuals = effectsTracker.HasActiveHotVisuals
 local TickHotVisuals = effectsTracker.TickHotVisuals
 local UpdateRowHotVisuals = effectsTracker.UpdateRowHotVisuals
-local IsShieldEnabled = effectsTracker.IsShieldEnabled
-local ShouldTrackShieldUnit = effectsTracker.ShouldTrackShieldUnit
-local ShieldTrackerSyncUnit = effectsTracker.ShieldTrackerSyncUnit
-local OnShieldCombatLog = effectsTracker.OnShieldCombatLog
-local SeedShieldTrackerFromAuras = effectsTracker.SeedShieldTrackerFromAuras
-local GetUnitShieldRemaining = effectsTracker.GetUnitShieldRemaining
-local UpdateRowShieldVisual = effectsTracker.UpdateRowShieldVisual
-local UpdateRowIncomingHealVisual = effectsTracker.UpdateRowIncomingHealVisual
+
+shieldTracker.Initialize({
+    Auras = A,
+    IsSavedFeatureEnabled = IsSavedFeatureEnabled,
+    IsConfigMode = function() return S.configMode end,
+    RequestUpdate = S.RequestUpdate,
+})
+local IsShieldEnabled = shieldTracker.IsEnabled
+local ShouldTrackShieldUnit = shieldTracker.ShouldTrackUnit
+local ShieldTrackerSyncUnit = shieldTracker.SyncUnit
+local OnShieldCombatLog = shieldTracker.OnCombatLog
+local SeedShieldTrackerFromAuras = shieldTracker.SeedFromAuras
+local GetUnitShieldRemaining = shieldTracker.GetRemaining
+local UpdateRowShieldVisual = shieldTracker.UpdateRowVisual
+
+incomingHeals.Initialize({
+    IsSavedFeatureEnabled = IsSavedFeatureEnabled,
+    IsConfigMode = function() return S.configMode end,
+})
+local UpdateIncomingHealBarVisual = incomingHeals.UpdateBarVisual
+local UpdateRowIncomingHealVisual = incomingHeals.UpdateRowVisual
 
 rowGeometry.Initialize({
     GetHotStripHeight = GetHotStripHeight,
@@ -253,7 +268,7 @@ unitDisplay.Initialize({
     ShouldTrackShieldUnit = ShouldTrackShieldUnit,
     GetUnitShieldRemaining = GetUnitShieldRemaining,
     UpdateRowShieldVisual = UpdateRowShieldVisual,
-    UpdateIncomingHealBarVisual = effectsTracker.UpdateIncomingHealBarVisual,
+    UpdateIncomingHealBarVisual = UpdateIncomingHealBarVisual,
     UpdateRowIncomingHealVisual = UpdateRowIncomingHealVisual,
     UpdateRowHotVisuals = UpdateRowHotVisuals,
     ShouldShowPartyBuffIcon = ShouldShowPartyBuffIcon,

@@ -1,7 +1,8 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
-local T = ApogeePartyHealthBars_SpellTracker
+local T = ApogeePartyHealthBars_ShortcutBar
 local W = ApogeePartyHealthBars_WheelMacros
+local K = ApogeePartyHealthBars_KeyActions
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 
@@ -318,6 +319,7 @@ function F.Build(D)
         DeferSecureUpdate = D.DeferSecureUpdate,
     })
     W.Attach(rows[1])
+    K.Attach(rows[1])
     M.Attach(rows[1])
     H.Attach(rows, D.SyncVisualTicker)
     

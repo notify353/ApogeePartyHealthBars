@@ -6,7 +6,7 @@ assert(ApogeePartyHealthBars_C.TARGET_PANE_H
 unpack = unpack or table.unpack
 local primaryBinding
 ApogeePartyHealthBars_S.GetBinding = function() return primaryBinding end
-ApogeePartyHealthBars_SpellTracker = { IsActive = function() return false end, Refresh = function() end }
+ApogeePartyHealthBars_ShortcutBar = { IsActive = function() return false end, Refresh = function() end }
 ApogeePartyHealthBars_SecureFrames = { Hide = function(frame) if frame then frame:Hide() end end }
 
 RAID_CLASS_COLORS = {}

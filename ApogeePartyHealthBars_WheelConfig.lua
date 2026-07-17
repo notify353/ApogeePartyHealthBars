@@ -33,7 +33,7 @@ local function armReplacement(slotId)
     if not W.GetSlot(selectedLayout(), slotId) then return end
     S.selectedWheelSlot = S.selectedWheelSlot == slotId and nil or slotId
     S.selectedBindingKey = nil
-    S.selectedTrackerSlot = nil
+    S.selectedShortcutSlot = nil
     WC.Refresh()
 end
 
@@ -43,7 +43,7 @@ local function openMacroEditor(slotId)
     if not entry then return end
     AC.OpenEditor({
         title = "Edit " .. (DISPLAY_LABELS[slotId] or "Wheel") .. " macro",
-        spellName = entry.spellName,
+        actionName = ApogeePartyHealthBars_ActionMacros.GetName(entry),
         macroText = W.GetMacro(layoutKey, slotId),
         resetText = W.ResetMacro(layoutKey, slotId),
         onSave = function(body) return W.ApplyMacro(layoutKey, slotId, body) end,
@@ -75,11 +75,11 @@ function WC.Refresh(assignedSlot)
 
     if S.selectedWheelSlot and not W.GetSlot(layoutKey, S.selectedWheelSlot) then S.selectedWheelSlot = nil end
     if S.selectedWheelSlot then
-        hint:SetText("|cff00ff00Selected for replacement.|r Shift-click a Spellbook spell.")
+        hint:SetText("|cff00ff00Selected for replacement.|r Shift-click a Spellbook spell or bag item.")
     elseif not W.FindFirstEmptySlot(layoutKey) then
         hint:SetText("All six Wheel gestures are assigned. Select a row to replace it or Clear one.")
     else
-        hint:SetText("Shift-click a Spellbook spell to fill the first empty gesture. Select a row to replace it.")
+        hint:SetText("Shift-click a Spellbook spell or bag item to fill the first empty gesture. Select a row to replace it.")
     end
 
     local order = W.GetDisplayOrder()
@@ -95,9 +95,10 @@ function WC.Refresh(assignedSlot)
         row.primary:SetText(name or "Empty")
         row.primary:SetTextColor(entry and 0.86 or 0.43, entry and 0.86 or 0.43,
             entry and 1 or 0.45)
+        local kindLabel = entry and (entry.kind == "item" and "Item" or "Spell") or "Empty"
         row.secondary:SetText(S.selectedWheelSlot == slotId
-            and ((DISPLAY_LABELS[slotId] or slotId) .. " — Shift-click to replace")
-            or (DISPLAY_LABELS[slotId] or slotId))
+            and ((DISPLAY_LABELS[slotId] or slotId) .. " — " .. kindLabel .. " — Shift-click to replace")
+            or ((DISPLAY_LABELS[slotId] or slotId) .. " — " .. kindLabel))
         if entry then
             row.sound:SetSelectedKey(W.GetSlotSoundKey(layoutKey, slotId) or "none")
             row.sound:Enable(); row.macro:Enable(); row.clear:Enable()

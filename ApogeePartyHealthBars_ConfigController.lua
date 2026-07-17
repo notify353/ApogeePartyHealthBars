@@ -17,9 +17,12 @@ function C.Exit()
     D.panel:SetScript("OnDragStop", nil)
     D.SavePosition()
     S.selectedBindingKey = nil
-    S.selectedTrackerSlot = nil
+    S.selectedShortcutSlot = nil
     S.selectedWheelSlot = nil
     S.selectedWheelLayout = nil
+    S.focusedKeySlot = nil
+    S.selectedKeySlot = nil
+    S.selectedKeyLayout = nil
     local ui = D.GetConfigUI()
     if ui then ui.Hide() end
     D.UpdateHeader()
@@ -45,11 +48,26 @@ function C.FactoryReset()
         return false
     end
 
-    if D.WheelMacros then
-        local restored, code, detail = D.WheelMacros.Disable()
+    local managers = {}
+    for _, feature in ipairs({ D.WheelMacros, D.KeyActions }) do
+        local manager = feature and feature.GetBindingManager and feature.GetBindingManager()
+        if manager then managers[#managers + 1] = manager end
+    end
+    if D.BoundActionBindings and #managers > 0 then
+        local restored, code, detail = D.BoundActionBindings.DisableAll(managers)
         if not restored then
-            D.Print(detail or code or "could not restore the wheel bindings.")
+            D.Print(detail or code or "could not restore the owned bindings.")
             return false
+        end
+    else
+        for _, feature in ipairs({ D.WheelMacros, D.KeyActions }) do
+            if feature and feature.Disable then
+                local restored, code, detail = feature.Disable()
+                if not restored then
+                    D.Print(detail or code or "could not restore the owned bindings.")
+                    return false
+                end
+            end
         end
     end
 
@@ -79,6 +97,7 @@ function C.SetMode(active)
         end)
         D.GetConfigUI().Show()
         D.HookSpellbook()
+        D.HookContainerItems()
     else
         C.Exit()
     end

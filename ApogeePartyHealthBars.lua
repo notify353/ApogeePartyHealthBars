@@ -9,8 +9,9 @@ local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local A = ApogeePartyHealthBars_Auras
 local E = ApogeePartyHealthBars_Effects
-local T = ApogeePartyHealthBars_SpellTracker
+local T = ApogeePartyHealthBars_ShortcutBar
 local W = ApogeePartyHealthBars_WheelMacros
+local K = ApogeePartyHealthBars_KeyActions
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 
@@ -82,6 +83,7 @@ local RefreshConfigPanel
 local ApplyAllBindings
 local RefreshBindPanel
 local HookSpellbook
+local HookContainerItems
 local ApplyAllSecureBindings
 local EnsureMinimapButton
 
@@ -275,6 +277,15 @@ W.Configure({
     HideSecureFrame = HideSecureFrame,
     SetSecureMouseEnabled = SetSecureMouseEnabled,
 })
+K.Configure({
+    Print = Print,
+    RequestLayout = S.RequestLayoutUpdate,
+    SyncTicker = SyncVisualTicker,
+    PositionSecureOverlay = PositionSecureOverlay,
+    ShowSecureFrame = ShowSecureFrame,
+    HideSecureFrame = HideSecureFrame,
+    SetSecureMouseEnabled = SetSecureMouseEnabled,
+})
 
 
 local unitFrames = ApogeePartyHealthBars_UnitFrames.Build({
@@ -336,9 +347,10 @@ local function ComputeRowLayoutKey(unitId, row)
     local showPartyBuff = unitId and ShouldShowPartyBuffIcon(unitId) or false
     local showSelfBuff = unitId and ShouldShowSelfBuffIcon(unitId) or false
     local targetReserve = row and GetTargetColumnWidth(row) or 0
-    return string.format("%s|%s|%s|%d|%d|%d|%d",
+    return string.format("%s|%s|%s|%d|%d|%d|%d|%d|%d",
         tostring(showPartyBuff), tostring(showSelfBuff), GetHotStripHeight(), targetReserve,
-        GetRowPowerChromeHeight(unitId), T.GetHeight(unitId) + W.GetHeight(unitId), H.GetGutterWidth())
+        GetRowPowerChromeHeight(unitId), T.GetHeight(unitId), W.GetHeight(unitId),
+        K.GetHeight(unitId), H.GetGutterWidth())
 end
 
 local function AuraEventNeedsLayout(unitId)
@@ -385,6 +397,7 @@ UpdateUI = function()
             UpdateRowContent()
             SyncCastOverlays()
             W.RefreshSecureActions()
+            K.RefreshSecureActions()
         end
     elseif doValues then
         UpdateRowValues()
@@ -428,6 +441,7 @@ visualTickerFrame:SetScript("OnUpdate", function(_, elapsed)
         S.RefreshRangeAlpha()
         H.Refresh()
         W.Refresh()
+        K.Refresh()
     end
 end)
 
@@ -464,8 +478,13 @@ L.Register({
     GetRowBtnWidth = GetRowBtnWidth,
     GetRowTotalHeight = GetRowTotalHeight,
     GetRowPowerChromeHeight = GetRowPowerChromeHeight,
-    GetTrackerHeight = function(unitId) return T.GetHeight(unitId) + W.GetHeight(unitId) end,
-    LayoutTracker = function() W.Layout(); T.Layout(W.GetHeight("player")) end,
+    GetShortcutAreaHeight = function(unitId)
+        return T.GetHeight(unitId) + math.max(W.GetHeight(unitId), K.GetHeight(unitId))
+    end,
+    LayoutShortcuts = function()
+        W.Layout(); K.Layout()
+        T.Layout(math.max(W.GetHeight("player"), K.GetHeight("player")))
+    end,
     GetThreatGutterWidth = H.GetGutterWidth,
     RefreshThreat = H.Refresh,
     GetHotStripHeight = GetHotStripHeight,
@@ -507,7 +526,9 @@ local function ReconcileAllSecureOverlays()
     ApplyAllSelfBuffBindings()
     T.RefreshSecureActions()
     W.RefreshSecureActions()
+    K.RefreshSecureActions()
     W.ReconcileBindings()
+    K.ReconcileBindings()
 end
 
 secureFrames.InitializeReconciler(ReconcileAllSecureOverlays)
@@ -528,6 +549,7 @@ bindingController.Initialize({
 })
 local ClearBinding = bindingController.ClearBinding
 HookSpellbook = bindingController.HookSpellbook
+HookContainerItems = bindingController.HookContainerItems
 
 -- Minimap controller
 minimapController = ApogeePartyHealthBars_MinimapController
@@ -575,8 +597,11 @@ configController.Initialize({
     UpdateHeader = function() UpdateHeader() end,
     UpdateMinimapButtonStyle = UpdateMinimapButtonStyle,
     HookSpellbook = function() HookSpellbook() end,
+    HookContainerItems = function() HookContainerItems() end,
     ScheduleSecureReconcile = secureFrames.RequestReconcile,
     WheelMacros = W,
+    KeyActions = K,
+    BoundActionBindings = ApogeePartyHealthBars_BoundActionBindings,
     Print = Print,
 })
 ExitConfigMode = configController.Exit
@@ -605,7 +630,8 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
     GetBinding                  = S.GetBinding,
     ClearBinding                = ClearBinding,
     Sounds                     = ApogeePartyHealthBars_Sounds,
-    SpellTracker               = T,
+    ShortcutBar               = T,
+    KeyActions                = K,
     WheelMacros                = W,
     HealthAlerts               = ApogeePartyHealthBars_HealthAlerts,
     Threat                     = H,
@@ -627,6 +653,7 @@ ApogeePartyHealthBars_RuntimeEvents.Register(ApogeePartyHealthBars_EventRouter, 
     RestorePosition = RestorePosition,
     UpdateHeader = UpdateHeader,
     HookSpellbook = HookSpellbook,
+    HookContainerItems = HookContainerItems,
     EnsureMinimapButton = EnsureMinimapButton,
     SeedShieldTrackerFromAuras = SeedShieldTrackerFromAuras,
     ForceRefresh = ForceRefresh,
@@ -638,6 +665,7 @@ ApogeePartyHealthBars_RuntimeEvents.Register(ApogeePartyHealthBars_EventRouter, 
     ShieldTrackerSyncUnit = ShieldTrackerSyncUnit,
     AuraEventNeedsLayout = AuraEventNeedsLayout,
     GetConfigUI = function() return configUI end,
+    KeyActions = K,
     WheelMacros = W,
 })
 ApogeePartyHealthBars_HealthAlerts.Register(ApogeePartyHealthBars_EventRouter)

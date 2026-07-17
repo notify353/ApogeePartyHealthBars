@@ -67,14 +67,26 @@ function E.InitializeSavedVariables(saved, characterSaved)
     if type(characterSaved.bindings) ~= "table" then
         characterSaved.bindings = {}
     end
-    if type(characterSaved.trackedSpells) ~= "table" then
-        characterSaved.trackedSpells = {}
+    local legacyShortcuts = type(characterSaved.trackedSpells) == "table"
+        and characterSaved.trackedSpells or nil
+    if type(characterSaved.shortcuts) ~= "table"
+        or (next(characterSaved.shortcuts) == nil and legacyShortcuts and next(legacyShortcuts) ~= nil) then
+        characterSaved.shortcuts = legacyShortcuts or {}
     end
+    if characterSaved.shortcutDefaultsVersion == nil then
+        characterSaved.shortcutDefaultsVersion = characterSaved.trackerDefaultsVersion
+    end
+    characterSaved.trackedSpells = nil
+    characterSaved.trackedSpellsSchemaVersion = nil
+    characterSaved.trackerDefaultsVersion = nil
     if type(characterSaved.selfBuffSelections) ~= "table" then
         characterSaved.selfBuffSelections = {}
     end
     if type(characterSaved.wheelMacros) ~= "table" then
         characterSaved.wheelMacros = {}
+    end
+    if type(characterSaved.keyActions) ~= "table" then
+        characterSaved.keyActions = {}
     end
 
     saved.schemaVersion = math.max(version, C.SAVED_VARIABLES_VERSION)

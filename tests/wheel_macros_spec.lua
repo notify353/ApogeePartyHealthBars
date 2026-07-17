@@ -1,7 +1,8 @@
 unpack = unpack or table.unpack
 
-ApogeePartyHealthBars_C = { TRACKER_ICON_SIZE = 24, TRACKER_ICON_GAP = 3, TRACKER_TOP_GAP = 2, TRACKER_READY_PULSE = 0.65,
-    TRACKER_SOUND_DEBOUNCE = 2, OUT_OF_RANGE_ALPHA = 0.35, ROW_CONTENT_W = 184 }
+ApogeePartyHealthBars_C = { SHORTCUT_ICON_SIZE = 24, SHORTCUT_ICON_GAP = 3,
+    SHORTCUT_READY_PULSE = 0.65, SHORTCUT_SOUND_DEBOUNCE = 2,
+    OUT_OF_RANGE_ALPHA = 0.35, ROW_CONTENT_W = 184 }
 ApogeePartyHealthBars_S = { charSv = {} }
 
 local function widget()
@@ -34,11 +35,13 @@ local function widget()
 end
 
 UIParent = widget()
-local tooltipShows, tooltipHides = 0, 0
+local tooltipShows, tooltipHides, tooltipLines = 0, 0, {}
 GameTooltip = widget()
 function GameTooltip:SetOwner() end
 function GameTooltip:SetSpellByID() end
-function GameTooltip:AddLine() end
+local tooltipItemId
+function GameTooltip:SetItemByID(itemId) tooltipItemId = itemId end
+function GameTooltip:AddLine(line) tooltipLines[#tooltipLines + 1] = line end
 function GameTooltip:Show() tooltipShows = tooltipShows + 1 end
 function GameTooltip:Hide() tooltipHides = tooltipHides + 1 end
 local namedFrames = {}
@@ -116,6 +119,19 @@ local playedSounds = {}
 function PlaySound(sound, channel) playedSounds[#playedSounds + 1] = { sound, channel } end
 function GetTime() return 10 end
 BOOKTYPE_SPELL = "spell"
+local itemCount, itemCooldown, itemUsable = 4, 0, true
+C_Item = {
+    GetItemInfo = function(itemId)
+        if itemId == 1251 then return "Linen Bandage", nil, nil, nil, nil, nil, nil, nil, nil, 134436 end
+    end,
+    GetItemInfoInstant = function(itemId) if itemId == 1251 then return itemId, nil, nil, nil, 134436 end end,
+    GetItemCount = function(itemId) return itemId == 1251 and itemCount or 0 end,
+    IsUsableItem = function(itemId) return itemId == 1251 and itemUsable, false end,
+    GetItemSpell = function(itemId) if itemId == 1251 then return "First Aid", 746 end end,
+}
+C_Container = {
+    GetItemCooldown = function(itemId) return itemId == 1251 and 4 or 0, itemCooldown, 1 end,
+}
 
 local bindings = {
     MOUSEWHEELUP = "CAMERAZOOMIN",
@@ -137,8 +153,12 @@ function SaveBindings(set) assert(set == 2); saveCount = saveCount + 1 end
 dofile("ApogeePartyHealthBars_WheelData.lua")
 dofile("ApogeePartyHealthBars_UIHelpers.lua")
 dofile("ApogeePartyHealthBars_Sounds.lua")
+dofile("ApogeePartyHealthBars_ShortcutItems.lua")
 dofile("ApogeePartyHealthBars_ActionMacros.lua")
+dofile("ApogeePartyHealthBars_BoundActionLayouts.lua")
 dofile("ApogeePartyHealthBars_WheelLayouts.lua")
+dofile("ApogeePartyHealthBars_BoundActionBindings.lua")
+dofile("ApogeePartyHealthBars_ActionHud.lua")
 dofile("ApogeePartyHealthBars_WheelMacros.lua")
 local data, wheel = ApogeePartyHealthBars_WheelData, ApogeePartyHealthBars_WheelMacros
 local PRIMARY = "spell:2457"
@@ -173,7 +193,7 @@ assert(wheel.Enable(), "first-run wheel enable failed")
 wheel.Layout()
 assert(wheel.IsEnabled() and saveCount == 1, "first-run enable did not persist bindings")
 assert(wheel.GetHeight("player") == 169,
-    "wheel HUD did not reserve a gap before the tracker icons")
+    "wheel HUD did not reserve a gap before the Shortcut Bar icons")
 for _, slot in ipairs(data.SLOTS) do
     assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. "Hud:LeftButton",
         "first-run enable did not claim " .. slot.key)
@@ -195,6 +215,24 @@ assert(smartAssigned and smartSlot == "ctrlUp",
     "smart Wheel assignment did not use the first empty gesture in display order")
 assert(wheel.AssignSpell(PRIMARY, "shiftUp", nil, "Flash Heal"),
     "Wheel incorrectly rejected the same spell on another gesture")
+assert(wheel.AssignItem(PRIMARY, "normalDown", 1251, "Linen Bandage"),
+    "Wheel item assignment failed")
+assert(wheel.AssignItem(PRIMARY, "shiftDown", 1251, "Linen Bandage"),
+    "Wheel incorrectly rejected the same item on another gesture")
+assert(not wheel.AssignItem(PRIMARY, "ctrlDown", 9999, "Decorative Rock"),
+    "Wheel accepted an item without a usable effect")
+assert(wheel.GetSlot(PRIMARY, "normalDown").kind == "item"
+    and wheel.GetSlot(PRIMARY, "normalDown").macroText == "/use Linen Bandage",
+    "Wheel item assignment did not store a typed /use shortcut")
+wheel.SetSlotSound(PRIMARY, "normalDown", "toast")
+assert(wheel.ApplyMacro(PRIMARY, "normalDown", "/use [@player] Linen Bandage"))
+local movedItem, movedItemTo = wheel.MoveSlot(PRIMARY, "normalDown", 1)
+assert(movedItem and movedItemTo == "shiftDown"
+    and wheel.GetSlot(PRIMARY, "shiftDown").kind == "item"
+    and wheel.GetSlot(PRIMARY, "shiftDown").macroText == "/use [@player] Linen Bandage"
+    and wheel.GetSlot(PRIMARY, "shiftDown").soundKey == "toast",
+    "Wheel item movement lost its macro or sound payload")
+assert(wheel.MoveSlot(PRIMARY, "shiftDown", -1), "Wheel item could not move back")
 assert(wheel.ResetSlot == nil and wheel.ResetClassPreset == nil,
     "wheel runtime still exposes preset reset actions")
 for index, slot in ipairs(data.SLOTS) do
@@ -224,6 +262,11 @@ assert(wheel.GetSlot(defensive, "normalUp") == nil,
     "initial Warrior stance layout was not copied from the first stance")
 assert(wheel.AssignSpell(defensive, "normalUp", nil, "Charge"),
     "stance-specific wheel spell assignment failed")
+assert(wheel.AssignItem(defensive, "shiftDown", 1251, "Linen Bandage"),
+    "stance-specific Wheel item assignment failed")
+assert(wheel.GetSlot(defensive, "shiftDown").kind == "item"
+    and wheel.GetSlot(PRIMARY, "shiftDown").kind == "spell",
+    "editing a stance-specific item mutated another layout")
 assert(wheel.GetSlot(PRIMARY, "normalUp").spellName == warriorSpells[1],
     "editing one Warrior stance layout mutated another")
 wheel.RefreshSecureActions()
@@ -279,8 +322,8 @@ activeStance = 1
 wheel.OnStanceChanged()
 wheel.RefreshSecureActions()
 local normalUpIcon = assert(wheel.GetHudIcon("normalUp"), "wheel HUD icon was not created")
-assert(normalUpIcon.point[1] == "TOPLEFT" and normalUpIcon.point[4] == 0,
-    "wheel HUD icons did not align with the tracker icon centerline")
+assert(normalUpIcon.point[1] == "TOPLEFT" and normalUpIcon.point[4] == 160,
+    "wheel HUD icons did not align to the far-right rail")
 assert(normalUpIcon.template ~= "SecureActionButtonTemplate" and normalUpIcon.parent ~= UIParent,
     "wheel HUD visual icon became a protected descendant of the player-row layout")
 assert(type(normalUpIcon.scripts.OnEnter) == "function" and type(normalUpIcon.scripts.OnLeave) == "function",
@@ -299,13 +342,19 @@ assert(normalUpIcon.texture.desaturated and normalUpIcon.alpha == 0.48
     "missing target did not use the grey invalid-target style")
 targetExists = true; rangeResult = 0; wheel.Refresh()
 assert(not normalUpIcon.texture.desaturated and normalUpIcon.alpha == 0.35
-    and normalUpIcon.borders[1].color[1] == 1.00,
-    "out-of-range wheel spell did not retain range styling")
+    and normalUpIcon.borders[1].color[1] == 0.45,
+    "out-of-range wheel spell did not retain only the faded range styling")
+tooltipLines = {}
+normalUpIcon.scripts.OnEnter(normalUpIcon)
+for _, line in ipairs(tooltipLines) do
+    assert(line ~= "Out of range", "out-of-range wheel tooltip retained its status line")
+end
+tooltipShows = 0
 rangeResult = 1; usable = false; noResource = true; wheel.Refresh()
 assert(normalUpIcon.texture.desaturated, "insufficient rage did not desaturate the wheel spell")
 assert(normalUpIcon.alpha == 0.48, "insufficient rage did not fade the wheel spell")
-assert(normalUpIcon.borders[1].color[1] == 0.90,
-    "insufficient rage did not use the rage-color resource border")
+assert(normalUpIcon.borders[1].color[1] == 0.45,
+    "insufficient rage retained a colored resource border")
 usable = true; noResource = false; cooldownStart = 5; cooldownDuration = 8; currentCharges = 0; maximumCharges = 2; wheel.Refresh()
 assert(not normalUpIcon.texture.desaturated, "cooldown wheel spell was unexpectedly desaturated")
 assert(normalUpIcon.cooldown.cooldown[1] == 5, "cooldown wheel spell did not preserve its swipe")
@@ -319,12 +368,14 @@ assert(normalUpIcon.texture.desaturated and normalUpIcon.alpha == 0.48,
     "invalid wheel display spell did not use tracker-invalid styling")
 wheel.GetSlot(PRIMARY, "normalUp").spellName = warriorSpells[1]; wheel.Refresh()
 assert(wheel.SetSlotSound(PRIMARY, "normalUp", "toast") == "toast", "wheel sound selection did not persist")
+local soundsBeforeWheelReady = #playedSounds
 rangeResult = 0; wheel.Refresh()
 rangeResult = 1; wheel.Refresh()
 assert(normalUpIcon.pulseUntil ~= nil, "wheel ready transition did not set a pulse")
 assert(normalUpIcon.pulseBorder[1].alpha and normalUpIcon.pulseBorder[1].alpha > 0.99,
     "wheel ready pulse did not start fully visible")
-assert(#playedSounds == 1, "wheel ready transition did not play its selected sound")
+assert(#playedSounds == soundsBeforeWheelReady + 1,
+    "wheel ready transition did not play its selected sound")
 local soundsBeforeReassign = #playedSounds
 rangeResult = 0; wheel.Refresh()
 rangeResult = 1
@@ -343,6 +394,63 @@ normalUpIcon.scripts.OnEnter(normalUpIcon)
 assert(tooltipShows == 1 and tooltipHides > 0, "wheel spell tooltip showed in combat")
 wheel.OnCombatStarted()
 inCombat = false
+assert(wheel.AssignItem(PRIMARY, "normalUp", 1251, "Linen Bandage"),
+    "Wheel HUD item setup failed")
+wheel.Refresh()
+assert(normalUpIcon.count.text == "4" and not normalUpIcon.texture.desaturated,
+    "Wheel item did not show its carried quantity and ready state")
+normalUpIcon.scripts.OnEnter(normalUpIcon)
+assert(tooltipItemId == 1251, "Wheel item did not show an item tooltip")
+itemUsable = false
+wheel.Refresh()
+assert(normalUpIcon.texture.desaturated and normalUpIcon.alpha == 0.48,
+    "Wheel item usability was not displayed")
+itemUsable = true
+itemCooldown = 9
+wheel.Refresh()
+assert(normalUpIcon.cooldown.cooldown[2] == 9, "Wheel item cooldown was not displayed")
+itemCooldown, itemCount = 0, 0
+wheel.Refresh()
+assert(normalUpIcon.count.text == "0" and normalUpIcon.texture.desaturated
+    and wheel.GetSlot(PRIMARY, "normalUp").itemId == 1251,
+    "depleted Wheel item was removed or did not show quantity zero")
+local soundsBeforeItemRestock = #playedSounds
+itemCount = 6
+wheel.Refresh()
+assert(normalUpIcon.count.text == "6" and not normalUpIcon.texture.desaturated,
+    "restocked Wheel item did not return to ready state")
+assert(#playedSounds == soundsBeforeItemRestock + 1,
+    "restocked Wheel item did not play its selected ready sound")
+local savedWheelItem = wheel.GetSlot(PRIMARY, "normalUp")
+savedWheelItem.itemName = "Old Bandage Name"
+savedWheelItem.macroText = "/use Old Bandage Name"
+wheel.InitializeSaved()
+local localizedWheelItem = wheel.GetSlot(PRIMARY, "normalUp")
+assert(localizedWheelItem.kind == "item"
+    and localizedWheelItem.itemName == "Linen Bandage"
+    and localizedWheelItem.macroText == "/use Linen Bandage",
+    "Wheel item did not persist and refresh its localized generated macro")
+local itemSecure = wheel.GetSecureButton("normalUp")
+assert(itemSecure.attributes.macrotext:find("/use Linen Bandage", 1, true),
+    "Wheel secure action initialized with a stale localized item macro")
+ApogeePartyHealthBars_S.charSv.wheelMacros.profiles.corrupt = {
+    layouts = { missingSlots = {}, invalidSlots = { slots = "not a table" } },
+}
+wheel.RefreshItemInfo()
+ApogeePartyHealthBars_S.charSv.wheelMacros.profiles.corrupt = nil
+assert(wheel.GetSlot(PRIMARY, "normalUp").itemId == 1251,
+    "malformed inactive Wheel profile disrupted item-information refresh")
+local itemSecureMutations = itemSecure.mutations
+inCombat = true
+wheel.RefreshItemInfo()
+assert(itemSecure.mutations == itemSecureMutations,
+    "item-information refresh mutated a Wheel secure action in combat")
+inCombat = false
+wheel.RefreshSecureActions()
+assert(wheel.ClearSlot(PRIMARY, "normalUp") and wheel.GetSlot(PRIMARY, "normalUp") == nil,
+    "Wheel item did not clear cleanly")
+assert(wheel.AssignSpell(PRIMARY, "normalUp", nil, warriorSpells[1]),
+    "Wheel item could not be replaced by a spell")
 for _, slot in ipairs(data.SLOTS) do
     local expected = "CLICK " .. slot.buttonName .. "Hud:LeftButton"
     assert(bindings[slot.key] == expected, "wheel key was not bound to its secure button")
@@ -488,8 +596,8 @@ ApogeePartyHealthBars_S.charSv.wheelMacros.profiles["1"].layouts.base.slots.norm
 }
 wheel.InitializeSaved()
 local migrated = wheel.GetSlot(PRIMARY, "normalUp")
-assert(ApogeePartyHealthBars_S.charSv.wheelMacros.schemaVersion == 4
-    and migrated.spellId == 78 and migrated.spellName == "Legacy Heroic Strike"
+assert(ApogeePartyHealthBars_S.charSv.wheelMacros.schemaVersion == 5
+    and migrated.kind == "spell" and migrated.spellId == 78 and migrated.spellName == "Legacy Heroic Strike"
     and migrated.macroText == "/cast Legacy Custom Action" and migrated.soundKey == "toast"
     and migrated.displaySpellId == nil and migrated.displaySpellName == nil,
     "Wheel schema migration did not preserve and canonicalize the legacy action")
@@ -502,8 +610,8 @@ for _, slot in ipairs(data.SLOTS) do
         or (slot.id == "normalDown" and "CAMERAZOOMOUT") or ""
     assert(bindings[slot.key] == expected, "partial binding failure did not roll back " .. slot.key)
 end
-assert(next(ApogeePartyHealthBars_S.charSv.wheelMacros.ownership["2"]) == nil,
-    "partial binding failure retained ownership records")
+assert(ApogeePartyHealthBars_S.charSv.wheelMacros.ownership["2"] == nil,
+    "partial binding failure did not restore the prior ownership schema exactly")
 rejectedBindingKey = nil
 
 print("PASS mouse-wheel macro bindings")

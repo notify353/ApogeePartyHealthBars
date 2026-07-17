@@ -8,24 +8,42 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
+- Added an independently enabled 15-key action cluster for `1`–`5`, `Q/E/R/T`, `F/G`, and `Z/X/C/V`, with typed spell/item actions, custom macros, sounds, cooldown/range feedback, secure execution, per-spec profiles, and empty per-form layouts.
+- Added a keyboard-shaped Keys editor with focused and armed tiles, smart first-empty Shift-click assignment, complete-payload Previous/Next swaps, and a compact six-tab settings layout.
+- Added usable bag items to Shortcuts, Keys, and Wheel, including generated `/use` macros, item tooltips, carried quantities, usability, cooldowns, depletion persistence, and automatic restock recovery.
+- Added the loaded add-on version to the configuration header for easy in-game verification.
 - Added 11 dependency-free bundled ready sounds: Glass, Sonar, Robot Blip, Water Drop, Temple Bell, Focus, Torch, Blast, Shotgun, Boxing Arena Gong, and Squish.
 - Refined the built-in sound-kit choices to the three alarms and Toast.
-- Added shared generated secure actions for Spells and Wheel, with rank-qualified casts, focused macro editing, Reset, byte validation, and legacy saved-data migration.
+- Added shared generated secure actions for Shortcuts, Keys, and Wheel, with rank-qualified casts, focused macro editing, Reset, byte validation, and legacy saved-data migration.
 
 ### Changed
 
+- Extracted shared bound-action layout, binding-ownership, and activation-feedback components while preserving Wheel saved data, secure-frame names, bindings, and public behavior.
+- Moved Wheel to a far-right vertical HUD rail, placed Keys in a four-row left cluster, and made Shortcuts start below the taller feature instead of the sum of both heights.
+- Removed physical-key labels from the player-frame Keys HUD while retaining them in the Keys configuration selector.
+- Made Keys enablement immediately capture and replace all 15 current bindings, with binding-set-specific restoration, foreign-rebinding conflict preservation, combat-safe reconciliation, and atomic Keys/Mouse Wheel restoration during Factory Reset.
+- Expanded Shortcuts to 12 assignments and capped the player-frame display at six icons per row, with slots 7–12 continuing on a second row.
+- Renamed Spells to Shortcuts throughout the UI and internals. Shortcuts, Keys, and Wheel now accept Shift-clicked Spellbook spells or bag items, while Healing remains spell-only for party-unit targeting.
+- Added typed spell/item shortcut saved data with one-time tracked-spell and Wheel migration; Shortcuts rejects duplicate spell or item IDs while Keys and Wheel allow duplicates across positions and specialization/stance layouts.
+- Made the add-on settings background fully opaque for better readability.
+- Simplified unavailable spell feedback in Shortcuts and Wheel to faded or desaturated icons with neutral borders, removing red range and resource borders plus the out-of-range tooltip status.
 - Renamed the Bindings settings section to Healing and clarified that it is for healing and cleansing click assignments.
-- Removed the player spell tracker and ready-sound enable checkboxes; both features are now always active.
-- Rebuilt Spells and Wheel around compact matching rows with smart Shift-click assignment, direct sound and macro controls, whole-action movement, and explicit clearing.
+- Removed the Shortcut Bar and ready-sound enable checkboxes; both features are now always active.
+- Rebuilt Shortcuts and Wheel around compact matching rows with smart Shift-click assignment, direct sound and macro controls, whole-shortcut movement, and explicit clearing.
 - Kept all six Wheel gestures configurable while Wheel is disabled; only the compact Wheel Enabled control now claims or restores their bindings.
 - Replaced the talent/level opener recommendation with a curated copy-only combat macro library containing universal and current-class examples.
 - Polished the combat macro library with counted category filtering, selectable read-only macro text, clear copy instructions, and compact exact-fit controls.
 
 ### Fixed
 
+- Prevented Shortcut clear and move operations from changing saved actions during combat, recovered tracked spells after an interrupted migration, and refreshed localized Wheel item macros before secure initialization.
 - Preserved the selected macro category and example when switching tabs, refreshed pet-dependent requirements when the player's pet changes, and hardened catalog validation against malformed recipe metadata.
-- Prevented Spells and Wheel macro drafts from surviving action replacement or Wheel profile changes, while keeping the settings tabs and close control reachable from the focused editor.
+- Prevented Shortcuts and Wheel macro drafts from surviving shortcut replacement or Wheel profile changes, while keeping the settings tabs and close control reachable from the focused editor.
 - Prevented Wheel action edits from reclaiming physical keys, made enable/disable restoration transactional, and retained ownership records when WoW rejects a deferred binding restore.
+- Preserved Keys conflicts for externally changed or unbound keys, claimed newly selected account/character binding sets safely, and restored every owned binding set atomically during disable or Factory Reset.
+- Preserved copied prior bindings when a character binding set inherits active Keys actions, retained recovery ownership after a rejected rollback, and refreshed the active settings tab when reopening configuration.
+- Made the Keys HUD appear immediately when enabled alongside an already-visible, taller Wheel rail.
+- Restored assigned action icons in the focused Keys detail row.
 
 ## [0.36.0] - 2026-07-15
 

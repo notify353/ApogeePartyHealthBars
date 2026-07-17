@@ -1,0 +1,7 @@
+interface:
+  display_name: "Prepare for Feature"
+  short_description: "Orient architecture before feature work"
+  default_prompt: "Use $prepare-for-feature to orient to the project before I describe a new feature."
+
+policy:
+  allow_implicit_invocation: false

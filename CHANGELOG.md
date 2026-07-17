@@ -19,6 +19,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Split General settings and Healing binding controls into focused configuration modules, leaving `ConfigUI` as the settings-window and tab-lifecycle shell.
 - Completed the effect-domain split by extracting player-cast HoT tracking into a private runtime and retiring the former `EffectsTracker` coordinator.
 - Extracted party and self-buff reminders from `EffectsTracker` into a focused runtime with private spell, aura-matcher, icon, secure-cast, and family-preference state.
 - Extracted shield tracking and incoming-heal prediction from `EffectsTracker` into focused health-overlay modules while preserving absorb depletion, aura fallbacks, alias handling, and visual geometry.

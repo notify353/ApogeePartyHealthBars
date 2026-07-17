@@ -261,8 +261,12 @@ assert(tocLoadOrder["ApogeePartyHealthBars_BoundActionLayouts.lua"]
 assert(tocLoadOrder["ApogeePartyHealthBars_KeyLayouts.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_KeyActions.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_KeyConfig.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_ConfigUI.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_GeneralConfig.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_ConfigUI.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_HealingConfig.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_ConfigUI.lua"],
-    "Keys runtime or configuration loaded before its dependency")
+    "feature configuration loaded before its dependency")
 assert(tocLoadOrder["ApogeePartyHealthBars_ShortcutBar.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_RowGeometry.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_WheelMacros.lua"]
@@ -563,6 +567,9 @@ ClickMinimapButton()
 assert(ApogeePartyHealthBars_S.configMode, "minimap click did not open settings")
 assert(ApogeePartyHealthBars_ConfigUI.factoryResetButton,
     "General settings did not create the factory reset control")
+assert(ApogeePartyHealthBars_ConfigUI.factoryResetButton
+        == ApogeePartyHealthBars_GeneralConfig.GetFactoryResetButton(),
+    "ConfigUI did not bridge the extracted General factory-reset control")
 assert(SpellBookFrame:IsShown(), "opening settings did not open the spellbook")
 assert(spellbookOpenCount == 1, "spellbook did not open exactly once")
 assert(directSpellbookToggleCount == 0, "add-on called ToggleSpellBook directly")

@@ -62,7 +62,7 @@ assert(not overlay.allPoints and overlay.points and #overlay.points == 2,
 local savedBody, savedNotice
 assert(config.OpenEditor({
     title = "Edit Spell macro",
-    spellName = "Charge(Rank 1)",
+    actionName = "Charge(Rank 1)",
     macroText = "/cast Charge(Rank 1)",
     resetText = "/targetenemy [noexists][dead][help]\n/startattack\n/cast Charge(Rank 1)",
     onSave = function(body) savedBody = body; return true, "saved" end,

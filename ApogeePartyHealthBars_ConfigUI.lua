@@ -1,6 +1,7 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
-local SC = ApogeePartyHealthBars_SpellTrackerConfig
+local SC = ApogeePartyHealthBars_ShortcutConfig
+local KC = ApogeePartyHealthBars_KeyConfig
 local WC = ApogeePartyHealthBars_WheelConfig
 local MC = ApogeePartyHealthBars_MacroConfig
 local AC = ApogeePartyHealthBars_ActionConfig
@@ -9,11 +10,12 @@ local UIH = ApogeePartyHealthBars_UIHelpers
 ApogeePartyHealthBars_ConfigUI = {}
 
 local UI = ApogeePartyHealthBars_ConfigUI
+local ADDON_NAME = "ApogeePartyHealthBars"
 local built = false
 local D
 
 local configPanel
-local generalTab, healingTab, spellsTab, wheelTab, macrosTab
+local generalTab, healingTab, shortcutsTab, keysTab, wheelTab, macrosTab
 local generalScroll, generalScrollChild
 local bindScroll, bindScrollChild, bindHintFS
 local tabs, tabOrder = {}, {}
@@ -144,7 +146,8 @@ local function SetConfigTab(tabName)
     AC.CloseEditor()
     if S.configTab ~= tabName then
         S.selectedBindingKey = nil
-        S.selectedTrackerSlot = nil
+        S.selectedShortcutSlot = nil
+        S.selectedKeySlot = nil
         S.selectedWheelSlot = nil
     end
     S.configTab = tabName
@@ -366,7 +369,10 @@ local function BuildHealingTab(parent)
                 D.ClearBinding(slotKey)
             else
                 S.selectedBindingKey = slotKey
-                S.selectedTrackerSlot = nil
+                S.selectedShortcutSlot = nil
+                S.focusedKeySlot = nil
+                S.selectedKeySlot = nil
+                S.selectedKeyLayout = nil
                 S.selectedWheelSlot = nil
                 S.selectedWheelLayout = nil
                 RefreshBindPanel()
@@ -579,6 +585,11 @@ function UI.Build(deps)
     configPanel:SetClampedToScreen(true)
     configPanel:SetFrameStrata("MEDIUM")
     D.ApplyBackdrop(configPanel, C.PANEL_BG_COLOR[4], C.PANEL_EDGE_COLOR)
+    local opaqueBackground = configPanel:CreateTexture(nil, "BACKGROUND", nil, -8)
+    opaqueBackground:SetAllPoints()
+    opaqueBackground:SetColorTexture(
+        C.PANEL_BG_COLOR[1], C.PANEL_BG_COLOR[2], C.PANEL_BG_COLOR[3], 1
+    )
     AttachConfigDragHandle(configPanel)
     configPanel:Hide()
 
@@ -597,6 +608,10 @@ function UI.Build(deps)
     subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -1)
     subtitle:SetText("Healer frame configuration")
 
+    local versionLabel = header:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    versionLabel:SetPoint("BOTTOMRIGHT", header, "BOTTOMRIGHT", -2, 3)
+    versionLabel:SetText("Version " .. C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version"))
+
     local closeButton = CreateFrame("Button", nil, header, "UIPanelCloseButton")
     closeButton:SetSize(24, 24)
     closeButton:SetPoint("TOPRIGHT", header, "TOPRIGHT", 3, 1)
@@ -612,13 +627,15 @@ function UI.Build(deps)
 
     BuildGeneralTab(configPanel)
     BuildHealingTab(configPanel)
-    spellsTab = SC.Build(configPanel, D)
+    shortcutsTab = SC.Build(configPanel, D)
+    keysTab = KC.Build(configPanel, D)
     wheelTab = WC.Build(configPanel, D)
     macrosTab = MC.Build(configPanel, D)
 
     RegisterTab({ key = "general", label = "General", frame = generalTab, refresh = RefreshConfigPanel })
     RegisterTab({ key = "healing", label = "Healing", frame = healingTab, refresh = RefreshBindPanel })
-    RegisterTab({ key = "spells", label = "Spells", frame = spellsTab, refresh = SC.Refresh })
+    RegisterTab({ key = "shortcuts", label = "Shortcuts", frame = shortcutsTab, refresh = SC.Refresh })
+    RegisterTab({ key = "keys", label = "Keys", frame = keysTab, refresh = KC.Refresh })
     RegisterTab({ key = "wheel", label = "Wheel", frame = wheelTab, refresh = WC.Refresh })
     RegisterTab({ key = "macros", label = "Macros", frame = macrosTab, refresh = MC.Refresh })
 
@@ -638,7 +655,8 @@ function UI.Build(deps)
     UI.configPanel = configPanel
     UI.RefreshConfigPanel = RefreshConfigPanel
     UI.RefreshBindPanel = RefreshBindPanel
-    UI.RefreshSpellPanel = SC.Refresh
+    UI.RefreshShortcutPanel = SC.Refresh
+    UI.RefreshKeyPanel = KC.Refresh
     UI.RefreshWheelPanel = WC.Refresh
     UI.RefreshMacroPanel = MC.Refresh
     UI.RegisterTab = RegisterTab
@@ -646,11 +664,13 @@ function UI.Build(deps)
     UI.RefreshTab = RefreshTab
     UI.RefreshActiveTab = RefreshActiveTab
     UI.factoryResetButton = factoryResetBtn
+    UI.versionLabel = versionLabel
     UI.Show = function()
         RestoreConfigPosition()
         SetConfigTab(S.configTab)
         configPanel:Show()
         RefreshConfigPanel()
+        RefreshActiveTab()
     end
     UI.Hide = function()
         UIH.CloseActiveDropdown()

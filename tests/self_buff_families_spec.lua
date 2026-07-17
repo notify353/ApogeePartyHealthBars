@@ -45,7 +45,7 @@ ApogeePartyHealthBars_Auras = {
     end,
     SnapshotHasAura = snapshotHasAura,
 }
-ApogeePartyHealthBars_SpellTracker = {
+ApogeePartyHealthBars_ShortcutBar = {
     GetHeight = function() return 0 end,
     IsActive = function() return false end,
 }

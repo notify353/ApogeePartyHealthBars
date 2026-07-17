@@ -1,7 +1,7 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
-local WD = ApogeePartyHealthBars_WheelData
-local WL = ApogeePartyHealthBars_WheelLayouts
+local WD = ApogeePartyHealthBars_KeyData
+local WL = ApogeePartyHealthBars_KeyLayouts
 local Sounds = ApogeePartyHealthBars_Sounds
 local UIH = ApogeePartyHealthBars_UIHelpers
 local Actions = ApogeePartyHealthBars_ActionMacros
@@ -9,8 +9,8 @@ local Items = ApogeePartyHealthBars_ShortcutItems
 local BoundBindings = ApogeePartyHealthBars_BoundActionBindings
 local ActionHud = ApogeePartyHealthBars_ActionHud
 
-ApogeePartyHealthBars_WheelMacros = {}
-local W = ApogeePartyHealthBars_WheelMacros
+ApogeePartyHealthBars_KeyActions = {}
+local W = ApogeePartyHealthBars_KeyActions
 
 local D, row, container
 local secureButtons, hudIcons, slotById = {}, {}, {}
@@ -20,10 +20,10 @@ local previousStates, lastSoundAt = {}, {}
 local initialized = false
 local feedbackSlotId, feedbackUntil = nil, 0
 local FEEDBACK_DURATION = 0.75
-local FEEDBACK_GLOBAL = "ApogeeWheelFeedback"
-local SECURE_STATE = "wheelstance"
+local FEEDBACK_GLOBAL = "ApogeeKeysFeedback"
+local SECURE_STATE = "keystance"
 local SECURE_STATE_SNIPPET = [[
-    local macro = self:GetAttribute("wheel-macro-" .. (newstate or 0))
+    local macro = self:GetAttribute("key-macro-" .. (newstate or 0))
     self:SetAttribute("type", macro and "macro" or nil)
     self:SetAttribute("macrotext", macro)
     self:SetAttribute("type1", macro and "macro" or nil)
@@ -31,10 +31,11 @@ local SECURE_STATE_SNIPPET = [[
 ]]
 local QUESTION_MARK = "Interface\\Icons\\INV_Misc_QuestionMark"
 local HUD_PANEL_W = C.ROW_CONTENT_W
-local HUD_PANEL_H = C.SHORTCUT_ICON_SIZE * 6 + C.SHORTCUT_ICON_GAP * 5
+local HUD_GRID_H = C.SHORTCUT_ICON_SIZE * 4 + C.SHORTCUT_ICON_GAP * 3
+local HUD_FEEDBACK_H = 18
+local HUD_PANEL_H = HUD_GRID_H + C.SHORTCUT_ICON_GAP + HUD_FEEDBACK_H
 local HUD_SHORTCUT_GAP = 10
 local HUD_HEIGHT = HUD_PANEL_H + HUD_SHORTCUT_GAP
-local HUD_ICON_X = C.ROW_CONTENT_W - C.SHORTCUT_ICON_SIZE
 local STATE_COLORS = {
     ready = { 0.45, 0.45, 0.48, 1 }, current = { 1.00, 0.82, 0.00, 1 }, cooldown = { 0.22, 0.22, 0.24, 1 },
     resource = { 0.45, 0.45, 0.48, 1 }, range = { 0.45, 0.45, 0.48, 1 },
@@ -53,11 +54,8 @@ for index, slot in ipairs(WD.SLOTS) do
     slot.index = index
     slotById[slot.id] = slot
 end
-local hudPosition = {}
-for index, slotId in ipairs(WD.DISPLAY_ORDER) do hudPosition[slotId] = index end
-
 local function state()
-    return S.charSv and S.charSv.wheelMacros
+    return S.charSv and S.charSv.keyActions
 end
 
 local function refreshSavedItemInfo()
@@ -87,12 +85,6 @@ local function ownedAction(slot)
     return "CLICK " .. slot.buttonName .. "Hud:LeftButton"
 end
 
-local function defaultPreviousAction(slot)
-    if slot.key == "MOUSEWHEELUP" then return "CAMERAZOOMIN" end
-    if slot.key == "MOUSEWHEELDOWN" then return "CAMERAZOOMOUT" end
-    return ""
-end
-
 local function requestLayout()
     if D and D.RequestLayout then D.RequestLayout() end
     if D and D.SyncTicker then D.SyncTicker() end
@@ -112,7 +104,7 @@ local function clearActivationFeedback()
         icon.feedbackUntil = nil
         if icon.flash then icon.flash:SetAlpha(0) end
     end
-    ActionHud.Clear("wheel")
+    ActionHud.Clear("keys")
     if feedbackTicker then feedbackTicker:Hide() end
 end
 
@@ -135,7 +127,7 @@ local function showActivationFeedback(slot)
         icon.flash:SetAlpha(0.55)
     end
     local entry = W.GetSlot(W.GetActiveLayoutKey(), slot.id)
-    ActionHud.Show("wheel", slot.label, Actions.GetName(entry) or "Empty", FEEDBACK_DURATION)
+    ActionHud.Show("keys", slot.displayKey, Actions.GetName(entry) or "Empty", FEEDBACK_DURATION)
     if feedbackTicker then feedbackTicker:Show() end
 end
 
@@ -311,13 +303,13 @@ local function evaluate(entry, known)
     return "ready", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil, true, nil, gcdOnly
 end
 
-local function showWheelTooltip(slot, icon)
+local function showKeysTooltip(slot, icon)
     if not GameTooltip then return end
     if InCombatLockdown and InCombatLockdown() then GameTooltip:Hide(); return end
     local entry = W.GetSlot(W.GetActiveLayoutKey(), slot.id)
     if not entry or not Actions.GetName(entry) then return end
     local status, _, _, _, _, _, reason = evaluate(entry, knownSpellNames())
-    local context = { { text = slot.label .. " wheel macro", r = 1, g = 0.82, b = 0.15 }, { text = "Left-click to run", r = 0.3, g = 1, b = 0.3 } }
+    local context = { { text = slot.label .. " keys macro", r = 1, g = 0.82, b = 0.15 }, { text = "Left-click to run", r = 0.3, g = 1, b = 0.3 } }
     if entry.kind == "item" then
         local name = Actions.ResolveDisplay(entry)
         UIH.ShowItemTooltip(icon, entry.itemId, name or entry.itemName,
@@ -390,7 +382,7 @@ local function createHudCastButton(icon, slot)
     -- client's ActionButtonUseKeyDown setting select the binding phase; secure
     -- mouse presses continue to execute on mouse-up.
     castButton:RegisterForClicks("LeftButtonUp", "LeftButtonDown")
-    castButton:SetScript("OnEnter", function(self) showWheelTooltip(slot, self) end)
+    castButton:SetScript("OnEnter", function(self) showKeysTooltip(slot, self) end)
     castButton:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
     castButton:SetScript("OnMouseDown", function()
         local entry = W.GetSlot(W.GetActiveLayoutKey(), slot.id)
@@ -407,11 +399,9 @@ function W.Configure(deps)
         slots = WD.SLOTS,
         state = state,
         ownedAction = ownedAction,
-        defaultPreviousAction = defaultPreviousAction,
-        reclaimPreviousBindings = true,
-        label = "Wheel bindings",
-        enabledMessage = "Wheel bindings enabled.",
-        disabledMessage = "Wheel bindings disabled and previous bindings restored.",
+        label = "Keys bindings",
+        enabledMessage = "Keys bindings enabled.",
+        disabledMessage = "Keys bindings disabled and previous bindings restored.",
     })
     ensureSecureButtons()
 end
@@ -428,11 +418,12 @@ function W.Attach(playerRow)
     feedbackTicker:SetScript("OnUpdate", updateActivationFeedback)
     for _, slot in ipairs(WD.SLOTS) do
         local boundSlot = slot
-        local displayIndex = hudPosition[slot.id]
         local icon = createHudIcon(container)
-        local rowY = -(displayIndex - 1) * (C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP)
-        icon:SetPoint("TOPLEFT", container, "TOPLEFT", HUD_ICON_X, rowY)
-        icon:SetScript("OnEnter", function(self) showWheelTooltip(boundSlot, self) end)
+        local stride = C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP
+        local x = (slot.column - 1) * stride
+        local y = -(slot.row - 1) * stride
+        icon:SetPoint("TOPLEFT", container, "TOPLEFT", x, y)
+        icon:SetScript("OnEnter", function(self) showKeysTooltip(boundSlot, self) end)
         icon:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
         createHudCastButton(icon, boundSlot)
         hudIcons[slot.id] = icon
@@ -445,7 +436,7 @@ function W.InitializeSaved()
     WL.Initialize()
     refreshSavedItemInfo()
     local valid, errors = WD.ValidateAll()
-    if not valid then for _, message in ipairs(errors) do printMessage("wheel configuration: " .. message) end end
+    if not valid then for _, message in ipairs(errors) do printMessage("keys configuration: " .. message) end end
     W.RefreshSecureActions()
     W.ReconcileBindings()
     W.Refresh()
@@ -492,17 +483,17 @@ function W.GetSlotDisplay(layoutKey, slotId)
 end
 
 function W.ValidateMacro(layoutKey, slotId, body)
-    if not WL.IsKnownLayout(layoutKey) then return false, "Unknown wheel layout." end
-    if not slotById[slotId] then return false, "Unknown wheel slot." end
+    if not WL.IsKnownLayout(layoutKey) then return false, "Unknown Keys layout." end
+    if not slotById[slotId] then return false, "Unknown key slot." end
     return Actions.ValidateMacro(W.GetSlot(layoutKey, slotId), body)
 end
 
 function W.AssignSpell(layoutKey, slotId, spellId, spellName)
-    if InCombatLockdown and InCombatLockdown() then return false, "cannot edit wheel macros in combat." end
-    if not WL.IsKnownLayout(layoutKey) then return false, "unknown wheel layout." end
+    if InCombatLockdown and InCombatLockdown() then return false, "cannot edit Keys macros in combat." end
+    if not WL.IsKnownLayout(layoutKey) then return false, "unknown Keys layout." end
     slotId = slotId or W.FindFirstEmptySlot(layoutKey)
     if not slotId then
-        return false, "All wheel gestures are assigned. Select a row to replace or clear one."
+        return false, "All 15 Keys are assigned. Select a key to replace or clear one."
     end
     local slot = slotById[slotId]
     if not slot or not spellName or spellName == "" then return false, "could not store that spell." end
@@ -518,11 +509,11 @@ function W.AssignSpell(layoutKey, slotId, spellId, spellName)
 end
 
 function W.AssignItem(layoutKey, slotId, itemId, itemName)
-    if InCombatLockdown and InCombatLockdown() then return false, "cannot edit wheel macros in combat." end
-    if not WL.IsKnownLayout(layoutKey) then return false, "unknown wheel layout." end
+    if InCombatLockdown and InCombatLockdown() then return false, "cannot edit Keys macros in combat." end
+    if not WL.IsKnownLayout(layoutKey) then return false, "unknown Keys layout." end
     slotId = slotId or W.FindFirstEmptySlot(layoutKey)
     if not slotId then
-        return false, "All wheel gestures are assigned. Select a row to replace or clear one."
+        return false, "All 15 Keys are assigned. Select a key to replace or clear one."
     end
     local slot = slotById[slotId]
     if not slot or type(itemId) ~= "number" or itemId <= 0 or not itemName or itemName == "" then
@@ -558,7 +549,7 @@ function W.PreviewSound(layoutKey, slotId)
 end
 
 function W.ApplyMacro(layoutKey, slotId, body)
-    if InCombatLockdown and InCombatLockdown() then return false, "Leave combat before applying a wheel macro." end
+    if InCombatLockdown and InCombatLockdown() then return false, "Leave combat before applying a keys macro." end
     local ok, err = W.ValidateMacro(layoutKey, slotId, body)
     if not ok then return false, err end
     local entry = W.GetSlot(layoutKey, slotId)
@@ -589,8 +580,8 @@ function W.FindFirstEmptySlot(layoutKey)
 end
 
 function W.MoveSlot(layoutKey, slotId, direction)
-    if InCombatLockdown and InCombatLockdown() then return false, "Leave combat before moving a wheel action." end
-    if not WL.IsKnownLayout(layoutKey) or not slotById[slotId] then return false, "Unknown wheel slot." end
+    if InCombatLockdown and InCombatLockdown() then return false, "Leave combat before moving a Keys action." end
+    if not WL.IsKnownLayout(layoutKey) or not slotById[slotId] then return false, "Unknown key slot." end
     if direction ~= -1 and direction ~= 1 then return false, "Unknown move direction." end
     local currentIndex
     for index, candidate in ipairs(WD.DISPLAY_ORDER) do
@@ -630,10 +621,10 @@ function W.Disable()
 end
 
 function W.ClearSlot(layoutKey, slotId)
-    if InCombatLockdown and InCombatLockdown() then return false, "Leave combat before clearing a wheel slot." end
-    if not WL.IsKnownLayout(layoutKey) then return false, "Unknown wheel layout." end
+    if InCombatLockdown and InCombatLockdown() then return false, "Leave combat before clearing a key slot." end
+    if not WL.IsKnownLayout(layoutKey) then return false, "Unknown Keys layout." end
     local slot = slotById[slotId]
-    if not slot then return false, "Unknown wheel slot." end
+    if not slot then return false, "Unknown key slot." end
     WL.SetSlot(layoutKey, slotId, nil)
     clearSlotFeedback(slotId)
     W.RefreshSecureActions(); W.Refresh(); requestLayout()
@@ -654,7 +645,7 @@ local function configureSecureAction(button, slot)
     end
     local priorCount = button.apogeeStateCount or 0
     for index = 0, priorCount do
-        button:SetAttribute("wheel-macro-" .. index, nil)
+        button:SetAttribute("key-macro-" .. index, nil)
     end
     button:SetAttribute("_onstate-" .. SECURE_STATE, nil)
     button:SetAttribute("type", nil); button:SetAttribute("macrotext", nil)
@@ -668,7 +659,7 @@ local function configureSecureAction(button, slot)
             local index, layoutKey = definition.index, definition.key
             local entry = W.GetSlot(layoutKey, slot.id)
             local runtimeMacro = hasMacro(entry) and secureMacroText(slot, entry) or nil
-            button:SetAttribute("wheel-macro-" .. index, runtimeMacro)
+            button:SetAttribute("key-macro-" .. index, runtimeMacro)
             if index == activeIndex then activeMacro = runtimeMacro end
         end
     end

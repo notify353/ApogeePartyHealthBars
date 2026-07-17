@@ -3,7 +3,7 @@ function wipe(value) for key in pairs(value or {}) do value[key] = nil end retur
 
 dofile("ApogeePartyHealthBars_Data.lua")
 local definitions = ApogeePartyHealthBars_C.CROWD_CONTROL_DEFINITIONS
-ApogeePartyHealthBars_C.TRACKER_CLASS_DEFAULTS = {}
+ApogeePartyHealthBars_C.SHORTCUT_CLASS_DEFAULTS = {}
 
 local spellNames = { "Fireball" }
 local localizedByCanonical = {}
@@ -22,9 +22,9 @@ end
 
 ApogeePartyHealthBars_S = {
     sv = {},
-    charSv = { trackedSpells = {}, trackerDefaultsVersion = ApogeePartyHealthBars_C.TRACKER_DEFAULTS_VERSION }, castBtnSerial = 0,
+    charSv = { shortcuts = {}, shortcutDefaultsVersion = ApogeePartyHealthBars_C.SHORTCUT_DEFAULTS_VERSION }, castBtnSerial = 0,
 }
-ApogeePartyHealthBars_S.charSv.trackedSpells[1] = {
+ApogeePartyHealthBars_S.charSv.shortcuts[1] = {
     name = "Fireball(Rank 1)", enabled = true, soundKey = "none",
 }
 
@@ -97,12 +97,13 @@ GameTooltip.AddLine = function() end
 
 dofile("ApogeePartyHealthBars_Sounds.lua")
 dofile("ApogeePartyHealthBars_UIHelpers.lua")
+dofile("ApogeePartyHealthBars_ShortcutItems.lua")
 dofile("ApogeePartyHealthBars_ActionMacros.lua")
-dofile("ApogeePartyHealthBars_SpellTracker.lua")
-local tracker = ApogeePartyHealthBars_SpellTracker
+dofile("ApogeePartyHealthBars_ShortcutBar.lua")
+local shortcuts = ApogeePartyHealthBars_ShortcutBar
 local playerBtn, targetBtn = widget(), widget()
 local deferred = 0
-tracker.Attach({ btn = playerBtn, targetBtn = targetBtn }, {
+shortcuts.Attach({ btn = playerBtn, targetBtn = targetBtn }, {
     RequestLayout = function() end, SyncTicker = function() end,
     PositionSecureOverlay = function() return true end,
     ShowSecureFrame = function(frame) frame:Show() end,
@@ -110,21 +111,30 @@ tracker.Attach({ btn = playerBtn, targetBtn = targetBtn }, {
     SetSecureMouseEnabled = function(frame, enabled) frame.mouseEnabled = enabled end,
     DeferSecureUpdate = function() deferred = deferred + 1 end,
 })
-tracker.Initialize()
+shortcuts.Initialize()
 
-assert(tracker.GetSlotLane(1) == "player")
-assert(tracker.GetSlotLane(2) == nil, "automatic CC occupied a configured tracker slot")
-assert(tracker.GetDisplayCount() == 1 + #definitions, "not every known CC spell was displayed automatically")
-for displayIndex = 2, tracker.GetDisplayCount() do
-    assert(tracker.GetDisplayLane(displayIndex) == "target", "automatic CC used the wrong lane")
+assert(shortcuts.GetSlotLane(1) == "player")
+assert(shortcuts.GetSlotLane(2) == nil, "automatic CC occupied a configured Shortcut slot")
+assert(shortcuts.GetDisplayCount() == 1 + #definitions, "not every known CC spell was displayed automatically")
+for displayIndex = 2, shortcuts.GetDisplayCount() do
+    assert(shortcuts.GetDisplayLane(displayIndex) == "target", "automatic CC used the wrong lane")
 end
-assert(tracker.GetHeight("player") == ApogeePartyHealthBars_C.TRACKER_ICON_SIZE + ApogeePartyHealthBars_C.TRACKER_TOP_GAP
-    and tracker.GetHeight("party1") == 0)
+local targetRows = math.ceil(#definitions / ApogeePartyHealthBars_C.SHORTCUT_COLUMNS)
+local expectedShortcutHeight = targetRows * ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE
+    + (targetRows - 1) * ApogeePartyHealthBars_C.SHORTCUT_ICON_GAP
+    + ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
+assert(shortcuts.GetHeight("player") == expectedShortcutHeight
+    and shortcuts.GetHeight("party1") == 0)
 assert(visualButtons[1].points[1][2] == playerBtn, "ordinary spell was not anchored to player lane")
 assert(visualButtons[2].points[1][2] == targetBtn, "CC spell was not anchored to target lane")
 assert(visualButtons[2].points[1][4] == 0
-    and visualButtons[3].points[1][4] == ApogeePartyHealthBars_C.TRACKER_ICON_SIZE + ApogeePartyHealthBars_C.TRACKER_ICON_GAP,
-    "target-lane order was not stable")
+    and visualButtons[2].points[1][5] == expectedShortcutHeight
+    and visualButtons[7].points[1][4] == 5 * (ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE
+        + ApogeePartyHealthBars_C.SHORTCUT_ICON_GAP)
+    and visualButtons[8].points[1][4] == 0
+    and visualButtons[8].points[1][5] == expectedShortcutHeight
+        - ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE - ApogeePartyHealthBars_C.SHORTCUT_ICON_GAP,
+    "target-lane Shortcuts were not capped at six columns")
 assert(secureButtons[1].attributes.unit == nil)
 assert(secureButtons[2].attributes.unit == nil and secureButtons[2].attributes.type == "macro"
     and secureButtons[2].attributes.macrotext:find("/cast Localized Polymorph(Rank 1)", 1, true))
@@ -138,10 +148,10 @@ local function TrackCrowdControl(canonical)
             break
         end
     end
-    ApogeePartyHealthBars_S.charSv.trackedSpells[2] =
-        ApogeePartyHealthBars_ActionMacros.Create(spellId, localized .. "(Rank 1)", "none")
-    tracker.ResolveAndRefresh()
-    assert(tracker.GetSlotLane(2) == "target", canonical .. " failed localized CC recognition")
+    ApogeePartyHealthBars_S.charSv.shortcuts[2] =
+        ApogeePartyHealthBars_ActionMacros.CreateSpell(spellId, localized .. "(Rank 1)", "none")
+    shortcuts.ResolveAndRefresh()
+    assert(shortcuts.GetSlotLane(2) == "target", canonical .. " failed localized CC recognition")
 end
 
 for _, definition in ipairs(definitions) do TrackCrowdControl(definition.canonical) end
@@ -158,53 +168,53 @@ local typedCases = {
 for _, case in ipairs(typedCases) do
     TrackCrowdControl(case[1])
     target.creatureType = case[2]
-    local state = tracker.GetSlotState(2)
+    local state = shortcuts.GetSlotState(2)
     assert(state == case[3], case[1] .. " eligibility failed for " .. case[2])
 end
 
 TrackCrowdControl("Sap")
 target.creatureType = "Humanoid"
 target.combat = true
-local state, reason = tracker.GetSlotState(2)
+local state, reason = shortcuts.GetSlotState(2)
 assert(state == "invalid" and reason == "Target is in combat")
 target.combat = false
 TrackCrowdControl("Polymorph")
 target.exists = false
-state, reason = tracker.GetSlotState(2)
+state, reason = shortcuts.GetSlotState(2)
 assert(state == "invalid" and reason == "Select a hostile target")
 target.exists, target.dead = true, true
-assert(tracker.GetSlotState(2) == "invalid")
+assert(shortcuts.GetSlotState(2) == "invalid")
 target.dead, target.attackable = false, false
-assert(tracker.GetSlotState(2) == "invalid")
+assert(shortcuts.GetSlotState(2) == "invalid")
 target.attackable, target.classification = true, "worldboss"
-state, reason = tracker.GetSlotState(2)
+state, reason = shortcuts.GetSlotState(2)
 assert(state == "invalid" and reason == "World bosses cannot be crowd controlled")
 target.classification, target.creatureType = "normal", "Humanoid"
 
 currentSpell = true
 target.creatureType = "Demon"
-state, reason = tracker.GetSlotState(2)
+state, reason = shortcuts.GetSlotState(2)
 assert(state == "invalid", "current spell bypassed CC eligibility")
 currentSpell = false
 target.creatureType = "Humanoid"
 
 noResource = true
-assert(tracker.GetSlotState(2) == "resource")
+assert(shortcuts.GetSlotState(2) == "resource")
 noResource, usable = false, false
-assert(tracker.GetSlotState(2) == "unusable")
+assert(shortcuts.GetSlotState(2) == "unusable")
 usable, inRange = true, 0
-assert(tracker.GetSlotState(2) == "range")
+assert(shortcuts.GetSlotState(2) == "range")
 inRange, cooldownDuration = 1, 5
-assert(tracker.GetSlotState(2) == "cooldown")
+assert(shortcuts.GetSlotState(2) == "cooldown")
 cooldownDuration = 0
 
 local beforeCombat = secureButtons[2].mutations
 inCombat = true
-tracker.RefreshSecureActions()
+shortcuts.RefreshSecureActions()
 assert(secureButtons[2].mutations == beforeCombat and deferred > 0)
 inCombat = false
-tracker.RefreshSecureActions()
+shortcuts.RefreshSecureActions()
 assert(secureButtons[2].attributes.unit == nil and secureButtons[2].attributes.type == "macro"
     and secureButtons[2].shown and secureButtons[2].mouseEnabled)
 
-print("PASS crowd-control tracker")
+print("PASS crowd-control Shortcuts")

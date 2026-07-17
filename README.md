@@ -8,8 +8,9 @@ Compact five-player healing frames for World of Warcraft Anniversary and Burning
 - Selectable sound and threshold when the player or a party member drops low on health
 - Inline unit targets and target-of-target health
 - Secure click-casting and clickable buff reminders
-- Player spell and crowd-control tracking with generated, editable secure actions
-- Editable mouse-wheel actions for six fixed modifier gestures
+- Player Shortcuts for spells, abilities, bandages, food, potions, and other usable items
+- A fixed 15-key action cluster for `1`–`5`, `Q/E/R/T`, `F/G`, and `Z/X/C/V`
+- Editable mouse-wheel Shortcuts for six fixed modifier gestures
 - Missing party-buff and self-buff reminders
 - Copy-only combat macro library with universal and class-specific examples
 - Movable minimap button and tabbed settings
@@ -26,9 +27,11 @@ Interface/AddOns/ApogeePartyHealthBars/ApogeePartyHealthBars.toc
 
 ## Use
 
-Left-click the minimap button to open settings; the Spellbook opens alongside it. In the Healing tab, select a click and Shift-click a healing or cleansing spell to assign it. In Spells or Wheel, Shift-clicking a Spellbook spell fills the first empty row automatically. Select an occupied row only when you want the next Shift-click to replace it. Spells rejects duplicate entries; Wheel permits the same spell on multiple gestures. Secure changes may wait until combat ends.
+Left-click the minimap button to open settings; the Spellbook opens alongside it. In the Healing tab, select a click and Shift-click a healing or cleansing spell to assign it. Healing is intentionally spell-only because those clicks target party units.
 
-Every Spells and Wheel assignment starts with this generated macro:
+In Shortcuts, Keys, or Wheel, Shift-click a Spellbook spell or an item in an open bag to fill the first empty position automatically. Select an occupied Shortcut row, Wheel gesture, or Keys tile only when you want the next Shift-click to replace it. Shortcuts supports up to 12 assignments and displays them six per row on the player frame. Shortcuts rejects duplicate spell and item IDs; Keys and Wheel permit the same spell or item in multiple positions and across both features. Secure changes may wait until combat ends.
+
+Spell assignments start with this generated macro:
 
 ```text
 /targetenemy [noexists][dead][help]
@@ -36,11 +39,32 @@ Every Spells and Wheel assignment starts with this generated macro:
 /cast Spell Name(Rank N)
 ```
 
-Each compact action row has sound, Macro, Up, Down, and Clear controls. Macro opens a focused editor with Reset, Cancel, Save, and a 255-byte counter; blank or oversized text cannot be saved. Clear is the only way to remove an action. Clearing a Spells row compacts the list, while moving a Wheel row swaps its complete spell, macro, and sound payload with the adjacent gesture.
+Item assignments start with the localized item name:
+
+```text
+/use Item Name
+```
+
+Each compact action row identifies itself as a Spell or Item and has sound, Macro, movement, and Clear controls. Macro opens a focused editor with Reset, Cancel, Save, and a 255-byte counter; blank or oversized text cannot be saved. Clear is the only way to remove an action. Clearing a Shortcuts row compacts the list, while moving a Keys or Wheel action swaps its complete shortcut, macro, and sound payload with the adjacent position.
+
+The Shortcut Bar and active Keys and Wheel HUDs show spell range/cooldown state plus item icons, carried quantities, usability, and cooldowns. Depleted items stay assigned with a quantity of zero, so they become available automatically when restocked. Item range prediction is intentionally omitted because normal item targeting and custom macros may behave differently.
+
+The Keys tab uses this fixed keyboard-shaped layout:
+
+```text
+[1] [2] [3] [4] [5]
+[Q] [E] [R] [T]
+        [F] [G]
+[Z] [X] [C] [V]
+```
+
+Keys starts disabled and empty. **Warning:** turning `Keys: ON` immediately replaces the current WoW bindings for all 15 physical keys, including common movement and UI bindings. Keys follows WoW's active account or character binding set and keeps an independent restoration snapshot for each set it claims. Turning Keys off restores each captured binding only while the add-on still owns that key; a binding changed elsewhere after enablement is left untouched and reported as a conflict. Gold marks the focused tile, green marks the tile armed for the next Shift-click, and clicking an empty tile focuses and arms it just like an assigned tile. After assignment, focus stays on the action while the replacement arm clears. Each talent spec and newly discovered stance or form starts with an independent empty Keys layout.
 
 The Wheel tab always exposes its six gestures in ladder order, from Ctrl Up through Ctrl Down, and remains configurable while disabled. `Wheel: ON` is the only control that claims the six mouse-wheel bindings; turning it off restores bindings the add-on owns. Each talent spec has an independent Wheel profile that follows the equipped spec automatically; a newly activated second spec starts empty, while Wheel enablement and key ownership remain character-wide. Characters with stances or forms reported by the client receive a complete six-slot layout for each known state; classes with a valid no-form state also receive a Base layout, while Warriors see only Battle, Defensive, and Berserker Stance. The active layout switches automatically, including during combat. Wheel actions remain separate from Healing-tab health-bar clicks.
 
-The General tab includes a Factory Reset control for restoring wheel keys, clearing account and current-character add-on settings, and reloading through the first-run initialization path.
+Keys uses a four-row cluster at the left of the player HUD, while Wheel uses a vertical rail at the far right. Both share the fixed feedback line below the Keys cluster, and Shortcuts begin below the taller active feature rather than below the sum of both features.
+
+The General tab includes a Factory Reset control that restores owned Keys and Wheel bindings in one transaction before clearing account and current-character settings. If either binding restoration fails, the reset aborts without deleting settings.
 
 The Macros tab contains universal combat examples plus examples for the logged-in character's class. Browse by category, select the curated text, press Ctrl+C, and paste it into WoW's Macro window. The library never creates, updates, or tracks game macros. Examples include safe target acquisition, spam-safe wand or Auto Shot attacks, pet attacks, and stopcasting emergency abilities. Unlearned recipes remain visible with their requirements.
 

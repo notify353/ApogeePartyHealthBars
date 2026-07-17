@@ -1,7 +1,10 @@
 ApogeePartyHealthBars_C = {
     CONFIG_CONTENT_W = 396, BIND_PAD = 8, CONFIG_HEADER_H = 40, CONFIG_TAB_H = 24,
 }
-ApogeePartyHealthBars_S = { selectedWheelLayout = nil, selectedWheelSlot = nil }
+ApogeePartyHealthBars_S = { selectedWheelLayout = nil, selectedWheelSlot = nil, selectedShortcutSlot = nil }
+ApogeePartyHealthBars_ActionMacros = {
+    GetName = function(entry) return entry and (entry.itemName or entry.spellName) end,
+}
 
 local function widget()
     local value = { scripts = {}, shown = true, enabled = true, text = "" }
@@ -71,11 +74,11 @@ for _, id in ipairs(order) do definitions[#definitions + 1] = { id = id } end
 local enabled, currentLayout, currentSpec = false, "base", "1"
 local layouts = {
     base = {
-        ctrlUp = { spellName = "Charge", macroText = "/cast Charge", soundKey = "none" },
-        normalUp = { spellName = "Heroic Strike", macroText = "/cast Heroic Strike", soundKey = "toast" },
+        ctrlUp = { kind = "spell", spellName = "Charge", macroText = "/cast Charge", soundKey = "none" },
+        normalUp = { kind = "item", itemId = 1251, itemName = "Linen Bandage", macroText = "/use Linen Bandage", soundKey = "toast" },
     },
     battle = {
-        ctrlUp = { spellName = "Battle Shout", macroText = "/cast Battle Shout", soundKey = "none" },
+        ctrlUp = { kind = "spell", spellName = "Battle Shout", macroText = "/cast Battle Shout", soundKey = "none" },
     },
 }
 local wheel = {}
@@ -95,13 +98,15 @@ end
 function wheel.GetSlot(layout, slot) return layouts[layout][slot] end
 function wheel.GetSlotDisplay(layout, slot)
     local entry = wheel.GetSlot(layout, slot)
-    return entry and entry.spellName, entry and 123
+    return ApogeePartyHealthBars_ActionMacros.GetName(entry), entry and 123
 end
 function wheel.GetSlotSoundKey(layout, slot) return layouts[layout][slot].soundKey end
 function wheel.SetSlotSound(layout, slot, key) layouts[layout][slot].soundKey = key; return key end
 function wheel.PreviewSound() return true end
 function wheel.GetMacro(layout, slot) return layouts[layout][slot].macroText end
-function wheel.ResetMacro(layout, slot) return "/default " .. layouts[layout][slot].spellName end
+function wheel.ResetMacro(layout, slot)
+    return "/default " .. ApogeePartyHealthBars_ActionMacros.GetName(layouts[layout][slot])
+end
 function wheel.IsMacroCustomized() return true end
 function wheel.ApplyMacro(layout, slot, body)
     if not body:find("%S") then return false, "blank" end
@@ -125,8 +130,11 @@ config.Build(widget(), {
 })
 
 assert(#rows == 6 and not enabled, "disabled Wheel did not keep all action rows visible")
-assert(rows[1].primary.text == "Charge" and rows[3].primary.text == "Heroic Strike",
+assert(rows[1].primary.text == "Charge" and rows[3].primary.text == "Linen Bandage",
     "Wheel rows did not use the shared display order")
+assert(rows[1].secondary.text:find("Spell", 1, true)
+    and rows[3].secondary.text:find("Item", 1, true),
+    "Wheel rows did not identify Spell and Item records")
 
 local enableButton = buttons[1]
 enableButton.scripts.OnClick()

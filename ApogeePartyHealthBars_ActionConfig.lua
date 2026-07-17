@@ -5,7 +5,7 @@ local Actions = ApogeePartyHealthBars_ActionMacros
 ApogeePartyHealthBars_ActionConfig = {}
 local AC = ApogeePartyHealthBars_ActionConfig
 
-local overlay, dialog, title, spellName, editor, byteCount, statusText
+local overlay, dialog, title, actionName, editor, byteCount, statusText
 local resetButton, cancelButton, saveButton
 local current
 
@@ -34,7 +34,7 @@ function AC.OpenEditor(options)
     if not overlay or type(options) ~= "table" or type(options.onSave) ~= "function" then return false end
     current = options
     title:SetText(options.title or "Edit macro")
-    spellName:SetText(options.spellName or "Spell action")
+    actionName:SetText(options.actionName or "Shortcut")
     statusText:SetText("")
     editor:SetText(options.macroText or "")
     refreshEditorState()
@@ -112,14 +112,14 @@ function AC.Initialize(parent, applyBackdrop)
 
     title = dialog:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     title:SetPoint("TOPLEFT", dialog, "TOPLEFT", 12, -12); title:SetTextColor(1, 0.82, 0)
-    spellName = dialog:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    spellName:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
-    spellName:SetWidth(C.CONFIG_CONTENT_W - 52); spellName:SetJustifyH("LEFT"); spellName:SetWordWrap(false)
+    actionName = dialog:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    actionName:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
+    actionName:SetWidth(C.CONFIG_CONTENT_W - 52); actionName:SetJustifyH("LEFT"); actionName:SetWordWrap(false)
 
     byteCount = dialog:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     byteCount:SetPoint("TOPRIGHT", dialog, "TOPRIGHT", -12, -42)
     local editorFrame = CreateFrame("Frame", nil, dialog, "BackdropTemplate")
-    editorFrame:SetPoint("TOPLEFT", spellName, "BOTTOMLEFT", 0, -18)
+    editorFrame:SetPoint("TOPLEFT", actionName, "BOTTOMLEFT", 0, -18)
     editorFrame:SetPoint("BOTTOMRIGHT", dialog, "BOTTOMRIGHT", -12, 72)
     applyBackdrop(editorFrame, 0.94, { 0.32, 0.32, 0.36, 1 })
     editor = CreateFrame("EditBox", nil, editorFrame)

@@ -42,7 +42,8 @@ local function widget()
             self.mutations = self.mutations + 1
         end,
         GetAttribute = function(self, key) return self.attributes[key] end,
-        SetPoint = function(self)
+        SetPoint = function(self, ...)
+            self.point = { ... }
             self.pointWrites = self.pointWrites + 1
             self.mutations = self.mutations + 1
         end,
@@ -92,10 +93,23 @@ function CreateFrame(_, name, _, template)
     if name then _G[name] = frame end
     return frame
 end
+local function RunFrameUpdates()
+    for _, frame in ipairs(frames) do
+        local update = frame.scripts.OnUpdate
+        if update and frame:IsShown() then update(frame, 0.25) end
+    end
+end
 function GetMouseFoci() return {} end
 
 Enum = { PowerType = { Mana = 0 }, SpellBookSpellBank = { Player = 0, Pet = 1 } }
 C_EventUtils = { IsEventValid = function() return true end }
+C_AddOns = {
+    GetAddOnMetadata = function(addonName, field)
+        assert(addonName == "ApogeePartyHealthBars" and field == "Version",
+            "configuration requested unexpected add-on metadata")
+        return "0.36.0-test"
+    end,
+}
 BOOKTYPE_SPELL, BOOKTYPE_PET = "spell", "pet"
 RAID_CLASS_COLORS = { WARRIOR = { r = 0.8, g = 0.6, b = 0.4 } }
 PowerBarColor = { MANA = { r = 0, g = 0, b = 1 } }
@@ -152,7 +166,8 @@ function GetSpellInfo(value)
 end
 function GetSpellTexture() return 135274 end
 function GetSpellBonusHealing() return 0 end
-function IsSpellInRange() return 1 end
+local smokeSpellRange = 1
+function IsSpellInRange() return smokeSpellRange end
 function SpellHasRange() return 1 end
 function IsHarmfulSpell() return true end
 function IsHelpfulSpell() return false end
@@ -160,12 +175,40 @@ function IsCurrentSpell() return false end
 function IsUsableSpell() return true, false end
 function GetSpellCooldown() return 0, 0, 1 end
 function GetSpellCharges() return nil, nil end
+local smokeItemCount, smokeItemCooldown, smokeItemName = 3, 0, "Linen Bandage"
+C_Item = {
+    GetItemInfo = function(itemId)
+        if itemId == 1251 then return smokeItemName, nil, nil, nil, nil, nil, nil, nil, nil, 134436 end
+    end,
+    GetItemInfoInstant = function(itemId) if itemId == 1251 then return itemId, nil, nil, nil, 134436 end end,
+    GetItemCount = function(itemId) return itemId == 1251 and smokeItemCount or 0 end,
+    IsUsableItem = function(itemId) return itemId == 1251, false end,
+}
+C_Container = {
+    GetItemCooldown = function(itemId) return 0, smokeItemCooldown, 1 end,
+    GetContainerItemID = function() return 1251 end,
+}
+function ContainerFrameItemButton_OnModifiedClick() end
 function GetTime() return 1 end
 function GetCursorPosition() return 100, 100 end
 function IsShiftKeyDown() return false end
 function GetMouseFocus() return nil end
 function CombatLogGetCurrentEventInfo() return 0, "SPELL_DAMAGE" end
 function hooksecurefunc() end
+local smokeBindings = {
+    MOUSEWHEELUP = "CAMERAZOOMIN",
+    MOUSEWHEELDOWN = "CAMERAZOOMOUT",
+    Q = "STRAFELEFT",
+    E = "STRAFERIGHT",
+    C = "TOGGLECHARACTER0",
+    V = "NAMEPLATES",
+}
+local savedBindingCount = 0
+function GetCurrentBindingSet() return 2 end
+function GetBindingAction(key) return smokeBindings[key] or "" end
+function GetBindingName(action) return action end
+function SetBinding(key, action) smokeBindings[key] = action or ""; return true end
+function SaveBindings(set) assert(set == 2); savedBindingCount = savedBindingCount + 1 end
 local spellbookOpenCount = 0
 local directSpellbookToggleCount = 0
 SpellbookMicroButton = widget()
@@ -188,34 +231,134 @@ end
 assert(tocLoadOrder["ApogeePartyHealthBars_Sounds.lua"] < tocLoadOrder["ApogeePartyHealthBars_WheelMacros.lua"],
     "wheel runtime loaded before its shared sounds dependency")
 assert(tocLoadOrder["ApogeePartyHealthBars_ActionMacros.lua"]
-    < tocLoadOrder["ApogeePartyHealthBars_SpellTracker.lua"],
-    "tracker runtime loaded before its shared action dependency")
+    < tocLoadOrder["ApogeePartyHealthBars_ShortcutBar.lua"],
+    "Shortcut Bar runtime loaded before its shared action dependency")
 assert(tocLoadOrder["ApogeePartyHealthBars_WheelLayouts.lua"]
     < tocLoadOrder["ApogeePartyHealthBars_WheelMacros.lua"],
     "wheel runtime loaded before its stance-layout dependency")
+assert(tocLoadOrder["ApogeePartyHealthBars_BoundActionLayouts.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_WheelLayouts.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_BoundActionBindings.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_KeyActions.lua"],
+    "bound-action runtimes loaded before their shared dependencies")
+assert(tocLoadOrder["ApogeePartyHealthBars_KeyLayouts.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_KeyActions.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_KeyConfig.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_ConfigUI.lua"],
+    "Keys runtime or configuration loaded before its dependency")
 
 local router = ApogeePartyHealthBars_EventRouter
 router.Dispatch("PLAYER_LOGIN")
-assert(ApogeePartyHealthBars_SpellTracker.AssignSpell(1, 9001, "Fireball"))
-assert(ApogeePartyHealthBars_SpellTracker.GetSlotLane(1) == "player", "ordinary tracker spell did not use player lane")
-assert(ApogeePartyHealthBars_SpellTracker.GetSlotLane(2) == nil, "automatic crowd control occupied a configured slot")
-assert(ApogeePartyHealthBars_SpellTracker.GetDisplayCount() == 2, "known crowd control was not displayed automatically")
-assert(ApogeePartyHealthBars_SpellTracker.GetDisplayLane(2) == "target", "automatic crowd control did not use target lane")
+local keysRuntime = ApogeePartyHealthBars_KeyActions
+local wheelRuntime = ApogeePartyHealthBars_WheelMacros
+assert(not keysRuntime.IsEnabled(), "Keys did not start disabled")
+for _, slotId in ipairs(keysRuntime.GetDisplayOrder()) do
+    assert(keysRuntime.GetSlot(keysRuntime.GetActiveLayoutKey(), slotId) == nil,
+        "Keys did not start empty: " .. slotId)
+end
+local key1Icon = assert(keysRuntime.GetHudIcon("key1"), "Keys HUD was not attached")
+local keyFIcon = assert(keysRuntime.GetHudIcon("keyF"), "Keys F HUD tile was not attached")
+local keyGIcon = assert(keysRuntime.GetHudIcon("keyG"), "Keys G HUD tile was not attached")
+local keyVIcon = assert(keysRuntime.GetHudIcon("keyV"), "Keys V HUD tile was not attached")
+assert(key1Icon.point[4] == 0 and key1Icon.point[5] == 0
+    and keyFIcon.point[4] == 54 and keyFIcon.point[5] == -54
+    and keyGIcon.point[4] == 81 and keyGIcon.point[5] == -54
+    and keyVIcon.point[4] == 81 and keyVIcon.point[5] == -81,
+    "Keys HUD did not use the fixed four-row keyboard cluster")
+assert(keyFIcon.keyLabel == nil and keyGIcon.keyLabel == nil,
+    "Keys HUD retained physical-key labels that belong only in configuration")
+local wheelTopIcon = assert(wheelRuntime.GetHudIcon("ctrlUp"), "Wheel HUD was not attached")
+assert(wheelTopIcon.point[4] == 160 and wheelTopIcon.point[5] == 0,
+    "Wheel HUD was not a right-aligned vertical rail")
+local feedbackText = assert(ApogeePartyHealthBars_ActionHud.GetFeedbackText(),
+    "shared action feedback line was not attached")
+assert(feedbackText.point[4] == 0 and feedbackText.point[5] == -108,
+    "action feedback line was not fixed below the Keys grid")
+
+assert(wheelRuntime.Enable(), "Wheel could not take over its physical bindings")
+RunFrameUpdates()
+assert(wheelRuntime.GetHudCastButton("ctrlUp").shown,
+    "Wheel HUD did not become visible before enabling Keys")
+assert(not keysRuntime.GetHudCastButton("key1").shown,
+    "disabled Keys unexpectedly displayed its HUD")
+assert(keysRuntime.Enable(), "Keys could not remain enabled with Wheel")
+RunFrameUpdates()
+assert(keysRuntime.GetHudCastButton("key1").shown,
+    "Keys HUD stayed hidden when enabled after the taller Wheel rail")
+assert(smokeBindings.F == "CLICK ApogeePartyHealthBarsKeyFHud:LeftButton"
+    and smokeBindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton",
+    "Keys and Wheel did not own their independent physical bindings")
+local keysLayout = keysRuntime.GetActiveLayoutKey()
+local wheelLayout = wheelRuntime.GetActiveLayoutKey()
+assert(keysRuntime.AssignSpell(keysLayout, "key1", 9001, "Fireball")
+    and keysRuntime.AssignSpell(keysLayout, "keyF", 9003, "Frostbolt")
+    and keysRuntime.AssignItem(keysLayout, "keyG", 1251, "Linen Bandage"),
+    "Keys did not accept spell and usable-item actions")
+assert(wheelRuntime.AssignSpell(wheelLayout, "normalUp", 9001, "Fireball"),
+    "the same action could not be assigned across Keys and Wheel")
+assert(keysRuntime.ApplyMacro(keysLayout, "keyF", "/cast [@mouseover,help] Frostbolt"),
+    "Keys custom macro was rejected")
+assert(not keysRuntime.ApplyMacro(keysLayout, "keyF", string.rep("x", 256)),
+    "Keys accepted a macro longer than 255 bytes")
+keysRuntime.SetSlotSound(keysLayout, "keyF", "toast")
+assert(keysRuntime.GetSlotSoundKey(keysLayout, "keyF") == "toast",
+    "Keys did not persist its action sound")
+local keyFSecure = assert(keysRuntime.GetSecureButton("keyF"), "Keys secure button was missing")
+local keyGSecure = assert(keysRuntime.GetSecureButton("keyG"), "Keys item secure button was missing")
+assert(keyFSecure:GetAttribute("macrotext"):find("/run ApogeeKeysFeedback(10)", 1, true)
+        and keyFSecure:GetAttribute("macrotext"):find("/cast [@mouseover,help] Frostbolt", 1, true),
+    "Keys secure spell macro lost feedback or customized text")
+assert(keyGSecure:GetAttribute("macrotext"):find("/use Linen Bandage", 1, true),
+    "Keys secure item macro was not configured")
+assert(keyGIcon.count:GetText() == "3", "Keys item HUD did not show its carried quantity")
+assert(keysRuntime.GetSecureButton("key2"):GetAttribute("type") == nil,
+    "an empty Keys slot was not a secure no-op")
+assert(keysRuntime.GetHeight("player") == 136 and wheelRuntime.GetHeight("player") == 169
+    and math.max(keysRuntime.GetHeight("player"), wheelRuntime.GetHeight("player")) == 169,
+    "dual-enabled action HUD height was summed instead of using the taller Wheel rail")
+ApogeeKeysFeedback(10)
+assert(feedbackText:GetText() == "F — Frostbolt", "Keys activation feedback text was incorrect")
+ApogeeWheelFeedback(1)
+assert(feedbackText:GetText() == "Normal Up — Fireball",
+    "Wheel did not share the fixed activation feedback line")
+smokeSpellRange = 0
+router.Dispatch("PLAYER_TARGET_CHANGED")
+assert(keyFIcon.alpha == ApogeePartyHealthBars_C.OUT_OF_RANGE_ALPHA,
+    "Keys spell HUD did not reflect out-of-range state")
+smokeSpellRange = 1
+smokeItemCooldown = 5
+router.Dispatch("BAG_UPDATE_COOLDOWN")
+assert(keyGIcon.cooldown.shown and keyGIcon.count:GetText() == "3",
+    "Keys item HUD did not reflect cooldown and quantity state")
+smokeItemCooldown = 0
+smokeItemName = "Heavy Linen Bandage"
+router.Dispatch("GET_ITEM_INFO_RECEIVED", 1251, true)
+assert(keysRuntime.GetSlot(keysLayout, "keyG").itemName == "Heavy Linen Bandage"
+        and keysRuntime.GetMacro(keysLayout, "keyG") == "/use Heavy Linen Bandage",
+    "Keys did not refresh a localized generated item action")
+smokeItemName = "Linen Bandage"
+router.Dispatch("GET_ITEM_INFO_RECEIVED", 1251, true)
+assert(savedBindingCount >= 2, "enabled bound-action features did not persist their bindings")
+assert(ApogeePartyHealthBars_ShortcutBar.AssignSpell(1, 9001, "Fireball"))
+assert(ApogeePartyHealthBars_ShortcutBar.GetSlotLane(1) == "player", "ordinary Shortcut spell did not use player lane")
+assert(ApogeePartyHealthBars_ShortcutBar.GetSlotLane(2) == nil, "automatic crowd control occupied a configured slot")
+assert(ApogeePartyHealthBars_ShortcutBar.GetDisplayCount() == 2, "known crowd control was not displayed automatically")
+assert(ApogeePartyHealthBars_ShortcutBar.GetDisplayLane(2) == "target", "automatic crowd control did not use target lane")
 router.Dispatch("PLAYER_ENTERING_WORLD")
 router.Dispatch("SPELLS_CHANGED")
 router.Dispatch("PLAYER_TARGET_CHANGED")
-local tracker = ApogeePartyHealthBars_SpellTracker
-local originalTrackerRefresh = tracker.Refresh
+local shortcuts = ApogeePartyHealthBars_ShortcutBar
+local originalShortcutRefresh = shortcuts.Refresh
 local unitFlagsRefreshCount = 0
-tracker.Refresh = function(...)
+shortcuts.Refresh = function(...)
     unitFlagsRefreshCount = unitFlagsRefreshCount + 1
-    return originalTrackerRefresh(...)
+    return originalShortcutRefresh(...)
 end
 router.Dispatch("UNIT_FLAGS", "target")
-assert(unitFlagsRefreshCount == 1, "target UNIT_FLAGS did not refresh the spell tracker")
+assert(unitFlagsRefreshCount == 1, "target UNIT_FLAGS did not refresh the Shortcut Bar")
 router.Dispatch("UNIT_FLAGS", "party1")
-assert(unitFlagsRefreshCount == 1, "non-target UNIT_FLAGS refreshed the spell tracker")
-tracker.Refresh = originalTrackerRefresh
+assert(unitFlagsRefreshCount == 1, "non-target UNIT_FLAGS refreshed the Shortcut Bar")
+shortcuts.Refresh = originalShortcutRefresh
 router.Dispatch("UNIT_HEALTH", "player")
 router.Dispatch("UNIT_AURA", "player")
 router.Dispatch("UNIT_POWER_UPDATE", "player")
@@ -236,8 +379,9 @@ router.Dispatch("ACTIONBAR_UPDATE_STATE")
 router.Dispatch("UNIT_THREAT_SITUATION_UPDATE")
 router.Dispatch("PLAYER_LEVEL_UP")
 router.Dispatch("PLAYER_TALENT_UPDATE")
-local wheelRuntime = ApogeePartyHealthBars_WheelMacros
 local configUI = ApogeePartyHealthBars_ConfigUI
+assert(configUI.versionLabel and configUI.versionLabel:GetText() == "Version 0.36.0-test",
+    "configuration did not display the loaded TOC version")
 local originalRefreshLayouts = wheelRuntime.RefreshLayouts
 local originalRefreshWheelPanel = configUI.RefreshWheelPanel
 local wheelPanelRefreshCount = 0
@@ -290,17 +434,10 @@ local function ClickMinimapButton()
     if postClick then postClick(minimapButton, "LeftButton") end
 end
 
-local function RunFrameUpdates()
-    for _, frame in ipairs(frames) do
-        local update = frame.scripts.OnUpdate
-        if update and frame:IsShown() then update(frame, 0.25) end
-    end
-end
-
-local function GetTrackerCastButtons()
+local function GetShortcutCastButtons()
     local named = {}
     for name, frame in pairs(_G) do
-        if type(name) == "string" and name:match("^ApogeePartyHealthBarsTrackerCast%d+$") then
+        if type(name) == "string" and name:match("^ApogeePartyHealthBarsShortcutCast%d+$") then
             named[#named + 1] = { name = name, frame = frame }
         end
     end
@@ -317,55 +454,79 @@ assert(ApogeePartyHealthBars_ConfigUI.factoryResetButton,
 assert(SpellBookFrame:IsShown(), "opening settings did not open the spellbook")
 assert(spellbookOpenCount == 1, "spellbook did not open exactly once")
 assert(directSpellbookToggleCount == 0, "add-on called ToggleSpellBook directly")
-assert(ApogeePartyHealthBars_SpellTracker.AssignSpell(2, 9003, "Frostbolt"),
-    "could not assign a tracked spell while settings were open")
-local trackerButtons = GetTrackerCastButtons()
-local existingTrackerButton = assert(trackerButtons[1], "missing existing tracker secure button")
-local addedTrackerButton = assert(trackerButtons[2], "missing newly assigned tracker secure button")
-assert(existingTrackerButton.attributes.type == "macro"
-    and existingTrackerButton.attributes.macrotext:find("/cast Fireball(Rank 1)", 1, true))
-assert(addedTrackerButton.attributes.type == "macro"
-    and addedTrackerButton.attributes.macrotext:find("/cast Frostbolt(Rank 1)", 1, true))
+assert(ApogeePartyHealthBars_ShortcutBar.AssignSpell(2, 9003, "Frostbolt"),
+    "could not assign a Shortcut spell while settings were open")
+assert(ApogeePartyHealthBars_ShortcutBar.AssignItem(3, 1251, "Linen Bandage"),
+    "could not assign an item Shortcut while settings were open")
+local shortcutButtons = GetShortcutCastButtons()
+local existingShortcutButton = assert(shortcutButtons[1], "missing existing Shortcut secure button")
+local addedShortcutButton = assert(shortcutButtons[2], "missing newly assigned Shortcut secure button")
+local itemShortcutButton = assert(shortcutButtons[3], "missing item Shortcut secure button")
+assert(existingShortcutButton.attributes.type == "macro"
+    and existingShortcutButton.attributes.macrotext:find("/cast Fireball(Rank 1)", 1, true))
+assert(addedShortcutButton.attributes.type == "macro"
+    and addedShortcutButton.attributes.macrotext:find("/cast Frostbolt(Rank 1)", 1, true))
+assert(itemShortcutButton.attributes.type == "macro"
+    and itemShortcutButton.attributes.macrotext == "/use Linen Bandage")
+smokeItemCount = 0
+router.Dispatch("BAG_UPDATE_DELAYED")
+assert(ApogeePartyHealthBars_ShortcutBar.GetSlotState(3) == "unavailable"
+    and ApogeePartyHealthBars_ShortcutBar.GetSlots()[3].itemId == 1251,
+    "bag refresh removed or failed to deplete an item Shortcut")
+smokeItemCount = 3
+router.Dispatch("BAG_UPDATE_COOLDOWN")
+router.Dispatch("GET_ITEM_INFO_RECEIVED", 1251, true)
+assert(ApogeePartyHealthBars_ShortcutBar.GetSlotState(3) == "ready",
+    "item events did not restore a restocked Shortcut")
 ApogeePartyHealthBars_ConfigController.SetMode(false)
-local existingImmediatePoints = existingTrackerButton.pointWrites
-local addedImmediatePoints = addedTrackerButton.pointWrites
+local existingImmediatePoints = existingShortcutButton.pointWrites
+local addedImmediatePoints = addedShortcutButton.pointWrites
 RunFrameUpdates()
-assert(existingTrackerButton.pointWrites > existingImmediatePoints
-        and addedTrackerButton.pointWrites > addedImmediatePoints,
-    "settings close did not reconcile tracker overlays on the next frame")
-assert(existingTrackerButton.attributes.macrotext:find("/cast Fireball(Rank 1)", 1, true)
-        and addedTrackerButton.attributes.macrotext:find("/cast Frostbolt(Rank 1)", 1, true),
-    "settings close changed tracked-spell secure attributes")
-assert(existingTrackerButton.shown and existingTrackerButton.mouseEnabled
-        and addedTrackerButton.shown and addedTrackerButton.mouseEnabled,
-    "tracked spells stopped receiving clicks after settings close")
+assert(existingShortcutButton.pointWrites > existingImmediatePoints
+        and addedShortcutButton.pointWrites > addedImmediatePoints,
+    "settings close did not reconcile Shortcut overlays on the next frame")
+assert(existingShortcutButton.attributes.macrotext:find("/cast Fireball(Rank 1)", 1, true)
+        and addedShortcutButton.attributes.macrotext:find("/cast Frostbolt(Rank 1)", 1, true),
+    "settings close changed Shortcut secure attributes")
+assert(existingShortcutButton.shown and existingShortcutButton.mouseEnabled
+        and addedShortcutButton.shown and addedShortcutButton.mouseEnabled,
+    "Shortcuts stopped receiving clicks after settings close")
 ClickMinimapButton()
 assert(SpellBookFrame:IsShown() and spellbookOpenCount == 1,
     "opening settings toggled an already-open spellbook closed")
-local combatTrackerMutations = existingTrackerButton.mutations + addedTrackerButton.mutations
+local combatShortcutMutations = existingShortcutButton.mutations + addedShortcutButton.mutations
 inCombat = true
 router.Dispatch("PLAYER_REGEN_DISABLED")
 assert(not ApogeePartyHealthBars_S.configMode, "combat did not close add-on settings")
 assert(SpellBookFrame:IsShown(), "combat settings cleanup hid the protected spellbook")
 RunFrameUpdates()
-assert(existingTrackerButton.mutations + addedTrackerButton.mutations == combatTrackerMutations,
-    "combat settings close mutated protected tracker overlays")
+assert(existingShortcutButton.mutations + addedShortcutButton.mutations == combatShortcutMutations,
+    "combat settings close mutated protected Shortcut overlays")
 assert(ApogeePartyHealthBars_S.secureUpdatePending,
     "combat settings close did not defer secure reconciliation")
 inCombat = false
 router.Dispatch("PLAYER_REGEN_ENABLED")
-assert(existingTrackerButton.shown and existingTrackerButton.mouseEnabled
-        and addedTrackerButton.shown and addedTrackerButton.mouseEnabled,
-    "leaving combat did not restore tracked-spell clickability")
+assert(existingShortcutButton.shown and existingShortcutButton.mouseEnabled
+        and addedShortcutButton.shown and addedShortcutButton.mouseEnabled,
+    "leaving combat did not restore Shortcut clickability")
 SpellBookFrame:Hide()
 
 ApogeePartyHealthBars_S.configMode = true
-for _, key in ipairs({ "general", "healing", "spells", "wheel", "macros" }) do
+for _, key in ipairs({ "general", "healing", "shortcuts", "keys", "wheel", "macros" }) do
     ApogeePartyHealthBars_ConfigUI.ActivateTab(key)
     assert(ApogeePartyHealthBars_S.configTab == key, "could not activate settings tab: " .. key)
     ApogeePartyHealthBars_ConfigUI.RefreshTab(key, true)
 end
+ApogeePartyHealthBars_ConfigUI.ActivateTab("keys")
+ApogeePartyHealthBars_ConfigUI.RefreshTab("keys")
+ApogeePartyHealthBars_KeyConfig.GetTiles().keyF.scripts.OnClick()
+assert(ApogeePartyHealthBars_KeyConfig.GetDetailRow().primary:GetText() == "Key F",
+    "Keys detail row did not focus before the reopen test")
+ApogeePartyHealthBars_S.focusedKeySlot = nil
+ApogeePartyHealthBars_S.selectedKeySlot = nil
 ApogeePartyHealthBars_ConfigUI.Show()
+assert(ApogeePartyHealthBars_KeyConfig.GetDetailRow().primary:GetText() == "Select a key",
+    "reopening settings did not refresh the active Keys tab")
 ApogeePartyHealthBars_ConfigUI.Hide()
 ApogeePartyHealthBars_S.configMode = false
 
@@ -378,8 +539,8 @@ assert(ApogeePartyHealthBars_S.sv.spellTrackerEnabled == nil, "retired tracker c
 assert(ApogeePartyHealthBars_S.sv.spellTrackerSoundsEnabled == nil, "retired tracker sounds checkbox state persisted")
 assert(ApogeePartyHealthBars_S.sv.lowHealthSoundEnabled == nil, "retired low-health checkbox state persisted")
 assert(ApogeePartyHealthBars_S.sv.lowHealthSoundKey == "alarm_soft", "low-health sound choice should default soft")
-assert(next(ApogeePartyHealthBars_C.TRACKER_CLASS_DEFAULTS) == nil,
-    "player tracker slots should start empty for every class")
+assert(next(ApogeePartyHealthBars_C.SHORTCUT_CLASS_DEFAULTS) == nil,
+    "Shortcut slots should start empty for every class")
 assert(ApogeePartyHealthBars_S.sv.lowHealthThreshold == 50, "low-health threshold should default to 50%")
 local existingPreferences = {
     schemaVersion = 3,
@@ -395,13 +556,25 @@ assert(existingPreferences.spellTrackerEnabled == nil, "saved tracker preference
 assert(existingPreferences.spellTrackerSoundsEnabled == nil, "saved tracker sounds preference was not retired")
 assert(existingPreferences.lowHealthSoundKey == "alarm_bell", "saved low-health sound choice was overwritten")
 assert(existingPreferences.lowHealthThreshold == 65, "saved low-health threshold was overwritten")
+local legacyCharacter = {
+    shortcuts = {},
+    trackedSpells = { { spellId = 9001, spellName = "Fireball", macroText = "/cast Custom Fireball" } },
+    trackedSpellsSchemaVersion = 1,
+    trackerDefaultsVersion = 1,
+}
+ApogeePartyHealthBars_Effects.InitializeSavedVariables({}, legacyCharacter)
+assert(legacyCharacter.shortcuts and legacyCharacter.shortcuts[1].spellName == "Fireball"
+    and legacyCharacter.trackedSpells == nil and legacyCharacter.trackedSpellsSchemaVersion == nil
+    and legacyCharacter.trackerDefaultsVersion == nil and legacyCharacter.shortcutDefaultsVersion == 1,
+    "legacy tracked spells were not moved once into clean Shortcut saved data")
 local legacyPreferences = {
     schemaVersion = 2,
     lowHealthSoundEnabled = false,
     lowHealthSoundKey = "alarm_bell",
 }
 ApogeePartyHealthBars_Effects.InitializeSavedVariables(legacyPreferences, {})
-assert(legacyPreferences.schemaVersion == 4, "saved-variable migration did not advance the schema")
+assert(legacyPreferences.schemaVersion == ApogeePartyHealthBars_C.SAVED_VARIABLES_VERSION,
+    "saved-variable migration did not advance the schema")
 assert(legacyPreferences.lowHealthSoundEnabled == nil, "retired low-health checkbox was not removed")
 assert(legacyPreferences.lowHealthSoundKey == "none",
     "disabled low-health checkbox was not migrated to the None sound")

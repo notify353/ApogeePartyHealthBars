@@ -1,6 +1,6 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
-local T = ApogeePartyHealthBars_SpellTracker
+local T = ApogeePartyHealthBars_ShortcutBar
 local F = ApogeePartyHealthBars_SecureFrames
 
 ApogeePartyHealthBars_UnitDisplay = {}

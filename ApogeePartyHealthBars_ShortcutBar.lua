@@ -3,9 +3,10 @@ local S = ApogeePartyHealthBars_S
 local Sounds = ApogeePartyHealthBars_Sounds
 local UIH = ApogeePartyHealthBars_UIHelpers
 local Actions = ApogeePartyHealthBars_ActionMacros
+local Items = ApogeePartyHealthBars_ShortcutItems
 
-ApogeePartyHealthBars_SpellTracker = {}
-local T = ApogeePartyHealthBars_SpellTracker
+ApogeePartyHealthBars_ShortcutBar = {}
+local T = ApogeePartyHealthBars_ShortcutBar
 
 local row, requestLayout, syncTicker
 local positionSecureOverlay, showSecureFrame, hideSecureFrame, setSecureMouseEnabled, deferSecureUpdate
@@ -16,7 +17,8 @@ local previousStates = {}
 local lastSoundAt = {}
 local initialized = false
 local visibleCount = 0
-local MAX_DISPLAY_ICONS = C.TRACKER_MAX_SLOTS + #(C.CROWD_CONTROL_DEFINITIONS or {})
+local visibleLaneCounts = { player = 0, target = 0 }
+local MAX_DISPLAY_ICONS = C.SHORTCUT_MAX_SLOTS + #(C.CROWD_CONTROL_DEFINITIONS or {})
 local QUESTION_MARK_ICON = "Interface\\Icons\\INV_Misc_QuestionMark"
 
 local function GetRawSpellName(identifier)
@@ -46,10 +48,11 @@ local STATE_COLORS = {
     ready       = { 0.45, 0.45, 0.48, 1 },
     current     = { 1.00, 0.82, 0.00, 1 },
     cooldown    = { 0.22, 0.22, 0.24, 1 },
-    resource    = { 0.20, 0.55, 1.00, 1 },
+    resource    = { 0.45, 0.45, 0.48, 1 },
     invalid     = { 0.45, 0.45, 0.48, 1 },
-    range       = { 1.00, 0.12, 0.12, 1 },
+    range       = { 0.45, 0.45, 0.48, 1 },
     unusable    = { 0.35, 0.35, 0.38, 1 },
+    unavailable = { 0.35, 0.35, 0.38, 1 },
 }
 
 local STATE_LABELS = {
@@ -58,9 +61,8 @@ local STATE_LABELS = {
     cooldown = "On cooldown",
     resource = "Not enough resource",
     invalid = "Invalid current target",
-    range = "Out of range",
     unusable = "Not currently usable",
-    unavailable = "Spell unavailable",
+    unavailable = "Not in bags",
 }
 
 local READY_TRANSITION_STATES = {
@@ -69,45 +71,46 @@ local READY_TRANSITION_STATES = {
     invalid = true,
     range = true,
     unusable = true,
+    unavailable = true,
 }
 
-local TRACKED_SPELLS_SCHEMA_VERSION = 1
+local SHORTCUTS_SCHEMA_VERSION = 1
 
 local function GetEntries()
     if not S.charSv then return nil end
-    if type(S.charSv.trackedSpells) ~= "table" then S.charSv.trackedSpells = {} end
-    return S.charSv.trackedSpells
+    if type(S.charSv.shortcuts) ~= "table" then S.charSv.shortcuts = {} end
+    return S.charSv.shortcuts
 end
 
 local function NormalizeEntries()
     local entries = GetEntries()
     if not entries then return end
     local compact = {}
-    for i = 1, C.TRACKER_MAX_SLOTS do
+    for i = 1, C.SHORTCUT_MAX_SLOTS do
         local entry = Actions.Normalize(entries[i])
         if entry then compact[#compact + 1] = entry end
     end
     wipe(entries)
     for i, entry in ipairs(compact) do entries[i] = entry end
-    S.charSv.trackedSpellsSchemaVersion = TRACKED_SPELLS_SCHEMA_VERSION
+    S.charSv.shortcutSchemaVersion = SHORTCUTS_SCHEMA_VERSION
 end
 
 local function SeedClassDefaults()
     if not S.charSv then return end
-    local seededVersion = tonumber(S.charSv.trackerDefaultsVersion) or 0
-    if seededVersion >= C.TRACKER_DEFAULTS_VERSION then return end
+    local seededVersion = tonumber(S.charSv.shortcutDefaultsVersion) or 0
+    if seededVersion >= C.SHORTCUT_DEFAULTS_VERSION then return end
 
     local entries = GetEntries()
     local _, classToken = UnitClass("player")
-    local defaults = C.TRACKER_CLASS_DEFAULTS[classToken]
+    local defaults = C.SHORTCUT_CLASS_DEFAULTS[classToken]
     if entries and next(entries) == nil and defaults then
         for slot, spellName in ipairs(defaults) do
-            if slot > C.TRACKER_MAX_SLOTS then break end
-            entries[slot] = Actions.Create(nil, spellName, "none")
+            if slot > C.SHORTCUT_MAX_SLOTS then break end
+            entries[slot] = Actions.CreateSpell(nil, spellName, "none")
         end
     end
 
-    S.charSv.trackerDefaultsVersion = C.TRACKER_DEFAULTS_VERSION
+    S.charSv.shortcutDefaultsVersion = C.SHORTCUT_DEFAULTS_VERSION
 end
 
 local function IsEnabled()
@@ -167,6 +170,7 @@ local function BuildResolvedInfo(known, entry, slot)
     local resolvedName = name or known.baseName or known.name or (entry and entry.spellName)
     local crowdControl = GetCrowdControlDefinition(resolvedName)
     return {
+        kind = "spell",
         id = spellID or known.id or (entry and entry.spellId),
         name = resolvedName,
         castName = known.name or name or (entry and entry.spellName),
@@ -175,20 +179,42 @@ local function BuildResolvedInfo(known, entry, slot)
         lane = crowdControl and "target" or "player",
         crowdControl = crowdControl,
         slot = slot,
+        entry = entry,
+    }
+end
+
+local function BuildResolvedItemInfo(entry, slot)
+    local name, icon = Actions.ResolveDisplay(entry)
+    return {
+        kind = "item",
+        id = entry.itemId,
+        name = name or entry.itemName,
+        macroText = entry.macroText,
+        icon = icon,
+        lane = "player",
+        slot = slot,
+        entry = entry,
     }
 end
 
 local function ResolveEntries()
     wipe(resolved)
     wipe(resolvedSlots)
+    wipe(visibleLaneCounts)
+    visibleLaneCounts.player = 0
+    visibleLaneCounts.target = 0
     visibleCount = 0
     local entries = GetEntries()
     if not entries then return end
     local byId, byName, knownList = BuildKnownSpellMap()
     local configuredCrowdControl = {}
-    for i = 1, C.TRACKER_MAX_SLOTS do
+    for i = 1, C.SHORTCUT_MAX_SLOTS do
         local entry = entries[i]
-        if entry then
+        if entry and entry.kind == "item" then
+            local info = BuildResolvedItemInfo(entry, i)
+            resolvedSlots[i] = info
+            resolved[#resolved + 1] = info
+        elseif entry then
             local known = (entry.spellId and byId[entry.spellId]) or (entry.spellName and byName[entry.spellName])
             if not known and entry.spellName then
                 local baseName = entry.spellName:match("^%s*([^%(]+)")
@@ -198,12 +224,11 @@ local function ResolveEntries()
                 end
             end
             if known then
-                local priorDefault = Actions.BuildDefaultMacro(entry.spellName)
+                local priorDefault = Actions.BuildDefaultMacro(entry)
                 if known.name and entry.spellName ~= known.name then
-                    if entry.macroText == priorDefault then
-                        entry.macroText = Actions.BuildDefaultMacro(known.name)
-                    end
+                    local generated = entry.macroText == priorDefault
                     entry.spellName = known.name
+                    if generated then entry.macroText = Actions.BuildDefaultMacro(entry) end
                 end
                 if known.id then entry.spellId = known.id end
                 local info = BuildResolvedInfo(known, entry, i)
@@ -227,6 +252,10 @@ local function ResolveEntries()
         end
     end
     visibleCount = #resolved
+    for _, info in ipairs(resolved) do
+        local lane = info.lane == "target" and "target" or "player"
+        visibleLaneCounts[lane] = visibleLaneCounts[lane] + 1
+    end
 end
 
 local function SetBorder(icon, color)
@@ -261,12 +290,12 @@ end
 
 local function CreateIcon(parent)
     local button = CreateFrame("Button", nil, parent)
-    button:SetSize(C.TRACKER_ICON_SIZE, C.TRACKER_ICON_SIZE)
+    button:SetSize(C.SHORTCUT_ICON_SIZE, C.SHORTCUT_ICON_SIZE)
     button:EnableMouse(false)
 
     S.castBtnSerial = S.castBtnSerial + 1
     local castButton = CreateFrame(
-        "Button", "ApogeePartyHealthBarsTrackerCast" .. S.castBtnSerial, UIParent,
+        "Button", "ApogeePartyHealthBarsShortcutCast" .. S.castBtnSerial, UIParent,
         "SecureActionButtonTemplate")
     castButton:SetFrameStrata("TOOLTIP")
     castButton:SetFrameLevel(103)
@@ -303,10 +332,11 @@ local function CreateIcon(parent)
             if GameTooltip then GameTooltip:Hide() end
             return
         end
-        local info = button.trackerInfo
+        local info = button.shortcutInfo
         if not info then return end
-        UIH.ShowSpellTooltip(castButton, info.id, info.name or "Tracked spell", STATE_LABELS[button.trackerState],
-            button.trackerReason, { { text = "Click to cast", r = 0.3, g = 1, b = 0.3 } })
+        local showTooltip = info.kind == "item" and UIH.ShowItemTooltip or UIH.ShowSpellTooltip
+        showTooltip(castButton, info.id, info.name or "Shortcut", STATE_LABELS[button.shortcutState],
+            button.shortcutReason, { { text = "Click to use", r = 0.3, g = 1, b = 0.3 } })
     end)
     castButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
     return button
@@ -334,8 +364,12 @@ local function SyncSecureAction(icon, info)
         return
     end
 
-    local spellName = info.castName or info.name
-    local macroText = info.macroText or Actions.BuildDefaultMacro(spellName)
+    local macroText = info.macroText
+    if not macroText then
+        macroText = info.kind == "item"
+            and Actions.BuildDefaultItemMacro(info.name)
+            or Actions.BuildDefaultSpellMacro(info.castName or info.name)
+    end
     castButton:SetAttribute("type", "macro")
     castButton:SetAttribute("macrotext", macroText)
     castButton:SetAttribute("type1", "macro")
@@ -455,6 +489,10 @@ local function EvaluateCrowdControlTarget(info)
 end
 
 local function Evaluate(info)
+    if info.kind == "item" then
+        local state, _, start, duration, count, _, reason, gcdOnly = Items.Evaluate(info.entry)
+        return state, start, duration, gcdOnly, count, reason
+    end
     local identifier = info.id or info.castName or info.name
     local eligible, reason = EvaluateCrowdControlTarget(info)
     if not eligible then return "invalid", 0, 0, false, nil, reason end
@@ -486,21 +524,10 @@ local function Evaluate(info)
     return "ready", start, duration, gcdOnly, chargeText
 end
 
-local function GetResourceBorderColor()
-    local powerType, powerToken = UnitPowerType("player")
-    local color = PowerBarColor and (PowerBarColor[powerToken] or PowerBarColor[powerType])
-    if not color then return STATE_COLORS.resource end
-    return {
-        color.r or color[1] or 0.20,
-        color.g or color[2] or 0.55,
-        color.b or color[3] or 1.00,
-        1,
-    }
-end
-
 local function ApplyState(icon, state, start, duration, charges)
-    icon.trackerState = state
-    icon.texture:SetDesaturated(state == "resource" or state == "invalid" or state == "unusable")
+    icon.shortcutState = state
+    icon.texture:SetDesaturated(state == "resource" or state == "invalid"
+        or state == "unusable" or state == "unavailable")
     if state == "ready" or state == "current" then
         icon:SetAlpha(1)
     elseif state == "range" then
@@ -508,8 +535,7 @@ local function ApplyState(icon, state, start, duration, charges)
     else
         icon:SetAlpha(0.48)
     end
-    SetBorder(icon, state == "resource" and GetResourceBorderColor()
-        or STATE_COLORS[state] or STATE_COLORS.unusable)
+    SetBorder(icon, STATE_COLORS[state] or STATE_COLORS.unusable)
     if state == "cooldown" and duration > 0 then
         icon.cooldown:SetCooldown(start, duration)
         icon.cooldown:Show()
@@ -526,7 +552,11 @@ end
 
 function T.GetHeight(unitId)
     if unitId ~= "player" or not IsEnabled() or visibleCount <= 0 then return 0 end
-    return C.TRACKER_ICON_SIZE + C.TRACKER_TOP_GAP
+    local laneCount = math.max(visibleLaneCounts.player or 0, visibleLaneCounts.target or 0)
+    local rowCount = math.ceil(laneCount / C.SHORTCUT_COLUMNS)
+    return rowCount * C.SHORTCUT_ICON_SIZE
+        + math.max(0, rowCount - 1) * C.SHORTCUT_ICON_GAP
+        + C.SHORTCUT_TOP_GAP
 end
 
 function T.IsActive()
@@ -539,7 +569,9 @@ function T.Layout(topOffset)
         topOffset = ApogeePartyHealthBars_WheelMacros.GetHeight("player")
     end
     topOffset = tonumber(topOffset) or 0
-    local laneX = { player = 0, target = 0 }
+    local lanePositions = { player = 0, target = 0 }
+    local shortcutHeight = T.GetHeight("player")
+    local stride = C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP
     for i = 1, MAX_DISPLAY_ICONS do
         local icon = icons[i]
         local info = resolved[i]
@@ -547,10 +579,16 @@ function T.Layout(topOffset)
         if IsEnabled() and info then
             local lane = info.lane or "player"
             local anchor = lane == "target" and row.targetBtn or row.btn
-            local y = lane == "target" and (C.TRACKER_ICON_SIZE + C.TRACKER_TOP_GAP) or -topOffset
-            icon:SetPoint("TOPLEFT", anchor, "TOPLEFT", laneX[lane], y)
+            local lanePosition = lanePositions[lane]
+            local column = lanePosition % C.SHORTCUT_COLUMNS
+            local gridRow = math.floor(lanePosition / C.SHORTCUT_COLUMNS)
+            local x = column * stride
+            local y = lane == "target"
+                and shortcutHeight - gridRow * stride
+                or -topOffset - gridRow * stride
+            icon:SetPoint("TOPLEFT", anchor, "TOPLEFT", x, y)
             icon:Show()
-            laneX[lane] = laneX[lane] + C.TRACKER_ICON_SIZE + C.TRACKER_ICON_GAP
+            lanePositions[lane] = lanePosition + 1
         else
             icon:Hide()
         end
@@ -571,14 +609,14 @@ function T.Refresh(suppressSound)
             local previous = previousStates[i]
             local becameReady = initialized and READY_TRANSITION_STATES[previous] and state == "ready"
             ApplyState(icon, state, start, duration, charges)
-            icon.trackerInfo = info
-            icon.trackerReason = reason
+            icon.shortcutInfo = info
+            icon.shortcutReason = reason
             if becameReady then
-                icon.pulseUntil = now + C.TRACKER_READY_PULSE
+                icon.pulseUntil = now + C.SHORTCUT_READY_PULSE
                 local entry = entries and info.slot and entries[info.slot]
                 local canSound = not suppressSound and not soundPlayed and not gcdOnly and IsSoundsEnabled()
                     and entry and entry.soundKey and entry.soundKey ~= "none"
-                    and now - (lastSoundAt[i] or 0) >= C.TRACKER_SOUND_DEBOUNCE
+                    and now - (lastSoundAt[i] or 0) >= C.SHORTCUT_SOUND_DEBOUNCE
                 if canSound and PlayReadySound(entry.soundKey) then
                     lastSoundAt[i] = now
                     soundPlayed = true
@@ -588,8 +626,8 @@ function T.Refresh(suppressSound)
         else
             icon:Hide()
             icon.texture:SetTexture(nil)
-            icon.trackerInfo = nil
-            icon.trackerReason = nil
+            icon.shortcutInfo = nil
+            icon.shortcutReason = nil
             previousStates[i] = nil
         end
     end
@@ -603,7 +641,7 @@ function T.Tick()
         if icon and icon.pulseUntil and icon.pulseUntil > now then
             local remaining = icon.pulseUntil - now
             for _, edge in ipairs(icon.pulseBorder) do
-                edge:SetAlpha(remaining / C.TRACKER_READY_PULSE)
+                edge:SetAlpha(remaining / C.SHORTCUT_READY_PULSE)
             end
         elseif icon then
             icon.pulseUntil = nil
@@ -622,12 +660,25 @@ function T.ResolveAndRefresh()
     ResolveEntries()
     wipe(previousStates)
     initialized = false
-    -- Icon count, order, or lane can change without changing tracker height.
+    -- Icon count, order, or lane can change without changing Shortcut Bar height.
     -- Always queue the authoritative row layout before secure overlays are reused.
     if requestLayout then requestLayout() end
     if syncTicker then syncTicker() end
     T.Layout()
     T.Refresh(true)
+end
+
+function T.RefreshItemInfo()
+    for _, info in ipairs(resolved) do
+        if info.kind == "item" and info.entry then
+            local name, icon = Actions.ResolveDisplay(info.entry)
+            info.name = name or info.entry.itemName
+            info.icon = icon
+            info.macroText = info.entry.macroText
+        end
+    end
+    T.RefreshSecureActions()
+    T.Refresh(false)
 end
 
 function T.Attach(playerRow, callbacks)
@@ -655,6 +706,10 @@ function T.GetSlots() return GetEntries() end
 function T.GetSlotDisplay(slot)
     local entry = GetEntries() and GetEntries()[slot]
     if not entry then return nil, nil, false end
+    if entry.kind == "item" then
+        local name, icon, _, available = Actions.ResolveDisplay(entry)
+        return name or entry.itemName, icon, available
+    end
     local name, icon = GetSpellNameAndIcon(entry.spellId or entry.spellName)
     return name or entry.spellName, icon, resolvedSlots[slot] ~= nil
 end
@@ -672,59 +727,94 @@ function T.GetDisplayCount() return #resolved end
 function T.GetDisplayLane(index) return resolved[index] and resolved[index].lane or nil end
 
 function T.AssignSpell(slot, spellID, spellName)
-    if InCombatLockdown and InCombatLockdown() then return false, "cannot edit tracked spells in combat." end
+    if InCombatLockdown and InCombatLockdown() then return false, "cannot edit Shortcuts in combat." end
     local entries = GetEntries()
-    if not entries then return false, "tracker is not initialized." end
+    if not entries then return false, "Shortcuts are not initialized." end
     slot = slot or T.FindFirstEmptySlot()
     if not slot then
-        return false, "All tracked Spell positions are assigned. Select a row to replace or clear one."
+        return false, "All Shortcut positions are assigned. Select a row to replace or clear one."
     end
     if type(slot) ~= "number" or slot ~= math.floor(slot)
-        or slot < 1 or slot > C.TRACKER_MAX_SLOTS or slot > #entries + 1 then
-        return false, "that tracked Spell position is unavailable."
+        or slot < 1 or slot > C.SHORTCUT_MAX_SLOTS or slot > #entries + 1 then
+        return false, "that Shortcut position is unavailable."
     end
     if type(spellID) ~= "number" then spellID = nil end
-    for i = 1, C.TRACKER_MAX_SLOTS do
+    for i = 1, C.SHORTCUT_MAX_SLOTS do
         local entry = entries[i]
-        if i ~= slot and entry
+        if i ~= slot and entry and entry.kind == "spell"
             and ((spellID and entry.spellId == spellID) or (spellName and entry.spellName == spellName)) then
-            return false, "that spell is already tracked."
+            return false, "that spell is already assigned."
         end
     end
     local previous = entries[slot]
-    local entry = Actions.Create(spellID, spellName, previous and previous.soundKey)
+    local entry = Actions.CreateSpell(spellID, spellName, previous and previous.soundKey)
     if not entry then return false, "could not store that spell." end
     entries[slot] = entry
     T.ResolveAndRefresh()
-    return true, "tracking |cff00ff00" .. (spellName or "spell") .. "|r.", slot
+    return true, "assigned |cff00ff00" .. (spellName or "spell") .. "|r to Shortcuts.", slot
+end
+
+function T.AssignItem(slot, itemID, itemName)
+    if InCombatLockdown and InCombatLockdown() then return false, "cannot edit Shortcuts in combat." end
+    local entries = GetEntries()
+    if not entries then return false, "Shortcuts are not initialized." end
+    slot = slot or T.FindFirstEmptySlot()
+    if not slot then
+        return false, "All Shortcut positions are assigned. Select a row to replace or clear one."
+    end
+    if type(slot) ~= "number" or slot ~= math.floor(slot)
+        or slot < 1 or slot > C.SHORTCUT_MAX_SLOTS or slot > #entries + 1 then
+        return false, "that Shortcut position is unavailable."
+    end
+    if type(itemID) ~= "number" or itemID <= 0 then return false, "could not identify that item." end
+    if not Items.HasUseEffect(itemID) then return false, "that item has no usable effect." end
+    for i = 1, C.SHORTCUT_MAX_SLOTS do
+        local entry = entries[i]
+        if i ~= slot and entry and entry.kind == "item" and entry.itemId == itemID then
+            return false, "that item is already assigned."
+        end
+    end
+    local previous = entries[slot]
+    local entry = Actions.CreateItem(itemID, itemName, previous and previous.soundKey)
+    if not entry then return false, "could not store that item." end
+    entries[slot] = entry
+    T.ResolveAndRefresh()
+    return true, "assigned |cff00ff00" .. (itemName or "item") .. "|r to Shortcuts.", slot
 end
 
 function T.ClearSlot(slot)
+    if InCombatLockdown and InCombatLockdown() then
+        return false, "Leave combat before clearing a Shortcut."
+    end
     local entries = GetEntries()
-    if entries and entries[slot] then table.remove(entries, slot) end
+    if not entries or not entries[slot] then return false, "Unknown Shortcut slot." end
+    table.remove(entries, slot)
     T.ResolveAndRefresh()
-    return true
+    return true, "Shortcut cleared."
 end
 
-function T.ResetClassDefaults()
+function T.ResetDefaults()
     if InCombatLockdown and InCombatLockdown() then return false end
     local entries = GetEntries()
     if not entries then return false end
     wipe(entries)
 
     local _, classToken = UnitClass("player")
-    local defaults = C.TRACKER_CLASS_DEFAULTS[classToken]
+    local defaults = C.SHORTCUT_CLASS_DEFAULTS[classToken]
     for slot, spellName in ipairs(defaults or {}) do
-        if slot > C.TRACKER_MAX_SLOTS then break end
-        entries[slot] = Actions.Create(nil, spellName, "none")
+        if slot > C.SHORTCUT_MAX_SLOTS then break end
+        entries[slot] = Actions.CreateSpell(nil, spellName, "none")
     end
-    S.charSv.trackerDefaultsVersion = C.TRACKER_DEFAULTS_VERSION
-    S.selectedTrackerSlot = nil
+    S.charSv.shortcutDefaultsVersion = C.SHORTCUT_DEFAULTS_VERSION
+    S.selectedShortcutSlot = nil
     T.ResolveAndRefresh()
     return true
 end
 
 function T.MoveSlot(slot, direction)
+    if InCombatLockdown and InCombatLockdown() then
+        return false, "Leave combat before moving a Shortcut."
+    end
     if type(slot) ~= "number" or slot ~= math.floor(slot)
         or (direction ~= -1 and direction ~= 1) then return false end
     local other = slot + direction
@@ -737,7 +827,7 @@ end
 
 function T.FindFirstEmptySlot()
     local entries = GetEntries()
-    if not entries or #entries >= C.TRACKER_MAX_SLOTS then return nil end
+    if not entries or #entries >= C.SHORTCUT_MAX_SLOTS then return nil end
     return #entries + 1
 end
 
@@ -751,12 +841,12 @@ function T.GetMacro(slot)
 end
 
 function T.ApplyMacro(slot, body)
-    if InCombatLockdown and InCombatLockdown() then return false, "Leave combat before applying a Spell macro." end
+    if InCombatLockdown and InCombatLockdown() then return false, "Leave combat before applying a Shortcut macro." end
     local ok, err = T.ValidateMacro(slot, body)
     if not ok then return false, err end
     GetEntries()[slot].macroText = body
     T.ResolveAndRefresh()
-    return true, "Applied " .. (GetEntries()[slot].spellName or "Spell") .. "."
+    return true, "Applied " .. (Actions.GetName(GetEntries()[slot]) or "Shortcut") .. "."
 end
 
 function T.ResetMacro(slot)
@@ -795,6 +885,6 @@ end
 
 function T.PreviewSound(key) return Sounds.Play(key or "none") end
 
-function T.OnTrackerSettingChanged()
+function T.OnShortcutSettingChanged()
     T.ResolveAndRefresh()
 end

@@ -1,6 +1,6 @@
 -- Constants and mutable state (separate file — Lua main-chunk 200 local limit).
 ApogeePartyHealthBars_C = {
-    SAVED_VARIABLES_VERSION = 4,
+    SAVED_VARIABLES_VERSION = 5,
     ADDON_PREFIX         = "|cffFFD700Party Health:|r",
     FRAME_W              = 200,
     ROW_H                = 26,
@@ -34,12 +34,13 @@ ApogeePartyHealthBars_C = {
     CONFIG_SECTION_GAP   = 8,
     CONFIG_BTN_H         = 22,
     CONFIG_CONTENT_W     = 396, -- BIND_PANEL_W - BIND_PAD*2 - scrollbar
-    TRACKER_MAX_SLOTS    = 8,
-    TRACKER_ICON_SIZE    = 24,
-    TRACKER_ICON_GAP     = 3,
-    TRACKER_TOP_GAP      = 2,
-    TRACKER_READY_PULSE  = 0.65,
-    TRACKER_SOUND_DEBOUNCE = 2.0,
+    SHORTCUT_MAX_SLOTS    = 12,
+    SHORTCUT_COLUMNS      = 6,
+    SHORTCUT_ICON_SIZE    = 24,
+    SHORTCUT_ICON_GAP     = 3,
+    SHORTCUT_TOP_GAP      = 2,
+    SHORTCUT_READY_PULSE  = 0.65,
+    SHORTCUT_SOUND_DEBOUNCE = 2.0,
     LOW_HEALTH_DEFAULT_THRESHOLD = 50,
     LOW_HEALTH_MIN_THRESHOLD = 10,
     LOW_HEALTH_MAX_THRESHOLD = 90,
@@ -47,9 +48,9 @@ ApogeePartyHealthBars_C = {
     LOW_HEALTH_REARM_MARGIN = 10,
     LOW_HEALTH_SOUND_DEBOUNCE = 2.0,
     LOW_HEALTH_DEFAULT_SOUND = "alarm_soft",
-    TRACKER_DEFAULTS_VERSION = 1,
-    TRACKER_CLASS_DEFAULTS = {},
-    -- Targeted crowd-control spells use the target tracker lane and conservative
+    SHORTCUT_DEFAULTS_VERSION = 1,
+    SHORTCUT_CLASS_DEFAULTS = {},
+    -- Targeted crowd-control spells use the target Shortcut Bar lane and conservative
     -- client-visible eligibility checks. Patterns match every learned rank.
     CROWD_CONTROL_DEFINITIONS = {
         { canonical = "Polymorph",          pattern = "^Polymorph",          identitySpellIds = { 118, 28271, 28272 }, creatureTypes = { Beast = true, Humanoid = true, Critter = true }, creatureLabel = "a Beast, Humanoid, or Critter" },
@@ -416,10 +417,14 @@ ApogeePartyHealthBars_S = {
     auraCacheGen             = 0,
     auraCache                = {},
     selectedBindingKey       = nil,
-    selectedTrackerSlot      = nil,
+    selectedShortcutSlot     = nil,
     selectedWheelSlot        = nil,
     selectedWheelLayout      = nil,
+    focusedKeySlot           = nil,
+    selectedKeySlot          = nil,
+    selectedKeyLayout        = nil,
     spellbookHooked          = false,
+    containerItemsHooked     = false,
     castBtnSerial            = 0,
     secureUpdatePending      = false,
     partyBuffSpellKnown           = false,

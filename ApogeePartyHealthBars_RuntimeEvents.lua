@@ -1,8 +1,9 @@
 local S = ApogeePartyHealthBars_S
 local A = ApogeePartyHealthBars_Auras
 local E = ApogeePartyHealthBars_Effects
-local T = ApogeePartyHealthBars_SpellTracker
+local T = ApogeePartyHealthBars_ShortcutBar
 local W = ApogeePartyHealthBars_WheelMacros
+local K = ApogeePartyHealthBars_KeyActions
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 local F = ApogeePartyHealthBars_SecureFrames
@@ -45,11 +46,34 @@ function R.Register(eventRouter, deps)
         "ACTIONBAR_UPDATE_USABLE", "ACTIONBAR_UPDATE_COOLDOWN", "ACTIONBAR_UPDATE_STATE",
         "CURRENT_SPELL_CAST_CHANGED", "PLAYER_EQUIPMENT_CHANGED",
     }) do
-        eventRouter.RegisterOptional(event, "SpellTracker", function() T.Refresh(false); W.Refresh() end)
+        eventRouter.RegisterOptional(event, "ShortcutBar", function()
+            T.Refresh(false); W.Refresh(); K.Refresh()
+        end)
     end
 
-    eventRouter.RegisterOptional("UNIT_FLAGS", "SpellTrackerTarget", function(_, unit)
+    eventRouter.RegisterOptional("UNIT_FLAGS", "ShortcutBarTarget", function(_, unit)
         if unit == "target" then T.Refresh(false) end
+    end)
+
+    for _, event in ipairs({ "BAG_UPDATE_DELAYED", "BAG_UPDATE_COOLDOWN" }) do
+        eventRouter.RegisterOptional(event, "ShortcutItems", function()
+            T.Refresh(false)
+            W.Refresh()
+            K.Refresh()
+            local ui = D.GetConfigUI()
+            if ui.RefreshShortcutPanel then ui.RefreshShortcutPanel() end
+            if ui.RefreshKeyPanel then ui.RefreshKeyPanel() end
+            if ui.RefreshWheelPanel then ui.RefreshWheelPanel() end
+        end)
+    end
+    eventRouter.RegisterOptional("GET_ITEM_INFO_RECEIVED", "ShortcutItemInfo", function()
+        T.RefreshItemInfo()
+        W.RefreshItemInfo()
+        K.RefreshItemInfo()
+        local ui = D.GetConfigUI()
+        if ui.RefreshShortcutPanel then ui.RefreshShortcutPanel() end
+        if ui.RefreshKeyPanel then ui.RefreshKeyPanel() end
+        if ui.RefreshWheelPanel then ui.RefreshWheelPanel() end
     end)
 
     eventRouter.RegisterOptional("RAID_TARGET_UPDATE", "RaidMarkers", M.Refresh)
@@ -87,11 +111,13 @@ function R.Register(eventRouter, deps)
             S.InitializeClassDefaultBindings()
             T.Initialize()
             W.InitializeSaved()
+            K.InitializeSaved()
     
             D.InitPlayerSpells()
             D.RestorePosition()
             D.UpdateHeader()
             D.HookSpellbook()
+            D.HookContainerItems()
             D.EnsureMinimapButton()
             D.SeedShieldTrackerFromAuras()
             D.ForceRefresh()
@@ -99,6 +125,7 @@ function R.Register(eventRouter, deps)
         elseif event == "ADDON_LOADED" then
             if unit == "Blizzard_UIPanels_Game" or unit == "Blizzard_SpellBook" then
                 D.HookSpellbook()
+                D.HookContainerItems()
             end
 
         elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
@@ -110,6 +137,7 @@ function R.Register(eventRouter, deps)
         elseif event == "PLAYER_REGEN_DISABLED" then
             U.OnCombatStart()
             W.OnCombatStarted()
+            K.OnCombatStarted()
             if S.configMode then
                 D.Print("config closed - combat started.")
                 D.SetConfigMode(false)
@@ -121,18 +149,22 @@ function R.Register(eventRouter, deps)
             F.FlushDeferredUpdates()
             T.RefreshSecureActions()
             W.OnCombatEnded()
+            K.OnCombatEnded()
             H.Refresh()
             D.ForceRefresh()
     
         elseif event == "PLAYER_TARGET_CHANGED" then
             T.Rebaseline()
             W.Refresh()
+            K.Refresh()
             H.Refresh()
             S.RequestUpdate()
     
         elseif event == "PLAYER_ENTERING_WORLD"
             or event == "GROUP_ROSTER_UPDATE" then
-            if event == "PLAYER_ENTERING_WORLD" then T.Rebaseline(); W.ReconcileBindings() end
+            if event == "PLAYER_ENTERING_WORLD" then
+                T.Rebaseline(); W.ReconcileBindings(); K.ReconcileBindings()
+            end
             D.InitPlayerSpells()
             D.EnsureMinimapButton()
             D.SeedShieldTrackerFromAuras()
@@ -141,6 +173,8 @@ function R.Register(eventRouter, deps)
     
         elseif event == "ACTIVE_TALENT_GROUP_CHANGED" then
             W.OnActiveSpecChanged()
+            K.OnActiveSpecChanged()
+            if D.GetConfigUI().RefreshKeyPanel then D.GetConfigUI().RefreshKeyPanel() end
             if D.GetConfigUI().RefreshWheelPanel then D.GetConfigUI().RefreshWheelPanel() end
 
         elseif event == "SPELLS_CHANGED" then
@@ -148,7 +182,12 @@ function R.Register(eventRouter, deps)
             D.InitPlayerSpells()
             T.ResolveAndRefresh()
             local wheelLayoutsChanged = W.RefreshLayouts()
+            local keyLayoutsChanged = K.RefreshLayouts()
             if not wheelLayoutsChanged then W.Refresh() end
+            if not keyLayoutsChanged then K.Refresh() end
+            if keyLayoutsChanged and D.GetConfigUI().RefreshKeyPanel then
+                D.GetConfigUI().RefreshKeyPanel()
+            end
             if wheelLayoutsChanged and D.GetConfigUI().RefreshWheelPanel then
                 D.GetConfigUI().RefreshWheelPanel()
             end
@@ -157,6 +196,8 @@ function R.Register(eventRouter, deps)
 
         elseif event == "UPDATE_BINDINGS" then
             W.ReconcileBindings()
+            K.ReconcileBindings()
+            if D.GetConfigUI().RefreshKeyPanel then D.GetConfigUI().RefreshKeyPanel() end
             if D.GetConfigUI().RefreshWheelPanel then D.GetConfigUI().RefreshWheelPanel() end
     
         elseif event == "UNIT_AURA"
@@ -197,10 +238,13 @@ function R.Register(eventRouter, deps)
         elseif event == "UPDATE_SHAPESHIFT_FORM" then
             T.Refresh(false)
             W.OnStanceChanged()
+            K.OnStanceChanged()
             S.RequestLayoutUpdate()
 
         elseif event == "UPDATE_SHAPESHIFT_FORMS" then
             W.RefreshLayouts()
+            K.RefreshLayouts()
+            if D.GetConfigUI().RefreshKeyPanel then D.GetConfigUI().RefreshKeyPanel() end
             if D.GetConfigUI().RefreshWheelPanel then D.GetConfigUI().RefreshWheelPanel() end
             S.RequestLayoutUpdate()
     

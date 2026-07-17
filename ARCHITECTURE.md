@@ -5,6 +5,10 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 ## Ownership
 
 - `EventRouter`: event frame and isolated subscribers
+- `RuntimeLifecycleEvents`: login/bootstrap, world and roster changes, combat transitions, and combat-log fan-out
+- `RuntimeUnitEvents`: tracked-unit aura invalidation, shield synchronization, health/power update policy, targets, threat, and raid-marker refreshes
+- `RuntimeActionEvents`: spell/spec/form transitions, binding reconciliation, action-state refreshes, item updates, and macro requirements
+- `RuntimeEvents`: thin subscriber registration coordinator
 - `Sounds`: shared sound catalog, saved-key normalization, and SFX playback
 - `ShortcutItems`: shared item-information, carried-count, usability, cooldown, and depletion evaluation
 - `ActionData`: macro-independent spell/item identity, legacy normalization, cloning, and display resolution shared by every configurable action feature
@@ -55,6 +59,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - Do not rename saved variables or named secure frames without migration.
 - Add settings through the tab registry.
 - Keep tab-specific controls and mutable refresh state in their configuration modules; `ConfigUI` owns only the shared window and tab lifecycle.
+- Keep runtime event policy in its domain subscriber; `RuntimeEvents` initializes the router and registers subscribers without handling events itself.
 - Keep feature data out of the main orchestration file.
 
 ## Validation

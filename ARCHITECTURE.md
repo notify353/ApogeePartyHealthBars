@@ -32,7 +32,10 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `RaidMarkers`: target marker controls
 - `Threat`: party and target threat
 - `BindingStore`, `BindingController`, `ClickBindings`: typed Healing spell/item persistence, Shift-click assignment, and native unit-targeted secure actions
-- `ConfigUI`, `ConfigController`, `MinimapController`: settings lifecycle
+- `GeneralConfig`: General-tab visibility, feature toggles, alert preferences, HoT controls, and reset confirmation
+- `HealingConfig`: Healing binding rows, selection state, display refresh, and right-click clearing
+- `ConfigUI`: settings-window shell, tab registry, activation, and cross-tab refresh routing
+- `ConfigController`, `MinimapController`: settings-mode and minimap lifecycle
 - `MacroData`, `MacroLibrary`, `MacroConfig`: immutable universal/current-class combat recipe catalog, validation, filtering, and copy-only presentation
 
 ## Invariants
@@ -51,6 +54,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - Never call Blizzard Spellbook toggles, replace Spellbook or bag-item scripts, or use pre-hooks; use the minimap action template and secure post-hooks.
 - Do not rename saved variables or named secure frames without migration.
 - Add settings through the tab registry.
+- Keep tab-specific controls and mutable refresh state in their configuration modules; `ConfigUI` owns only the shared window and tab lifecycle.
 - Keep feature data out of the main orchestration file.
 
 ## Validation

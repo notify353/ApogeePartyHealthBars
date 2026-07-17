@@ -49,6 +49,8 @@ ApogeePartyHealthBars_ClickBindings.lua
 ApogeePartyHealthBars_UnitDisplay.lua
 ApogeePartyHealthBars_UnitFrames.lua
 ApogeePartyHealthBars_Layout.lua
+ApogeePartyHealthBars_GeneralConfig.lua
+ApogeePartyHealthBars_HealingConfig.lua
 ApogeePartyHealthBars_ShortcutConfig.lua
 ApogeePartyHealthBars_KeyConfig.lua
 ApogeePartyHealthBars_WheelConfig.lua

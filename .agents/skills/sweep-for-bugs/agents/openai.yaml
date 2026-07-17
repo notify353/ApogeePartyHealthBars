@@ -1,0 +1,7 @@
+interface:
+  display_name: "Sweep for Bugs"
+  short_description: "Find and fix evidence-backed bugs"
+  default_prompt: "Use $sweep-for-bugs to find and fix evidence-backed bugs in the current changes or, when clean, across the repository."
+
+policy:
+  allow_implicit_invocation: false

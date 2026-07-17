@@ -426,6 +426,4 @@ ApogeePartyHealthBars_S = {
     containerItemsHooked     = false,
     castBtnSerial            = 0,
     secureUpdatePending      = false,
-    activeHotTracks          = {},
-    hotSpellKnown            = {},
 }

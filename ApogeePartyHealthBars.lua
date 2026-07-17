@@ -19,6 +19,7 @@ local visualTicker = ApogeePartyHealthBars_VisualTicker
 local buffReminders = ApogeePartyHealthBars_BuffReminders
 local shieldTracker = ApogeePartyHealthBars_ShieldTracker
 local incomingHeals = ApogeePartyHealthBars_IncomingHeals
+local hotTracker = ApogeePartyHealthBars_HotTracker
 
 local panel, configUI, minimapController
 local rows = {}
@@ -147,18 +148,21 @@ end
 -- Effect runtimes
 -- =============================================================================
 
-local effectsTracker = ApogeePartyHealthBars_EffectsTracker
-effectsTracker.Initialize({
+hotTracker.Initialize({
+    Auras = A,
+    Effects = E,
     rows = rows,
     SyncVisualTicker = SyncVisualTicker,
     IsSavedFeatureEnabled = IsSavedFeatureEnabled,
+    GetSavedVariables = function() return S.sv end,
 })
-local IsHotEnabled = effectsTracker.IsHotEnabled
-local GetHotStripHeight = effectsTracker.GetHotStripHeight
-InitHotSpells = effectsTracker.InitHotSpells
-local HasActiveHotVisuals = effectsTracker.HasActiveHotVisuals
-local TickHotVisuals = effectsTracker.TickHotVisuals
-local UpdateRowHotVisuals = effectsTracker.UpdateRowHotVisuals
+local IsHotEnabled = hotTracker.IsEnabled
+local GetHotStripHeight = hotTracker.GetStripHeight
+local GetActiveHotTrackCount = hotTracker.GetActiveTrackCount
+InitHotSpells = hotTracker.RefreshKnownSpells
+local HasActiveHotVisuals = hotTracker.HasActiveVisuals
+local TickHotVisuals = hotTracker.TickVisuals
+local UpdateRowHotVisuals = hotTracker.UpdateRowVisuals
 
 buffReminders.Initialize({
     Auras = A,
@@ -523,6 +527,7 @@ L.Register({
     GetThreatGutterWidth = H.GetGutterWidth,
     RefreshThreat = H.Refresh,
     GetHotStripHeight = GetHotStripHeight,
+    GetActiveHotTrackCount = GetActiveHotTrackCount,
     GetTargetColumnWidth = GetTargetColumnWidth,
     ShouldShowPartyBuffIcon = ShouldShowPartyBuffIcon,
     ShouldShowSelfBuffIcon = ShouldShowSelfBuffIcon,
@@ -668,6 +673,7 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
     ApplyDefaultMinimapPosition = ApplyDefaultMinimapPosition,
     IsSavedFeatureEnabled       = IsSavedFeatureEnabled,
     IsHotEnabled                = IsHotEnabled,
+    IsHotTrackKnown             = hotTracker.IsTrackKnown,
     GetBindingDisplayName       = GetBindingDisplayName,
     GetBinding                  = S.GetBinding,
     ClearBinding                = ClearBinding,

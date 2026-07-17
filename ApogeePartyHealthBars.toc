@@ -34,6 +34,7 @@ ApogeePartyHealthBars_Auras.lua
 ApogeePartyHealthBars_BuffReminders.lua
 ApogeePartyHealthBars_ShieldTracker.lua
 ApogeePartyHealthBars_IncomingHeals.lua
+ApogeePartyHealthBars_HotTracker.lua
 ApogeePartyHealthBars_ShortcutBar.lua
 ApogeePartyHealthBars_RaidMarkers.lua
 ApogeePartyHealthBars_Threat.lua
@@ -46,7 +47,6 @@ ApogeePartyHealthBars_BindingStore.lua
 ApogeePartyHealthBars_BindingController.lua
 ApogeePartyHealthBars_ClickBindings.lua
 ApogeePartyHealthBars_UnitDisplay.lua
-ApogeePartyHealthBars_EffectsTracker.lua
 ApogeePartyHealthBars_UnitFrames.lua
 ApogeePartyHealthBars_Layout.lua
 ApogeePartyHealthBars_ShortcutConfig.lua

@@ -32,32 +32,21 @@ local function snapshotHasAura(_, _, auraNames)
     return false
 end
 
+local configuredSelfAuraNames
 ApogeePartyHealthBars_Auras = {
-    GetUnitAuraSnapshot = function()
-        local hasSelfBuff = false
-        for name in pairs(activeAuraNames) do
-            if ApogeePartyHealthBars_S.selfBuffAuraNames
-                and ApogeePartyHealthBars_S.selfBuffAuraNames[name] then
-                hasSelfBuff = true
-                break
-            end
-        end
-        return { auras = {}, selfBuff = hasSelfBuff }
-    end,
+    GetUnitAuraSnapshot = function() return { auras = {} } end,
     SnapshotHasAura = snapshotHasAura,
+    ConfigureBuffMatchers = function(_, _, _, selfNames)
+        configuredSelfAuraNames = selfNames
+    end,
 }
-ApogeePartyHealthBars_ShortcutBar = {
-    GetHeight = function() return 0 end,
-    IsActive = function() return false end,
-}
-ApogeePartyHealthBars_Threat = {}
 
 local function widget()
     return setmetatable({}, { __index = function() return function() end end })
 end
 
-dofile("ApogeePartyHealthBars_EffectsTracker.lua")
-local tracker = ApogeePartyHealthBars_EffectsTracker
+dofile("ApogeePartyHealthBars_BuffReminders.lua")
+local tracker = ApogeePartyHealthBars_BuffReminders
 local secureRefreshes = 0
 local rows = {}
 for i = 1, ApogeePartyHealthBars_C.MAX_ROWS do
@@ -71,16 +60,14 @@ ApogeePartyHealthBars_S.sv = accountSaved
 ApogeePartyHealthBars_S.charSv = characterSaved
 
 tracker.Initialize({
+    Auras = ApogeePartyHealthBars_Auras,
+    Effects = ApogeePartyHealthBars_Effects,
     rows = rows,
-    SyncVisualTicker = function() end,
     IsSavedFeatureEnabled = function() return true end,
-    GetUnitTargetToken = function() return "target" end,
-    ApplyAllPartyBuffBindings = function() end,
+    IsConfigMode = function() return false end,
+    GetCharacterSavedVariables = function() return characterSaved end,
     ApplyAllSelfBuffBindings = function() secureRefreshes = secureRefreshes + 1 end,
-    RefreshConfigPanel = function() end,
-    SyncCastOverlays = function() end,
-    LayoutRows = function() end,
-    UpdateRowValues = function() end,
+    RequestLayoutUpdate = function() end,
 })
 
 local expectedFamilies = {
@@ -107,40 +94,40 @@ for classToken in pairs(expectedFamilies) do
     assert(seenFamilies[classToken], classToken .. " family is missing")
 end
 
-tracker.InitPlayerSpells()
-local options = tracker.GetSelfBuffPreferenceOptions()
-assert(ApogeePartyHealthBars_S.selfBuffFamilyKey == "mageArmor")
+tracker.RefreshKnownSpells()
+local options = tracker.GetSelfPreferenceOptions()
 assert(#options == 3 and options[1].key == "any")
-assert(ApogeePartyHealthBars_S.selfBuffCastSpellName == "Mage Armor")
-assert(tracker.GetSelfBuffPreferenceKey() == "any")
+assert(tracker.GetSelfCastSpellName() == "Mage Armor")
+assert(tracker.GetSelfPreferenceKey() == "any")
+assert(configuredSelfAuraNames["Mage Armor"] and configuredSelfAuraNames["Frost Armor"],
+    "Any Mage armor did not configure the full family aura set")
 
 activeAuraNames = { ["Frost Armor"] = true }
-assert(not tracker.ShouldShowSelfBuffIcon("player"), "Any Mage armor rejected an active family aura")
+assert(not tracker.ShouldShowSelfIcon("player"), "Any Mage armor rejected an active family aura")
 
-assert(tracker.SetSelfBuffPreference("Mage Armor"))
+assert(tracker.SetSelfPreference("Mage Armor"))
 assert(characterSaved.selfBuffSelections.mageArmor == "Mage Armor")
-assert(tracker.GetSelfBuffPreferenceKey() == "Mage Armor")
-assert(ApogeePartyHealthBars_S.selfBuffCastSpellName == "Mage Armor")
-assert(tracker.ShouldShowSelfBuffIcon("player"), "specific Mage armor accepted the wrong active armor")
+assert(tracker.GetSelfPreferenceKey() == "Mage Armor")
+assert(tracker.GetSelfCastSpellName() == "Mage Armor")
+assert(tracker.ShouldShowSelfIcon("player"), "specific Mage armor accepted the wrong active armor")
 assert(secureRefreshes == 1, "preference change did not refresh secure self-buff casting")
 
 activeAuraNames = { ["Mage Armor"] = true }
-assert(not tracker.ShouldShowSelfBuffIcon("player"), "selected Mage armor was not recognized")
+assert(not tracker.ShouldShowSelfIcon("player"), "selected Mage armor was not recognized")
 
 currentClass = "PALADIN"
 spellbook = { "Devotion Aura", "Retribution Aura" }
 activeAuraNames = { ["Retribution Aura"] = true }
-tracker.InitPlayerSpells()
-assert(ApogeePartyHealthBars_S.selfBuffFamilyKey == "paladinAura")
-assert(tracker.GetSelfBuffPreferenceKey() == "any")
-assert(not tracker.ShouldShowSelfBuffIcon("player"), "Any Paladin aura rejected an active aura")
+tracker.RefreshKnownSpells()
+assert(tracker.GetSelfPreferenceKey() == "any")
+assert(not tracker.ShouldShowSelfIcon("player"), "Any Paladin aura rejected an active aura")
 
 currentClass = "PRIEST"
 spellbook = { "Inner Fire" }
 activeAuraNames = { ["Inner Fire"] = true }
-tracker.InitPlayerSpells()
-assert(ApogeePartyHealthBars_S.selfBuffFamilyKey == nil, "simple Priest buff became a family")
-assert(#tracker.GetSelfBuffPreferenceOptions() == 0)
-assert(not tracker.ShouldShowSelfBuffIcon("player"), "Inner Fire fallback stopped working")
+tracker.RefreshKnownSpells()
+assert(tracker.GetSelfPreferenceKey() == nil, "simple Priest buff became a family preference")
+assert(#tracker.GetSelfPreferenceOptions() == 0)
+assert(not tracker.ShouldShowSelfIcon("player"), "Inner Fire fallback stopped working")
 
 print("PASS self-buff families")

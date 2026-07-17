@@ -129,11 +129,9 @@ local function CreateScrollFrame(parent)
 end
 
 local function IsGeneralRowVisible(svKey)
-    if svKey == "partyBuffEnabled" then return S.partyBuffSpellKnown end
-    if svKey == "selfBuffEnabled" then return S.selfBuffSpellKnown end
-    if svKey == "clickableBuffIcons" then
-        return S.partyBuffSpellKnown or S.selfBuffSpellKnown
-    end
+    if svKey == "partyBuffEnabled" then return D.IsPartyBuffKnown() end
+    if svKey == "selfBuffEnabled" then return D.IsSelfBuffKnown() end
+    if svKey == "clickableBuffIcons" then return D.HasKnownBuffReminder() end
     if svKey == "selfBuffPreference" then
         return #(D.GetSelfBuffPreferenceOptions() or {}) > 2
     end

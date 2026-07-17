@@ -16,6 +16,7 @@ local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 local rowGeometry = ApogeePartyHealthBars_RowGeometry
 local visualTicker = ApogeePartyHealthBars_VisualTicker
+local buffReminders = ApogeePartyHealthBars_BuffReminders
 local shieldTracker = ApogeePartyHealthBars_ShieldTracker
 local incomingHeals = ApogeePartyHealthBars_IncomingHeals
 
@@ -87,6 +88,7 @@ local HookSpellbook
 local HookContainerItems
 local ApplyAllSecureBindings
 local EnsureMinimapButton
+local InitHotSpells
 
 local function SyncVisualTicker()
     visualTicker.Sync()
@@ -142,7 +144,7 @@ local function IsPanelTrackedUnit(unit)
 end
 
 -- =============================================================================
--- Party buff reminder (class-specific spellbook cast and matching aura)
+-- Effect runtimes
 -- =============================================================================
 
 local effectsTracker = ApogeePartyHealthBars_EffectsTracker
@@ -150,27 +152,36 @@ effectsTracker.Initialize({
     rows = rows,
     SyncVisualTicker = SyncVisualTicker,
     IsSavedFeatureEnabled = IsSavedFeatureEnabled,
-    GetUnitTargetToken = GetUnitTargetToken,
-    ApplyAllPartyBuffBindings = function() ApplyAllPartyBuffBindings() end,
-    ApplyAllSelfBuffBindings = function() ApplyAllSelfBuffBindings() end,
-    RefreshConfigPanel = function() RefreshConfigPanel() end,
-    SyncCastOverlays = function() SyncCastOverlays() end,
-    LayoutRows = function() return LayoutRows() end,
-    UpdateRowValues = function() UpdateRowValues() end,
 })
-local InitPlayerSpells = effectsTracker.InitPlayerSpells
-local CanPlayerHealUnit = effectsTracker.CanPlayerHealUnit
-local ShouldShowPartyBuffIcon = effectsTracker.ShouldShowPartyBuffIcon
-local ShouldShowSelfBuffIcon = effectsTracker.ShouldShowSelfBuffIcon
-local GetSelfBuffPreferenceOptions = effectsTracker.GetSelfBuffPreferenceOptions
-local GetSelfBuffPreferenceKey = effectsTracker.GetSelfBuffPreferenceKey
-local SetSelfBuffPreference = effectsTracker.SetSelfBuffPreference
 local IsHotEnabled = effectsTracker.IsHotEnabled
 local GetHotStripHeight = effectsTracker.GetHotStripHeight
 InitHotSpells = effectsTracker.InitHotSpells
 local HasActiveHotVisuals = effectsTracker.HasActiveHotVisuals
 local TickHotVisuals = effectsTracker.TickHotVisuals
 local UpdateRowHotVisuals = effectsTracker.UpdateRowHotVisuals
+
+buffReminders.Initialize({
+    Auras = A,
+    Effects = E,
+    rows = rows,
+    IsSavedFeatureEnabled = IsSavedFeatureEnabled,
+    IsConfigMode = function() return S.configMode end,
+    GetCharacterSavedVariables = function() return S.charSv end,
+    ApplyAllSelfBuffBindings = function() ApplyAllSelfBuffBindings() end,
+    RequestLayoutUpdate = S.RequestLayoutUpdate,
+})
+local CanPlayerHealUnit = buffReminders.CanHealUnit
+local ShouldShowPartyBuffIcon = buffReminders.ShouldShowPartyIcon
+local ShouldShowSelfBuffIcon = buffReminders.ShouldShowSelfIcon
+local GetSelfBuffPreferenceOptions = buffReminders.GetSelfPreferenceOptions
+local GetSelfBuffPreferenceKey = buffReminders.GetSelfPreferenceKey
+local SetSelfBuffPreference = buffReminders.SetSelfPreference
+
+local function InitPlayerSpells()
+    buffReminders.RefreshKnownSpells()
+    InitHotSpells()
+    if S.configMode then RefreshConfigPanel() end
+end
 
 shieldTracker.Initialize({
     Auras = A,
@@ -263,7 +274,7 @@ unitDisplay.Initialize({
     IsSavedFeatureEnabled = IsSavedFeatureEnabled,
     GetUnitTargetToken = GetUnitTargetToken,
     CanPlayerHealUnit = CanPlayerHealUnit,
-    IsOppositeFactionPlayer = effectsTracker.IsOppositeFactionPlayer,
+    IsOppositeFactionPlayer = buffReminders.IsOppositeFactionPlayer,
     IsShieldEnabled = IsShieldEnabled,
     ShouldTrackShieldUnit = ShouldTrackShieldUnit,
     GetUnitShieldRemaining = GetUnitShieldRemaining,
@@ -515,6 +526,8 @@ L.Register({
     GetTargetColumnWidth = GetTargetColumnWidth,
     ShouldShowPartyBuffIcon = ShouldShowPartyBuffIcon,
     ShouldShowSelfBuffIcon = ShouldShowSelfBuffIcon,
+    GetPartyBuffCastSpellName = buffReminders.GetPartyCastSpellName,
+    GetSelfBuffCastSpellName = buffReminders.GetSelfCastSpellName,
     IsSavedFeatureEnabled = IsSavedFeatureEnabled,
     ComputeRowLayoutKey = ComputeRowLayoutKey,
     PopulateHealthRow = PopulateHealthRow,
@@ -647,6 +660,9 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
     GetSelfBuffPreferenceOptions = GetSelfBuffPreferenceOptions,
     GetSelfBuffPreferenceKey    = GetSelfBuffPreferenceKey,
     SetSelfBuffPreference       = SetSelfBuffPreference,
+    IsPartyBuffKnown            = buffReminders.IsPartyKnown,
+    IsSelfBuffKnown             = buffReminders.IsSelfKnown,
+    HasKnownBuffReminder        = buffReminders.HasKnownReminder,
     SetHotTrackEnabled          = SetHotTrackEnabled,
     ApplyDefaultPosition        = ApplyDefaultPosition,
     ApplyDefaultMinimapPosition = ApplyDefaultMinimapPosition,

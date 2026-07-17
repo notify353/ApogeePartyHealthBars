@@ -136,7 +136,7 @@ end
 local function ApplyPartyBuffBinding(castBtn, partyBuffIcon, unitId, active)
     ApplyBuffSpellBinding(
         castBtn, partyBuffIcon, active and unitId or nil,
-        active and S.partyBuffCastSpellName or nil, active)
+        active and D.GetPartyBuffCastSpellName() or nil, active)
 end
 
 local function ApplyPartyBuffBindingToRow(row, unitId, active)
@@ -172,7 +172,7 @@ local function ApplySelfBuffBindingToRow(row, active)
     ApplyBuffSpellBinding(
         row.selfBuffCastBtn, row.selfBuffIcon,
         active and "player" or nil,
-        active and S.selfBuffCastSpellName or nil,
+        active and D.GetSelfBuffCastSpellName() or nil,
         active)
 end
 

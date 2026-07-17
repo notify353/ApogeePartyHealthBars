@@ -280,6 +280,10 @@ assert(tocLoadOrder["ApogeePartyHealthBars_Threat.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"],
     "VisualTicker loaded outside its dependency-safe initialization order")
 assert(tocLoadOrder["ApogeePartyHealthBars_Auras.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_BuffReminders.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_BuffReminders.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_Auras.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_ShieldTracker.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_Auras.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_IncomingHeals.lua"]
@@ -287,7 +291,10 @@ assert(tocLoadOrder["ApogeePartyHealthBars_Auras.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_IncomingHeals.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"],
-    "health-overlay modules loaded outside their dependency-safe order")
+    "effect runtimes loaded outside their dependency-safe order")
+assert(type(ApogeePartyHealthBars_BuffReminders.RefreshKnownSpells) == "function"
+        and ApogeePartyHealthBars_EffectsTracker.ShouldShowPartyBuffIcon == nil,
+    "buff-reminder ownership remained in EffectsTracker")
 assert(type(ApogeePartyHealthBars_ShieldTracker.GetRemaining) == "function"
         and type(ApogeePartyHealthBars_IncomingHeals.GetAmount) == "function",
     "health-overlay modules did not expose their focused runtimes")

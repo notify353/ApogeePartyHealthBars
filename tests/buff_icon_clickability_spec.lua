@@ -1,8 +1,5 @@
 ApogeePartyHealthBars_C = { MAX_ROWS = 1 }
-ApogeePartyHealthBars_S = {
-    partyBuffCastSpellName = "Power Word: Fortitude",
-    selfBuffCastSpellName = "Inner Fire",
-}
+ApogeePartyHealthBars_S = {}
 
 local inCombat = false
 function InCombatLockdown() return inCombat end
@@ -63,6 +60,8 @@ layout.Register({
     ShowSecureFrame = show,
     SetSecureMouseEnabled = setMouseEnabled,
     PositionSecureOverlay = function() return true end,
+    GetPartyBuffCastSpellName = function() return "Power Word: Fortitude" end,
+    GetSelfBuffCastSpellName = function() return "Inner Fire" end,
 })
 
 layout.ApplyAllPartyBuffBindings()

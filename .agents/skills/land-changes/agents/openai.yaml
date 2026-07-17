@@ -1,0 +1,7 @@
+interface:
+  display_name: "Land Changes"
+  short_description: "Validate, commit, review, and merge changes"
+  default_prompt: "Use $land-changes to resume and safely land the intended change without releasing or deploying it."
+
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Publish Release"
+  short_description: "Prepare or resume a guarded production release"
+  default_prompt: "Use $publish-release to prepare or resume a production release and pause for fresh approval before publishing."
+
+policy:
+  allow_implicit_invocation: false

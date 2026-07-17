@@ -2,6 +2,7 @@ local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local T = ApogeePartyHealthBars_ShortcutBar
 local F = ApogeePartyHealthBars_SecureFrames
+local Actions = ApogeePartyHealthBars_ActionData
 
 ApogeePartyHealthBars_UnitDisplay = {}
 local U = ApogeePartyHealthBars_UnitDisplay
@@ -130,29 +131,19 @@ local function IsUnitInDefaultRange(unitId)
     return inRange == true or inRange == 1
 end
 
-local function IsUnitInPrimarySpellRange(unitId)
+local function IsUnitInPrimaryActionRange(unitId)
     if not D.IsSavedFeatureEnabled("rangeCheckEnabled") then return true end
     if S.configMode then return true end
     if not unitId or not UnitExists(unitId) or UnitIsDeadOrGhost(unitId) then return true end
 
-    local binding = S.GetBinding("1")
-    if not binding or not IsSpellInRange then return IsUnitInDefaultRange(unitId) end
-
-    local spellId, spellName
-    if type(binding) == "table" then
-        if type(binding.id) == "number" and binding.id > 0 then spellId = binding.id end
-        if type(binding.name) == "string" and binding.name ~= "" then spellName = binding.name end
-    elseif type(binding) == "number" and binding > 0 then
-        spellId = binding
-    elseif type(binding) == "string" and binding ~= "" then
-        spellName = binding
-    else
+    local action = Actions.Normalize(S.GetBinding("1"))
+    if not action or action.kind ~= "spell" or not IsSpellInRange then
         return IsUnitInDefaultRange(unitId)
     end
 
-    -- Classic's three-argument form expects a spellbook slot, not a spell ID.
-    -- Resolve legacy numeric bindings to a name and use the stable name form.
-    spellName = spellName or (spellId and GetSpellInfo(spellId))
+    -- Classic's IsSpellInRange overloads do not accept a spell ID reliably, so
+    -- use the stable rank-qualified name captured from the Spellbook.
+    local spellName = action.spellName or (action.spellId and GetSpellInfo(action.spellId))
     if not spellName then return IsUnitInDefaultRange(unitId) end
     local inRange = IsSpellInRange(spellName, unitId)
     if inRange == nil then return IsUnitInDefaultRange(unitId) end
@@ -169,14 +160,14 @@ function S.RefreshRangeAlpha()
                 if UnitIsConnected and not UnitIsConnected(unitId) then
                     row.btn:SetAlpha(C.OFFLINE_ALPHA)
                 else
-                    row.btn:SetAlpha(IsUnitInPrimarySpellRange(unitId) and 1 or C.OUT_OF_RANGE_ALPHA)
+                    row.btn:SetAlpha(IsUnitInPrimaryActionRange(unitId) and 1 or C.OUT_OF_RANGE_ALPHA)
                 end
             end
 
             local targetUnitId = row.showTargetPane and D.GetUnitTargetToken(unitId) or nil
             if targetUnitId and row.targetBtn:IsShown() and UnitExists(targetUnitId) then
                 local healable = D.CanPlayerHealUnit(targetUnitId)
-                local inRange = IsUnitInPrimarySpellRange(targetUnitId)
+                local inRange = IsUnitInPrimaryActionRange(targetUnitId)
                 row.targetBtn:SetAlpha((healable and inRange) and 1 or C.OUT_OF_RANGE_ALPHA)
             end
         end
@@ -216,7 +207,7 @@ local function PopulateTargetBar(row, targetUnitId)
     D.UpdateIncomingHealBarVisual(row.targetHealPredBar, targetUnitId)
 
     local healable = D.CanPlayerHealUnit(targetUnitId)
-    local inRange = IsUnitInPrimarySpellRange(targetUnitId)
+    local inRange = IsUnitInPrimaryActionRange(targetUnitId)
     row.targetBtn:SetAlpha((healable and inRange) and 1 or C.OUT_OF_RANGE_ALPHA)
 end
 
@@ -347,7 +338,7 @@ local function PopulateHealthRow(row, unitId)
     UpdateRowPowerVisual(row, unitId)
     D.UpdateRowHotVisuals(row, unitId)
 
-    row.btn:SetAlpha(IsUnitInPrimarySpellRange(unitId) and 1 or C.OUT_OF_RANGE_ALPHA)
+    row.btn:SetAlpha(IsUnitInPrimaryActionRange(unitId) and 1 or C.OUT_OF_RANGE_ALPHA)
 end
 
 function U.Initialize(deps)

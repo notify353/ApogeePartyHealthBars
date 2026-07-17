@@ -16,6 +16,7 @@ ApogeePartyHealthBars_EventRouter.lua
 ApogeePartyHealthBars_SecureFrames.lua
 ApogeePartyHealthBars_Sounds.lua
 ApogeePartyHealthBars_ShortcutItems.lua
+ApogeePartyHealthBars_ActionData.lua
 ApogeePartyHealthBars_ActionMacros.lua
 ApogeePartyHealthBars_ActionConfig.lua
 ApogeePartyHealthBars_BoundActionLayouts.lua

@@ -74,6 +74,7 @@ function R.Register(eventRouter, deps)
         if ui.RefreshShortcutPanel then ui.RefreshShortcutPanel() end
         if ui.RefreshKeyPanel then ui.RefreshKeyPanel() end
         if ui.RefreshWheelPanel then ui.RefreshWheelPanel() end
+        if ui.RefreshBindPanel then ui.RefreshBindPanel() end
     end)
 
     eventRouter.RegisterOptional("RAID_TARGET_UPDATE", "RaidMarkers", M.Refresh)
@@ -103,6 +104,7 @@ function R.Register(eventRouter, deps)
             end
             S.charSv = ApogeePartyHealthCharSV
             E.InitializeSavedVariables(S.sv, S.charSv)
+            ApogeePartyHealthBars_BindingStore.Initialize()
             U.Initialize(S.sv.combatUIAutoHide)
             local macrosValid, macroErrors = ApogeePartyHealthBars_MacroLibrary.ValidateAll()
             if not macrosValid then

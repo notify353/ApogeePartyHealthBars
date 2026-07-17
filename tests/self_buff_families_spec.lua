@@ -2,6 +2,7 @@ unpack = unpack or table.unpack
 function wipe(value) for key in pairs(value or {}) do value[key] = nil end return value end
 
 dofile("ApogeePartyHealthBars_Data.lua")
+dofile("ApogeePartyHealthBars_ActionData.lua")
 dofile("ApogeePartyHealthBars_Effects.lua")
 
 local currentClass = "MAGE"

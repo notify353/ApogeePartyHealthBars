@@ -1,6 +1,7 @@
 -- Spellbook-driven effect selection shared by party buffs, self buffs, HoTs,
 -- and class-specific starter bindings.
 local C = ApogeePartyHealthBars_C
+local Actions = ApogeePartyHealthBars_ActionData
 
 ApogeePartyHealthBars_Effects = {}
 
@@ -155,7 +156,7 @@ function E.SeedClassBindings(bindings, classToken)
             definition.pattern
         )
         if known and spellName then
-            bindings[definition.key] = { name = spellName }
+            bindings[definition.key] = Actions.CreateSpell(nil, spellName)
             added = added + 1
         end
     end

@@ -10,6 +10,7 @@ ApogeePartyHealthBars_ShortcutItems = {
     GetCount = function(id) return id == 1251 and 1 or 0 end,
 }
 
+dofile("ApogeePartyHealthBars_ActionData.lua")
 dofile("ApogeePartyHealthBars_ActionMacros.lua")
 local actions = ApogeePartyHealthBars_ActionMacros
 

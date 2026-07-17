@@ -263,8 +263,8 @@ local function ShouldShowRow(slotIndex, unitId)
 end
 
 local bindingStore = ApogeePartyHealthBars_BindingStore
-local KeyToSpellAttrs = bindingStore.KeyToSpellAttrs
-local GetBindingSpellName = bindingStore.GetSpellName
+local KeyToActionAttrs = bindingStore.KeyToActionAttrs
+local GetBindingAction = bindingStore.GetAction
 local GetBindingDisplayName = bindingStore.GetDisplayName
 local GetBindingsTable = bindingStore.GetTable
 
@@ -453,9 +453,9 @@ end)
 local clickBindings = ApogeePartyHealthBars_ClickBindings
 clickBindings.Initialize({
     rows = rows,
-    KeyToSpellAttrs = KeyToSpellAttrs,
+    KeyToActionAttrs = KeyToActionAttrs,
     GetBindingsTable = GetBindingsTable,
-    GetBindingSpellName = GetBindingSpellName,
+    GetBindingAction = GetBindingAction,
     GetUnitTargetToken = GetUnitTargetToken,
 })
 ApplyAllBindings = clickBindings.ApplyAll
@@ -539,7 +539,9 @@ local GetSpellFromSpellButton = playerSpells.GetSpellFromButton
 
 local bindingController = ApogeePartyHealthBars_BindingController
 bindingController.Initialize({
-    GetBindingsTable = GetBindingsTable,
+    AssignBindingSpell = bindingStore.AssignSpell,
+    AssignBindingItem = bindingStore.AssignItem,
+    ClearBindingAction = bindingStore.Clear,
     RefreshBindPanel = function() RefreshBindPanel() end,
     ForceRefresh = ForceRefresh,
     Print = Print,

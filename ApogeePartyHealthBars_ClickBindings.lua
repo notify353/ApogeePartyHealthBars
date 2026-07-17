@@ -10,23 +10,33 @@ local function ClearCastAttributes(castBtn)
     castBtn:SetAttribute("unit", nil)
     castBtn:SetAttribute("type", nil)
     castBtn:SetAttribute("spell", nil)
+    castBtn:SetAttribute("item", nil)
     for _, slot in ipairs(C.BINDING_SLOTS) do
-        local typeAttr, spellAttr = D.KeyToSpellAttrs(slot.key)
+        local typeAttr, spellAttr, itemAttr = D.KeyToActionAttrs(slot.key)
         if typeAttr then
             castBtn:SetAttribute(typeAttr, nil)
             castBtn:SetAttribute(spellAttr, nil)
+            castBtn:SetAttribute(itemAttr, nil)
         end
     end
 end
 
-local function SetClickSpell(castBtn, slotKey, spellName)
-    local typeAttr, spellAttr = D.KeyToSpellAttrs(slotKey)
+local function SetClickAction(castBtn, slotKey, action)
+    local typeAttr, spellAttr, itemAttr = D.KeyToActionAttrs(slotKey)
     if not typeAttr then return end
-    castBtn:SetAttribute(typeAttr, "spell")
-    castBtn:SetAttribute(spellAttr, spellName)
+    local actionType, payloadAttr, payload
+    if action.kind == "item" then
+        actionType, payloadAttr, payload = "item", itemAttr, "item:" .. tostring(action.itemId)
+    else
+        actionType, payloadAttr = "spell", spellAttr
+        payload = action.spellId or action.spellName
+    end
+    if not payload then return end
+    castBtn:SetAttribute(typeAttr, actionType)
+    castBtn:SetAttribute(payloadAttr, payload)
     if slotKey == "1" then
-        castBtn:SetAttribute("type", "spell")
-        castBtn:SetAttribute("spell", spellName)
+        castBtn:SetAttribute("type", actionType)
+        castBtn:SetAttribute(actionType, payload)
     end
 end
 
@@ -34,7 +44,7 @@ local function RowHasBindings()
     local bindings = D.GetBindingsTable()
     if not bindings then return false end
     for _, slot in ipairs(C.BINDING_SLOTS) do
-        if D.GetBindingSpellName(bindings[slot.key]) then
+        if D.GetBindingAction(bindings[slot.key]) then
             return true
         end
     end
@@ -61,10 +71,10 @@ local function ApplyClickBindings(castBtn, unitId, active, visibilityFrame)
     local bindings = D.GetBindingsTable()
     if bindings then
         for _, slot in ipairs(C.BINDING_SLOTS) do
-            local spellName = D.GetBindingSpellName(bindings[slot.key])
-            if spellName then
+            local action = D.GetBindingAction(bindings[slot.key])
+            if action then
                 hasBinding = true
-                SetClickSpell(castBtn, slot.key, spellName)
+                SetClickAction(castBtn, slot.key, action)
             end
         end
     end
@@ -109,4 +119,3 @@ end
 
 function B.Initialize(deps) D = deps end
 B.ApplyAll = ApplyAllBindings
-

@@ -18,6 +18,7 @@ function UnitClass() return "Druid", "DRUID" end
 C_Spell = { GetSpellInfo = function(id) return { name = id == 2457 and "Battle Stance" or "Defensive Stance" } end }
 
 dofile("ApogeePartyHealthBars_KeyData.lua")
+dofile("ApogeePartyHealthBars_ActionData.lua")
 dofile("ApogeePartyHealthBars_ActionMacros.lua")
 dofile("ApogeePartyHealthBars_BoundActionLayouts.lua")
 dofile("ApogeePartyHealthBars_KeyLayouts.lua")

@@ -10,6 +10,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 - Added an independently enabled 15-key action cluster for `1`–`5`, `Q/E/R/T`, `F/G`, and `Z/X/C/V`, with typed spell/item actions, custom macros, sounds, cooldown/range feedback, secure execution, per-spec profiles, and empty per-form layouts.
 - Added a keyboard-shaped Keys editor with focused and armed tiles, smart first-empty Shift-click assignment, complete-payload Previous/Next swaps, and a compact six-tab settings layout.
+- Added usable bag items such as bandages to Healing clicks with native secure targeting of the clicked party unit.
 - Added usable bag items to Shortcuts, Keys, and Wheel, including generated `/use` macros, item tooltips, carried quantities, usability, cooldowns, depletion persistence, and automatic restock recovery.
 - Added the loaded add-on version to the configuration header for easy in-game verification.
 - Added 11 dependency-free bundled ready sounds: Glass, Sonar, Robot Blip, Water Drop, Temple Bell, Focus, Torch, Blast, Shotgun, Boxing Arena Gong, and Squish.
@@ -23,7 +24,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 - Removed physical-key labels from the player-frame Keys HUD while retaining them in the Keys configuration selector.
 - Made Keys enablement immediately capture and replace all 15 current bindings, with binding-set-specific restoration, foreign-rebinding conflict preservation, combat-safe reconciliation, and atomic Keys/Mouse Wheel restoration during Factory Reset.
 - Expanded Shortcuts to 12 assignments and capped the player-frame display at six icons per row, with slots 7–12 continuing on a second row.
-- Renamed Spells to Shortcuts throughout the UI and internals. Shortcuts, Keys, and Wheel now accept Shift-clicked Spellbook spells or bag items, while Healing remains spell-only for party-unit targeting.
+- Renamed Spells to Shortcuts throughout the UI and internals. Healing, Shortcuts, Keys, and Wheel now accept Shift-clicked Spellbook spells or usable bag items; Healing keeps native unit-targeted actions while the other features use editable macros.
 - Added typed spell/item shortcut saved data with one-time tracked-spell and Wheel migration; Shortcuts rejects duplicate spell or item IDs while Keys and Wheel allow duplicates across positions and specialization/stance layouts.
 - Made the add-on settings background fully opaque for better readability.
 - Simplified unavailable spell feedback in Shortcuts and Wheel to faded or desaturated icons with neutral borders, removing red range and resource borders plus the out-of-range tooltip status.

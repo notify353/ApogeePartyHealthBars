@@ -9,58 +9,55 @@ ApogeePartyHealthBars_BindingController = {}
 local B = ApogeePartyHealthBars_BindingController
 local D
 
-local function AssignBinding(spellID, spellName)
-    if not S.selectedBindingKey then return end
-    if InCombatLockdown() then
-        D.Print("cannot bind spells in combat.")
-        return
-    end
+local function IsAssignableTab(tabName)
+    if tabName == "healing" then return S.selectedBindingKey ~= nil end
+    return tabName == "shortcuts" or tabName == "keys" or tabName == "wheel"
+end
 
-    if not spellName or spellName == "" then
-        if type(spellID) == "number" then
-            spellName = GetSpellInfo(spellID)
-        elseif type(spellID) == "string" then
-            spellName = spellID
-        end
-    end
-    if not spellName or spellName == "" then
-        D.Print("could not store that spell.")
-        return
-    end
-
-    local bindings = D.GetBindingsTable()
-    if not bindings then return end
-    bindings[S.selectedBindingKey] = {
-        id   = (type(spellID) == "number" and spellID > 0) and spellID or nil,
-        name = spellName,
-    }
-
+local function GetBindingSlotLabel(slotKey)
     for _, slot in ipairs(C.BINDING_SLOTS) do
-        if slot.key == S.selectedBindingKey then
-            D.Print("bound |cff00ff00" .. spellName .. "|r to " .. slot.label)
-            break
-        end
+        if slot.key == slotKey then return slot.label end
     end
+    return slotKey
+end
 
+local function RefreshHealingBindings()
     D.RefreshBindPanel()
     D.ForceRefresh()
+end
+
+local function AssignBindingSpell(spellID, spellName)
+    if not S.selectedBindingKey then return end
+    local ok, message, action = D.AssignBindingSpell(S.selectedBindingKey, spellID, spellName)
+    if message then D.Print(message) end
+    if not ok then return false end
+    D.Print("bound |cff00ff00" .. action.spellName .. "|r to "
+        .. GetBindingSlotLabel(S.selectedBindingKey))
+    RefreshHealingBindings()
+    return true
+end
+
+local function AssignBindingItem(itemId, itemName)
+    if not S.selectedBindingKey then return false end
+    local ok, message, action = D.AssignBindingItem(S.selectedBindingKey, itemId, itemName)
+    if message then D.Print(message) end
+    if not ok then return false end
+    D.Print("bound |cff00ff00" .. action.itemName .. "|r to "
+        .. GetBindingSlotLabel(S.selectedBindingKey))
+    RefreshHealingBindings()
+    return true
 end
 
 local function ClearBinding(slotKey)
-    local bindings = D.GetBindingsTable()
-    if not bindings then return end
-    if InCombatLockdown() then
-        D.Print("cannot change bindings in combat.")
-        return
-    end
-    bindings[slotKey] = nil
-    D.RefreshBindPanel()
-    D.ForceRefresh()
+    local ok, message = D.ClearBindingAction(slotKey)
+    if message then D.Print(message) end
+    if not ok then return false end
+    RefreshHealingBindings()
+    return true
 end
 
 local function AssignFromSpellButton(spellButton)
-    local actionTab = S.configTab == "shortcuts" or S.configTab == "keys" or S.configTab == "wheel"
-    if not S.configMode or (not S.selectedBindingKey and not actionTab)
+    if not S.configMode or not IsAssignableTab(S.configTab)
         or not IsShiftKeyDown() or InCombatLockdown() then
         return false
     end
@@ -110,13 +107,11 @@ local function AssignFromSpellButton(spellButton)
         return ok
     end
 
-    AssignBinding(spellID or spellName, spellName)
-    return true
+    return AssignBindingSpell(spellID, spellName)
 end
 
 local function AssignFromItemButton(itemButton)
-    if not S.configMode or (S.configTab ~= "shortcuts" and S.configTab ~= "keys"
-        and S.configTab ~= "wheel")
+    if not S.configMode or not IsAssignableTab(S.configTab)
         or not IsShiftKeyDown() or InCombatLockdown() then
         return false
     end
@@ -127,7 +122,7 @@ local function AssignFromItemButton(itemButton)
     local slotId = itemButton and itemButton.GetID and itemButton:GetID()
     local itemId = bagId ~= nil and slotId and C_Container and C_Container.GetContainerItemID
         and C_Container.GetContainerItemID(bagId, slotId)
-    local itemName = itemId and Items.GetInfo(itemId)
+    local itemName = itemId and Items and Items.GetInfo and Items.GetInfo(itemId)
     if not itemId or not itemName then
         D.Print("could not read that item — try another click.")
         return false
@@ -139,7 +134,11 @@ local function AssignFromItemButton(itemButton)
         end
     end
 
-    if S.configTab == "keys" then
+    if S.configTab == "healing" then
+        local ok = AssignBindingItem(itemId, itemName)
+        if ok then DismissNativeSplitStack() end
+        return ok
+    elseif S.configTab == "keys" then
         local layoutKey = S.selectedKeyLayout
         if not K.IsKnownLayout(layoutKey) then layoutKey = K.GetActiveLayoutKey() end
         local ok, message, assignedSlot = K.AssignItem(layoutKey,

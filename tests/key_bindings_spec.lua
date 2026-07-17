@@ -47,6 +47,7 @@ function SaveBindings(set) assert(set == currentSet); saveCount = saveCount + 1 
 function InCombatLockdown() return false end
 
 dofile("ApogeePartyHealthBars_KeyData.lua")
+dofile("ApogeePartyHealthBars_ActionData.lua")
 dofile("ApogeePartyHealthBars_ActionMacros.lua")
 dofile("ApogeePartyHealthBars_BoundActionLayouts.lua")
 dofile("ApogeePartyHealthBars_KeyLayouts.lua")

@@ -271,10 +271,11 @@ local function RefreshBindPanel()
     for i, slot in ipairs(C.BINDING_SLOTS) do
         local row = bindSlotRows[i]
         local binding = D.GetBinding(slot.key)
-        if binding then
-            row.spellFS:SetText("|cffAAAAFF" .. D.GetBindingDisplayName(binding) .. "|r")
+        local displayName = binding and D.GetBindingDisplayName(binding)
+        if displayName then
+            row.actionFS:SetText("|cffAAAAFF" .. displayName .. "|r")
         else
-            row.spellFS:SetText("|cff666666— unbound —|r")
+            row.actionFS:SetText("|cff666666— unbound —|r")
         end
         if S.selectedBindingKey == slot.key then
             row.bg:SetColorTexture(0.22, 0.22, 0.22, 1)
@@ -285,8 +286,8 @@ local function RefreshBindPanel()
         end
     end
     bindHintFS:SetText(S.selectedBindingKey
-        and "|cff00ff00Selected.|r Shift-click a healing or cleansing spell."
-        or  "Select a row, then Shift-click a healing or cleansing spell. Right-click to clear.")
+        and "|cff00ff00Selected.|r Shift-click a Spellbook spell or usable bag item."
+        or  "Select a row, then Shift-click a Spellbook spell or usable bag item. Right-click to clear.")
 end
 
 local function RefreshConfigPanel()
@@ -357,11 +358,11 @@ local function BuildHealingTab(parent)
         labelFS:SetWordWrap(false)
         labelFS:SetText(slot.label)
 
-        local spellFS = btn:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-        spellFS:SetPoint("LEFT", labelFS, "RIGHT", 4, 0)
-        spellFS:SetPoint("RIGHT", btn, "RIGHT", -4, 0)
-        spellFS:SetJustifyH("LEFT")
-        spellFS:SetWordWrap(false)
+        local actionFS = btn:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+        actionFS:SetPoint("LEFT", labelFS, "RIGHT", 4, 0)
+        actionFS:SetPoint("RIGHT", btn, "RIGHT", -4, 0)
+        actionFS:SetJustifyH("LEFT")
+        actionFS:SetWordWrap(false)
 
         btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
         btn:SetScript("OnClick", function(_, mouseButton)
@@ -379,7 +380,7 @@ local function BuildHealingTab(parent)
             end
         end)
 
-        bindSlotRows[i] = { btn = btn, bg = bg, accent = accent, spellFS = spellFS }
+        bindSlotRows[i] = { btn = btn, bg = bg, accent = accent, actionFS = actionFS }
     end
 
     bindScrollChild:SetHeight(#C.BINDING_SLOTS * C.BIND_ROW_H)

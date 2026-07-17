@@ -34,6 +34,7 @@ function GetSpellInfo(spellId)
     end
 end
 
+dofile("ApogeePartyHealthBars_ActionData.lua")
 dofile("ApogeePartyHealthBars_ActionMacros.lua")
 dofile("ApogeePartyHealthBars_BoundActionLayouts.lua")
 dofile("ApogeePartyHealthBars_WheelLayouts.lua")

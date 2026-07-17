@@ -21,7 +21,7 @@ for _, definition in ipairs(definitions) do
 end
 
 ApogeePartyHealthBars_S = {
-    sv = { spellTrackerEnabled = true, spellTrackerSoundsEnabled = true },
+    sv = {},
     charSv = { trackedSpells = {}, trackerDefaultsVersion = ApogeePartyHealthBars_C.TRACKER_DEFAULTS_VERSION }, castBtnSerial = 0,
 }
 ApogeePartyHealthBars_S.charSv.trackedSpells[1] = {
@@ -97,6 +97,7 @@ GameTooltip.AddLine = function() end
 
 dofile("ApogeePartyHealthBars_Sounds.lua")
 dofile("ApogeePartyHealthBars_UIHelpers.lua")
+dofile("ApogeePartyHealthBars_ActionMacros.lua")
 dofile("ApogeePartyHealthBars_SpellTracker.lua")
 local tracker = ApogeePartyHealthBars_SpellTracker
 local playerBtn, targetBtn = widget(), widget()
@@ -125,13 +126,20 @@ assert(visualButtons[2].points[1][4] == 0
     and visualButtons[3].points[1][4] == ApogeePartyHealthBars_C.TRACKER_ICON_SIZE + ApogeePartyHealthBars_C.TRACKER_ICON_GAP,
     "target-lane order was not stable")
 assert(secureButtons[1].attributes.unit == nil)
-assert(secureButtons[2].attributes.unit == "target" and secureButtons[2].attributes.spell == "Localized Polymorph(Rank 1)")
+assert(secureButtons[2].attributes.unit == nil and secureButtons[2].attributes.type == "macro"
+    and secureButtons[2].attributes.macrotext:find("/cast Localized Polymorph(Rank 1)", 1, true))
 
 local function TrackCrowdControl(canonical)
     local localized = localizedByCanonical[canonical]
-    ApogeePartyHealthBars_S.charSv.trackedSpells[2] = {
-        name = localized .. "(Rank 1)", enabled = true, soundKey = "none",
-    }
+    local spellId
+    for _, definition in ipairs(definitions) do
+        if definition.canonical == canonical then
+            spellId = definition.identitySpellIds[1]
+            break
+        end
+    end
+    ApogeePartyHealthBars_S.charSv.trackedSpells[2] =
+        ApogeePartyHealthBars_ActionMacros.Create(spellId, localized .. "(Rank 1)", "none")
     tracker.ResolveAndRefresh()
     assert(tracker.GetSlotLane(2) == "target", canonical .. " failed localized CC recognition")
 end
@@ -196,6 +204,7 @@ tracker.RefreshSecureActions()
 assert(secureButtons[2].mutations == beforeCombat and deferred > 0)
 inCombat = false
 tracker.RefreshSecureActions()
-assert(secureButtons[2].attributes.unit == "target" and secureButtons[2].shown and secureButtons[2].mouseEnabled)
+assert(secureButtons[2].attributes.unit == nil and secureButtons[2].attributes.type == "macro"
+    and secureButtons[2].shown and secureButtons[2].mouseEnabled)
 
 print("PASS crowd-control tracker")

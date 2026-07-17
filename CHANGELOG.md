@@ -6,14 +6,26 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Added
+
+- Added 11 dependency-free bundled ready sounds: Glass, Sonar, Robot Blip, Water Drop, Temple Bell, Focus, Torch, Blast, Shotgun, Boxing Arena Gong, and Squish.
+- Refined the built-in sound-kit choices to the three alarms and Toast.
+- Added shared generated secure actions for Spells and Wheel, with rank-qualified casts, focused macro editing, Reset, byte validation, and legacy saved-data migration.
+
 ### Changed
 
+- Renamed the Bindings settings section to Healing and clarified that it is for healing and cleansing click assignments.
+- Removed the player spell tracker and ready-sound enable checkboxes; both features are now always active.
+- Rebuilt Spells and Wheel around compact matching rows with smart Shift-click assignment, direct sound and macro controls, whole-action movement, and explicit clearing.
+- Kept all six Wheel gestures configurable while Wheel is disabled; only the compact Wheel Enabled control now claims or restores their bindings.
 - Replaced the talent/level opener recommendation with a curated copy-only combat macro library containing universal and current-class examples.
 - Polished the combat macro library with counted category filtering, selectable read-only macro text, clear copy instructions, and compact exact-fit controls.
 
 ### Fixed
 
 - Preserved the selected macro category and example when switching tabs, refreshed pet-dependent requirements when the player's pet changes, and hardened catalog validation against malformed recipe metadata.
+- Prevented Spells and Wheel macro drafts from surviving action replacement or Wheel profile changes, while keeping the settings tabs and close control reachable from the focused editor.
+- Prevented Wheel action edits from reclaiming physical keys, made enable/disable restoration transactional, and retained ownership records when WoW rejects a deferred binding restore.
 
 ## [0.36.0] - 2026-07-15
 

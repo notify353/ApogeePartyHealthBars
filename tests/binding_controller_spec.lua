@@ -9,6 +9,7 @@ ApogeePartyHealthBars_S = {
     selectedTrackerSlot = nil,
     selectedWheelSlot = nil,
     selectedWheelLayout = nil,
+    configTab = "healing",
     spellbookHooked = false,
 }
 
@@ -16,14 +17,16 @@ local assignedTrackerSpell
 ApogeePartyHealthBars_SpellTracker = {
     AssignSpell = function(slot, spellId, spellName)
         assignedTrackerSpell = { slot = slot, spellId = spellId, spellName = spellName }
-        return true
+        return true, nil, slot or 1
     end,
 }
 local assignedWheelSpell
 ApogeePartyHealthBars_WheelMacros = {
-    AssignDisplaySpell = function(layout, slot, spellId, spellName)
+    GetActiveLayoutKey = function() return "base" end,
+    IsKnownLayout = function(layout) return layout == "base" end,
+    AssignSpell = function(layout, slot, spellId, spellName)
         assignedWheelSpell = { layout = layout, slot = slot, spellId = spellId, spellName = spellName }
-        return true
+        return true, nil, slot or "ctrlUp"
     end,
 }
 
@@ -42,6 +45,7 @@ dofile("ApogeePartyHealthBars_BindingController.lua")
 local controller = ApogeePartyHealthBars_BindingController
 local bindings = {}
 local refreshes = 0
+local refreshedTrackerSlot, refreshedWheelSlot
 controller.Initialize({
     GetBindingsTable = function() return bindings end,
     RefreshBindPanel = function() refreshes = refreshes + 1 end,
@@ -49,7 +53,12 @@ controller.Initialize({
     Print = function() end,
     SyncVisualTicker = function() end,
     GetSpellFromSpellButton = function() return 2061, "Flash Heal" end,
-    GetConfigUI = function() return { RefreshSpellPanel = function() end } end,
+    GetConfigUI = function()
+        return {
+            RefreshSpellPanel = function(slot) refreshedTrackerSlot = slot end,
+            RefreshWheelPanel = function(slot) refreshedWheelSlot = slot end,
+        }
+    end,
 })
 
 assert(type(controller.HookSpellbook) == "function", "spellbook post-hook was not exposed")
@@ -68,18 +77,32 @@ assert(refreshes == 2, "binding assignment did not refresh its settings and fram
 
 ApogeePartyHealthBars_S.selectedBindingKey = nil
 ApogeePartyHealthBars_S.selectedTrackerSlot = 3
+ApogeePartyHealthBars_S.configTab = "spells"
 spellButton.scripts.OnClick(spellButton)
 assert(assignedTrackerSpell and assignedTrackerSpell.slot == 3
     and assignedTrackerSpell.spellId == 2061 and assignedTrackerSpell.spellName == "Flash Heal",
     "secure post-hook did not assign a tracker spell")
+assert(refreshedTrackerSlot == 3, "Spells refresh did not receive the actual replacement slot")
+assignedTrackerSpell = nil
+spellButton.scripts.OnClick(spellButton)
+assert(assignedTrackerSpell and assignedTrackerSpell.slot == nil,
+    "Spells tab did not allow smart assignment without an armed row")
+assert(refreshedTrackerSlot == 1, "Spells refresh did not receive the actual appended slot")
 
 ApogeePartyHealthBars_S.selectedTrackerSlot = nil
 ApogeePartyHealthBars_S.selectedWheelSlot = "shiftUp"
-ApogeePartyHealthBars_S.selectedWheelLayout = "base"
+ApogeePartyHealthBars_S.selectedWheelLayout = "removed-layout"
+ApogeePartyHealthBars_S.configTab = "wheel"
 spellButton.scripts.OnClick(spellButton)
 assert(assignedWheelSpell and assignedWheelSpell.layout == "base" and assignedWheelSpell.slot == "shiftUp"
     and assignedWheelSpell.spellId == 2061 and assignedWheelSpell.spellName == "Flash Heal",
-    "secure post-hook did not assign a wheel display spell")
+    "secure post-hook did not assign a wheel spell")
+assert(refreshedWheelSlot == "shiftUp", "Wheel refresh did not receive the actual replacement gesture")
+assignedWheelSpell = nil
+spellButton.scripts.OnClick(spellButton)
+assert(assignedWheelSpell and assignedWheelSpell.layout == "base" and assignedWheelSpell.slot == nil,
+    "Wheel tab did not allow smart assignment without an armed row")
+assert(refreshedWheelSlot == "ctrlUp", "Wheel refresh did not receive the actual first-empty gesture")
 
 inCombat = true
 assignedTrackerSpell = nil

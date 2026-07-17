@@ -14,7 +14,8 @@ local wheelCanDisable = true
 local wheel = {
     Disable = function()
         disableCalls = disableCalls + 1
-        return wheelCanDisable, wheelCanDisable and nil or "wheel restore failed"
+        return wheelCanDisable, wheelCanDisable and "disabled" or "binding_restore_failed",
+            wheelCanDisable and "disabled" or "wheel restore failed"
     end,
 }
 
@@ -38,6 +39,8 @@ wheelCanDisable = false
 assert(not controller.FactoryReset(), "factory reset continued after wheel restoration failed")
 assert(ApogeePartyHealthSV and ApogeePartyHealthCharSV and reloads == 0,
     "failed wheel restoration erased saved state")
+assert(messages[#messages] == "wheel restore failed",
+    "factory reset reported an internal Wheel failure code instead of the actionable detail")
 
 wheelCanDisable = true
 assert(controller.FactoryReset(), "factory reset failed")

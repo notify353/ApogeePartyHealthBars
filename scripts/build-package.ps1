@@ -25,9 +25,19 @@ try {
     $runtimeFiles = Get-Content -LiteralPath $tocPath | ForEach-Object { $_.Trim() } | Where-Object {
         $_ -and -not $_.StartsWith('#')
     }
-    $files = @('ApogeePartyHealthBars.toc', 'LICENSE', 'README.md') + $runtimeFiles
+    $mediaRoot = Join-Path $repoRoot 'Media'
+    $mediaFiles = if (Test-Path -LiteralPath $mediaRoot -PathType Container) {
+        Get-ChildItem -LiteralPath $mediaRoot -File -Recurse | ForEach-Object {
+            $_.FullName.Substring($repoRoot.Length + 1)
+        }
+    }
+    else { @() }
+    $files = @('ApogeePartyHealthBars.toc', 'LICENSE', 'README.md') + $runtimeFiles + $mediaFiles
     foreach ($file in ($files | Sort-Object -Unique)) {
-        Copy-Item -LiteralPath (Join-Path $repoRoot $file) -Destination (Join-Path $packageRoot $file)
+        $destination = Join-Path $packageRoot $file
+        $destinationDirectory = Split-Path -Parent $destination
+        New-Item -ItemType Directory -Path $destinationDirectory -Force | Out-Null
+        Copy-Item -LiteralPath (Join-Path $repoRoot $file) -Destination $destination
     }
 
     & (Join-Path $PSScriptRoot 'validate-package.ps1') -ExpectedVersion $version -PackageRoot $packageRoot

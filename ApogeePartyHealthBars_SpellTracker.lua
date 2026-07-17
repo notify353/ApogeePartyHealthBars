@@ -2,6 +2,7 @@ local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local Sounds = ApogeePartyHealthBars_Sounds
 local UIH = ApogeePartyHealthBars_UIHelpers
+local Actions = ApogeePartyHealthBars_ActionMacros
 
 ApogeePartyHealthBars_SpellTracker = {}
 local T = ApogeePartyHealthBars_SpellTracker
@@ -70,10 +71,25 @@ local READY_TRANSITION_STATES = {
     unusable = true,
 }
 
+local TRACKED_SPELLS_SCHEMA_VERSION = 1
+
 local function GetEntries()
     if not S.charSv then return nil end
     if type(S.charSv.trackedSpells) ~= "table" then S.charSv.trackedSpells = {} end
     return S.charSv.trackedSpells
+end
+
+local function NormalizeEntries()
+    local entries = GetEntries()
+    if not entries then return end
+    local compact = {}
+    for i = 1, C.TRACKER_MAX_SLOTS do
+        local entry = Actions.Normalize(entries[i])
+        if entry then compact[#compact + 1] = entry end
+    end
+    wipe(entries)
+    for i, entry in ipairs(compact) do entries[i] = entry end
+    S.charSv.trackedSpellsSchemaVersion = TRACKED_SPELLS_SCHEMA_VERSION
 end
 
 local function SeedClassDefaults()
@@ -87,11 +103,7 @@ local function SeedClassDefaults()
     if entries and next(entries) == nil and defaults then
         for slot, spellName in ipairs(defaults) do
             if slot > C.TRACKER_MAX_SLOTS then break end
-            entries[slot] = {
-                name = spellName,
-                enabled = true,
-                soundKey = "none",
-            }
+            entries[slot] = Actions.Create(nil, spellName, "none")
         end
     end
 
@@ -99,11 +111,11 @@ local function SeedClassDefaults()
 end
 
 local function IsEnabled()
-    return S.sv and S.sv.spellTrackerEnabled == true
+    return true
 end
 
 local function IsSoundsEnabled()
-    return S.sv and S.sv.spellTrackerSoundsEnabled ~= false
+    return true
 end
 
 local function GetSpellNameAndIcon(identifier)
@@ -150,14 +162,15 @@ local function BuildKnownSpellMap()
 end
 
 local function BuildResolvedInfo(known, entry, slot)
-    local identifier = known.id or (entry and entry.id) or known.name
+    local identifier = known.id or (entry and entry.spellId) or known.name
     local name, icon, spellID = GetSpellNameAndIcon(identifier)
-    local resolvedName = name or known.baseName or known.name or (entry and entry.name)
+    local resolvedName = name or known.baseName or known.name or (entry and entry.spellName)
     local crowdControl = GetCrowdControlDefinition(resolvedName)
     return {
-        id = spellID or known.id or (entry and entry.id),
+        id = spellID or known.id or (entry and entry.spellId),
         name = resolvedName,
-        castName = known.name or name or (entry and entry.name),
+        castName = known.name or name or (entry and entry.spellName),
+        macroText = entry and entry.macroText,
         icon = icon,
         lane = crowdControl and "target" or "player",
         crowdControl = crowdControl,
@@ -175,16 +188,24 @@ local function ResolveEntries()
     local configuredCrowdControl = {}
     for i = 1, C.TRACKER_MAX_SLOTS do
         local entry = entries[i]
-        if entry and entry.enabled ~= false then
-            local known = (entry.id and byId[entry.id]) or (entry.name and byName[entry.name])
-            if not known and entry.name then
-                local baseName = entry.name:match("^%s*([^%(]+)")
+        if entry then
+            local known = (entry.spellId and byId[entry.spellId]) or (entry.spellName and byName[entry.spellName])
+            if not known and entry.spellName then
+                local baseName = entry.spellName:match("^%s*([^%(]+)")
                 if baseName then
                     baseName = baseName:gsub("%s+$", "")
                     known = byName[baseName]
                 end
             end
             if known then
+                local priorDefault = Actions.BuildDefaultMacro(entry.spellName)
+                if known.name and entry.spellName ~= known.name then
+                    if entry.macroText == priorDefault then
+                        entry.macroText = Actions.BuildDefaultMacro(known.name)
+                    end
+                    entry.spellName = known.name
+                end
+                if known.id then entry.spellId = known.id end
                 local info = BuildResolvedInfo(known, entry, i)
                 resolvedSlots[i] = info
                 resolved[#resolved + 1] = info
@@ -302,8 +323,10 @@ local function SyncSecureAction(icon, info)
     castButton:SetAttribute("type", nil)
     castButton:SetAttribute("spell", nil)
     castButton:SetAttribute("unit", nil)
+    castButton:SetAttribute("macrotext", nil)
     castButton:SetAttribute("type1", nil)
     castButton:SetAttribute("spell1", nil)
+    castButton:SetAttribute("macrotext1", nil)
 
     if not IsEnabled() or not info or not icon:IsShown() then
         setSecureMouseEnabled(castButton, false)
@@ -312,11 +335,11 @@ local function SyncSecureAction(icon, info)
     end
 
     local spellName = info.castName or info.name
-    castButton:SetAttribute("type", "spell")
-    castButton:SetAttribute("spell", spellName)
-    castButton:SetAttribute("type1", "spell")
-    castButton:SetAttribute("spell1", spellName)
-    if info.lane == "target" then castButton:SetAttribute("unit", "target") end
+    local macroText = info.macroText or Actions.BuildDefaultMacro(spellName)
+    castButton:SetAttribute("type", "macro")
+    castButton:SetAttribute("macrotext", macroText)
+    castButton:SetAttribute("type1", "macro")
+    castButton:SetAttribute("macrotext1", macroText)
     if positionSecureOverlay(castButton, icon) then
         showSecureFrame(castButton)
         setSecureMouseEnabled(castButton, true)
@@ -620,6 +643,7 @@ function T.Attach(playerRow, callbacks)
 end
 
 function T.Initialize()
+    NormalizeEntries()
     SeedClassDefaults()
     ResolveEntries()
     T.Layout()
@@ -631,8 +655,8 @@ function T.GetSlots() return GetEntries() end
 function T.GetSlotDisplay(slot)
     local entry = GetEntries() and GetEntries()[slot]
     if not entry then return nil, nil, false end
-    local name, icon = GetSpellNameAndIcon(entry.id or entry.name)
-    return name or entry.name, icon, resolvedSlots[slot] ~= nil
+    local name, icon = GetSpellNameAndIcon(entry.spellId or entry.spellName)
+    return name or entry.spellName, icon, resolvedSlots[slot] ~= nil
 end
 
 -- Read-only diagnostics used by configuration and regression tests.
@@ -650,23 +674,36 @@ function T.GetDisplayLane(index) return resolved[index] and resolved[index].lane
 function T.AssignSpell(slot, spellID, spellName)
     if InCombatLockdown and InCombatLockdown() then return false, "cannot edit tracked spells in combat." end
     local entries = GetEntries()
-    if not entries or not slot then return false, "tracker is not initialized." end
+    if not entries then return false, "tracker is not initialized." end
+    slot = slot or T.FindFirstEmptySlot()
+    if not slot then
+        return false, "All tracked Spell positions are assigned. Select a row to replace or clear one."
+    end
+    if type(slot) ~= "number" or slot ~= math.floor(slot)
+        or slot < 1 or slot > C.TRACKER_MAX_SLOTS or slot > #entries + 1 then
+        return false, "that tracked Spell position is unavailable."
+    end
     if type(spellID) ~= "number" then spellID = nil end
     for i = 1, C.TRACKER_MAX_SLOTS do
         local entry = entries[i]
-        if i ~= slot and entry and ((spellID and entry.id == spellID) or (spellName and entry.name == spellName)) then
+        if i ~= slot and entry
+            and ((spellID and entry.spellId == spellID) or (spellName and entry.spellName == spellName)) then
             return false, "that spell is already tracked."
         end
     end
-    entries[slot] = { id = spellID, name = spellName, enabled = true, soundKey = "none" }
+    local previous = entries[slot]
+    local entry = Actions.Create(spellID, spellName, previous and previous.soundKey)
+    if not entry then return false, "could not store that spell." end
+    entries[slot] = entry
     T.ResolveAndRefresh()
-    return true, "tracking |cff00ff00" .. (spellName or "spell") .. "|r."
+    return true, "tracking |cff00ff00" .. (spellName or "spell") .. "|r.", slot
 end
 
 function T.ClearSlot(slot)
     local entries = GetEntries()
-    if entries then entries[slot] = nil end
+    if entries and entries[slot] then table.remove(entries, slot) end
     T.ResolveAndRefresh()
+    return true
 end
 
 function T.ResetClassDefaults()
@@ -679,11 +716,7 @@ function T.ResetClassDefaults()
     local defaults = C.TRACKER_CLASS_DEFAULTS[classToken]
     for slot, spellName in ipairs(defaults or {}) do
         if slot > C.TRACKER_MAX_SLOTS then break end
-        entries[slot] = {
-            name = spellName,
-            enabled = true,
-            soundKey = "none",
-        }
+        entries[slot] = Actions.Create(nil, spellName, "none")
     end
     S.charSv.trackerDefaultsVersion = C.TRACKER_DEFAULTS_VERSION
     S.selectedTrackerSlot = nil
@@ -691,18 +724,47 @@ function T.ResetClassDefaults()
     return true
 end
 
-function T.SetSlotEnabled(slot, enabled)
-    local entry = GetEntries() and GetEntries()[slot]
-    if entry then entry.enabled = enabled and true or false end
-    T.ResolveAndRefresh()
-end
-
 function T.MoveSlot(slot, direction)
+    if type(slot) ~= "number" or slot ~= math.floor(slot)
+        or (direction ~= -1 and direction ~= 1) then return false end
     local other = slot + direction
-    if other < 1 or other > C.TRACKER_MAX_SLOTS then return end
     local entries = GetEntries()
+    if not entries or not entries[slot] or other < 1 or other > #entries then return false end
     entries[slot], entries[other] = entries[other], entries[slot]
     T.ResolveAndRefresh()
+    return true, other
+end
+
+function T.FindFirstEmptySlot()
+    local entries = GetEntries()
+    if not entries or #entries >= C.TRACKER_MAX_SLOTS then return nil end
+    return #entries + 1
+end
+
+function T.ValidateMacro(slot, body)
+    return Actions.ValidateMacro(GetEntries() and GetEntries()[slot], body)
+end
+
+function T.GetMacro(slot)
+    local entry = GetEntries() and GetEntries()[slot]
+    return entry and entry.macroText or nil
+end
+
+function T.ApplyMacro(slot, body)
+    if InCombatLockdown and InCombatLockdown() then return false, "Leave combat before applying a Spell macro." end
+    local ok, err = T.ValidateMacro(slot, body)
+    if not ok then return false, err end
+    GetEntries()[slot].macroText = body
+    T.ResolveAndRefresh()
+    return true, "Applied " .. (GetEntries()[slot].spellName or "Spell") .. "."
+end
+
+function T.ResetMacro(slot)
+    return Actions.ResetMacro(GetEntries() and GetEntries()[slot])
+end
+
+function T.IsMacroCustomized(slot)
+    return Actions.IsCustomized(GetEntries() and GetEntries()[slot])
 end
 
 function T.SetSlotSound(slot, key)

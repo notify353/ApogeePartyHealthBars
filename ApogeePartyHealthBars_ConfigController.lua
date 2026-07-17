@@ -46,9 +46,9 @@ function C.FactoryReset()
     end
 
     if D.WheelMacros then
-        local restored, message = D.WheelMacros.Disable()
+        local restored, code, detail = D.WheelMacros.Disable()
         if not restored then
-            D.Print(message or "could not restore the wheel bindings.")
+            D.Print(detail or code or "could not restore the wheel bindings.")
             return false
         end
     end

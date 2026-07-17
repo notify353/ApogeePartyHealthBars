@@ -57,7 +57,8 @@ local function ClearBinding(slotKey)
 end
 
 local function AssignFromSpellButton(spellButton)
-    if not S.configMode or (not S.selectedBindingKey and not S.selectedTrackerSlot and not S.selectedWheelSlot)
+    local actionTab = S.configTab == "spells" or S.configTab == "wheel"
+    if not S.configMode or (not S.selectedBindingKey and not actionTab)
         or not IsShiftKeyDown() or InCombatLockdown() then
         return false
     end
@@ -68,22 +69,27 @@ local function AssignFromSpellButton(spellButton)
         return false
     end
 
-    if S.selectedWheelSlot then
-        local ok, message = W.AssignDisplaySpell(S.selectedWheelLayout,
+    if S.configTab == "wheel" then
+        local layoutKey = S.selectedWheelLayout
+        if not W.IsKnownLayout(layoutKey) then layoutKey = W.GetActiveLayoutKey() end
+        local ok, message, assignedSlot = W.AssignSpell(layoutKey,
             S.selectedWheelSlot, spellID, spellName)
         if message then D.Print(message) end
         if ok then
+            S.selectedWheelLayout = layoutKey
+            S.selectedWheelSlot = nil
             local ui = D.GetConfigUI()
-            if ui and ui.RefreshWheelPanel then ui.RefreshWheelPanel(true) end
+            if ui and ui.RefreshWheelPanel then ui.RefreshWheelPanel(assignedSlot) end
         end
         return ok
-    elseif S.selectedTrackerSlot then
-        local ok, message = T.AssignSpell(S.selectedTrackerSlot, spellID, spellName)
+    elseif S.configTab == "spells" then
+        local ok, message, assignedSlot = T.AssignSpell(S.selectedTrackerSlot, spellID, spellName)
         if message then D.Print(message) end
         if ok then
+            S.selectedTrackerSlot = nil
             D.SyncVisualTicker()
             local ui = D.GetConfigUI()
-            if ui and ui.RefreshSpellPanel then ui.RefreshSpellPanel() end
+            if ui and ui.RefreshSpellPanel then ui.RefreshSpellPanel(assignedSlot) end
         end
         return ok
     end

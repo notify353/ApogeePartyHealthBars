@@ -95,8 +95,8 @@ $record = [ordered]@{
     exportedOn = (Get-Date).ToString('yyyy-MM-dd')
     generatedDocumentationPath = $metadata.generatedDocumentationPath
 }
-$json = $record | ConvertTo-Json
-[System.IO.File]::WriteAllText($MetadataPath, $json + [Environment]::NewLine, [System.Text.UTF8Encoding]::new($false))
+$json = ($record | ConvertTo-Json) -replace "`r`n", "`n"
+[System.IO.File]::WriteAllText($MetadataPath, $json + "`n", [System.Text.UTF8Encoding]::new($false))
 
 & (Join-Path $PSScriptRoot 'check-wow-api-export.ps1') -WowRoot $WowRoot -MetadataPath $MetadataPath -TocPath $TocPath
 Write-Host "Recorded WoW API export for $($metadata.product) build $installedVersion and interface $tocInterface."

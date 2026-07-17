@@ -3,6 +3,7 @@ local S = ApogeePartyHealthBars_S
 local SC = ApogeePartyHealthBars_SpellTrackerConfig
 local WC = ApogeePartyHealthBars_WheelConfig
 local MC = ApogeePartyHealthBars_MacroConfig
+local AC = ApogeePartyHealthBars_ActionConfig
 local UIH = ApogeePartyHealthBars_UIHelpers
 
 ApogeePartyHealthBars_ConfigUI = {}
@@ -12,7 +13,7 @@ local built = false
 local D
 
 local configPanel
-local generalTab, bindingsTab, spellsTab, wheelTab, macrosTab
+local generalTab, healingTab, spellsTab, wheelTab, macrosTab
 local generalScroll, generalScrollChild
 local bindScroll, bindScrollChild, bindHintFS
 local tabs, tabOrder = {}, {}
@@ -140,6 +141,12 @@ end
 local function SetConfigTab(tabName)
     UIH.CloseActiveDropdown()
     if not tabs[tabName] then tabName = "general" end
+    AC.CloseEditor()
+    if S.configTab ~= tabName then
+        S.selectedBindingKey = nil
+        S.selectedTrackerSlot = nil
+        S.selectedWheelSlot = nil
+    end
     S.configTab = tabName
     for _, key in ipairs(tabOrder) do
         local spec = tabs[key]
@@ -275,8 +282,8 @@ local function RefreshBindPanel()
         end
     end
     bindHintFS:SetText(S.selectedBindingKey
-        and "|cff00ff00Selected.|r Shift-click a spell in the open Spellbook."
-        or  "Select a row, then Shift-click a spell in the open Spellbook. Right-click to clear.")
+        and "|cff00ff00Selected.|r Shift-click a healing or cleansing spell."
+        or  "Select a row, then Shift-click a healing or cleansing spell. Right-click to clear.")
 end
 
 local function RefreshConfigPanel()
@@ -289,30 +296,30 @@ local function RefreshConfigPanel()
     if S.configTab ~= "general" then RefreshActiveTab() end
 end
 
-local function BuildBindingsTab(parent)
-    bindingsTab = CreateFrame("Frame", nil, parent)
-    bindingsTab:SetPoint("TOPLEFT", parent, "TOPLEFT", C.BIND_PAD, -(C.CONFIG_HEADER_H + C.BIND_PAD + C.CONFIG_TAB_H + 4))
-    bindingsTab:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -C.BIND_PAD, C.BIND_PAD)
-    bindingsTab:Hide()
+local function BuildHealingTab(parent)
+    healingTab = CreateFrame("Frame", nil, parent)
+    healingTab:SetPoint("TOPLEFT", parent, "TOPLEFT", C.BIND_PAD, -(C.CONFIG_HEADER_H + C.BIND_PAD + C.CONFIG_TAB_H + 4))
+    healingTab:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -C.BIND_PAD, C.BIND_PAD)
+    healingTab:Hide()
 
-    local bindTitleFS = bindingsTab:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    bindTitleFS:SetPoint("TOPLEFT", bindingsTab, "TOPLEFT", 0, 0)
-    bindTitleFS:SetText("|cffFFD700Click Bindings|r")
+    local bindTitleFS = healingTab:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    bindTitleFS:SetPoint("TOPLEFT", healingTab, "TOPLEFT", 0, 0)
+    bindTitleFS:SetText("|cffFFD700Healing Clicks|r")
     bindTitleFS:SetTextColor(1, 0.82, 0)
 
-    bindHintFS = bindingsTab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    bindHintFS = healingTab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     bindHintFS:SetPoint("TOPLEFT", bindTitleFS, "BOTTOMLEFT", 0, -2)
     bindHintFS:SetWidth(C.BIND_PANEL_W - C.BIND_PAD * 2)
     bindHintFS:SetJustifyH("LEFT")
 
-    local bindSep = bindingsTab:CreateTexture(nil, "ARTWORK")
+    local bindSep = healingTab:CreateTexture(nil, "ARTWORK")
     bindSep:SetColorTexture(0.4, 0.4, 0.4, 0.8)
     bindSep:SetSize(C.BIND_PANEL_W - C.BIND_PAD * 2, 1)
     bindSep:SetPoint("TOPLEFT", bindHintFS, "BOTTOMLEFT", 0, -4)
 
-    bindScroll = CreateFrame("ScrollFrame", nil, bindingsTab)
+    bindScroll = CreateFrame("ScrollFrame", nil, healingTab)
     bindScroll:SetPoint("TOPLEFT", bindSep, "BOTTOMLEFT", 0, -4)
-    bindScroll:SetPoint("BOTTOMRIGHT", bindingsTab, "BOTTOMRIGHT", 0, 0)
+    bindScroll:SetPoint("BOTTOMRIGHT", healingTab, "BOTTOMRIGHT", 0, 0)
     AttachScrollWheel(bindScroll, C.BIND_ROW_H * 3)
 
     bindScrollChild = CreateFrame("Frame", nil, bindScroll)
@@ -601,14 +608,16 @@ function UI.Build(deps)
     headerDivider:SetHeight(1)
     headerDivider:SetColorTexture(0.45, 0.38, 0.12, 0.8)
 
+    AC.Initialize(configPanel, D.ApplyBackdrop)
+
     BuildGeneralTab(configPanel)
-    BuildBindingsTab(configPanel)
+    BuildHealingTab(configPanel)
     spellsTab = SC.Build(configPanel, D)
     wheelTab = WC.Build(configPanel, D)
     macrosTab = MC.Build(configPanel, D)
 
     RegisterTab({ key = "general", label = "General", frame = generalTab, refresh = RefreshConfigPanel })
-    RegisterTab({ key = "bindings", label = "Bindings", frame = bindingsTab, refresh = RefreshBindPanel })
+    RegisterTab({ key = "healing", label = "Healing", frame = healingTab, refresh = RefreshBindPanel })
     RegisterTab({ key = "spells", label = "Spells", frame = spellsTab, refresh = SC.Refresh })
     RegisterTab({ key = "wheel", label = "Wheel", frame = wheelTab, refresh = WC.Refresh })
     RegisterTab({ key = "macros", label = "Macros", frame = macrosTab, refresh = MC.Refresh })
@@ -645,6 +654,7 @@ function UI.Build(deps)
     end
     UI.Hide = function()
         UIH.CloseActiveDropdown()
+        AC.CloseEditor()
         configPanel:Hide()
     end
 

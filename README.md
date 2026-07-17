@@ -8,8 +8,8 @@ Compact five-player healing frames for World of Warcraft Anniversary and Burning
 - Selectable sound and threshold when the player or a party member drops low on health
 - Inline unit targets and target-of-target health
 - Secure click-casting and clickable buff reminders
-- Player spell and crowd-control tracking
-- Editable mouse-wheel macros with six manually configured spell slots
+- Player spell and crowd-control tracking with generated, editable secure actions
+- Editable mouse-wheel actions for six fixed modifier gestures
 - Missing party-buff and self-buff reminders
 - Copy-only combat macro library with universal and class-specific examples
 - Movable minimap button and tabbed settings
@@ -26,9 +26,19 @@ Interface/AddOns/ApogeePartyHealthBars/ApogeePartyHealthBars.toc
 
 ## Use
 
-Left-click the minimap button to open settings; the Spellbook opens alongside it. Shift-click a spell when assigning click bindings, tracker slots, or wheel display spells. Secure changes may wait until combat ends.
+Left-click the minimap button to open settings; the Spellbook opens alongside it. In the Healing tab, select a click and Shift-click a healing or cleansing spell to assign it. In Spells or Wheel, Shift-clicking a Spellbook spell fills the first empty row automatically. Select an occupied row only when you want the next Shift-click to replace it. Spells rejects duplicate entries; Wheel permits the same spell on multiple gestures. Secure changes may wait until combat ends.
 
-The Wheel tab configures six normal gameplay macros for scroll up/down with no modifier, Shift, or Ctrl. Enabling Wheel reserves all six keys as blank no-ops. Each talent spec has an independent Wheel profile that follows the equipped spec automatically; a newly activated second spec starts empty, while Wheel enablement and key ownership remain character-wide. Characters with stances or forms reported by the client receive a complete six-slot layout for each known state; classes with a valid no-form state also receive a Base layout, while Warriors see only Battle, Defensive, and Berserker Stance. The active layout switches automatically, including during combat. Classes without stances see the original single-layout editor. Shift-click a Spellbook spell to configure a slot in the selected layout, edit its macro if needed, then select Save. Saving a blank macro clears that layout's slot. Wheel macros use normal WoW targeting and are separate from health-bar mouseover click bindings.
+Every Spells and Wheel assignment starts with this generated macro:
+
+```text
+/targetenemy [noexists][dead][help]
+/startattack
+/cast Spell Name(Rank N)
+```
+
+Each compact action row has sound, Macro, Up, Down, and Clear controls. Macro opens a focused editor with Reset, Cancel, Save, and a 255-byte counter; blank or oversized text cannot be saved. Clear is the only way to remove an action. Clearing a Spells row compacts the list, while moving a Wheel row swaps its complete spell, macro, and sound payload with the adjacent gesture.
+
+The Wheel tab always exposes its six gestures in ladder order, from Ctrl Up through Ctrl Down, and remains configurable while disabled. `Wheel: ON` is the only control that claims the six mouse-wheel bindings; turning it off restores bindings the add-on owns. Each talent spec has an independent Wheel profile that follows the equipped spec automatically; a newly activated second spec starts empty, while Wheel enablement and key ownership remain character-wide. Characters with stances or forms reported by the client receive a complete six-slot layout for each known state; classes with a valid no-form state also receive a Base layout, while Warriors see only Battle, Defensive, and Berserker Stance. The active layout switches automatically, including during combat. Wheel actions remain separate from Healing-tab health-bar clicks.
 
 The General tab includes a Factory Reset control for restoring wheel keys, clearing account and current-character add-on settings, and reloading through the first-run initialization path.
 

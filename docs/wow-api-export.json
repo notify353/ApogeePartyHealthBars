@@ -1,8 +1,8 @@
 {
   "product": "wow_anniversary",
   "clientDirectory": "_anniversary_",
-  "clientVersion": "2.5.6.68575",
+  "clientVersion": "2.5.6.68749",
   "interface": 20506,
-  "exportedOn": "2026-07-14",
+  "exportedOn": "2026-07-16",
   "generatedDocumentationPath": "BlizzardInterfaceCode/Interface/AddOns/Blizzard_APIDocumentationGenerated"
 }

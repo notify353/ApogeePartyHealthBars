@@ -80,6 +80,10 @@ try {
     if ($recorded.clientVersion -ne '2.5.6.68575' -or [int]$recorded.interface -ne 20506) {
         throw 'Recorder did not persist the installed build and TOC interface.'
     }
+    $recordedText = [System.IO.File]::ReadAllText($metadataPath)
+    if ($recordedText.Contains("`r") -or -not $recordedText.EndsWith("`n")) {
+        throw 'Recorder did not persist LF-normalized JSON with a final newline.'
+    }
 
     Write-Host 'WoW API export guard tests passed.'
 }

@@ -25,7 +25,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `BuffReminders`: known party/self buff resolution, family preferences, aura matching, icon policy, and secure cast names
 - `ShieldTracker`: private absorb ledger, aura/combat-log reconciliation, estimation fallbacks, and shield-segment rendering
 - `IncomingHeals`: alias-aware Blizzard heal prediction and overlay rendering for rows and inline targets
-- `EffectsTracker`: player-cast HoT tracking and duration visuals
+- `HotTracker`: private known-spell and active-track state, player-cast aura matching, strip geometry inputs, and duration visuals
 - `ShortcutBar`, `ShortcutConfig`: 12-slot typed shortcut storage, six-column player/crowd-control grids, spell/item state icons, sound feedback, secure macros, smart Spellbook/bag assignment, and scrollable compact configuration
 - `WheelData`, `WheelLayouts`, `WheelMacros`, `WheelConfig`: fixed gesture definitions, Wheel-specific shared-runtime policy, active talent-spec profiles, per-form typed shortcut layouts, right-side HUD geometry, and compact configuration
 - `KeyData`, `KeyLayouts`, `KeyActions`, `KeyConfig`: fixed keyboard definitions, Keys-specific shared-runtime policy, independent empty per-spec/per-form profiles, left-side HUD geometry, and focused/armed tile editing
@@ -45,6 +45,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - Keep the visual ticker's range accumulator private and refresh Wheel only once per active visual frame.
 - Keep resolved buff spells, aura matchers, family preferences, icon textures, and secure cast names behind `BuffReminders` APIs rather than session-state fields.
 - Keep shield ledger writes inside `ShieldTracker`; display reads may use aura or rank estimates but must never persist those fallbacks over tracked depletion.
+- Keep known and active HoT tracks inside `HotTracker`; aura scanning, layout, configuration, row display, and visual ticking consume only its explicit APIs.
 - Preserve custom macro text during normalization and migration; regenerate defaults only for new assignments, explicit resets, or legacy entries without macro text.
 - Keep Healing actions macro-independent; native secure spell/item actions must retain the clicked health-bar unit.
 - Never call Blizzard Spellbook toggles, replace Spellbook or bag-item scripts, or use pre-hooks; use the minimap action template and secure post-hooks.

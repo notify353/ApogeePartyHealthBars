@@ -274,7 +274,7 @@ function L.RefreshRowBuffs(row, unitId)
     end
 
     if row.hotBg and row.hotBars then
-        local numTracks = S.activeHotTracks and #S.activeHotTracks or 0
+        local numTracks = D.GetActiveHotTrackCount()
         for hi = 1, C.MAX_HOT_SLOTS do
             local bg = row.hotBg[hi]
             local hotBar = row.hotBars[hi]
@@ -373,8 +373,7 @@ function L.ValidateRowBuffLayout(row, label)
                 label, barBgH, C.ROW_H)
         end
 
-        local tracks = S.activeHotTracks
-        if tracks and tracks[1] and row.hotBg and row.hotBg[1] then
+        if D.GetActiveHotTrackCount() > 0 and row.hotBg and row.hotBg[1] then
             local hotBg = row.hotBg[1]
             if hotBg:IsShown() and hotBg.GetTop and row.barBg.GetBottom then
                 local hotTop = hotBg:GetTop()

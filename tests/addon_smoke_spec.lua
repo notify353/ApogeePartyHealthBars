@@ -270,12 +270,10 @@ assert(tocLoadOrder["ApogeePartyHealthBars_ShortcutBar.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_KeyActions.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_RowGeometry.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_RowGeometry.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_EffectsTracker.lua"],
+        < tocLoadOrder["ApogeePartyHealthBars.lua"],
     "RowGeometry loaded outside its dependency-safe initialization order")
 assert(tocLoadOrder["ApogeePartyHealthBars_Threat.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_VisualTicker.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_VisualTicker.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_EffectsTracker.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_VisualTicker.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"],
     "VisualTicker loaded outside its dependency-safe initialization order")
@@ -287,20 +285,23 @@ assert(tocLoadOrder["ApogeePartyHealthBars_Auras.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_ShieldTracker.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_Auras.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_IncomingHeals.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_Auras.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_HotTracker.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_ShieldTracker.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_IncomingHeals.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_HotTracker.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"],
     "effect runtimes loaded outside their dependency-safe order")
-assert(type(ApogeePartyHealthBars_BuffReminders.RefreshKnownSpells) == "function"
-        and ApogeePartyHealthBars_EffectsTracker.ShouldShowPartyBuffIcon == nil,
-    "buff-reminder ownership remained in EffectsTracker")
+assert(type(ApogeePartyHealthBars_BuffReminders.RefreshKnownSpells) == "function",
+    "buff-reminder runtime did not expose known-spell refresh")
 assert(type(ApogeePartyHealthBars_ShieldTracker.GetRemaining) == "function"
-        and type(ApogeePartyHealthBars_IncomingHeals.GetAmount) == "function",
+        and type(ApogeePartyHealthBars_IncomingHeals.GetAmount) == "function"
+        and type(ApogeePartyHealthBars_HotTracker.RefreshKnownSpells) == "function",
     "health-overlay modules did not expose their focused runtimes")
-assert(ApogeePartyHealthBars_EffectsTracker.IsShieldEnabled == nil
-        and ApogeePartyHealthBars_EffectsTracker.UpdateIncomingHealBarVisual == nil,
-    "EffectsTracker retained extracted health-overlay ownership")
+assert(ApogeePartyHealthBars_EffectsTracker == nil,
+    "retired EffectsTracker runtime was still loaded")
 
 local router = ApogeePartyHealthBars_EventRouter
 router.Dispatch("PLAYER_LOGIN")
@@ -342,7 +343,7 @@ assert(keysRuntime.GetHeight("player") == 136
     "Keys-only action geometry did not reserve the full keyboard cluster")
 assert(geometry.GetRowTotalHeight("player")
         == ApogeePartyHealthBars_C.ROW_H
-            + ApogeePartyHealthBars_EffectsTracker.GetHotStripHeight()
+            + ApogeePartyHealthBars_HotTracker.GetStripHeight()
             + geometry.GetRowPowerChromeHeight("player")
             + keysOnlyActionHeight,
     "Keys-only player row height omitted its action area")

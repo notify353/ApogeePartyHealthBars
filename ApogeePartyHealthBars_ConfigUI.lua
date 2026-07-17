@@ -222,7 +222,7 @@ local function LayoutGeneralTab()
     y = y + C.CONFIG_SECTION_GAP
 
     for _, entry in ipairs(hotRows) do
-        if S.hotSpellKnown[entry.def.key] then
+        if D.IsHotTrackKnown(entry.def.key) then
             entry.row:Show()
             entry.row:ClearAllPoints()
             entry.row:SetPoint("TOPLEFT", generalScrollChild, "TOPLEFT", 12, -y)

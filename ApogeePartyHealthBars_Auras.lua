@@ -9,12 +9,23 @@ local partyBuffAuraIds
 local partyBuffAuraNames
 local selfBuffAuraIds
 local selfBuffAuraNames
+local hotMatchers = {}
 
 function A.ConfigureBuffMatchers(partyIds, partyNames, selfIds, selfNames)
     partyBuffAuraIds = partyIds
     partyBuffAuraNames = partyNames
     selfBuffAuraIds = selfIds
     selfBuffAuraNames = selfNames
+end
+
+function A.ConfigureHotMatchers(tracks)
+    hotMatchers = {}
+    for index, track in ipairs(tracks or {}) do
+        hotMatchers[index] = {
+            auraIds = track.auraIds,
+            auraNames = track.auraNames,
+        }
+    end
 end
 
 local function AuraFromIndex(unitId, index)
@@ -105,8 +116,7 @@ function A.ScanUnitHelpfulAuras(unitId)
     end
 
     local snapshot = BuildEmptySnapshot()
-    local tracks = S.activeHotTracks
-    local trackCount = tracks and #tracks or 0
+    local trackCount = #hotMatchers
     local hotMatched = 0
 
     for i = 1, 40 do
@@ -136,7 +146,7 @@ function A.ScanUnitHelpfulAuras(unitId)
         if trackCount > 0 then
             local src = aura.sourceUnit
             if src and UnitIsUnit(src, "player") then
-                for ti, track in ipairs(tracks) do
+                for ti, track in ipairs(hotMatchers) do
                     if not snapshot.playerHots[ti] and MatchesHotTrack(aura, track) then
                         snapshot.playerHots[ti] = aura
                         hotMatched = hotMatched + 1

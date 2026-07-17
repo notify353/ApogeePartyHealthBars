@@ -5,6 +5,17 @@ local S = ApogeePartyHealthBars_S
 ApogeePartyHealthBars_Auras = {}
 
 local A = ApogeePartyHealthBars_Auras
+local partyBuffAuraIds
+local partyBuffAuraNames
+local selfBuffAuraIds
+local selfBuffAuraNames
+
+function A.ConfigureBuffMatchers(partyIds, partyNames, selfIds, selfNames)
+    partyBuffAuraIds = partyIds
+    partyBuffAuraNames = partyNames
+    selfBuffAuraIds = selfIds
+    selfBuffAuraNames = selfNames
+end
 
 local function AuraFromIndex(unitId, index)
     if C_UnitAuras and C_UnitAuras.GetAuraDataByIndex then
@@ -56,8 +67,8 @@ local function MatchesHotTrack(aura, track)
 end
 
 local function MatchesAnyPartyBuff(aura)
-    if S.partyBuffAuraIds or S.partyBuffAuraNames then
-        return AuraMatchesTables(aura, S.partyBuffAuraIds, S.partyBuffAuraNames, false)
+    if partyBuffAuraIds or partyBuffAuraNames then
+        return AuraMatchesTables(aura, partyBuffAuraIds, partyBuffAuraNames, false)
     end
     for _, def in ipairs(C.PARTY_BUFF_DEFINITIONS) do
         if def.auraIds and def.auraNames
@@ -111,8 +122,8 @@ function A.ScanUnitHelpfulAuras(unitId)
         if not snapshot.selfBuff
             and AuraMatchesTables(
                 aura,
-                S.selfBuffAuraIds,
-                S.selfBuffAuraNames,
+                selfBuffAuraIds,
+                selfBuffAuraNames,
                 false
             ) then
             snapshot.selfBuff = true

@@ -31,6 +31,7 @@ ApogeePartyHealthBars_CombatUIFader.lua
 ApogeePartyHealthBars_Effects.lua
 ApogeePartyHealthBars_HealthAlerts.lua
 ApogeePartyHealthBars_Auras.lua
+ApogeePartyHealthBars_BuffReminders.lua
 ApogeePartyHealthBars_ShieldTracker.lua
 ApogeePartyHealthBars_IncomingHeals.lua
 ApogeePartyHealthBars_ShortcutBar.lua

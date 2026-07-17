@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.37.0] - 2026-07-17
+
 ### Added
 
 - Added an independently enabled 15-key action cluster for `1`–`5`, `Q/E/R/T`, `F/G`, and `Z/X/C/V`, with typed spell/item actions, custom macros, sounds, cooldown/range feedback, secure execution, per-spec profiles, and empty per-form layouts.

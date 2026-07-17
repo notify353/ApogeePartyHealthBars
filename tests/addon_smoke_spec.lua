@@ -298,6 +298,19 @@ assert(tocLoadOrder["ApogeePartyHealthBars_Auras.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_HotTracker.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"],
     "effect runtimes loaded outside their dependency-safe order")
+assert(tocLoadOrder["ApogeePartyHealthBars_RuntimeLifecycleEvents.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_RuntimeEvents.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_RuntimeUnitEvents.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_RuntimeEvents.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_RuntimeActionEvents.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_RuntimeEvents.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_RuntimeEvents.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars.lua"],
+    "runtime event subscribers loaded outside their coordinator order")
+assert(type(ApogeePartyHealthBars_RuntimeLifecycleEvents.Register) == "function"
+        and type(ApogeePartyHealthBars_RuntimeUnitEvents.Register) == "function"
+        and type(ApogeePartyHealthBars_RuntimeActionEvents.Register) == "function",
+    "runtime event subscriber API was not loaded")
 assert(type(ApogeePartyHealthBars_BuffReminders.RefreshKnownSpells) == "function",
     "buff-reminder runtime did not expose known-spell refresh")
 assert(type(ApogeePartyHealthBars_ShieldTracker.GetRemaining) == "function"

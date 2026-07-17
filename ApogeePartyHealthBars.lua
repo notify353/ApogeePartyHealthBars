@@ -717,7 +717,5 @@ ApogeePartyHealthBars_RuntimeEvents.Register(ApogeePartyHealthBars_EventRouter, 
     ShieldTrackerSyncUnit = ShieldTrackerSyncUnit,
     AuraEventNeedsLayout = AuraEventNeedsLayout,
     GetConfigUI = function() return configUI end,
-    KeyActions = K,
-    WheelMacros = W,
 })
 ApogeePartyHealthBars_HealthAlerts.Register(ApogeePartyHealthBars_EventRouter)

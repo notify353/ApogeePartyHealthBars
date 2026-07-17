@@ -56,5 +56,8 @@ ApogeePartyHealthBars_KeyConfig.lua
 ApogeePartyHealthBars_WheelConfig.lua
 ApogeePartyHealthBars_MacroConfig.lua
 ApogeePartyHealthBars_ConfigUI.lua
+ApogeePartyHealthBars_RuntimeLifecycleEvents.lua
+ApogeePartyHealthBars_RuntimeUnitEvents.lua
+ApogeePartyHealthBars_RuntimeActionEvents.lua
 ApogeePartyHealthBars_RuntimeEvents.lua
 ApogeePartyHealthBars.lua

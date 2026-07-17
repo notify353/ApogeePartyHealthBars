@@ -12,6 +12,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `ActionConfig`: shared compact action rows and the focused draft macro editor used by Shortcuts, Keys, and Wheel
 - `BoundActionLayouts`: shared per-spec/per-form typed-action layout engine with feature-specific new-layout policy
 - `BoundActionBindings`: binding-set-specific transactional ownership, reconciliation, conflict detection, restoration, and cross-feature Factory Reset rollback
+- `BoundActionRuntime`: per-instance Keys/Wheel action evaluation, secure execution, HUD state, feedback, and binding lifecycle
 - `ActionHud`: the single activation-feedback line shared by Keys and Wheel
 - `HealthAlerts`: configurable party low-health threshold state, recovery hysteresis, and sound throttling
 - `SecureFrames`: combat-safe visibility, position, and mouse mutations
@@ -21,8 +22,8 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `Layout`: geometry and secure overlay placement
 - `EffectsTracker`: buffs, HoTs, shields, power geometry, and incoming heals
 - `ShortcutBar`, `ShortcutConfig`: 12-slot typed shortcut storage, six-column player/crowd-control grids, spell/item state icons, sound feedback, secure macros, smart Spellbook/bag assignment, and scrollable compact configuration
-- `WheelData`, `WheelLayouts`, `WheelMacros`, `WheelConfig`: fixed gesture definitions, active talent-spec profiles, class-agnostic stance discovery, per-form typed shortcut layouts, persistent binding ownership, secure state-driven HUD actions, spell/item state display, and compact configuration
-- `KeyData`, `KeyLayouts`, `KeyActions`, `KeyConfig`: the fixed 15-key keyboard geometry, independent empty per-spec/per-form profiles, transactional physical-key ownership, secure state-driven actions, left-side HUD cluster, and focused/armed tile editor
+- `WheelData`, `WheelLayouts`, `WheelMacros`, `WheelConfig`: fixed gesture definitions, Wheel-specific shared-runtime policy, active talent-spec profiles, per-form typed shortcut layouts, right-side HUD geometry, and compact configuration
+- `KeyData`, `KeyLayouts`, `KeyActions`, `KeyConfig`: fixed keyboard definitions, Keys-specific shared-runtime policy, independent empty per-spec/per-form profiles, left-side HUD geometry, and focused/armed tile editing
 - `RaidMarkers`: target marker controls
 - `Threat`: party and target threat
 - `BindingStore`, `BindingController`, `ClickBindings`: typed Healing spell/item persistence, Shift-click assignment, and native unit-targeted secure actions
@@ -34,6 +35,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - Preserve TOC dependency order and Lua 5.1 compatibility.
 - Never mutate secure attributes, position, visibility, or mouse state during combat.
 - Keep Keys and Wheel activation-feedback prefixes runtime-only; persisted and edited text is the user-controlled macro body.
+- Keep every `BoundActionRuntime` instance's mutable state inside its factory closure so Keys and Wheel cannot leak buttons, feedback, cooldown state, or binding ownership into each other.
 - Preserve custom macro text during normalization and migration; regenerate defaults only for new assignments, explicit resets, or legacy entries without macro text.
 - Keep Healing actions macro-independent; native secure spell/item actions must retain the clicked health-bar unit.
 - Never call Blizzard Spellbook toggles, replace Spellbook or bag-item scripts, or use pre-hooks; use the minimap action template and secure post-hooks.

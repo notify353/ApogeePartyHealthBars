@@ -244,6 +244,12 @@ assert(tocLoadOrder["ApogeePartyHealthBars_WheelLayouts.lua"]
 assert(tocLoadOrder["ApogeePartyHealthBars_BoundActionLayouts.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_WheelLayouts.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_BoundActionBindings.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_BoundActionRuntime.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_ActionHud.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_BoundActionRuntime.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_BoundActionRuntime.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_WheelMacros.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_BoundActionRuntime.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_KeyActions.lua"],
     "bound-action runtimes loaded before their shared dependencies")
 assert(tocLoadOrder["ApogeePartyHealthBars_KeyLayouts.lua"]
@@ -279,8 +285,8 @@ assert(wheelTopIcon.point[4] == 160 and wheelTopIcon.point[5] == 0,
     "Wheel HUD was not a right-aligned vertical rail")
 local feedbackText = assert(ApogeePartyHealthBars_ActionHud.GetFeedbackText(),
     "shared action feedback line was not attached")
-assert(feedbackText.point[4] == 0 and feedbackText.point[5] == -108,
-    "action feedback line was not fixed below the Keys grid")
+assert(feedbackText.point[4] == 4 and feedbackText.point[5] == -117,
+    "action feedback line lost its fixed padded position below the Keys grid")
 
 assert(wheelRuntime.Enable(), "Wheel could not take over its physical bindings")
 RunFrameUpdates()

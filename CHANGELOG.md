@@ -19,6 +19,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Consolidated the Keys and Wheel execution engines into one isolated shared runtime while preserving saved actions, secure frame names, physical bindings, HUD geometry, and public behavior.
+- Added a subtle dark backing and padding to the shared Keys/Wheel activation-feedback line, and standardized action tooltip and validation wording.
 - Extracted shared bound-action layout, binding-ownership, and activation-feedback components while preserving Wheel saved data, secure-frame names, bindings, and public behavior.
 - Moved Wheel to a far-right vertical HUD rail, placed Keys in a four-row left cluster, and made Shortcuts start below the taller feature instead of the sum of both heights.
 - Removed physical-key labels from the player-frame Keys HUD while retaining them in the Keys configuration selector.

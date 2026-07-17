@@ -1,191 +1,141 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local UIH = ApogeePartyHealthBars_UIHelpers
+local AC = ApogeePartyHealthBars_ActionConfig
 
 ApogeePartyHealthBars_SpellTrackerConfig = {}
 local SC = ApogeePartyHealthBars_SpellTrackerConfig
 
-local D, tab, hint, trackerCheck, soundsCheck
+local D, tab, hint, addRow
 local slotRows = {}
 
-local function SetCheckboxChecked(check, checked)
-    local onClick = check:GetScript("OnClick")
-    check:SetScript("OnClick", nil)
-    check:SetChecked(checked)
-    check:SetScript("OnClick", onClick)
+local function armReplacement(slot)
+    local entries = D.SpellTracker.GetSlots() or {}
+    if not entries[slot] then return end
+    S.selectedTrackerSlot = S.selectedTrackerSlot == slot and nil or slot
+    S.selectedBindingKey = nil
+    S.selectedWheelSlot = nil
+    SC.Refresh()
 end
 
-local function CreateSmallButton(parent, labelText, width)
-    local button = CreateFrame("Button", nil, parent)
-    button:SetSize(width, 20)
-    local bg = button:CreateTexture(nil, "BACKGROUND")
-    bg:SetAllPoints()
-    bg:SetColorTexture(0.12, 0.12, 0.14, 1)
-    local highlight = button:CreateTexture(nil, "HIGHLIGHT")
-    highlight:SetAllPoints()
-    highlight:SetColorTexture(1, 1, 1, 0.08)
-    local label = button:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    label:SetPoint("CENTER")
-    label:SetText(labelText)
-    button.label = label
-    return button
+local function openMacroEditor(slot)
+    local tracker = D.SpellTracker
+    local entry = tracker.GetSlots() and tracker.GetSlots()[slot]
+    if not entry then return end
+    AC.OpenEditor({
+        title = "Edit Spell macro",
+        spellName = entry.spellName,
+        macroText = tracker.GetMacro(slot),
+        resetText = tracker.ResetMacro(slot),
+        onSave = function(body) return tracker.ApplyMacro(slot, body) end,
+        onSaved = SC.Refresh,
+    })
 end
 
-function SC.Refresh()
+function SC.Refresh(assignedSlot)
     if not tab then return end
+    if assignedSlot then AC.CloseEditor() end
     local tracker = D.SpellTracker
     local entries = tracker.GetSlots() or {}
-    SetCheckboxChecked(trackerCheck, D.IsSavedFeatureEnabled("spellTrackerEnabled"))
-    SetCheckboxChecked(soundsCheck, D.IsSavedFeatureEnabled("spellTrackerSoundsEnabled"))
+    if S.selectedTrackerSlot and not entries[S.selectedTrackerSlot] then S.selectedTrackerSlot = nil end
 
-    for i = 1, C.TRACKER_MAX_SLOTS do
-        local ui = slotRows[i]
-        local entry = entries[i]
-        if entry then
-            local soundKey = tracker.GetSlotSoundKey(i) or "none"
-            local name, icon, available = tracker.GetSlotDisplay(i)
-            ui.icon:SetTexture(icon or "Interface\\Icons\\INV_Misc_QuestionMark")
-            ui.icon:SetDesaturated(not available)
-            ui.name:SetText((available and "|cffAAAAFF" or "|cff777777")
-                .. (name or entry.name or "Unknown") .. "|r")
-            ui.sound:SetSelectedKey(soundKey)
-            SetCheckboxChecked(ui.check, entry.enabled ~= false)
-            ui.check:Enable()
-            ui.sound:Enable()
-            ui.clear:Enable()
-            if i > 1 then ui.up:Enable() else ui.up:Disable() end
-            if i < C.TRACKER_MAX_SLOTS then ui.down:Enable() else ui.down:Disable() end
-        else
-            ui.icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
-            ui.icon:SetDesaturated(true)
-            ui.name:SetText("|cff666666- empty -|r")
-            ui.sound:SetSelectedKey("none")
-            SetCheckboxChecked(ui.check, false)
-            ui.check:Disable()
-            ui.sound:Disable()
-            ui.clear:Disable()
-            ui.up:Disable()
-            ui.down:Disable()
-        end
-        ui.bg:SetColorTexture(S.selectedTrackerSlot == i and 0.22 or 0.08,
-            S.selectedTrackerSlot == i and 0.22 or 0.08,
-            S.selectedTrackerSlot == i and 0.22 or 0.08, 1)
-        ui.accent:SetShown(S.selectedTrackerSlot == i)
+    if S.selectedTrackerSlot then
+        hint:SetText("|cff00ff00Selected for replacement.|r Shift-click a Spellbook spell.")
+    elseif #entries >= C.TRACKER_MAX_SLOTS then
+        hint:SetText("All " .. C.TRACKER_MAX_SLOTS
+            .. " Spell actions are assigned. Select a row to replace it or Clear one.")
+    else
+        hint:SetText("Shift-click a Spellbook spell to add it. Select a row first to replace it.")
     end
-    hint:SetText(S.selectedTrackerSlot
-        and "|cff00ff00Selected.|r Shift-click a spell in the open Spellbook."
-        or "Select a slot, then Shift-click a spell in the open Spellbook.")
+
+    local anchor = hint
+    for i = 1, C.TRACKER_MAX_SLOTS do
+        local row, entry = slotRows[i], entries[i]
+        if entry then
+            row:ClearAllPoints()
+            row:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, i == 1 and -9 or -3)
+            anchor = row
+            row:Show()
+            local name, icon, available = tracker.GetSlotDisplay(i)
+            row.icon:SetTexture(icon or "Interface\\Icons\\INV_Misc_QuestionMark")
+            row.icon:SetDesaturated(not available)
+            row.primary:SetText(name or entry.spellName or "Unknown Spell")
+            row.primary:SetTextColor(available and 0.84 or 0.48, available and 0.84 or 0.48,
+                available and 1 or 0.50)
+            row.secondary:SetText(S.selectedTrackerSlot == i and "Shift-click to replace" or "Tracked Spell")
+            row.sound:SetSelectedKey(tracker.GetSlotSoundKey(i) or "none")
+            row.sound:Enable(); row.macro:Enable(); row.clear:Enable()
+            row.macro.label:SetText(tracker.IsMacroCustomized(i) and "Macro*" or "Macro")
+            UIH.SetButtonEnabled(row.up, i > 1)
+            UIH.SetButtonEnabled(row.down, i < #entries)
+            AC.SetRowSelected(row, S.selectedTrackerSlot == i)
+        else
+            row:Hide()
+        end
+    end
+
+    addRow:ClearAllPoints()
+    addRow:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, #entries == 0 and -9 or -3)
+    addRow:SetShown(#entries < C.TRACKER_MAX_SLOTS)
+    addRow.label:SetText(#entries == 0
+        and "Shift-click a Spellbook spell to add your first action"
+        or "Shift-click another Spellbook spell to add it")
 end
 
 function SC.Build(parent, deps)
     D = deps
     local tracker = D.SpellTracker
     tab = CreateFrame("Frame", nil, parent)
-    tab:SetPoint("TOPLEFT", parent, "TOPLEFT", C.BIND_PAD, -(C.CONFIG_HEADER_H + C.BIND_PAD + C.CONFIG_TAB_H + 4))
+    tab:SetPoint("TOPLEFT", parent, "TOPLEFT", C.BIND_PAD,
+        -(C.CONFIG_HEADER_H + C.BIND_PAD + C.CONFIG_TAB_H + 4))
     tab:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -C.BIND_PAD, C.BIND_PAD)
     tab:Hide()
 
     hint = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     hint:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, 0)
-    hint:SetWidth(C.CONFIG_CONTENT_W)
-    hint:SetJustifyH("LEFT")
+    hint:SetWidth(C.CONFIG_CONTENT_W); hint:SetJustifyH("LEFT")
 
-    trackerCheck = CreateFrame("CheckButton", nil, tab, "UICheckButtonTemplate")
-    trackerCheck:SetSize(20, 20)
-    trackerCheck:SetPoint("TOPLEFT", hint, "BOTTOMLEFT", 0, -4)
-    local trackerLabel = tab:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    trackerLabel:SetPoint("LEFT", trackerCheck, "RIGHT", 2, 0)
-    trackerLabel:SetText("Enable player spell tracker")
-    trackerCheck:SetScript("OnClick", function(self)
-        D.SetSavedFeature("spellTrackerEnabled", self:GetChecked(), function()
-            tracker.OnTrackerSettingChanged()
-            D.SyncVisualTicker()
-        end)
-        SC.Refresh()
-    end)
-
-    soundsCheck = CreateFrame("CheckButton", nil, tab, "UICheckButtonTemplate")
-    soundsCheck:SetSize(20, 20)
-    soundsCheck:SetPoint("TOPLEFT", trackerCheck, "BOTTOMLEFT", 0, 0)
-    local soundsLabel = tab:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    soundsLabel:SetPoint("LEFT", soundsCheck, "RIGHT", 2, 0)
-    soundsLabel:SetText("Enable ready sounds")
-    soundsCheck:SetScript("OnClick", function(self)
-        D.SetSavedFeature("spellTrackerSoundsEnabled", self:GetChecked(), tracker.Rebaseline)
-        SC.Refresh()
-    end)
-
-    local topAnchor = soundsCheck
     for i = 1, C.TRACKER_MAX_SLOTS do
         local slot = i
-        local button = CreateFrame("Button", nil, tab)
-        button:SetSize(C.CONFIG_CONTENT_W, 32)
-        button:SetPoint("TOPLEFT", topAnchor, "BOTTOMLEFT", 0, i == 1 and -5 or -2)
-        topAnchor = button
-
-        local bg = button:CreateTexture(nil, "BACKGROUND")
-        bg:SetAllPoints()
-        local accent = button:CreateTexture(nil, "OVERLAY")
-        accent:SetWidth(3)
-        accent:SetPoint("TOPLEFT")
-        accent:SetPoint("BOTTOMLEFT")
-        accent:SetColorTexture(1, 0.82, 0, 1)
-
-        local check = CreateFrame("CheckButton", nil, button, "UICheckButtonTemplate")
-        check:SetSize(20, 20)
-        check:SetPoint("LEFT", 2, 0)
-        local icon = button:CreateTexture(nil, "ARTWORK")
-        icon:SetSize(22, 22)
-        icon:SetPoint("LEFT", check, "RIGHT", 0, 0)
-        icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-        local name = button:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-        name:SetPoint("LEFT", icon, "RIGHT", 4, 0)
-        name:SetWidth(88)
-        name:SetJustifyH("LEFT")
-        name:SetWordWrap(false)
-
-        local sound = UIH.CreateDropdown(button, 132, 20, 140)
-        sound:SetOptions(D.Sounds.GetOptions(true))
-        sound:SetArrowShown(false)
-        sound:SetPoint("LEFT", name, "RIGHT", 3, 0)
-        local up = CreateSmallButton(button, "Up", 28)
-        up:SetPoint("LEFT", sound, "RIGHT", 2, 0)
-        local down = CreateSmallButton(button, "Dn", 28)
-        down:SetPoint("LEFT", up, "RIGHT", 2, 0)
-        local clear = CreateSmallButton(button, "Clear", 48)
-        clear:SetPoint("LEFT", down, "RIGHT", 2, 0)
-
-        button:SetScript("OnClick", function()
-            S.selectedTrackerSlot = slot
-            S.selectedBindingKey = nil
-            S.selectedWheelSlot = nil
-            S.selectedWheelLayout = nil
+        local row = AC.CreateActionRow(tab, C.CONFIG_CONTENT_W)
+        row.sound:SetOptions(D.Sounds.GetOptions(true))
+        row:SetScript("OnClick", function() armReplacement(slot) end)
+        row.sound:SetSelectionCallback(function(soundKey)
+            if not tracker.GetSlots()[slot] then return end
+            local selected = tracker.SetSlotSound(slot, soundKey)
+            tracker.PreviewSound(selected)
             SC.Refresh()
         end)
-        check:SetScript("OnClick", function(self)
-            tracker.SetSlotEnabled(slot, self:GetChecked())
+        row.macro:SetScript("OnClick", function() openMacroEditor(slot) end)
+        row.up:SetScript("OnClick", function()
+            local moved, nextSlot = tracker.MoveSlot(slot, -1)
+            if moved and S.selectedTrackerSlot == slot then S.selectedTrackerSlot = nextSlot end
             SC.Refresh()
         end)
-        sound:SetSelectionCallback(function(soundKey)
-            local selectedKey = tracker.SetSlotSound(slot, soundKey)
-            tracker.PreviewSound(selectedKey)
+        row.down:SetScript("OnClick", function()
+            local moved, nextSlot = tracker.MoveSlot(slot, 1)
+            if moved and S.selectedTrackerSlot == slot then S.selectedTrackerSlot = nextSlot end
             SC.Refresh()
         end)
-        up:SetScript("OnClick", function() tracker.MoveSlot(slot, -1); SC.Refresh() end)
-        down:SetScript("OnClick", function() tracker.MoveSlot(slot, 1); SC.Refresh() end)
-        clear:SetScript("OnClick", function() tracker.ClearSlot(slot); SC.Refresh() end)
-
-        slotRows[i] = {
-            bg = bg, accent = accent, check = check, icon = icon, name = name,
-            sound = sound, up = up, down = down, clear = clear,
-        }
+        row.clear:SetScript("OnClick", function()
+            tracker.ClearSlot(slot)
+            S.selectedTrackerSlot = nil
+            AC.CloseEditor()
+            SC.Refresh()
+        end)
+        slotRows[i] = row
     end
 
-    local reset = CreateSmallButton(tab, "Reset tracked spells", 140)
-    reset:SetPoint("TOPLEFT", topAnchor, "BOTTOMLEFT", 0, -6)
-    reset:SetScript("OnClick", function()
-        tracker.ResetClassDefaults()
-        SC.Refresh()
-    end)
+    addRow = UIH.CreateButton(tab, "", C.CONFIG_CONTENT_W, 34)
+    addRow.bg:SetColorTexture(0.045, 0.045, 0.055, 1)
+    addRow:Disable()
+    local icon = addRow:CreateTexture(nil, "ARTWORK")
+    icon:SetSize(22, 22); icon:SetPoint("LEFT", addRow, "LEFT", 8, 0)
+    icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark"); icon:SetDesaturated(true)
+    addRow.label:ClearAllPoints()
+    addRow.label:SetPoint("LEFT", icon, "RIGHT", 7, 0)
+    addRow.label:SetPoint("RIGHT", addRow, "RIGHT", -8, 0)
+    addRow.label:SetJustifyH("LEFT"); addRow.label:SetWordWrap(false)
+    SC.Refresh()
     return tab
 end

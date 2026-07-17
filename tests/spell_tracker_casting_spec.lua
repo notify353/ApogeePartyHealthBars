@@ -13,7 +13,7 @@ ApogeePartyHealthBars_C = {
     TRACKER_CLASS_DEFAULTS = { MAGE = { "Fireball", "Frostbolt", "Fire Blast" } },
 }
 ApogeePartyHealthBars_S = {
-    sv = { spellTrackerEnabled = true, spellTrackerSoundsEnabled = true },
+    sv = {},
     charSv = {
         trackedSpells = {},
     },
@@ -100,6 +100,7 @@ GameTooltip.Hide = function() tooltipHides = tooltipHides + 1 end
 
 dofile("ApogeePartyHealthBars_Sounds.lua")
 dofile("ApogeePartyHealthBars_UIHelpers.lua")
+dofile("ApogeePartyHealthBars_ActionMacros.lua")
 dofile("ApogeePartyHealthBars_SpellTracker.lua")
 local tracker = ApogeePartyHealthBars_SpellTracker
 local deferred = 0
@@ -120,9 +121,9 @@ tracker.Attach({ btn = widget() }, {
 tracker.Initialize()
 
 local seeded = tracker.GetSlots()
-assert(seeded[1].name == "Fireball")
-assert(seeded[2].name == "Frostbolt")
-assert(seeded[3].name == "Fire Blast")
+assert(seeded[1].spellName == "Fireball(Rank 1)")
+assert(seeded[2].spellName == "Frostbolt(Rank 1)")
+assert(seeded[3].spellName == "Fire Blast(Rank 1)")
 assert(ApogeePartyHealthBars_S.charSv.trackerDefaultsVersion == 1)
 assert(tracker.SetSlotSound(1, "toast") == "toast",
     "tracker dropdown sound selection did not persist")
@@ -138,26 +139,50 @@ assert(tracker.SetSlotSound(99, "alarm_soft") == nil,
     "missing tracker slot accepted a dropdown sound")
 
 local castButton = assert(secureButtons[1], "tracker did not create a secure cast button")
-assert(castButton.attributes.type == "spell")
-assert(castButton.attributes.spell == "Fireball(Rank 1)")
-assert(castButton.attributes.type1 == "spell")
-assert(castButton.attributes.spell1 == "Fireball(Rank 1)")
+assert(castButton.attributes.type == "macro")
+assert(castButton.attributes.macrotext
+    == "/targetenemy [noexists][dead][help]\n/startattack\n/cast Fireball(Rank 1)")
+assert(castButton.attributes.type1 == "macro")
+assert(castButton.attributes.macrotext1 == castButton.attributes.macrotext)
 assert(castButton.shown and castButton.mouseEnabled, "tracker cast button is not clickable")
 
 geometryNeedsLayout = true
 local beforeAssignmentLayout = layoutRequests
-local assigned, assignMessage = tracker.AssignSpell(4, 5143, "Arcane Missiles")
-assert(assigned, assignMessage or "fourth tracked spell was not assigned")
+local assigned, assignMessage, assignedSlot = tracker.AssignSpell(nil, 5143, "Arcane Missiles")
+assert(assigned and assignedSlot == 4, assignMessage or "fourth tracked spell was not smart-assigned")
 assert(layoutRequests == beforeAssignmentLayout + 1,
     "adding a spell without changing tracker height did not request a fresh layout")
+assert(not tracker.AssignSpell(nil, 133, "Fireball(Rank 1)"), "duplicate tracked spell was accepted")
+tracker.SetSlotSound(4, "toast")
+assert(tracker.ApplyMacro(4, "/cast Custom Arcane Action"), "custom tracker macro was not applied")
+assert(not tracker.ApplyMacro(4, "  \n\t"), "blank tracker macro was accepted")
+assert(tracker.AssignSpell(4, 5143, "Arcane Missiles"), "tracker replacement failed")
+assert(tracker.GetSlots()[4].soundKey == "toast"
+    and tracker.GetSlots()[4].macroText:find("/cast Arcane Missiles", 1, true),
+    "tracker replacement did not preserve sound and regenerate its macro")
+local moved, movedTo = tracker.MoveSlot(4, -1)
+assert(moved and movedTo == 3 and tracker.GetSlots()[3].spellName == "Arcane Missiles(Rank 1)"
+    and tracker.GetSlots()[3].soundKey == "toast", "tracker move did not carry the complete action")
+assert(tracker.MoveSlot(3, 1), "tracker action could not move back")
+assert(not tracker.MoveSlot(1, 0) and not tracker.AssignSpell("1", 7001, "Invalid Slot"),
+    "tracker accepted an invalid move direction or nonnumeric slot")
+for slot = 5, 8 do
+    assert(tracker.AssignSpell(slot, 6000 + slot, "Test Spell " .. slot),
+        "tracker full-list setup failed at slot " .. slot)
+end
+local overflowAssigned, overflowMessage = tracker.AssignSpell(nil, 7000, "Overflow Spell")
+assert(not overflowAssigned and overflowMessage:find("Select a row", 1, true),
+    "full tracker did not instruct the user to replace or clear an action")
+for slot = 8, 5, -1 do tracker.ClearSlot(slot) end
 local expectedCastNames = {
     "Fireball(Rank 1)", "Frostbolt(Rank 1)",
     "Fire Blast(Rank 1)", "Arcane Missiles(Rank 1)",
 }
 for index, expectedCastName in ipairs(expectedCastNames) do
     local assignedButton = assert(secureButtons[index], "missing secure tracker button " .. index)
-    assert(assignedButton.attributes.type == "spell" and assignedButton.attributes.spell == expectedCastName,
-        "secure tracker button " .. index .. " lost its spell after assignment")
+    assert(assignedButton.attributes.type == "macro"
+        and assignedButton.attributes.macrotext:find("/cast " .. expectedCastName, 1, true),
+        "secure tracker button " .. index .. " lost its macro after assignment")
     assert(assignedButton.shown and assignedButton.mouseEnabled,
         "secure tracker button " .. index .. " stopped receiving clicks after assignment")
 end
@@ -170,16 +195,6 @@ assert(tooltipShows == 1, "tracker spell tooltip showed in combat")
 assert(tooltipHides == 1, "tracker spell tooltip was not dismissed in combat")
 inCombat = false
 
-ApogeePartyHealthBars_S.sv.spellTrackerEnabled = false
-tracker.OnTrackerSettingChanged()
-assert(not castButton.shown and not castButton.mouseEnabled, "disabled tracker remained clickable")
-local beforeEnableLayout = layoutRequests
-ApogeePartyHealthBars_S.sv.spellTrackerEnabled = true
-tracker.OnTrackerSettingChanged()
-assert(layoutRequests == beforeEnableLayout + 1, "enabling tracker did not request a fresh layout")
-assert(castButton.attributes.type == "spell" and castButton.attributes.spell == "Fireball(Rank 1)")
-assert(castButton.shown and castButton.mouseEnabled, "re-enabled tracker spell did not become clickable")
-
 local beforeCombat = castButton.mutations
 inCombat = true
 tracker.ClearSlot(1)
@@ -188,27 +203,36 @@ assert(deferred > 0, "tracker secure update was not deferred")
 
 inCombat = false
 tracker.RefreshSecureActions()
-assert(castButton.attributes.type == "spell" and castButton.attributes.spell == "Frostbolt(Rank 1)",
+assert(castButton.attributes.type == "macro"
+    and castButton.attributes.macrotext:find("/cast Frostbolt(Rank 1)", 1, true),
     "remaining tracker actions did not compact after clearing the first slot")
 assert(castButton.shown and castButton.mouseEnabled, "compacted tracker action was not clickable")
 local trailingCastButton = secureButtons[4]
-assert(trailingCastButton.attributes.type == nil and trailingCastButton.attributes.spell == nil)
+assert(trailingCastButton.attributes.type == nil and trailingCastButton.attributes.macrotext == nil)
 assert(not trailingCastButton.shown and not trailingCastButton.mouseEnabled,
     "unused trailing tracker action remained clickable after clearing a slot")
 
 ApogeePartyHealthBars_S.charSv.trackerDefaultsVersion = nil
 ApogeePartyHealthBars_S.charSv.trackedSpells = {
-    [1] = { name = "Arcane Explosion", enabled = true, soundKey = "none" },
+    [1] = {
+        name = "Arcane Explosion", enabled = false, soundKey = "none",
+        macroText = "/cast Legacy Custom Arcane Explosion",
+    },
 }
 tracker.Initialize()
-assert(tracker.GetSlots()[1].name == "Arcane Explosion", "existing tracker customization was overwritten")
+assert(tracker.GetSlots()[1].spellName == "Arcane Explosion"
+    and tracker.GetSlots()[1].macroText == "/cast Legacy Custom Arcane Explosion",
+    "existing tracker customization and custom macro were not upgraded")
+assert(ApogeePartyHealthBars_S.charSv.trackedSpellsSchemaVersion == 1
+    and tracker.GetSlots()[1].enabled == nil,
+    "tracker migration did not retire the enabled flag")
 assert(tracker.GetSlots()[2] == nil, "defaults were added to a customized tracker")
 assert(ApogeePartyHealthBars_S.charSv.trackerDefaultsVersion == 1)
 
 assert(tracker.ResetClassDefaults())
-assert(tracker.GetSlots()[1].name == "Fireball")
-assert(tracker.GetSlots()[2].name == "Frostbolt")
-assert(tracker.GetSlots()[3].name == "Fire Blast")
+assert(tracker.GetSlots()[1].spellName == "Fireball(Rank 1)")
+assert(tracker.GetSlots()[2].spellName == "Frostbolt(Rank 1)")
+assert(tracker.GetSlots()[3].spellName == "Fire Blast(Rank 1)")
 assert(tracker.GetSlots()[4] == nil)
 
 print("PASS tracked-spell casting")

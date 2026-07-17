@@ -1,11 +1,11 @@
 local S = ApogeePartyHealthBars_S
 local WD = ApogeePartyHealthBars_WheelData
-local Sounds = ApogeePartyHealthBars_Sounds
+local Actions = ApogeePartyHealthBars_ActionMacros
 
 ApogeePartyHealthBars_WheelLayouts = {}
 local L = ApogeePartyHealthBars_WheelLayouts
 
-L.SCHEMA_VERSION = 3
+L.SCHEMA_VERSION = 4
 L.BASE_KEY = "base"
 
 local layouts = {}
@@ -29,23 +29,15 @@ local function resolveActiveSpecKey()
     return tostring(groupIndex)
 end
 
-local function newSlot()
-    return { macroText = "", soundKey = "none" }
-end
-
 local function cloneSlot(entry)
-    if type(entry) ~= "table" then return newSlot() end
-    local copy = {}
-    for key, value in pairs(entry) do copy[key] = value end
-    copy.soundKey = Sounds.NormalizeKey(copy.soundKey, "none", true)
-    return copy
+    return Actions.Clone(entry)
 end
 
 local function normalizeLayout(layout)
     if type(layout) ~= "table" then layout = {} end
     if type(layout.slots) ~= "table" then layout.slots = {} end
     for _, slot in ipairs(WD.SLOTS) do
-        layout.slots[slot.id] = cloneSlot(layout.slots[slot.id])
+        layout.slots[slot.id] = Actions.Normalize(layout.slots[slot.id])
     end
     return layout
 end
@@ -54,7 +46,8 @@ local function cloneLayout(source)
     local result = { slots = {} }
     source = normalizeLayout(source)
     for _, slot in ipairs(WD.SLOTS) do
-        result.slots[slot.id] = cloneSlot(source.slots[slot.id])
+        local entry = cloneSlot(source.slots[slot.id])
+        if entry then result.slots[slot.id] = entry end
     end
     return result
 end
@@ -109,7 +102,8 @@ end
 function L.Initialize()
     if not S.charSv then return false end
     local saved = S.charSv.wheelMacros
-    if type(saved) ~= "table" or saved.schemaVersion ~= L.SCHEMA_VERSION then
+    local schemaVersion = type(saved) == "table" and tonumber(saved.schemaVersion) or nil
+    if type(saved) ~= "table" or (schemaVersion ~= 3 and schemaVersion ~= L.SCHEMA_VERSION) then
         saved = {
             schemaVersion = L.SCHEMA_VERSION,
             enabled = false,
@@ -118,10 +112,19 @@ function L.Initialize()
             profiles = {},
         }
         S.charSv.wheelMacros = saved
+    else
+        saved.schemaVersion = L.SCHEMA_VERSION
     end
     if type(saved.ownership) ~= "table" then saved.ownership = {} end
     if type(saved.profiles) ~= "table" then saved.profiles = {} end
     if saved.enabled == nil then saved.enabled = false end
+    for _, profile in pairs(saved.profiles) do
+        if type(profile) == "table" and type(profile.layouts) == "table" then
+            for layoutKey, layout in pairs(profile.layouts) do
+                profile.layouts[layoutKey] = normalizeLayout(layout)
+            end
+        end
+    end
     return L.RefreshActiveContext()
 end
 
@@ -230,7 +233,7 @@ end
 function L.SetSlot(layoutKey, slotId, entry)
     local slots = L.GetSlots(layoutKey)
     if not slots then return false end
-    slots[slotId] = entry
+    slots[slotId] = Actions.Normalize(entry)
     return true
 end
 

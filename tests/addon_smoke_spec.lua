@@ -187,6 +187,9 @@ for line in io.lines("ApogeePartyHealthBars.toc") do
 end
 assert(tocLoadOrder["ApogeePartyHealthBars_Sounds.lua"] < tocLoadOrder["ApogeePartyHealthBars_WheelMacros.lua"],
     "wheel runtime loaded before its shared sounds dependency")
+assert(tocLoadOrder["ApogeePartyHealthBars_ActionMacros.lua"]
+    < tocLoadOrder["ApogeePartyHealthBars_SpellTracker.lua"],
+    "tracker runtime loaded before its shared action dependency")
 assert(tocLoadOrder["ApogeePartyHealthBars_WheelLayouts.lua"]
     < tocLoadOrder["ApogeePartyHealthBars_WheelMacros.lua"],
     "wheel runtime loaded before its stance-layout dependency")
@@ -319,8 +322,10 @@ assert(ApogeePartyHealthBars_SpellTracker.AssignSpell(2, 9003, "Frostbolt"),
 local trackerButtons = GetTrackerCastButtons()
 local existingTrackerButton = assert(trackerButtons[1], "missing existing tracker secure button")
 local addedTrackerButton = assert(trackerButtons[2], "missing newly assigned tracker secure button")
-assert(existingTrackerButton.attributes.spell == "Fireball(Rank 1)")
-assert(addedTrackerButton.attributes.spell == "Frostbolt(Rank 1)")
+assert(existingTrackerButton.attributes.type == "macro"
+    and existingTrackerButton.attributes.macrotext:find("/cast Fireball(Rank 1)", 1, true))
+assert(addedTrackerButton.attributes.type == "macro"
+    and addedTrackerButton.attributes.macrotext:find("/cast Frostbolt(Rank 1)", 1, true))
 ApogeePartyHealthBars_ConfigController.SetMode(false)
 local existingImmediatePoints = existingTrackerButton.pointWrites
 local addedImmediatePoints = addedTrackerButton.pointWrites
@@ -328,8 +333,8 @@ RunFrameUpdates()
 assert(existingTrackerButton.pointWrites > existingImmediatePoints
         and addedTrackerButton.pointWrites > addedImmediatePoints,
     "settings close did not reconcile tracker overlays on the next frame")
-assert(existingTrackerButton.attributes.spell == "Fireball(Rank 1)"
-        and addedTrackerButton.attributes.spell == "Frostbolt(Rank 1)",
+assert(existingTrackerButton.attributes.macrotext:find("/cast Fireball(Rank 1)", 1, true)
+        and addedTrackerButton.attributes.macrotext:find("/cast Frostbolt(Rank 1)", 1, true),
     "settings close changed tracked-spell secure attributes")
 assert(existingTrackerButton.shown and existingTrackerButton.mouseEnabled
         and addedTrackerButton.shown and addedTrackerButton.mouseEnabled,
@@ -355,8 +360,9 @@ assert(existingTrackerButton.shown and existingTrackerButton.mouseEnabled
 SpellBookFrame:Hide()
 
 ApogeePartyHealthBars_S.configMode = true
-for _, key in ipairs({ "general", "bindings", "spells", "wheel", "macros" }) do
+for _, key in ipairs({ "general", "healing", "spells", "wheel", "macros" }) do
     ApogeePartyHealthBars_ConfigUI.ActivateTab(key)
+    assert(ApogeePartyHealthBars_S.configTab == key, "could not activate settings tab: " .. key)
     ApogeePartyHealthBars_ConfigUI.RefreshTab(key, true)
 end
 ApogeePartyHealthBars_ConfigUI.Show()
@@ -368,7 +374,8 @@ RunFrameUpdates()
 assert(type(ApogeePartyHealthBars_S.sv) == "table", "saved variables did not initialize")
 assert(ApogeePartyHealthBars_S.sv.combatUIAutoHide == false, "combat UI fade should default off")
 assert(ApogeePartyHealthBars_S.sv.clickableBuffIcons == true, "clickable buff icons should default on")
-assert(ApogeePartyHealthBars_S.sv.spellTrackerEnabled == true, "player spell tracker should default on")
+assert(ApogeePartyHealthBars_S.sv.spellTrackerEnabled == nil, "retired tracker checkbox state persisted")
+assert(ApogeePartyHealthBars_S.sv.spellTrackerSoundsEnabled == nil, "retired tracker sounds checkbox state persisted")
 assert(ApogeePartyHealthBars_S.sv.lowHealthSoundEnabled == nil, "retired low-health checkbox state persisted")
 assert(ApogeePartyHealthBars_S.sv.lowHealthSoundKey == "alarm_soft", "low-health sound choice should default soft")
 assert(next(ApogeePartyHealthBars_C.TRACKER_CLASS_DEFAULTS) == nil,
@@ -378,12 +385,14 @@ local existingPreferences = {
     schemaVersion = 3,
     combatUIAutoHide = true,
     spellTrackerEnabled = false,
+    spellTrackerSoundsEnabled = false,
     lowHealthSoundKey = "alarm_bell",
     lowHealthThreshold = 65,
 }
 ApogeePartyHealthBars_Effects.InitializeSavedVariables(existingPreferences, {})
 assert(existingPreferences.combatUIAutoHide == true, "saved combat UI fade preference was overwritten")
-assert(existingPreferences.spellTrackerEnabled == false, "saved tracker preference was overwritten")
+assert(existingPreferences.spellTrackerEnabled == nil, "saved tracker preference was not retired")
+assert(existingPreferences.spellTrackerSoundsEnabled == nil, "saved tracker sounds preference was not retired")
 assert(existingPreferences.lowHealthSoundKey == "alarm_bell", "saved low-health sound choice was overwritten")
 assert(existingPreferences.lowHealthThreshold == 65, "saved low-health threshold was overwritten")
 local legacyPreferences = {

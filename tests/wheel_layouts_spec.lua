@@ -4,6 +4,7 @@ ApogeePartyHealthBars_WheelData = {
         { id = "normalUp" },
         { id = "normalDown" },
     },
+    DISPLAY_ORDER = { "normalUp", "normalDown" },
 }
 ApogeePartyHealthBars_Sounds = {
     NormalizeKey = function(key) return key or "none" end,
@@ -33,6 +34,7 @@ function GetSpellInfo(spellId)
     end
 end
 
+dofile("ApogeePartyHealthBars_ActionMacros.lua")
 dofile("ApogeePartyHealthBars_WheelLayouts.lua")
 local layouts = ApogeePartyHealthBars_WheelLayouts
 
@@ -43,7 +45,7 @@ ApogeePartyHealthBars_S.charSv.wheelMacros = {
 }
 layouts.Initialize()
 local saved = ApogeePartyHealthBars_S.charSv.wheelMacros
-assert(saved.schemaVersion == 3 and saved.slots == nil and saved.layouts == nil,
+assert(saved.schemaVersion == 4 and saved.slots == nil and saved.layouts == nil,
     "native Wheel schema retained obsolete single-layout data")
 assert(saved.profiles["1"] and saved.profiles["2"] == nil
     and layouts.GetActiveSpecKey() == "1",
@@ -53,9 +55,10 @@ assert(not layouts.HasStances() and #layouts.GetLayouts() == 1,
     "a character with no reported forms exposed stance configuration")
 assert(layouts.GetActiveKey() == "base", "no-form character did not resolve Base")
 
+layouts.SetSlot("base", "normalUp", {
+    spellName = "Base Spell", macroText = "/cast Base Spell", soundKey = "none",
+})
 local baseUp = layouts.GetSlot("base", "normalUp")
-baseUp.displaySpellName = "Base Spell"
-baseUp.macroText = "/cast Base Spell"
 forms = {
     { spellId = 2457, name = "Battle Stance", texture = 132349 },
     { spellId = 71, name = "Defensive Stance", texture = 132341 },
@@ -77,9 +80,11 @@ assert(layouts.RefreshActiveContext(),
     "talent-group change with an identical form registry was not detected")
 assert(layouts.GetActiveSpecKey() == "2" and saved.profiles["2"],
     "second talent-group profile was not created when first activated")
-assert(layouts.GetSlot("spell:2457", "normalUp").macroText == "",
+assert(layouts.GetSlot("spell:2457", "normalUp") == nil,
     "second talent-group profile copied the first profile instead of starting empty")
-layouts.GetSlot("spell:2457", "normalUp").macroText = "/cast Spec Two Battle Spell"
+layouts.SetSlot("spell:2457", "normalUp", {
+    spellName = "Spec Two Battle Spell", macroText = "/cast Spec Two Battle Spell", soundKey = "none",
+})
 assert(not layouts.RefreshActiveContext(), "duplicate active-context refresh reported a change")
 
 activeSpecGroup = 1

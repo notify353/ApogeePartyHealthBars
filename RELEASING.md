@@ -25,7 +25,7 @@ Push the preparation commit and wait for CI. Then verify in game:
 - Login and `/reload`
 - Solo and party layouts
 - Entering and leaving combat
-- Click bindings and spell assignment
+- Healing-tab click assignment
 - Spell tracking, threat, shields, heals, and HoTs
 - Settings, minimap position, persistence, and macros
 

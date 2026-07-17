@@ -18,8 +18,6 @@ local FEATURE_DEFAULTS = {
     rangeCheckEnabled = true,
     showUnitTargets = true,
     hotEnabled = true,
-    spellTrackerEnabled = true,
-    spellTrackerSoundsEnabled = true,
     lowHealthSoundKey = C.LOW_HEALTH_DEFAULT_SOUND,
     lowHealthThreshold = C.LOW_HEALTH_DEFAULT_THRESHOLD,
     threatEnabled = true,
@@ -54,6 +52,8 @@ function E.InitializeSavedVariables(saved, characterSaved)
         saved.lowHealthSoundKey = "none"
     end
     saved.lowHealthSoundEnabled = nil
+    saved.spellTrackerEnabled = nil
+    saved.spellTrackerSoundsEnabled = nil
 
     for key, defaultValue in pairs(FEATURE_DEFAULTS) do
         if saved[key] == nil then

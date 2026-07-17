@@ -52,6 +52,7 @@ dofile("ApogeePartyHealthBars_ActionMacros.lua")
 dofile("ApogeePartyHealthBars_BoundActionLayouts.lua")
 dofile("ApogeePartyHealthBars_KeyLayouts.lua")
 dofile("ApogeePartyHealthBars_BoundActionBindings.lua")
+dofile("ApogeePartyHealthBars_BoundActionRuntime.lua")
 dofile("ApogeePartyHealthBars_KeyActions.lua")
 
 local data = ApogeePartyHealthBars_KeyData

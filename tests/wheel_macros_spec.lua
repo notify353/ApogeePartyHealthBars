@@ -160,6 +160,7 @@ dofile("ApogeePartyHealthBars_BoundActionLayouts.lua")
 dofile("ApogeePartyHealthBars_WheelLayouts.lua")
 dofile("ApogeePartyHealthBars_BoundActionBindings.lua")
 dofile("ApogeePartyHealthBars_ActionHud.lua")
+dofile("ApogeePartyHealthBars_BoundActionRuntime.lua")
 dofile("ApogeePartyHealthBars_WheelMacros.lua")
 local data, wheel = ApogeePartyHealthBars_WheelData, ApogeePartyHealthBars_WheelMacros
 local PRIMARY = "spell:2457"
@@ -347,9 +348,12 @@ assert(not normalUpIcon.texture.desaturated and normalUpIcon.alpha == 0.35
     "out-of-range wheel spell did not retain only the faded range styling")
 tooltipLines = {}
 normalUpIcon.scripts.OnEnter(normalUpIcon)
+local foundActionHeading = false
 for _, line in ipairs(tooltipLines) do
+    if line == "Normal Up action" then foundActionHeading = true end
     assert(line ~= "Out of range", "out-of-range wheel tooltip retained its status line")
 end
+assert(foundActionHeading, "wheel tooltip did not use the normalized action heading")
 tooltipShows = 0
 rangeResult = 1; usable = false; noResource = true; wheel.Refresh()
 assert(normalUpIcon.texture.desaturated, "insufficient rage did not desaturate the wheel spell")

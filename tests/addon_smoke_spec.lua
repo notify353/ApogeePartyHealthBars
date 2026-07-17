@@ -48,7 +48,11 @@ local function widget()
             self.mutations = self.mutations + 1
         end,
         ClearAllPoints = function(self) self.mutations = self.mutations + 1 end,
-        SetSize = function(self) self.mutations = self.mutations + 1 end,
+        SetSize = function(self, width, height)
+            self.width = width
+            self.height = height
+            self.mutations = self.mutations + 1
+        end,
         EnableMouse = function(self, enabled)
             self.mouseEnabled = enabled
             self.mutations = self.mutations + 1
@@ -86,8 +90,10 @@ end
 
 UIParent = widget(); Minimap = widget(); MinimapCluster = widget(); GameTooltip = widget()
 SpellBookFrame = widget(); SpellBookFrame:Hide()
-function CreateFrame(_, name, _, template)
+function CreateFrame(frameType, name, parent, template)
     local frame = widget()
+    frame.frameType = frameType
+    frame.parent = parent
     frame.template = template
     frames[#frames + 1] = frame
     if name then _G[name] = frame end
@@ -257,6 +263,22 @@ assert(tocLoadOrder["ApogeePartyHealthBars_KeyLayouts.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_KeyConfig.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_ConfigUI.lua"],
     "Keys runtime or configuration loaded before its dependency")
+assert(tocLoadOrder["ApogeePartyHealthBars_ShortcutBar.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_RowGeometry.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_WheelMacros.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_RowGeometry.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_KeyActions.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_RowGeometry.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_RowGeometry.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_EffectsTracker.lua"],
+    "RowGeometry loaded outside its dependency-safe initialization order")
+assert(tocLoadOrder["ApogeePartyHealthBars_Threat.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_VisualTicker.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_VisualTicker.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_EffectsTracker.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_VisualTicker.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars.lua"],
+    "VisualTicker loaded outside its dependency-safe initialization order")
 
 local router = ApogeePartyHealthBars_EventRouter
 router.Dispatch("PLAYER_LOGIN")
@@ -287,6 +309,51 @@ local feedbackText = assert(ApogeePartyHealthBars_ActionHud.GetFeedbackText(),
     "shared action feedback line was not attached")
 assert(feedbackText.point[4] == 4 and feedbackText.point[5] == -117,
     "action feedback line lost its fixed padded position below the Keys grid")
+
+assert(keysRuntime.Enable(), "Keys could not enable without Wheel")
+RunFrameUpdates()
+local geometry = ApogeePartyHealthBars_RowGeometry
+local keysOnlyActionHeight = geometry.GetActionAreaHeight("player")
+local keysOnlyShortcutHeight = ApogeePartyHealthBars_ShortcutBar.GetHeight("player")
+assert(keysRuntime.GetHeight("player") == 136
+        and keysOnlyActionHeight == keysOnlyShortcutHeight + 136,
+    "Keys-only action geometry did not reserve the full keyboard cluster")
+assert(geometry.GetRowTotalHeight("player")
+        == ApogeePartyHealthBars_C.ROW_H
+            + ApogeePartyHealthBars_EffectsTracker.GetHotStripHeight()
+            + geometry.GetRowPowerChromeHeight("player")
+            + keysOnlyActionHeight,
+    "Keys-only player row height omitted its action area")
+ApogeePartyHealthBars_S.configMode = true
+ApogeePartyHealthBars_S.RequestLayoutUpdate()
+RunFrameUpdates()
+local positionedRows = {}
+for _, frame in ipairs(frames) do
+    if frame.frameType == "Button"
+        and frame.parent == ApogeePartyHealthBarsPanel
+        and frame.point and frame.point[1] == "TOPLEFT"
+        and frame.point[3] == "BOTTOMLEFT" then
+        positionedRows[#positionedRows + 1] = frame
+    end
+end
+table.sort(positionedRows, function(left, right)
+    return (left.point[5] or 0) > (right.point[5] or 0)
+end)
+assert(#positionedRows == ApogeePartyHealthBars_C.MAX_ROWS,
+    "smoke test could not identify every positioned party row")
+for index = 1, #positionedRows - 1 do
+    local current = positionedRows[index]
+    local following = positionedRows[index + 1]
+    local currentOffset = -(current.point[5] or 0)
+    local followingOffset = -(following.point[5] or 0)
+    assert(followingOffset >= currentOffset + current.height + ApogeePartyHealthBars_C.ROW_GAP,
+        "Keys-only party rows overlapped")
+end
+ApogeePartyHealthBars_S.configMode = false
+ApogeePartyHealthBars_S.RequestLayoutUpdate()
+RunFrameUpdates()
+assert(keysRuntime.Disable(), "Keys could not return to disabled before dual-feature coverage")
+RunFrameUpdates()
 
 assert(wheelRuntime.Enable(), "Wheel could not take over its physical bindings")
 RunFrameUpdates()

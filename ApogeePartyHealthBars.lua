@@ -14,6 +14,8 @@ local W = ApogeePartyHealthBars_WheelMacros
 local K = ApogeePartyHealthBars_KeyActions
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
+local rowGeometry = ApogeePartyHealthBars_RowGeometry
+local visualTicker = ApogeePartyHealthBars_VisualTicker
 
 local panel, configUI, minimapController
 local rows = {}
@@ -23,9 +25,6 @@ throttleFrame:Hide()
 
 local valuesFlushFrame = CreateFrame("Frame")
 valuesFlushFrame:Hide()
-
-local visualTickerFrame = CreateFrame("Frame")
-visualTickerFrame:Hide()
 
 local function CancelValuesFlush()
     valuesFlushFrame:Hide()
@@ -87,6 +86,10 @@ local HookContainerItems
 local ApplyAllSecureBindings
 local EnsureMinimapButton
 
+local function SyncVisualTicker()
+    visualTicker.Sync()
+end
+
 local secureFrames = ApogeePartyHealthBars_SecureFrames
 local DeferSecureUpdate = secureFrames.RequestSecureUpdate
 local HideSecureFrame = secureFrames.Hide
@@ -143,7 +146,7 @@ end
 local effectsTracker = ApogeePartyHealthBars_EffectsTracker
 effectsTracker.Initialize({
     rows = rows,
-    visualTickerFrame = visualTickerFrame,
+    SyncVisualTicker = SyncVisualTicker,
     IsSavedFeatureEnabled = IsSavedFeatureEnabled,
     GetUnitTargetToken = GetUnitTargetToken,
     ApplyAllPartyBuffBindings = function() ApplyAllPartyBuffBindings() end,
@@ -162,12 +165,9 @@ local GetSelfBuffPreferenceKey = effectsTracker.GetSelfBuffPreferenceKey
 local SetSelfBuffPreference = effectsTracker.SetSelfBuffPreference
 local IsHotEnabled = effectsTracker.IsHotEnabled
 local GetHotStripHeight = effectsTracker.GetHotStripHeight
-local GetPlayerPowerInfo = effectsTracker.GetPlayerPowerInfo
-local GetRowPowerChromeHeight = effectsTracker.GetRowPowerChromeHeight
-local GetRowTotalHeight = effectsTracker.GetRowTotalHeight
 InitHotSpells = effectsTracker.InitHotSpells
-local SyncVisualTicker = effectsTracker.SyncVisualTicker
-local RefreshVisualTicker = effectsTracker.RefreshVisualTicker
+local HasActiveHotVisuals = effectsTracker.HasActiveHotVisuals
+local TickHotVisuals = effectsTracker.TickHotVisuals
 local UpdateRowHotVisuals = effectsTracker.UpdateRowHotVisuals
 local IsShieldEnabled = effectsTracker.IsShieldEnabled
 local ShouldTrackShieldUnit = effectsTracker.ShouldTrackShieldUnit
@@ -177,6 +177,17 @@ local SeedShieldTrackerFromAuras = effectsTracker.SeedShieldTrackerFromAuras
 local GetUnitShieldRemaining = effectsTracker.GetUnitShieldRemaining
 local UpdateRowShieldVisual = effectsTracker.UpdateRowShieldVisual
 local UpdateRowIncomingHealVisual = effectsTracker.UpdateRowIncomingHealVisual
+
+rowGeometry.Initialize({
+    GetHotStripHeight = GetHotStripHeight,
+    ShortcutBar = T,
+    WheelMacros = W,
+    KeyActions = K,
+})
+local GetPlayerPowerInfo = rowGeometry.GetPlayerPowerInfo
+local GetRowPowerChromeHeight = rowGeometry.GetRowPowerChromeHeight
+local GetActionAreaHeight = rowGeometry.GetActionAreaHeight
+local GetRowTotalHeight = rowGeometry.GetRowTotalHeight
 
 -- =============================================================================
 
@@ -246,6 +257,19 @@ unitDisplay.Initialize({
     UpdateRowIncomingHealVisual = UpdateRowIncomingHealVisual,
     UpdateRowHotVisuals = UpdateRowHotVisuals,
     ShouldShowPartyBuffIcon = ShouldShowPartyBuffIcon,
+})
+
+visualTicker.Initialize({
+    IsAddonEnabled = IsEnabled,
+    IsRangeCheckEnabled = function() return IsSavedFeatureEnabled("rangeCheckEnabled") end,
+    IsConfigMode = function() return S.configMode end,
+    HasActiveHotVisuals = HasActiveHotVisuals,
+    TickHotVisuals = TickHotVisuals,
+    RefreshRangeAlpha = function() S.RefreshRangeAlpha() end,
+    ShortcutBar = T,
+    WheelMacros = W,
+    KeyActions = K,
+    Threat = H,
 })
 local StyleReadableText = unitDisplay.StyleReadableText
 local ApplyFlatStatusBar = unitDisplay.ApplyFlatStatusBar
@@ -433,19 +457,6 @@ throttleFrame:SetScript("OnUpdate", function(_, elapsed)
     end
 end)
 
-visualTickerFrame:SetScript("OnUpdate", function(_, elapsed)
-    RefreshVisualTicker()
-    S.rangeTimer = (S.rangeTimer or 0) - elapsed
-    if S.rangeTimer <= 0 then
-        S.rangeTimer = C.RANGE_UPDATE_RATE
-        S.RefreshRangeAlpha()
-        H.Refresh()
-        W.Refresh()
-        K.Refresh()
-    end
-end)
-
-
 -- =============================================================================
 -- Click-cast bindings
 -- =============================================================================
@@ -478,9 +489,7 @@ L.Register({
     GetRowBtnWidth = GetRowBtnWidth,
     GetRowTotalHeight = GetRowTotalHeight,
     GetRowPowerChromeHeight = GetRowPowerChromeHeight,
-    GetShortcutAreaHeight = function(unitId)
-        return T.GetHeight(unitId) + math.max(W.GetHeight(unitId), K.GetHeight(unitId))
-    end,
+    GetActionAreaHeight = GetActionAreaHeight,
     LayoutShortcuts = function()
         W.Layout(); K.Layout()
         T.Layout(math.max(W.GetHeight("player"), K.GetHeight("player")))
@@ -593,7 +602,7 @@ configController.Initialize({
     GetConfigUI = function() return configUI end,
     ForceRefresh = ForceRefresh,
     ClearDirtyFlags = ClearDirtyFlags,
-    StopUpdateFrames = function() throttleFrame:Hide(); visualTickerFrame:Hide() end,
+    StopUpdateFrames = function() throttleFrame:Hide(); visualTicker.Stop() end,
     HideAllSecureOverlays = function() HideAllSecureOverlays() end,
     SavePosition = SavePosition,
     UpdateHeader = function() UpdateHeader() end,

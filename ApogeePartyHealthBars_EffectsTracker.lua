@@ -2,10 +2,6 @@ local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local A = ApogeePartyHealthBars_Auras
 local E = ApogeePartyHealthBars_Effects
-local T = ApogeePartyHealthBars_ShortcutBar
-local W = ApogeePartyHealthBars_WheelMacros
-local H = ApogeePartyHealthBars_Threat
-local F = ApogeePartyHealthBars_SecureFrames
 
 ApogeePartyHealthBars_EffectsTracker = {}
 local X = ApogeePartyHealthBars_EffectsTracker
@@ -262,30 +258,6 @@ local function GetHotStripHeight()
     return C.HOT_AREA_GAP + n * C.HOT_H + (n - 1) * C.HOT_GAP
 end
 
-local function GetPlayerPowerInfo()
-    local powerType, powerToken = UnitPowerType("player")
-    if powerType == nil then powerType = C.MANA_POWER end
-    local manaMax = UnitPowerMax("player", C.MANA_POWER) or 0
-    local activeMax = UnitPowerMax("player", powerType) or 0
-    return powerType, powerToken, manaMax, activeMax
-end
-
-local function PlayerHasSeparateActivePower()
-    local powerType, _, manaMax, activeMax = GetPlayerPowerInfo()
-    return powerType ~= C.MANA_POWER and manaMax > 0 and activeMax > 0
-end
-
-local function GetRowPowerChromeHeight(unitId)
-    local stripCount = unitId == "player" and PlayerHasSeparateActivePower() and 2 or 1
-    return stripCount * C.MANA_H + stripCount * C.MANA_GAP
-end
-
-local function GetRowTotalHeight(rowOrUnit)
-    local unitId = type(rowOrUnit) == "table" and rowOrUnit.unitId or rowOrUnit
-    return C.ROW_H + GetHotStripHeight() + GetRowPowerChromeHeight(unitId)
-        + T.GetHeight(unitId) + W.GetHeight(unitId)
-end
-
 local function ScanUnitPlayerHots(unitId)
     return A.GetUnitAuraSnapshot(unitId).playerHots
 end
@@ -313,14 +285,14 @@ InitHotSpells = function()
         local row = D.rows[i]
         if row and row.hotMeta then wipe(row.hotMeta) end
     end
-    D.visualTickerFrame:Hide()
+    D.SyncVisualTicker()
 end
 
 local function WipeRowHotMeta(row)
     if row.hotMeta then wipe(row.hotMeta) end
 end
 
-local function HasActiveHotMeta()
+local function HasActiveHotVisuals()
     if not IsHotEnabled() or not D.IsSavedFeatureEnabled("enabled") then return false end
     for i = 1, C.MAX_ROWS do
         local row = D.rows[i]
@@ -349,22 +321,8 @@ local function TickRowHotVisuals(row)
     end
 end
 
-local function SyncVisualTicker()
-    local rangeActive = D.IsSavedFeatureEnabled("enabled")
-        and D.IsSavedFeatureEnabled("rangeCheckEnabled")
-        and not S.configMode
-    if HasActiveHotMeta() or rangeActive or H.IsActive() or T.IsActive() or W.IsEnabled() then
-        D.visualTickerFrame:Show()
-    else
-        D.visualTickerFrame:Hide()
-    end
-end
-
-local function RefreshVisualTicker()
-    if not D.IsSavedFeatureEnabled("enabled") then
-        D.visualTickerFrame:Hide()
-        return
-    end
+local function TickHotVisuals()
+    if not D.IsSavedFeatureEnabled("enabled") then return end
     if IsHotEnabled() then
         for i = 1, C.MAX_ROWS do
             local row = D.rows[i]
@@ -373,9 +331,6 @@ local function RefreshVisualTicker()
             end
         end
     end
-    T.Tick()
-    W.Refresh()
-    SyncVisualTicker()
 end
 
 local function HideRowHotVisuals(row)
@@ -385,7 +340,7 @@ local function HideRowHotVisuals(row)
         if row.hotBg[i] then row.hotBg[i]:Hide() end
         if row.hotBars[i] then row.hotBars[i]:Hide() end
     end
-    SyncVisualTicker()
+    D.SyncVisualTicker()
 end
 
 local function UpdateRowHotVisuals(row, unitId)
@@ -435,7 +390,7 @@ local function UpdateRowHotVisuals(row, unitId)
         if row.hotBars[i] then row.hotBars[i]:Hide() end
     end
 
-    SyncVisualTicker()
+    D.SyncVisualTicker()
 end
 
 
@@ -707,7 +662,7 @@ end
 
 function X.Initialize(deps)
     for _, key in ipairs({
-        "rows", "visualTickerFrame", "IsSavedFeatureEnabled", "GetUnitTargetToken",
+        "rows", "SyncVisualTicker", "IsSavedFeatureEnabled", "GetUnitTargetToken",
         "ApplyAllPartyBuffBindings", "ApplyAllSelfBuffBindings", "RefreshConfigPanel",
         "SyncCastOverlays", "LayoutRows", "UpdateRowValues",
     }) do
@@ -725,12 +680,9 @@ X.GetSelfBuffPreferenceKey = GetSelfBuffPreferenceKey
 X.SetSelfBuffPreference = SetSelfBuffPreference
 X.IsHotEnabled = IsHotEnabled
 X.GetHotStripHeight = GetHotStripHeight
-X.GetPlayerPowerInfo = GetPlayerPowerInfo
-X.GetRowPowerChromeHeight = GetRowPowerChromeHeight
-X.GetRowTotalHeight = GetRowTotalHeight
 X.InitHotSpells = InitHotSpells
-X.SyncVisualTicker = SyncVisualTicker
-X.RefreshVisualTicker = RefreshVisualTicker
+X.HasActiveHotVisuals = HasActiveHotVisuals
+X.TickHotVisuals = TickHotVisuals
 X.UpdateRowHotVisuals = UpdateRowHotVisuals
 X.IsShieldEnabled = IsShieldEnabled
 X.ShouldTrackShieldUnit = ShouldTrackShieldUnit

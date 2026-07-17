@@ -34,6 +34,8 @@ ApogeePartyHealthBars_Auras.lua
 ApogeePartyHealthBars_ShortcutBar.lua
 ApogeePartyHealthBars_RaidMarkers.lua
 ApogeePartyHealthBars_Threat.lua
+ApogeePartyHealthBars_RowGeometry.lua
+ApogeePartyHealthBars_VisualTicker.lua
 ApogeePartyHealthBars_MinimapController.lua
 ApogeePartyHealthBars_ConfigController.lua
 ApogeePartyHealthBars_PlayerSpells.lua

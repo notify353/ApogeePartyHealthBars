@@ -7,7 +7,7 @@ Compact five-player healing frames for World of Warcraft Anniversary and Burning
 - Player and party health, power, shields, incoming heals, HoTs, and threat
 - Selectable sound and threshold when the player or a party member drops low on health
 - Inline unit targets and target-of-target health
-- Secure click-casting and clickable buff reminders
+- Secure spell/item click-casting and clickable buff reminders
 - Player Shortcuts for spells, abilities, bandages, food, potions, and other usable items
 - A fixed 15-key action cluster for `1`–`5`, `Q/E/R/T`, `F/G`, and `Z/X/C/V`
 - Editable mouse-wheel Shortcuts for six fixed modifier gestures
@@ -27,11 +27,11 @@ Interface/AddOns/ApogeePartyHealthBars/ApogeePartyHealthBars.toc
 
 ## Use
 
-Left-click the minimap button to open settings; the Spellbook opens alongside it. In the Healing tab, select a click and Shift-click a healing or cleansing spell to assign it. Healing is intentionally spell-only because those clicks target party units.
+Left-click the minimap button to open settings; the Spellbook opens alongside it. In the Healing tab, select a click and Shift-click a healing or cleansing spell or a usable item in an open bag. Healing uses native secure spell and item actions so the action targets the party unit whose health bar you click. Right-click an assignment to clear it.
 
 In Shortcuts, Keys, or Wheel, Shift-click a Spellbook spell or an item in an open bag to fill the first empty position automatically. Select an occupied Shortcut row, Wheel gesture, or Keys tile only when you want the next Shift-click to replace it. Shortcuts supports up to 12 assignments and displays them six per row on the player frame. Shortcuts rejects duplicate spell and item IDs; Keys and Wheel permit the same spell or item in multiple positions and across both features. Secure changes may wait until combat ends.
 
-Spell assignments start with this generated macro:
+Spell assignments in Shortcuts, Keys, and Wheel start with this generated macro:
 
 ```text
 /targetenemy [noexists][dead][help]
@@ -39,7 +39,7 @@ Spell assignments start with this generated macro:
 /cast Spell Name(Rank N)
 ```
 
-Item assignments start with the localized item name:
+Item assignments in Shortcuts, Keys, and Wheel start with the localized item name:
 
 ```text
 /use Item Name
@@ -47,7 +47,7 @@ Item assignments start with the localized item name:
 
 Each compact action row identifies itself as a Spell or Item and has sound, Macro, movement, and Clear controls. Macro opens a focused editor with Reset, Cancel, Save, and a 255-byte counter; blank or oversized text cannot be saved. Clear is the only way to remove an action. Clearing a Shortcuts row compacts the list, while moving a Keys or Wheel action swaps its complete shortcut, macro, and sound payload with the adjacent position.
 
-The Shortcut Bar and active Keys and Wheel HUDs show spell range/cooldown state plus item icons, carried quantities, usability, and cooldowns. Depleted items stay assigned with a quantity of zero, so they become available automatically when restocked. Item range prediction is intentionally omitted because normal item targeting and custom macros may behave differently.
+Healing does not expose macro, sound, or movement controls: its native secure action is what preserves the clicked health-bar unit. The Shortcut Bar and active Keys and Wheel HUDs show spell range/cooldown state plus item icons, carried quantities, usability, and cooldowns. Depleted items stay assigned in every feature, so they become available automatically when restocked. Item range prediction is intentionally omitted because normal item targeting and custom macros may behave differently.
 
 The Keys tab uses this fixed keyboard-shaped layout:
 

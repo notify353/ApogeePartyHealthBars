@@ -230,6 +230,11 @@ for line in io.lines("ApogeePartyHealthBars.toc") do
 end
 assert(tocLoadOrder["ApogeePartyHealthBars_Sounds.lua"] < tocLoadOrder["ApogeePartyHealthBars_WheelMacros.lua"],
     "wheel runtime loaded before its shared sounds dependency")
+assert(tocLoadOrder["ApogeePartyHealthBars_ActionData.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_ActionMacros.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_ActionData.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_BindingStore.lua"],
+    "action consumers loaded before their shared identity dependency")
 assert(tocLoadOrder["ApogeePartyHealthBars_ActionMacros.lua"]
     < tocLoadOrder["ApogeePartyHealthBars_ShortcutBar.lua"],
     "Shortcut Bar runtime loaded before its shared action dependency")
@@ -249,6 +254,8 @@ assert(tocLoadOrder["ApogeePartyHealthBars_KeyLayouts.lua"]
 
 local router = ApogeePartyHealthBars_EventRouter
 router.Dispatch("PLAYER_LOGIN")
+assert(ApogeePartyHealthBars_S.charSv.bindingSchemaVersion == 1,
+    "Healing binding data was not initialized before runtime setup")
 local keysRuntime = ApogeePartyHealthBars_KeyActions
 local wheelRuntime = ApogeePartyHealthBars_WheelMacros
 assert(not keysRuntime.IsEnabled(), "Keys did not start disabled")
@@ -332,12 +339,21 @@ assert(keyGIcon.cooldown.shown and keyGIcon.count:GetText() == "3",
     "Keys item HUD did not reflect cooldown and quantity state")
 smokeItemCooldown = 0
 smokeItemName = "Heavy Linen Bandage"
+local originalHealingRefresh = ApogeePartyHealthBars_ConfigUI.RefreshBindPanel
+local healingItemInfoRefreshes = 0
+ApogeePartyHealthBars_ConfigUI.RefreshBindPanel = function(...)
+    healingItemInfoRefreshes = healingItemInfoRefreshes + 1
+    return originalHealingRefresh(...)
+end
 router.Dispatch("GET_ITEM_INFO_RECEIVED", 1251, true)
 assert(keysRuntime.GetSlot(keysLayout, "keyG").itemName == "Heavy Linen Bandage"
         and keysRuntime.GetMacro(keysLayout, "keyG") == "/use Heavy Linen Bandage",
     "Keys did not refresh a localized generated item action")
+assert(healingItemInfoRefreshes == 1,
+    "item information did not refresh the open Healing assignment labels")
 smokeItemName = "Linen Bandage"
 router.Dispatch("GET_ITEM_INFO_RECEIVED", 1251, true)
+ApogeePartyHealthBars_ConfigUI.RefreshBindPanel = originalHealingRefresh
 assert(savedBindingCount >= 2, "enabled bound-action features did not persist their bindings")
 assert(ApogeePartyHealthBars_ShortcutBar.AssignSpell(1, 9001, "Fireball"))
 assert(ApogeePartyHealthBars_ShortcutBar.GetSlotLane(1) == "player", "ordinary Shortcut spell did not use player lane")

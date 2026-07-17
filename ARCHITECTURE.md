@@ -7,7 +7,8 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `EventRouter`: event frame and isolated subscribers
 - `Sounds`: shared sound catalog, saved-key normalization, and SFX playback
 - `ShortcutItems`: shared item-information, carried-count, usability, cooldown, and depletion evaluation
-- `ActionMacros`: typed spell/item shortcut records, generated `/cast` and `/use` defaults, legacy normalization, custom-text detection, and 255-byte validation
+- `ActionData`: macro-independent spell/item identity, legacy normalization, cloning, and display resolution shared by every configurable action feature
+- `ActionMacros`: generated `/cast` and `/use` defaults, sound/macro extensions, custom-text detection, and 255-byte validation for Shortcuts, Keys, and Wheel
 - `ActionConfig`: shared compact action rows and the focused draft macro editor used by Shortcuts, Keys, and Wheel
 - `BoundActionLayouts`: shared per-spec/per-form typed-action layout engine with feature-specific new-layout policy
 - `BoundActionBindings`: binding-set-specific transactional ownership, reconciliation, conflict detection, restoration, and cross-feature Factory Reset rollback
@@ -24,7 +25,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `KeyData`, `KeyLayouts`, `KeyActions`, `KeyConfig`: the fixed 15-key keyboard geometry, independent empty per-spec/per-form profiles, transactional physical-key ownership, secure state-driven actions, left-side HUD cluster, and focused/armed tile editor
 - `RaidMarkers`: target marker controls
 - `Threat`: party and target threat
-- `BindingStore`, `BindingController`, `ClickBindings`: persistence, assignment, and secure bindings
+- `BindingStore`, `BindingController`, `ClickBindings`: typed Healing spell/item persistence, Shift-click assignment, and native unit-targeted secure actions
 - `ConfigUI`, `ConfigController`, `MinimapController`: settings lifecycle
 - `MacroData`, `MacroLibrary`, `MacroConfig`: immutable universal/current-class combat recipe catalog, validation, filtering, and copy-only presentation
 
@@ -34,6 +35,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - Never mutate secure attributes, position, visibility, or mouse state during combat.
 - Keep Keys and Wheel activation-feedback prefixes runtime-only; persisted and edited text is the user-controlled macro body.
 - Preserve custom macro text during normalization and migration; regenerate defaults only for new assignments, explicit resets, or legacy entries without macro text.
+- Keep Healing actions macro-independent; native secure spell/item actions must retain the clicked health-bar unit.
 - Never call Blizzard Spellbook toggles, replace Spellbook or bag-item scripts, or use pre-hooks; use the minimap action template and secure post-hooks.
 - Do not rename saved variables or named secure frames without migration.
 - Add settings through the tab registry.

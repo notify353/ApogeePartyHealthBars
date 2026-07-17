@@ -95,7 +95,15 @@ local bindings = {}
 local refreshes = 0
 local refreshedShortcutSlot, refreshedKeySlot, refreshedWheelSlot
 controller.Initialize({
-    GetBindingsTable = function() return bindings end,
+    AssignBindingSpell = function(slot, spellId, spellName)
+        bindings[slot] = { kind = "spell", spellId = spellId, spellName = spellName }
+        return true, nil, bindings[slot]
+    end,
+    AssignBindingItem = function(slot, itemId, itemName)
+        bindings[slot] = { kind = "item", itemId = itemId, itemName = itemName }
+        return true, nil, bindings[slot]
+    end,
+    ClearBindingAction = function(slot) bindings[slot] = nil; return true end,
     RefreshBindPanel = function() refreshes = refreshes + 1 end,
     ForceRefresh = function() refreshes = refreshes + 1 end,
     Print = function() end,
@@ -123,7 +131,8 @@ spellButton.scripts.OnClick(spellButton)
 assert(bindings["1"] == nil, "ordinary spell click changed a binding")
 shiftDown = true
 spellButton.scripts.OnClick(spellButton)
-assert(bindings["1"] and bindings["1"].id == 2061 and bindings["1"].name == "Flash Heal",
+assert(bindings["1"] and bindings["1"].kind == "spell"
+    and bindings["1"].spellId == 2061 and bindings["1"].spellName == "Flash Heal",
     "secure post-hook did not assign a click binding")
 assert(refreshes == 2, "binding assignment did not refresh its settings and frames")
 
@@ -197,10 +206,29 @@ assert(ApogeePartyHealthBars_S.focusedKeySlot == "keyG" and refreshedKeySlot == 
 assert(not StackSplitFrame.shown, "Keys item assignment left Blizzard's Shift-click split dialog open")
 
 ApogeePartyHealthBars_S.configTab = "healing"
+ApogeePartyHealthBars_S.selectedBindingKey = "1"
 assignedShortcutItem, assignedKeyItem, assignedWheelItem = nil, nil, nil
+StackSplitFrame.shown = true
 containerHook(itemButton)
+assert(bindings["1"] and bindings["1"].kind == "item"
+    and bindings["1"].itemId == 1251 and bindings["1"].itemName == "Linen Bandage",
+    "Healing did not accept a usable bag item")
 assert(assignedShortcutItem == nil and assignedKeyItem == nil and assignedWheelItem == nil,
-    "Healing accepted a bag item")
+    "Healing item assignment leaked into another action feature")
+assert(not StackSplitFrame.shown, "Healing item assignment left Blizzard's Shift-click split dialog open")
+assert(refreshes == 4, "Healing item assignment did not refresh its settings and secure frames")
+
+ApogeePartyHealthBars_S.selectedBindingKey = nil
+bindings["1"] = nil
+containerHook(itemButton)
+assert(bindings["1"] == nil, "Healing assigned an item without an armed click row")
+
+ApogeePartyHealthBars_S.configTab = "general"
+ApogeePartyHealthBars_S.selectedBindingKey = "1"
+spellButton.scripts.OnClick(spellButton)
+containerHook(itemButton)
+assert(bindings["1"] == nil,
+    "a stale Healing selection assigned an action from a non-action settings tab")
 
 inCombat = true
 ApogeePartyHealthBars_S.configTab = "shortcuts"

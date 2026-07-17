@@ -1,28 +1,10 @@
 local Sounds = ApogeePartyHealthBars_Sounds
-local Items = ApogeePartyHealthBars_ShortcutItems
+local Data = ApogeePartyHealthBars_ActionData
 
 ApogeePartyHealthBars_ActionMacros = {}
 local A = ApogeePartyHealthBars_ActionMacros
 
 A.MAX_BODY_BYTES = 255
-
-local function validId(value)
-    return type(value) == "number" and value > 0 and math.floor(value) == value and value or nil
-end
-
-local function resolveSpellName(spellId)
-    if not spellId then return nil end
-    if C_Spell and C_Spell.GetSpellInfo then
-        local info = C_Spell.GetSpellInfo(spellId)
-        if info and info.name then return info.name end
-    end
-    if GetSpellInfo then return GetSpellInfo(spellId) end
-    return nil
-end
-
-local function validName(value)
-    return type(value) == "string" and value:find("%S") and value or nil
-end
 
 function A.BuildDefaultSpellMacro(spellName)
     if type(spellName) ~= "string" or not spellName:find("%S") then return nil end
@@ -41,85 +23,48 @@ function A.BuildDefaultMacro(entry)
 end
 
 function A.GetName(entry)
-    if type(entry) ~= "table" then return nil end
-    return entry.kind == "item" and entry.itemName or entry.spellName
+    return Data.GetName(entry)
 end
 
 function A.ResolveDisplay(entry)
-    if type(entry) ~= "table" then return nil, nil, nil, false end
-    if entry.kind == "item" then
-        local priorDefault = A.BuildDefaultMacro(entry)
-        local name, icon, itemId
-        if Items then name, icon, itemId = Items.GetInfo(entry.itemId) end
-        if name and entry.itemName ~= name then
+    local normalized = Data.Normalize(entry)
+    if not normalized then return nil, nil, nil, false end
+    if normalized.kind == "item" then
+        local priorDefault = A.BuildDefaultMacro(normalized)
+        local priorName = entry.itemName
+        local name, icon, itemId, available = Data.ResolveDisplay(entry)
+        if name and priorName ~= name then
             local generated = entry.macroText == priorDefault
-            entry.itemName = name
             if generated then entry.macroText = A.BuildDefaultMacro(entry) end
         end
-        return name or entry.itemName, icon, itemId or entry.itemId,
-            Items and Items.GetCount(entry.itemId) > 0 or false
+        return name, icon, itemId, available
     end
-
-    local identifier = entry.spellId or entry.spellName
-    local name, icon, spellId
-    if identifier and C_Spell and C_Spell.GetSpellInfo then
-        local info = C_Spell.GetSpellInfo(identifier)
-        if info then name, icon, spellId = info.name, info.iconID or info.iconFileID, info.spellID end
-    end
-    if identifier and not name and GetSpellInfo then
-        name, _, icon, _, _, _, spellId = GetSpellInfo(identifier)
-    end
-    return name or entry.spellName, icon, spellId or entry.spellId, name ~= nil
+    return Data.ResolveDisplay(entry)
 end
 
 function A.CreateSpell(spellId, spellName, soundKey)
-    spellId = validId(spellId)
-    spellName = validName(spellName) or resolveSpellName(spellId)
-    if not validName(spellName) then return nil end
-    return {
-        kind = "spell",
-        spellId = spellId,
-        spellName = spellName,
-        macroText = A.BuildDefaultSpellMacro(spellName),
-        soundKey = Sounds.NormalizeKey(soundKey, "none", true),
-    }
+    local entry = Data.CreateSpell(spellId, spellName)
+    if not entry then return nil end
+    entry.macroText = A.BuildDefaultSpellMacro(entry.spellName)
+    entry.soundKey = Sounds.NormalizeKey(soundKey, "none", true)
+    return entry
 end
 
 function A.CreateItem(itemId, itemName, soundKey)
-    itemId = validId(itemId)
-    if itemId and not validName(itemName) and Items then itemName = Items.GetInfo(itemId) end
-    itemName = validName(itemName)
-    if not itemId or not itemName then return nil end
-    return {
-        kind = "item",
-        itemId = itemId,
-        itemName = itemName,
-        macroText = A.BuildDefaultItemMacro(itemName),
-        soundKey = Sounds.NormalizeKey(soundKey, "none", true),
-    }
+    local entry = Data.CreateItem(itemId, itemName)
+    if not entry then return nil end
+    entry.macroText = A.BuildDefaultItemMacro(entry.itemName)
+    entry.soundKey = Sounds.NormalizeKey(soundKey, "none", true)
+    return entry
 end
 
 function A.Normalize(entry)
-    if type(entry) ~= "table" or entry.cleared == true then return nil end
-    local macroText = type(entry.macroText) == "string" and entry.macroText or nil
-    local soundKey = Sounds.NormalizeKey(entry.soundKey, "none", true)
-    local isItem = entry.kind == "item" or entry.itemId ~= nil or entry.itemName ~= nil
-    local kind = isItem and "item" or "spell"
-    if kind == "item" then
-        local itemId = validId(entry.itemId)
-        local itemName = validName(entry.itemName) or validName(entry.name)
-        if itemId and not itemName and Items then itemName = Items.GetInfo(itemId) end
-        if not itemId or not validName(itemName) then return nil end
-        local normalized = { kind = "item", itemId = itemId, itemName = itemName, soundKey = soundKey }
-        normalized.macroText = macroText and macroText:find("%S") and macroText or A.BuildDefaultMacro(normalized)
-        return normalized
-    end
-
-    local spellId = validId(entry.spellId) or validId(entry.displaySpellId) or validId(entry.id)
-    local spellName = validName(entry.spellName) or validName(entry.displaySpellName)
-        or validName(entry.name) or resolveSpellName(spellId)
-    if not validName(spellName) then return nil end
-    local normalized = { kind = "spell", spellId = spellId, spellName = spellName, soundKey = soundKey }
+    local normalized = Data.Normalize(entry)
+    if not normalized then return nil end
+    local source = type(entry) == "table" and entry or {}
+    local macroText = type(source.macroText) == "string" and source.macroText or nil
+    local soundKey = Sounds.NormalizeKey(source.soundKey, "none", true)
+    normalized.soundKey = soundKey
     normalized.macroText = macroText and macroText:find("%S") and macroText or A.BuildDefaultMacro(normalized)
     return normalized
 end
@@ -127,12 +72,10 @@ end
 function A.Clone(entry)
     local normalized = A.Normalize(entry)
     if not normalized then return nil end
-    if normalized.kind == "item" then
-        return { kind = "item", itemId = normalized.itemId, itemName = normalized.itemName,
-            macroText = normalized.macroText, soundKey = normalized.soundKey }
-    end
-    return { kind = "spell", spellId = normalized.spellId, spellName = normalized.spellName,
-        macroText = normalized.macroText, soundKey = normalized.soundKey }
+    local clone = Data.Clone(normalized)
+    clone.macroText = normalized.macroText
+    clone.soundKey = normalized.soundKey
+    return clone
 end
 
 function A.ValidateMacro(entry, body)

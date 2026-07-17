@@ -6,6 +6,7 @@ function GetSpellTabInfo() return nil, nil, 0, 1 end
 function GetSpellBookItemName() return spellbookSpell end
 BOOKTYPE_SPELL = "spell"
 
+dofile("ApogeePartyHealthBars_ActionData.lua")
 dofile("ApogeePartyHealthBars_Effects.lua")
 
 local definitions = ApogeePartyHealthBars_C.PARTY_BUFF_DEFINITIONS

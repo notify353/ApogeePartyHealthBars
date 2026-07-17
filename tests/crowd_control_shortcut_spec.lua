@@ -98,6 +98,7 @@ GameTooltip.AddLine = function() end
 dofile("ApogeePartyHealthBars_Sounds.lua")
 dofile("ApogeePartyHealthBars_UIHelpers.lua")
 dofile("ApogeePartyHealthBars_ShortcutItems.lua")
+dofile("ApogeePartyHealthBars_ActionData.lua")
 dofile("ApogeePartyHealthBars_ActionMacros.lua")
 dofile("ApogeePartyHealthBars_ShortcutBar.lua")
 local shortcuts = ApogeePartyHealthBars_ShortcutBar

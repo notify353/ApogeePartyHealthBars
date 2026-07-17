@@ -8,6 +8,10 @@ local primaryBinding
 ApogeePartyHealthBars_S.GetBinding = function() return primaryBinding end
 ApogeePartyHealthBars_ShortcutBar = { IsActive = function() return false end, Refresh = function() end }
 ApogeePartyHealthBars_SecureFrames = { Hide = function(frame) if frame then frame:Hide() end end }
+ApogeePartyHealthBars_ShortcutItems = {
+    GetInfo = function(itemId) return itemId == 1251 and "Linen Bandage" or nil end,
+    GetCount = function() return 1 end,
+}
 
 RAID_CLASS_COLORS = {}
 PowerBarColor = {
@@ -52,6 +56,7 @@ local function widget()
     })
 end
 
+dofile("ApogeePartyHealthBars_ActionData.lua")
 dofile("ApogeePartyHealthBars_UnitDisplay.lua")
 local U = ApogeePartyHealthBars_UnitDisplay
 local row = {
@@ -116,7 +121,7 @@ defaultInRange = true
 ApogeePartyHealthBars_S.RefreshRangeAlpha()
 assert(row.btn.alpha == 1, "unbound in-range party member must remain opaque")
 
-primaryBinding = { name = "Flash Heal" }
+primaryBinding = { kind = "spell", spellId = 2061, spellName = "Flash Heal(Rank 7)" }
 spellInRange = 0
 defaultInRange = true
 ApogeePartyHealthBars_S.RefreshRangeAlpha()
@@ -128,6 +133,13 @@ defaultInRange = false
 ApogeePartyHealthBars_S.RefreshRangeAlpha()
 assert(row.btn.alpha == ApogeePartyHealthBars_C.OUT_OF_RANGE_ALPHA,
     "an indeterminate spell result must fall back to the default range")
+
+primaryBinding = { kind = "item", itemId = 1251, itemName = "Linen Bandage" }
+spellInRange = 1
+defaultInRange = false
+ApogeePartyHealthBars_S.RefreshRangeAlpha()
+assert(row.btn.alpha == ApogeePartyHealthBars_C.OUT_OF_RANGE_ALPHA,
+    "an item binding must use the default unit range instead of spell prediction")
 
 primaryBinding = {}
 ApogeePartyHealthBars_S.RefreshRangeAlpha()

@@ -14,6 +14,14 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Simplified the draggable party-bar configuration header to the concise “Party Health” title.
+- Refined the settings-header typography with a roomier two-line hierarchy and a shared lower baseline for the left-aligned active profile and version.
+- Replaced question-mark placeholders in empty Healing, Shortcuts, Keys, and Wheel rows with understated outlined slots while preserving assigned spell and item icons.
+- Repositioned the default settings window toward center-left and the party bars toward upper-right so settings, party bars, and the open Spellbook form a clear three-column workspace without covering one another.
+- Changed the default low-health alert sound to Focus for new profiles and Factory Reset while preserving existing sound selections.
+- Enabled all five solo party slots and Blizzard UI auto-hide in combat by default for new profiles and Factory Reset while preserving existing profile choices.
+- Reordered settings to General, Healing, Keys, Wheel, Shortcuts, Macros, and Profiles so first-time configuration starts with core behavior and keeps Shortcuts beside Macros; removed the redundant add-on enable checkbox and movement hint, and replaced the toggle with a binding-safe Prepare to Disable action for use before WoW's AddOns manager.
+- Unified Profiles, General, and Macros around the same muted instruction, compact section/row rhythm, status placement, and overflow-only scrollbar used throughout settings; General now groups related controls and consolidates position resets.
 - Unified Healing settings with the shared scrollable action rows, fixed click-gesture labels, inline Up/Dn swapping, explicit Clear controls, and no persistent row selection.
 - Unified Shortcuts, Keys, and Wheel settings around the same compact scrollable action rows, inline controls, empty drop targets, and minimal drag guidance.
 - Made Keys and Wheel permanent while the add-on is enabled, automatically claiming all 15 keyboard inputs and six wheel gestures at startup and removing their separate activation controls and profile state.
@@ -21,6 +29,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Fixed
 
+- Removed question-mark fallbacks from Shortcut HUD slots and ensured the temporary add target disappears immediately when settings close.
+- Fixed right-dragging the minimap button moving it horizontally opposite the cursor while preserving existing saved button positions.
 - Fixed global disable, profile changes, and Factory Reset failing when WoW required an owned `CLICK` key to be cleared before its previous normal action could be restored, without allowing the resulting binding events to re-enter the active transaction.
 
 ## [0.37.0] - 2026-07-17

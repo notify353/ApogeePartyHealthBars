@@ -662,6 +662,7 @@ local configController = ApogeePartyHealthBars_ConfigController
 configController.Initialize({
     panel = panel,
     GetConfigUI = function() return configUI end,
+    HideShortcutDropTarget = function() T.HideDropTarget() end,
     ForceRefresh = ForceRefresh,
     ClearDirtyFlags = ClearDirtyFlags,
     StopUpdateFrames = function() throttleFrame:Hide(); visualTicker.Stop() end,
@@ -706,6 +707,7 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
         ForceRefresh                = ForceRefresh,
         InitHotSpells               = InitHotSpells,
         SetAddonEnabled             = SetAddonEnabled,
+        Print                       = Print,
         FactoryReset                = FactoryReset,
         SetSavedFeature             = SetSavedFeature,
         ApplyAllSecureBindings      = ApplyAllSecureBindings,

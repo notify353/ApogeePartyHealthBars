@@ -20,7 +20,6 @@ local initialized = false
 local visibleCount = 0
 local visibleLaneCounts = { player = 0, target = 0 }
 local MAX_DISPLAY_ICONS = C.SHORTCUT_MAX_SLOTS + #(C.CROWD_CONTROL_DEFINITIONS or {})
-local QUESTION_MARK_ICON = "Interface\\Icons\\INV_Misc_QuestionMark"
 
 local function GetRawSpellName(identifier)
     if C_Spell and C_Spell.GetSpellInfo then
@@ -294,6 +293,10 @@ local function CreateIcon(parent)
     button:SetSize(C.SHORTCUT_ICON_SIZE, C.SHORTCUT_ICON_SIZE)
     button:EnableMouse(false)
 
+    local background = button:CreateTexture(nil, "BACKGROUND")
+    background:SetAllPoints()
+    background:SetColorTexture(0.025, 0.025, 0.03, 1)
+
     S.castBtnSerial = S.castBtnSerial + 1
     local castButton = CreateFrame(
         "Button", "ApogeePartyHealthBarsShortcutCast" .. S.castBtnSerial, UIParent,
@@ -353,12 +356,9 @@ local function CreateDropIcon(parent)
     local button = CreateFrame("Button", nil, parent)
     button:SetSize(C.SHORTCUT_ICON_SIZE, C.SHORTCUT_ICON_SIZE)
     button:EnableMouse(true)
-    local texture = button:CreateTexture(nil, "ARTWORK")
-    texture:SetPoint("TOPLEFT", 2, -2)
-    texture:SetPoint("BOTTOMRIGHT", -2, 2)
-    texture:SetTexture(QUESTION_MARK_ICON)
-    texture:SetDesaturated(true)
-    texture:SetAlpha(0.55)
+    local background = button:CreateTexture(nil, "BACKGROUND")
+    background:SetAllPoints()
+    background:SetColorTexture(0.025, 0.025, 0.03, 1)
     button.border = CreateBorder(button, 0)
     for _, edge in ipairs(button.border) do edge:SetColorTexture(0.45, 0.45, 0.48, 1) end
     button:SetScript("OnReceiveDrag", function()
@@ -652,7 +652,7 @@ function T.Refresh(suppressSound)
     for i = 1, MAX_DISPLAY_ICONS do
         local icon, info = icons[i], resolved[i]
         if IsEnabled() and info then
-            icon.texture:SetTexture(info.icon or QUESTION_MARK_ICON)
+            icon.texture:SetTexture(info.icon)
             local state, start, duration, gcdOnly, charges, reason = Evaluate(info)
             local previous = previousStates[i]
             local becameReady = initialized and READY_TRANSITION_STATES[previous] and state == "ready"
@@ -696,6 +696,10 @@ function T.Tick()
             for _, edge in ipairs(icon.pulseBorder) do edge:SetAlpha(0) end
         end
     end
+end
+
+function T.HideDropTarget()
+    if dropIcon then dropIcon:Hide() end
 end
 
 function T.Rebaseline()

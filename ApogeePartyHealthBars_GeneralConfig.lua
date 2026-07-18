@@ -6,12 +6,15 @@ local G = ApogeePartyHealthBars_GeneralConfig
 local D
 
 local tab
-local scrollChild
+local form
 local generalRows = {}
 local generalRowsByKey = {}
 local hotRows = {}
 local hotRowsByKey = {}
-local resetBarBtn, resetSettingsBtn, resetMinimapBtn, factoryResetBtn, hintFS
+local resetBarBtn, resetSettingsBtn, resetMinimapBtn, prepareDisableBtn, factoryResetBtn
+local behaviorSection, alertsSection, displaySection, hotSection, positionsSection, dangerSection
+local resetRow, prepareDisableRow, factoryRow
+local prepareDisableArmed, prepareDisableToken = false, 0
 local factoryResetArmed, factoryResetToken = false, 0
 local refreshing = false
 
@@ -23,17 +26,17 @@ local function SetCheckboxChecked(check, checked)
 end
 
 local function CreateCheckboxRow(parent, labelText, indent)
-    local row = CreateFrame("Frame", nil, parent)
-    row:SetSize(C.CONFIG_CONTENT_W, C.CONFIG_CHECK_ROW_H)
+    local row = UIH.CreateFormRow(parent, form.rowWidth, 32)
 
     local check = CreateFrame("CheckButton", nil, row, "UICheckButtonTemplate")
-    check:SetSize(20, 20)
-    check:SetPoint("LEFT", row, "LEFT", 0, 0)
+    check:SetSize(22, 22)
+    check:SetPoint("RIGHT", row, "RIGHT", -5, 0)
 
     local label = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    label:SetPoint("LEFT", check, "RIGHT", 2, 0)
+    label:SetPoint("LEFT", row, "LEFT", 8 + (indent or 0), 0)
+    label:SetPoint("RIGHT", check, "LEFT", -5, 0)
     label:SetJustifyH("LEFT")
-    label:SetWidth(C.CONFIG_CONTENT_W - 40 - (indent or 0))
+    label:SetWordWrap(false)
     label:SetText(labelText)
 
     row.check = check
@@ -54,20 +57,28 @@ end
 local function DisarmFactoryReset()
     factoryResetArmed = false
     factoryResetToken = factoryResetToken + 1
-    if factoryResetBtn then factoryResetBtn.label:SetText("Factory reset addon") end
+    if factoryResetBtn then factoryResetBtn.label:SetText("Factory Reset") end
+end
+
+local function DisarmPrepareDisable()
+    prepareDisableArmed = false
+    prepareDisableToken = prepareDisableToken + 1
+    if prepareDisableBtn then prepareDisableBtn.label:SetText("Prepare to Disable") end
 end
 
 local function Layout()
     local saved = D.GetSavedVariables() or {}
     local hotGlobal = D.IsHotEnabled()
     local disabled = saved.hotDisabled or {}
-    local y = 0
+    local entries = {
+        { frame = behaviorSection, height = 16, gap = 9 },
+    }
 
-    for _, row in ipairs(generalRows) do
-        if IsRowVisible(row.svKey) then
-            row.frame:Show()
-            row.frame:ClearAllPoints()
-            row.frame:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, -y)
+    local function addSetting(svKey)
+        local row = generalRowsByKey[svKey]
+        local visible = row and IsRowVisible(svKey)
+        entries[#entries + 1] = { frame = row.frame, height = 32, visible = visible }
+        if visible then
             if row.svKey == "selfBuffPreference" then
                 local currentKey = D.GetSelfBuffPreferenceKey()
                 local currentLabel = "Any self buff"
@@ -97,19 +108,42 @@ local function Layout()
             else
                 SetCheckboxChecked(row.frame.check, D.IsSavedFeatureEnabled(row.svKey))
             end
-            y = y + C.CONFIG_CHECK_ROW_H
-        else
-            row.frame:Hide()
         end
     end
 
-    y = y + C.CONFIG_SECTION_GAP
+    addSetting("showAllSlots")
+    addSetting("combatUIAutoHide")
 
+    entries[#entries + 1] = { frame = alertsSection, height = 16, gap = 10 }
+    addSetting("lowHealthThreshold")
+    addSetting("lowHealthSoundKey")
+    addSetting("partyBuffEnabled")
+    addSetting("selfBuffEnabled")
+    addSetting("selfBuffPreference")
+    addSetting("clickableBuffIcons")
+
+    entries[#entries + 1] = { frame = displaySection, height = 16, gap = 10 }
+    addSetting("shieldEnabled")
+    addSetting("incomingHealEnabled")
+    addSetting("rangeCheckEnabled")
+    addSetting("threatEnabled")
+    addSetting("threatPercentEnabled")
+    addSetting("showUnitTargets")
+    addSetting("hotEnabled")
+
+    local knownHotCount = 0
     for _, entry in ipairs(hotRows) do
-        if D.IsHotTrackKnown(entry.def.key) then
-            entry.row:Show()
-            entry.row:ClearAllPoints()
-            entry.row:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 12, -y)
+        if D.IsHotTrackKnown(entry.def.key) then knownHotCount = knownHotCount + 1 end
+    end
+    entries[#entries + 1] = {
+        frame = hotSection, height = 16, gap = 10, visible = knownHotCount > 0,
+    }
+    for _, entry in ipairs(hotRows) do
+        local visible = D.IsHotTrackKnown(entry.def.key)
+        entries[#entries + 1] = {
+            frame = entry.row, height = 32, indent = 12, visible = visible,
+        }
+        if visible then
             SetCheckboxChecked(entry.row.check, not disabled[entry.def.key])
             if hotGlobal then
                 entry.row.check:Enable()
@@ -118,25 +152,15 @@ local function Layout()
                 entry.row.check:Disable()
                 entry.row.label:SetTextColor(0.45, 0.45, 0.45)
             end
-            y = y + C.CONFIG_CHECK_ROW_H
-        else
-            entry.row:Hide()
         end
     end
 
-    y = y + C.CONFIG_SECTION_GAP
-
-    for _, button in ipairs({ resetBarBtn, resetSettingsBtn, resetMinimapBtn, factoryResetBtn }) do
-        button:ClearAllPoints()
-        button:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, -y)
-        y = y + C.CONFIG_BTN_H + 4
-    end
-
-    hintFS:ClearAllPoints()
-    hintFS:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, -y)
-    y = y + 28
-
-    scrollChild:SetHeight(y)
+    entries[#entries + 1] = { frame = positionsSection, height = 16, gap = 10 }
+    entries[#entries + 1] = { frame = resetRow, height = 32 }
+    entries[#entries + 1] = { frame = dangerSection, height = 16, gap = 10 }
+    entries[#entries + 1] = { frame = prepareDisableRow, height = 32 }
+    entries[#entries + 1] = { frame = factoryRow, height = 32 }
+    UIH.LayoutForm(form, entries)
 end
 
 local function AddGeneralRow(frame, svKey)
@@ -146,30 +170,25 @@ local function AddGeneralRow(frame, svKey)
 end
 
 local function AddCheckbox(label, svKey, onChange)
-    local frame = CreateCheckboxRow(scrollChild, label, 0)
+    local frame = CreateCheckboxRow(form.content, label, 0)
     AddGeneralRow(frame, svKey)
     frame.check:SetScript("OnClick", function(self)
         if refreshing then return end
         local checked = self:GetChecked()
-        if svKey == "enabled" then
-            D.SetAddonEnabled(checked)
-        else
-            D.SetSavedFeature(svKey, checked, onChange)
-        end
+        D.SetSavedFeature(svKey, checked, onChange)
         D.RequestConfigRefresh()
     end)
 end
 
 local function AddSelfBuffPreference()
-    local frame = CreateFrame("Frame", nil, scrollChild)
-    frame:SetSize(C.CONFIG_CONTENT_W, C.CONFIG_CHECK_ROW_H)
+    local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    label:SetPoint("LEFT", frame, "LEFT", 2, 0)
-    label:SetWidth(125)
+    label:SetPoint("LEFT", frame, "LEFT", 8, 0)
+    label:SetWidth(155)
     label:SetJustifyH("LEFT")
     label:SetText("Preferred self buff")
-    local value = UIH.CreateButton(frame, "Any self buff", C.CONFIG_CONTENT_W - 132, C.CONFIG_CHECK_ROW_H)
-    value:SetPoint("RIGHT", frame, "RIGHT", 0, 0)
+    local value = UIH.CreateButton(frame, "Any self buff", 240, 22)
+    value:SetPoint("RIGHT", frame, "RIGHT", -5, 0)
     value:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     value:SetScript("OnClick", function(_, mouseButton)
         if refreshing then return end
@@ -190,19 +209,17 @@ local function AddSelfBuffPreference()
 end
 
 local function AddLowHealthSoundPreference()
-    local frame = CreateFrame("Frame", nil, scrollChild)
-    frame:SetSize(C.CONFIG_CONTENT_W, C.CONFIG_CHECK_ROW_H)
+    local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    label:SetPoint("LEFT", frame, "LEFT", 2, 0)
-    label:SetWidth(125)
+    label:SetPoint("LEFT", frame, "LEFT", 8, 0)
+    label:SetWidth(155)
     label:SetJustifyH("LEFT")
     label:SetText("Low-health sound")
 
-    local value = UIH.CreateDropdown(frame, 265, C.CONFIG_CHECK_ROW_H)
+    local value = UIH.CreateDropdown(frame, 220, 22)
     value:SetOptions(D.Sounds.GetOptions(true))
     value:SetArrowShown(false)
-    value:SetPoint("LEFT", label, "RIGHT", 4, 0)
-    value:SetPoint("RIGHT", frame, "RIGHT", 0, 0)
+    value:SetPoint("RIGHT", frame, "RIGHT", -5, 0)
     value:SetSelectionCallback(function(soundKey)
         if refreshing then return end
         D.HealthAlerts.SetSoundKey(soundKey)
@@ -215,32 +232,31 @@ local function AddLowHealthSoundPreference()
 end
 
 local function AddLowHealthThresholdPreference()
-    local frame = CreateFrame("Frame", nil, scrollChild)
-    frame:SetSize(C.CONFIG_CONTENT_W, C.CONFIG_CHECK_ROW_H)
+    local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    label:SetPoint("LEFT", frame, "LEFT", 2, 0)
-    label:SetWidth(125)
+    label:SetPoint("LEFT", frame, "LEFT", 8, 0)
+    label:SetWidth(155)
     label:SetJustifyH("LEFT")
     label:SetText("Alert below")
 
-    local decrease = UIH.CreateButton(frame, "-5%", 52, C.CONFIG_CHECK_ROW_H)
-    decrease:SetPoint("LEFT", label, "RIGHT", 4, 0)
-    decrease:SetScript("OnClick", function()
+    local increase = UIH.CreateButton(frame, "+5%", 52, 22)
+    increase:SetPoint("RIGHT", frame, "RIGHT", -5, 0)
+    increase:SetScript("OnClick", function()
         if refreshing then return end
-        D.HealthAlerts.AdjustThreshold(-1)
+        D.HealthAlerts.AdjustThreshold(1)
         D.RequestConfigRefresh()
     end)
 
     local value = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    value:SetPoint("LEFT", decrease, "RIGHT", 4, 0)
+    value:SetPoint("RIGHT", increase, "LEFT", -4, 0)
     value:SetWidth(58)
     value:SetJustifyH("CENTER")
 
-    local increase = UIH.CreateButton(frame, "+5%", 52, C.CONFIG_CHECK_ROW_H)
-    increase:SetPoint("LEFT", value, "RIGHT", 4, 0)
-    increase:SetScript("OnClick", function()
+    local decrease = UIH.CreateButton(frame, "-5%", 52, 22)
+    decrease:SetPoint("RIGHT", value, "LEFT", -4, 0)
+    decrease:SetScript("OnClick", function()
         if refreshing then return end
-        D.HealthAlerts.AdjustThreshold(1)
+        D.HealthAlerts.AdjustThreshold(-1)
         D.RequestConfigRefresh()
     end)
 
@@ -260,7 +276,7 @@ function G.Build(parent, deps)
         "GetSelfBuffPreferenceKey", "GetSelfBuffPreferenceOptions",
         "HasKnownBuffReminder", "HealthAlerts", "InitHotSpells", "IsHotEnabled",
         "IsHotTrackKnown", "IsPartyBuffKnown", "IsSavedFeatureEnabled",
-        "IsSelfBuffKnown", "RequestConfigRefresh", "SetAddonEnabled",
+        "IsSelfBuffKnown", "Print", "RequestConfigRefresh", "SetAddonEnabled",
         "SetHotTrackEnabled", "SetSavedFeature", "SetSelfBuffPreference", "Sounds",
         "SyncVisualTicker", "Threat",
     }) do
@@ -273,11 +289,16 @@ function G.Build(parent, deps)
         -(C.CONFIG_HEADER_H + C.BIND_PAD + C.CONFIG_TAB_H + 4))
     tab:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -C.BIND_PAD, C.BIND_PAD)
 
-    local scroll
-    scroll, scrollChild = UIH.CreateScrollFrame(tab)
-    UIH.AttachScrollWheel(scroll, C.CONFIG_CHECK_ROW_H * 2)
+    form = UIH.CreateFormScaffold(tab, "ApogeePartyHealthBarsGeneralConfigScroll",
+        "Choose what the party bars show and how they behave.", false)
 
-    AddCheckbox("Enable addon", "enabled")
+    behaviorSection = UIH.CreateFormSection(form.content, form.rowWidth, "Behavior")
+    alertsSection = UIH.CreateFormSection(form.content, form.rowWidth, "Alerts and reminders")
+    displaySection = UIH.CreateFormSection(form.content, form.rowWidth, "Bar display")
+    hotSection = UIH.CreateFormSection(form.content, form.rowWidth, "Tracked HoTs")
+    positionsSection = UIH.CreateFormSection(form.content, form.rowWidth, "Positions")
+    dangerSection = UIH.CreateFormSection(form.content, form.rowWidth, "Danger")
+
     AddCheckbox("Show all 5 slots when solo", "showAllSlots")
     AddCheckbox("Auto-hide Blizzard UI in combat", "combatUIAutoHide", function()
         local saved = D.GetSavedVariables()
@@ -304,7 +325,7 @@ function G.Build(parent, deps)
     AddCheckbox("HoT duration bars", "hotEnabled", D.InitHotSpells)
 
     for _, def in ipairs(C.HOT_SPELL_DEFINITIONS) do
-        local frame = CreateCheckboxRow(scrollChild, def.canonical, 12)
+        local frame = CreateCheckboxRow(form.content, def.canonical, 4)
         local entry = { row = frame, def = def }
         hotRows[#hotRows + 1] = entry
         hotRowsByKey[def.key] = entry
@@ -315,25 +336,64 @@ function G.Build(parent, deps)
         end)
     end
 
-    resetBarBtn = UIH.CreateButton(scrollChild, "Reset bar position")
+    resetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    local resetWidth = (form.rowWidth - 22) / 3
+    resetBarBtn = UIH.CreateButton(resetRow, "Reset Bars", resetWidth, 22)
+    resetBarBtn:SetPoint("LEFT", resetRow, "LEFT", 5, 0)
     resetBarBtn:SetScript("OnClick", function()
         D.ApplyDefaultPosition()
         D.ForceRefresh()
     end)
 
-    resetSettingsBtn = UIH.CreateButton(scrollChild, "Reset settings position")
+    resetSettingsBtn = UIH.CreateButton(resetRow, "Reset Settings", resetWidth, 22)
+    resetSettingsBtn:SetPoint("LEFT", resetBarBtn, "RIGHT", 6, 0)
     resetSettingsBtn:SetScript("OnClick", D.ApplyDefaultConfigPosition)
 
-    resetMinimapBtn = UIH.CreateButton(scrollChild, "Reset minimap button")
+    resetMinimapBtn = UIH.CreateButton(resetRow, "Reset Minimap", resetWidth, 22)
+    resetMinimapBtn:SetPoint("LEFT", resetSettingsBtn, "RIGHT", 6, 0)
     resetMinimapBtn:SetScript("OnClick", D.ApplyDefaultMinimapPosition)
 
-    factoryResetBtn = UIH.CreateButton(scrollChild, "Factory reset addon")
+    prepareDisableRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    local prepareDisableLabel = prepareDisableRow:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    prepareDisableLabel:SetPoint("LEFT", prepareDisableRow, "LEFT", 8, 0)
+    prepareDisableLabel:SetText("Restore Keys & Wheel bindings first")
+    prepareDisableBtn = UIH.CreateButton(prepareDisableRow, "Prepare to Disable", 142, 22)
+    prepareDisableBtn:SetPoint("RIGHT", prepareDisableRow, "RIGHT", -5, 0)
+    prepareDisableLabel:SetPoint("RIGHT", prepareDisableBtn, "LEFT", -8, 0)
+    prepareDisableLabel:SetJustifyH("LEFT")
+    prepareDisableLabel:SetWordWrap(false)
+    prepareDisableBtn:SetScript("OnClick", function()
+        if not prepareDisableArmed then
+            prepareDisableArmed = true
+            prepareDisableToken = prepareDisableToken + 1
+            local token = prepareDisableToken
+            prepareDisableBtn.label:SetText("Confirm Release")
+            if C_Timer and C_Timer.After then
+                C_Timer.After(5, function()
+                    if prepareDisableToken == token then DisarmPrepareDisable() end
+                end)
+            end
+            return
+        end
+
+        DisarmPrepareDisable()
+        if D.SetAddonEnabled(false) then
+            D.Print("Keys and Wheel bindings restored. You can now disable the addon in WoW's AddOns manager.")
+        end
+    end)
+
+    factoryRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    local factoryLabel = factoryRow:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    factoryLabel:SetPoint("LEFT", factoryRow, "LEFT", 8, 0)
+    factoryLabel:SetText("Erase all profiles and settings")
+    factoryResetBtn = UIH.CreateButton(factoryRow, "Factory Reset", 126, 22)
+    factoryResetBtn:SetPoint("RIGHT", factoryRow, "RIGHT", -5, 0)
     factoryResetBtn:SetScript("OnClick", function()
         if not factoryResetArmed then
             factoryResetArmed = true
             factoryResetToken = factoryResetToken + 1
             local token = factoryResetToken
-            factoryResetBtn.label:SetText("Click again to erase all settings")
+            factoryResetBtn.label:SetText("Confirm Erase")
             if C_Timer and C_Timer.After then
                 C_Timer.After(5, function()
                     if factoryResetToken == token then DisarmFactoryReset() end
@@ -345,11 +405,6 @@ function G.Build(parent, deps)
         DisarmFactoryReset()
         D.FactoryReset()
     end)
-
-    hintFS = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    hintFS:SetWidth(C.CONFIG_CONTENT_W)
-    hintFS:SetJustifyH("LEFT")
-    hintFS:SetText("Drag the bars or the settings tabs to move them independently. Right-drag the minimap icon to reposition it.")
 
     return tab
 end
@@ -376,9 +431,12 @@ function G.GetResetButtons()
         bar = resetBarBtn,
         settings = resetSettingsBtn,
         minimap = resetMinimapBtn,
+        prepareDisable = prepareDisableBtn,
         factory = factoryResetBtn,
     }
 end
 
 G.GetTab = function() return tab end
+G.GetPrepareDisableButton = function() return prepareDisableBtn end
 G.GetFactoryResetButton = function() return factoryResetBtn end
+G.GetForm = function() return form end

@@ -19,7 +19,8 @@ ApogeePartyHealthBars_Effects = {
             settings.lowHealthSoundKey = "none"
         end
         if settings.enabled == nil then settings.enabled = true end
-        if settings.showAllSlots == nil then settings.showAllSlots = false end
+        if settings.showAllSlots == nil then settings.showAllSlots = true end
+        if settings.combatUIAutoHide == nil then settings.combatUIAutoHide = true end
         settings.schemaVersion = 5
         actions.bindings = type(actions.bindings) == "table" and actions.bindings or {}
         actions.shortcuts = type(actions.shortcuts) == "table" and actions.shortcuts or {}

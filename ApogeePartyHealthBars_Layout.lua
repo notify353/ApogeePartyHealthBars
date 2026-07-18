@@ -14,7 +14,7 @@ end
 function L.UpdateHeader()
     D.ApplyPanelChrome()
     if S.configMode then
-        D.titleFS:SetText("|cffFFD700Party Health|r  |cff888888— CONFIG (drag to move)|r")
+        D.titleFS:SetText("|cffFFD700Party Health|r")
         D.titleFS:Show()
         D.sepTex:Show()
         D.rowAnchor:ClearAllPoints()

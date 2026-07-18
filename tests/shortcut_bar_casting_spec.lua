@@ -302,7 +302,7 @@ assert(shortcuts.GetHeight("player") == ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
         + ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE,
     "Shortcut HUD add target unnecessarily expanded a partially filled row")
 ApogeePartyHealthBars_S.configMode = false
-shortcuts.Layout(0)
+shortcuts.HideDropTarget()
 assert(not dropButton.shown, "Shortcut HUD add target remained visible outside config mode")
 local expectedCastNames = {
     "Fireball(Rank 1)", "Frostbolt(Rank 1)",

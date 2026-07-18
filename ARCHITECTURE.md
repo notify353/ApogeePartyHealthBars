@@ -14,6 +14,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `ActionData`: macro-independent spell/item identity, legacy normalization, cloning, and display resolution shared by every configurable action feature
 - `ActionMacros`: generated `/cast` and `/use` defaults, sound/macro extensions, custom-text detection, and 255-byte validation for Shortcuts, Keys, and Wheel
 - `ActionConfig`: shared scrollable action-list scaffold and compact row state used by Healing, Shortcuts, Keys, and Wheel, plus the focused macro editor used by the macro-capable features
+- `UIHelpers`: common buttons, dropdowns, tabs, scrolling, and the shared non-action form scaffold used by Profiles, General, and Macros
 - `BoundActionLayouts`: shared per-spec/per-form typed-action layout engine with feature-specific new-layout policy
 - `BoundActionBindings`: permanent binding-set-specific transactional claiming, reconciliation, conflict detection, restoration, and cross-feature rollback
 - `BoundActionRuntime`: per-instance Keys/Wheel action evaluation, secure execution, HUD state, and feedback
@@ -36,13 +37,13 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `RaidMarkers`: target marker controls
 - `Threat`: party and target threat
 - `BindingStore`, `BindingController`, `ClickBindings`: typed Healing spell/item persistence, adjacent gesture swaps, cursor-based destination assignment, and native unit-targeted secure actions
-- `GeneralConfig`: General-tab visibility, feature toggles, alert preferences, HoT controls, and reset confirmation
+- `GeneralConfig`: grouped General-tab visibility, feature toggles, alert preferences, HoT controls, compact position resets, and destructive reset confirmation
 - `HealingConfig`: fixed-gesture Healing action rows, inline movement and clearing, display refresh, and right-click clearing compatibility
 - `ConfigUI`: settings-window shell, tab registry, activation, and cross-tab refresh routing
 - `ConfigController`, `MinimapController`: settings-mode and minimap lifecycle
 - `ProfileStore`: account-wide class profiles, legacy SavedVariables migration, portable payload normalization, stable identity, and CRUD/copy/import mutations
 - `ProfileCodec`: native CBOR, Deflate, and URL-safe Base64 profile sharing with versioned metadata and bounded decoding
-- `ProfileConfig`: profile selection and management plus export/import preview and confirmation workflows
+- `ProfileConfig`: compact profile selection, management, and copy sections plus export/import preview and confirmation workflows
 - `MacroData`, `MacroLibrary`, `MacroConfig`: immutable universal/current-class combat recipe catalog, validation, filtering, and copy-only presentation
 
 ## Invariants

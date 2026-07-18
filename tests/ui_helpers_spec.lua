@@ -23,6 +23,7 @@ local function Widget(name)
             self.shown = false
             if wasShown and self.scripts.OnHide then self.scripts.OnHide(self) end
         end,
+        SetShown = function(self, shown) self.shown = shown == true end,
         Enable = function(self) self.enabled = true end,
         Disable = function(self)
             self.enabled = false
@@ -33,22 +34,34 @@ local function Widget(name)
         SetTextColor = function(self, ...) self.textColor = { ... } end,
         SetColorTexture = function(self, ...) self.color = { ... } end,
         SetHeight = function(self, value) self.height = value end,
+        SetWidth = function(self, value) self.width = value end,
+        SetSize = function(self, width, height) self.width, self.height = width, height end,
         GetName = function(self) return self.name end,
         EnableKeyboard = function(self, enabled) self.keyboardEnabled = enabled end,
         SetPropagateKeyboardInput = function(self, enabled) self.propagateKeyboard = enabled end,
+        SetScrollChild = function(self, child) self.scrollChild = child end,
+        EnableMouseWheel = function(self, enabled) self.mouseWheelEnabled = enabled end,
+        GetVerticalScroll = function(self) return self.verticalScroll or 0 end,
+        SetVerticalScroll = function(self, value) self.verticalScroll = value end,
+        GetVerticalScrollRange = function(self) return self.verticalRange or 0 end,
+        HookScript = function(self, script, callback)
+            self.hooks = self.hooks or {}; self.hooks[script] = callback
+        end,
     }
     local noops = {
-        "SetSize", "SetWidth", "SetPoint", "ClearAllPoints", "SetAllPoints",
+        "SetPoint", "ClearAllPoints", "SetAllPoints",
         "SetFrameStrata", "SetFrameLevel", "SetClampedToScreen", "EnableMouse",
-        "SetJustifyH", "SetWordWrap",
+        "SetJustifyH", "SetJustifyV", "SetWordWrap",
     }
     for _, method in ipairs(noops) do methods[method] = function() end end
     return setmetatable(object, { __index = function(_, key) return methods[key] end })
 end
 
 UIParent = Widget("UIParent")
-function CreateFrame(_, name)
-    return Widget(name)
+function CreateFrame(_, name, _, template)
+    local frame = Widget(name)
+    if template == "UIPanelScrollFrameTemplate" then frame.ScrollBar = Widget() end
+    return frame
 end
 
 dofile("ApogeePartyHealthBars_UIHelpers.lua")
@@ -106,5 +119,31 @@ assert(dropdown:SetSelectedKey("missing") == nil and dropdown.label.text == "Sel
     "invalid dropdown selection did not fail closed")
 assert(helpers.EscapeText("Raid |cff00ff00Profile|r") == "Raid ||cff00ff00Profile||r",
     "profile display text did not escape WoW markup")
+
+local form = helpers.CreateFormScaffold(UIParent, "TestForm", "Choose settings.")
+local section = helpers.CreateFormSection(form.content, form.rowWidth, "Section")
+local row = helpers.CreateFormRow(form.content, form.rowWidth, 32)
+helpers.LayoutForm(form, {
+    { frame = section, height = 16, gap = 9 },
+    { frame = row, height = 32 },
+})
+assert(form.hint.text == "Choose settings." and form.rowWidth == 372
+        and section.label.text == "Section" and form.content.height > 32,
+    "shared form scaffold did not create the common hierarchy")
+assert(not form.scroll.ScrollBar:IsShown(),
+    "shared form scrollbar was visible before content overflowed")
+form.scroll.hooks.OnScrollRangeChanged(form.scroll, 0, 100)
+assert(form.scroll.ScrollBar:IsShown(),
+    "shared form scrollbar did not appear when content overflowed")
+helpers.SetFormStatus(form, "Saved.", true)
+assert(form.status.text == "|cff00ff00Saved.|r",
+    "shared form status did not use consistent success styling")
+
+local statuslessForm = helpers.CreateFormScaffold(UIParent, "StatuslessForm", "Choose settings.", false)
+helpers.LayoutForm(statuslessForm, {
+    { frame = helpers.CreateFormRow(statuslessForm.content, statuslessForm.rowWidth, 32), height = 32 },
+})
+assert(not statuslessForm.status:IsShown() and statuslessForm.content.height == 53,
+    "statusless shared form retained the empty footer gap")
 
 print("PASS UI dropdown helpers")

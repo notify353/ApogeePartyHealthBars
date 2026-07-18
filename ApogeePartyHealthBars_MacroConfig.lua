@@ -4,7 +4,7 @@ local UIH = ApogeePartyHealthBars_UIHelpers
 
 ApogeePartyHealthBars_MacroConfig = {}
 local M = ApogeePartyHealthBars_MacroConfig
-local tab, D, categoryDropdown, title, description, requirements, recipeState
+local tab, D, form, categoryDropdown, title, description, requirements, recipeState
 local macroText, macroFrame, statusText
 local selectButton, prevButton, nextButton
 local selectedCategory, recipeIndex, recipes, currentRecipe, loadingText = "all", 1, {}, nil, false
@@ -58,23 +58,22 @@ local function render(resetRecipe)
         return
     end
 
-    title:SetText("|cffFFD700" .. currentRecipe.title .. "|r")
+    title:SetText(currentRecipe.title)
     description:SetText(currentRecipe.explanation)
     local detail = currentRecipe.requirements or "No class-specific requirements."
     if currentRecipe.verificationNote then detail = detail .. " " .. currentRecipe.verificationNote end
-    requirements:SetText("|cff999999" .. detail .. "|r")
+    local unavailable = L.GetUnavailableReason(currentRecipe)
+    if unavailable then
+        requirements:SetText("|cffffaa00" .. unavailable .. "|r  |cff999999" .. detail .. "|r")
+    else
+        requirements:SetText("|cff999999" .. detail .. "|r")
+    end
     setMacroText(currentRecipe.body)
     setSecondaryEnabled(prevButton, recipeIndex > 1)
     setSecondaryEnabled(nextButton, recipeIndex < #recipes)
     setSecondaryEnabled(selectButton, true)
-    recipeState:SetText("Example " .. recipeIndex .. " of " .. #recipes)
-
-    local unavailable = L.GetUnavailableReason(currentRecipe)
-    if unavailable then
-        statusText:SetText("|cffffaa00" .. unavailable .. " You can still copy the example.|r")
-    else
-        statusText:SetText("Select the text, press Ctrl+C, then paste it into WoW's Macro window.")
-    end
+    recipeState:SetText(recipeIndex .. " of " .. #recipes)
+    statusText:SetText("Select the text, press Ctrl+C, then paste it into WoW's Macro window.")
 end
 
 function M.Refresh()
@@ -88,15 +87,15 @@ function M.Build(parent, deps)
     tab:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -C.BIND_PAD, C.BIND_PAD)
     tab:Hide()
 
-    local heading = tab:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    heading:SetPoint("TOPLEFT"); heading:SetText("|cffFFD700Combat Macro Library|r")
-    local subtitle = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    subtitle:SetPoint("TOPLEFT", heading, "BOTTOMLEFT", 0, -3)
     local _, className = playerClass()
-    subtitle:SetText("Browse and copy curated universal examples and combat macros for " .. className .. ".")
+    form = UIH.CreateFormScaffold(tab, "ApogeePartyHealthBarsMacroConfigScroll",
+        "Browse and copy curated combat macros for " .. className .. ".")
+    statusText = form.status
 
-    categoryDropdown = UIH.CreateDropdown(tab, C.CONFIG_CONTENT_W, 22, C.CONFIG_CONTENT_W)
-    categoryDropdown:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -8)
+    local categoryRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    categoryDropdown = UIH.CreateDropdown(categoryRow, form.rowWidth - 10, 22,
+        form.rowWidth - 10)
+    categoryDropdown:SetPoint("LEFT", categoryRow, "LEFT", 5, 0)
     categoryDropdown:SetOptions(categoryOptions())
     categoryDropdown:SetSelectedKey(selectedCategory)
     categoryDropdown:SetSelectionCallback(function(categoryKey)
@@ -105,25 +104,30 @@ function M.Build(parent, deps)
         render(true)
     end)
 
-    title = tab:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    title:SetPoint("TOPLEFT", categoryDropdown, "BOTTOMLEFT", 0, -10)
-    title:SetWidth(C.CONFIG_CONTENT_W); title:SetJustifyH("LEFT")
-    description = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    description:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -3)
-    description:SetWidth(C.CONFIG_CONTENT_W); description:SetJustifyH("LEFT"); description:SetWordWrap(true)
-    requirements = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    requirements:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -3)
-    requirements:SetWidth(C.CONFIG_CONTENT_W); requirements:SetJustifyH("LEFT"); requirements:SetWordWrap(true)
-    recipeState = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    recipeState:SetPoint("TOPLEFT", requirements, "BOTTOMLEFT", 0, -4)
-    recipeState:SetWidth(C.CONFIG_CONTENT_W); recipeState:SetJustifyH("LEFT")
+    local card = UIH.CreateFormRow(form.content, form.rowWidth, 218)
+    title = card:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    title:SetPoint("TOPLEFT", card, "TOPLEFT", 10, -9)
+    title:SetPoint("TOPRIGHT", card, "TOPRIGHT", -74, -9)
+    title:SetJustifyH("LEFT"); title:SetWordWrap(false)
+    recipeState = card:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    recipeState:SetPoint("TOPRIGHT", card, "TOPRIGHT", -10, -9)
+    recipeState:SetWidth(58); recipeState:SetJustifyH("RIGHT")
 
-    local macroLabel = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    macroLabel:SetPoint("TOPLEFT", recipeState, "BOTTOMLEFT", 0, -8)
-    macroLabel:SetText("MACRO TEXT (COPY-ONLY)")
+    description = card:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    description:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -5)
+    description:SetWidth(form.rowWidth - 20); description:SetHeight(34)
+    description:SetJustifyH("LEFT"); description:SetJustifyV("TOP"); description:SetWordWrap(true)
+    requirements = card:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    requirements:SetPoint("TOPLEFT", description, "BOTTOMLEFT", 0, -2)
+    requirements:SetWidth(form.rowWidth - 20); requirements:SetHeight(34)
+    requirements:SetJustifyH("LEFT"); requirements:SetJustifyV("TOP"); requirements:SetWordWrap(true)
 
-    macroFrame = CreateFrame("Frame", nil, tab, "BackdropTemplate")
-    macroFrame:SetSize(C.CONFIG_CONTENT_W, 88)
+    local macroLabel = card:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    macroLabel:SetPoint("TOPLEFT", requirements, "BOTTOMLEFT", 0, -5)
+    macroLabel:SetText("Copy-only macro")
+
+    macroFrame = CreateFrame("Frame", nil, card, "BackdropTemplate")
+    macroFrame:SetSize(form.rowWidth - 20, 88)
     macroFrame:SetPoint("TOPLEFT", macroLabel, "BOTTOMLEFT", 0, -4)
     D.ApplyBackdrop(macroFrame, 0.92, { 0.35, 0.35, 0.38, 1 })
     macroText = CreateFrame("EditBox", nil, macroFrame)
@@ -139,10 +143,11 @@ function M.Build(parent, deps)
         end
     end)
 
-    -- These widths plus the two 8px gaps exactly fill CONFIG_CONTENT_W.
-    prevButton = button(tab, "< Previous", 100); prevButton:SetPoint("TOPLEFT", macroFrame, "BOTTOMLEFT", 0, -8)
-    nextButton = button(tab, "Next >", 100); nextButton:SetPoint("LEFT", prevButton, "RIGHT", 8, 0)
-    selectButton = button(tab, "Select Text to Copy", 180); selectButton:SetPoint("LEFT", nextButton, "RIGHT", 8, 0)
+    local footer = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    prevButton = button(footer, "Prev", 82); prevButton:SetPoint("LEFT", footer, "LEFT", 5, 0)
+    nextButton = button(footer, "Next", 82); nextButton:SetPoint("LEFT", prevButton, "RIGHT", 6, 0)
+    selectButton = button(footer, "Select to Copy", form.rowWidth - 185, 22)
+    selectButton:SetPoint("LEFT", nextButton, "RIGHT", 6, 0)
     prevButton:SetScript("OnClick", function() recipeIndex = recipeIndex - 1; render() end)
     nextButton:SetScript("OnClick", function() recipeIndex = recipeIndex + 1; render() end)
     selectButton:SetScript("OnClick", function()
@@ -150,9 +155,13 @@ function M.Build(parent, deps)
         statusText:SetText("Macro text selected. Press Ctrl+C to copy it.")
     end)
 
-    statusText = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    statusText:SetPoint("TOPLEFT", prevButton, "BOTTOMLEFT", 0, -7)
-    statusText:SetWidth(C.CONFIG_CONTENT_W); statusText:SetJustifyH("LEFT"); statusText:SetWordWrap(true)
+    UIH.LayoutForm(form, {
+        { frame = categoryRow, height = 32, gap = 9 },
+        { frame = card, height = 218, gap = 8 },
+        { frame = footer, height = 32, gap = 8 },
+    })
     render()
     return tab
 end
+
+M.GetForm = function() return form end

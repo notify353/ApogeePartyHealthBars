@@ -6,12 +6,12 @@ ApogeePartyHealthBars_C = {
     LOW_HEALTH_THRESHOLD_STEP = 5,
     LOW_HEALTH_REARM_MARGIN = 10,
     LOW_HEALTH_SOUND_DEBOUNCE = 2.0,
-    LOW_HEALTH_DEFAULT_SOUND = "alarm_soft",
+    LOW_HEALTH_DEFAULT_SOUND = "focus",
 }
 ApogeePartyHealthBars_S = {
     sv = {
         enabled = true,
-        lowHealthSoundKey = "alarm_soft",
+        lowHealthSoundKey = "focus",
         lowHealthThreshold = 50,
     },
 }
@@ -33,6 +33,10 @@ function UnitHealthMax(unitId) return units[unitId] and units[unitId].maximum or
 function UnitGUID(unitId) return units[unitId] and units[unitId].guid or nil end
 function GetTime() return now end
 function PlaySound(sound, channel) sounds[#sounds + 1] = { sound = sound, channel = channel } end
+function PlaySoundFile(sound, channel)
+    sounds[#sounds + 1] = { sound = sound, channel = channel }
+    return true
+end
 
 local callbacks = {}
 local router = {}
@@ -56,7 +60,8 @@ Dispatch("UNIT_HEALTH", "party1")
 assert(#sounds == 0, "exactly 50% should not alert")
 units.party1.health = 49
 Dispatch("UNIT_HEALTH", "party1")
-assert(#sounds == 1 and sounds[1].sound == 12867 and sounds[1].channel == "SFX",
+assert(#sounds == 1 and sounds[1].sound:find("Focus.ogg", 1, true)
+        and sounds[1].channel == "SFX",
     "party crossing did not use the low-health SFX sound")
 units.party1.health = 40
 Dispatch("UNIT_HEALTH", "party1")
@@ -160,7 +165,7 @@ assert(#sounds == 6, "untracked unit triggered a low-health alert")
 
 assert(H.GetSoundKey() == "alarm_soft" and H.GetSoundLabel() == "Alarm Soft")
 assert(H.SetSoundKey("alarm_bell") == "alarm_bell" and H.GetSoundLabel() == "Alarm Bell")
-assert(H.SetSoundKey("invalid") == "alarm_soft", "invalid dropdown sound did not normalize")
+assert(H.SetSoundKey("invalid") == "focus", "invalid dropdown sound did not normalize")
 assert(H.SetSoundKey("alarm_bell") == "alarm_bell", "dropdown sound selection did not persist")
 assert(H.PreviewSound(), "selected low-health sound did not preview")
 assert(#sounds == 7 and sounds[7].sound == 12889 and sounds[7].channel == "SFX",
@@ -208,6 +213,6 @@ assert(H.GetThreshold() == 50, "invalid threshold did not return to the default"
 assert(ApogeePartyHealthBars_S.sv.lowHealthThreshold == 50, "invalid threshold was not repaired")
 
 ApogeePartyHealthBars_S.sv.lowHealthSoundKey = "invalid"
-assert(H.GetSoundKey() == "alarm_soft", "invalid saved low-health sound did not return to default")
-assert(ApogeePartyHealthBars_S.sv.lowHealthSoundKey == "alarm_soft", "invalid sound was not repaired")
+assert(H.GetSoundKey() == "focus", "invalid saved low-health sound did not return to default")
+assert(ApogeePartyHealthBars_S.sv.lowHealthSoundKey == "focus", "invalid sound was not repaired")
 print("PASS low-health alerts")

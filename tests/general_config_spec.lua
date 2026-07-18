@@ -18,7 +18,7 @@ local function Widget()
     local widget = {
         scripts = {}, shown = true, enabled = true, checked = false, text = "",
     }
-    local noops = { "RegisterForClicks", "SetJustifyH" }
+    local noops = { "RegisterForClicks", "SetJustifyH", "SetJustifyV", "SetWordWrap" }
     for _, name in ipairs(noops) do widget[name] = function() end end
     function widget:SetScript(name, callback) self.scripts[name] = callback end
     function widget:GetScript(name) return self.scripts[name] end
@@ -31,6 +31,7 @@ local function Widget()
     function widget:CreateTexture() return Widget() end
     function widget:Show() self.shown = true end
     function widget:Hide() self.shown = false end
+    function widget:SetShown(shown) self.shown = shown == true end
     function widget:IsShown() return self.shown end
     function widget:Enable() self.enabled = true end
     function widget:Disable() self.enabled = false end
@@ -62,12 +63,26 @@ function UIH.CreateDropdown(parent)
     function dropdown:SetSelectedKey(key) self.selectedKey = key; return key end
     return dropdown
 end
-function UIH.CreateScrollFrame()
-    local scroll, child = Widget(), Widget()
-    scroll:SetScrollChild(child)
-    return scroll, child
+function UIH.CreateFormScaffold(_, _, hintText, showStatus)
+    local form = {
+        scroll = Widget(), content = Widget(), hint = Widget(), status = Widget(), rowWidth = 372,
+        showStatus = showStatus ~= false,
+    }
+    form.hint:SetText(hintText)
+    form.status:SetShown(form.showStatus)
+    return form
 end
-function UIH.AttachScrollWheel(scroll, step) scroll.wheelStep = step end
+function UIH.CreateFormSection(_, width, label)
+    local section = Widget(); section:SetWidth(width); section.label = Widget(); section.label:SetText(label)
+    return section
+end
+function UIH.CreateFormRow(_, width, height)
+    local row = Widget(); row:SetSize(width, height); return row
+end
+function UIH.LayoutForm(form, entries)
+    form.entries = entries
+    for _, entry in ipairs(entries) do entry.frame:SetShown(entry.visible ~= false) end
+end
 
 local saved = {
     enabled = true,
@@ -88,6 +103,7 @@ local calls = {
     refresh = 0, secure = 0, threat = 0, ticker = 0, hotInit = 0,
     hotTrack = 0, barReset = 0, force = 0, settingsReset = 0,
     minimapReset = 0, factoryReset = 0, soundPreview = 0,
+    messages = {},
 }
 local timerCallback
 C_Timer = { After = function(_, callback) timerCallback = callback end }
@@ -119,8 +135,13 @@ local deps = {
     IsPartyBuffKnown = function() return known.party end,
     IsSavedFeatureEnabled = function(key) return saved[key] ~= false end,
     IsSelfBuffKnown = function() return known.self end,
+    Print = function(message) calls.messages[#calls.messages + 1] = message end,
     RequestConfigRefresh = function() calls.refresh = calls.refresh + 1 end,
-    SetAddonEnabled = function(enabled) saved.enabled = enabled; calls.addonEnabled = enabled end,
+    SetAddonEnabled = function(enabled)
+        saved.enabled = enabled
+        calls.addonEnabled = enabled
+        return true
+    end,
     SetHotTrackEnabled = function(key, enabled)
         calls.hotTrack = calls.hotTrack + 1
         calls.hotTrackKey, calls.hotTrackEnabled = key, enabled
@@ -148,9 +169,15 @@ assert(not valid and tostring(validationError):find("ApplyAllSecureBindings", 1,
 config.Build(Widget(), deps)
 config.Refresh()
 
+assert(config.GetForm().hint:GetText() == "Choose what the party bars show and how they behave."
+        and #config.GetForm().entries > 10 and not config.GetForm().status:IsShown(),
+    "General did not use the shared form hierarchy")
+
 assert(config.GetRow("showAllSlots").check:GetChecked() == false
         and config.GetRow("combatUIAutoHide").check:GetChecked() == true,
     "saved General checkboxes did not refresh")
+assert(config.GetRow("enabled") == nil,
+    "General still exposed the redundant add-on enable checkbox")
 assert(config.GetRow("partyBuffEnabled"):IsShown()
         and not config.GetRow("selfBuffEnabled"):IsShown()
         and config.GetRow("clickableBuffIcons"):IsShown(),
@@ -176,12 +203,6 @@ showAll:SetChecked(true)
 Click(showAll)
 assert(saved.showAllSlots and calls.savedKey == "showAllSlots" and calls.refresh == 1,
     "General checkbox did not persist and request refresh")
-
-local enable = config.GetRow("enabled").check
-enable:SetChecked(false)
-Click(enable)
-assert(calls.addonEnabled == false and calls.refresh == 2,
-    "add-on enable checkbox did not use the controller")
 
 local combatFade = config.GetRow("combatUIAutoHide").check
 combatFade:SetChecked(false)
@@ -234,15 +255,26 @@ Click(resets.bar); Click(resets.settings); Click(resets.minimap)
 assert(calls.barReset == 1 and calls.force == 1 and calls.settingsReset == 1
         and calls.minimapReset == 1,
     "General reset controls changed their callbacks")
+Click(resets.prepareDisable)
+assert(calls.addonEnabled == nil
+        and resets.prepareDisable.label:GetText() == "Confirm Release",
+    "prepare-to-disable action lost its confirmation arm")
+timerCallback()
+assert(resets.prepareDisable.label:GetText() == "Prepare to Disable",
+    "prepare-to-disable timeout did not disarm")
+Click(resets.prepareDisable); Click(resets.prepareDisable)
+assert(calls.addonEnabled == false
+        and calls.messages[#calls.messages]:find("AddOns manager", 1, true),
+    "confirmed prepare-to-disable action did not restore bindings and guide the user")
 Click(resets.factory)
 assert(calls.factoryReset == 0
-        and resets.factory.label:GetText() == "Click again to erase all settings",
+        and resets.factory.label:GetText() == "Confirm Erase",
     "factory reset lost its confirmation arm")
 timerCallback()
-assert(resets.factory.label:GetText() == "Factory reset addon",
+assert(resets.factory.label:GetText() == "Factory Reset",
     "factory reset timeout did not disarm")
 Click(resets.factory); Click(resets.factory)
-assert(calls.factoryReset == 1 and resets.factory.label:GetText() == "Factory reset addon",
+assert(calls.factoryReset == 1 and resets.factory.label:GetText() == "Factory Reset",
     "confirmed factory reset did not execute and disarm")
 
 known.party, known.self, known.reminder = false, true, false

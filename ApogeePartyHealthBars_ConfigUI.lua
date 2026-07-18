@@ -34,7 +34,8 @@ end
 local function ApplyDefaultConfigPosition()
     if not configPanel then return end
     configPanel:ClearAllPoints()
-    configPanel:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+    configPanel:SetPoint(C.CONFIG_DEFAULT_ANCHOR, UIParent, C.CONFIG_DEFAULT_REL,
+        C.CONFIG_DEFAULT_X, C.CONFIG_DEFAULT_Y)
     if S.sv then
         S.sv.configPoint = nil
         S.sv.configRelPoint = nil
@@ -50,9 +51,9 @@ local function RestoreConfigPosition()
         local ok = pcall(
             configPanel.SetPoint,
             configPanel,
-            S.sv.configPoint or "CENTER",
+            S.sv.configPoint or C.CONFIG_DEFAULT_ANCHOR,
             UIParent,
-            S.sv.configRelPoint or "CENTER",
+            S.sv.configRelPoint or C.CONFIG_DEFAULT_REL,
             S.sv.configX,
             S.sv.configY
         )
@@ -143,7 +144,8 @@ function UI.Build(deps)
 
     configPanel = CreateFrame("Frame", "ApogeePartyHealthBarsBindPanel", UIParent, "BackdropTemplate")
     configPanel:SetSize(C.BIND_PANEL_W, C.BIND_PANEL_H)
-    configPanel:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+    configPanel:SetPoint(C.CONFIG_DEFAULT_ANCHOR, UIParent, C.CONFIG_DEFAULT_REL,
+        C.CONFIG_DEFAULT_X, C.CONFIG_DEFAULT_Y)
     configPanel:SetMovable(true)
     configPanel:EnableMouse(true)
     configPanel:SetClampedToScreen(true)
@@ -164,13 +166,13 @@ function UI.Build(deps)
     AttachConfigDragHandle(header)
 
     local title = header:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    title:SetPoint("TOPLEFT", header, "TOPLEFT", 2, -3)
+    title:SetPoint("TOPLEFT", header, "TOPLEFT", 2, -1)
     title:SetText("Apogee Party Health Bars")
     title:SetTextColor(1, 0.82, 0)
 
     profileLabel = header:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    profileLabel:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -1)
-    profileLabel:SetWidth(300); profileLabel:SetWordWrap(false)
+    profileLabel:SetPoint("BOTTOMLEFT", header, "BOTTOMLEFT", 2, 3)
+    profileLabel:SetWidth(300); profileLabel:SetJustifyH("LEFT"); profileLabel:SetWordWrap(false)
     profileLabel:SetText("Profile: Loading...")
 
     local versionLabel = header:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
@@ -199,13 +201,13 @@ function UI.Build(deps)
     wheelTab = WC.Build(configPanel, D)
     macrosTab = MC.Build(configPanel, D)
 
-    RegisterTab({ key = "profiles", label = "Profiles", frame = profilesTab, refresh = PC.Refresh })
     RegisterTab({ key = "general", label = "General", frame = generalTab, refresh = RefreshConfigPanel })
     RegisterTab({ key = "healing", label = "Healing", frame = healingTab, refresh = HC.Refresh })
-    RegisterTab({ key = "shortcuts", label = "Shortcuts", frame = shortcutsTab, refresh = SC.Refresh })
     RegisterTab({ key = "keys", label = "Keys", frame = keysTab, refresh = KC.Refresh })
     RegisterTab({ key = "wheel", label = "Wheel", frame = wheelTab, refresh = WC.Refresh })
+    RegisterTab({ key = "shortcuts", label = "Shortcuts", frame = shortcutsTab, refresh = SC.Refresh })
     RegisterTab({ key = "macros", label = "Macros", frame = macrosTab, refresh = MC.Refresh })
+    RegisterTab({ key = "profiles", label = "Profiles", frame = profilesTab, refresh = PC.Refresh })
 
     local tabWidth = (C.BIND_PANEL_W - C.BIND_PAD * 2 - (#tabOrder - 1) * 4) / #tabOrder
     for index, key in ipairs(tabOrder) do
@@ -232,7 +234,9 @@ function UI.Build(deps)
     UI.ActivateTab = SetConfigTab
     UI.RefreshTab = RefreshTab
     UI.RefreshActiveTab = RefreshActiveTab
+    UI.tabOrder = tabOrder
     UI.factoryResetButton = GC.GetFactoryResetButton()
+    UI.prepareDisableButton = GC.GetPrepareDisableButton()
     UI.versionLabel = versionLabel
     UI.profileLabel = profileLabel
     UI.Show = function()

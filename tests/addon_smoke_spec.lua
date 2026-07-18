@@ -24,7 +24,7 @@ local function widget()
         GetHighlightTexture = function() return widget() end,
         GetStatusBarTexture = function() return widget() end,
         GetFont = function() return nil, nil end,
-        GetFrameLevel = function() return 1 end,
+        GetFrameLevel = function(self) return self.frameLevel or 1 end,
         GetFrameStrata = function() return "MEDIUM" end,
         GetEffectiveScale = function() return 1 end,
         GetCenter = function() return 100, 100 end,
@@ -53,6 +53,7 @@ local function widget()
             self.height = height
             self.mutations = self.mutations + 1
         end,
+        SetFrameLevel = function(self, level) self.frameLevel = level end,
         EnableMouse = function(self, enabled)
             self.mouseEnabled = enabled
             self.mutations = self.mutations + 1
@@ -72,7 +73,7 @@ local function widget()
     local noopMethods = {
         "SetAllPoints", "SetTexture",
         "SetTexCoord", "SetDrawLayer", "SetHorizTile", "SetVertTile",
-        "SetFrameStrata", "SetFrameLevel",
+        "SetFrameStrata",
         "EnableMouseWheel", "SetMovable", "SetClampedToScreen",
         "SetHighlightTexture", "SetBackdrop", "SetBackdropColor", "SetBackdropBorderColor",
         "SetStatusBarTexture", "SetStatusBarColor", "SetMinMaxValues", "SetValue",
@@ -95,6 +96,10 @@ function CreateFrame(frameType, name, parent, template)
     frame.frameType = frameType
     frame.parent = parent
     frame.template = template
+    if template == "InputScrollFrameTemplate" then
+        frame.EditBox = widget()
+        frame.CharCount = widget()
+    end
     frames[#frames + 1] = frame
     if name then _G[name] = frame end
     return frame
@@ -260,6 +265,12 @@ assert(tocLoadOrder["ApogeePartyHealthBars_BoundActionLayouts.lua"]
     "bound-action runtimes loaded before their shared dependencies")
 assert(tocLoadOrder["ApogeePartyHealthBars_KeyLayouts.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_KeyActions.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_ProfileCodec.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_ProfileConfig.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_ProfileStore.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_ProfileConfig.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_ProfileConfig.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_ConfigUI.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_KeyConfig.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_ConfigUI.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_GeneralConfig.lua"]
@@ -326,7 +337,6 @@ assert(ApogeePartyHealthBars_S.charSv.bindingSchemaVersion == 1,
     "Healing binding data was not initialized before runtime setup")
 local keysRuntime = ApogeePartyHealthBars_KeyActions
 local wheelRuntime = ApogeePartyHealthBars_WheelMacros
-assert(not keysRuntime.IsEnabled(), "Keys did not start disabled")
 for _, slotId in ipairs(keysRuntime.GetDisplayOrder()) do
     assert(keysRuntime.GetSlot(keysRuntime.GetActiveLayoutKey(), slotId) == nil,
         "Keys did not start empty: " .. slotId)
@@ -350,20 +360,20 @@ local feedbackText = assert(ApogeePartyHealthBars_ActionHud.GetFeedbackText(),
 assert(feedbackText.point[4] == 4 and feedbackText.point[5] == -117,
     "action feedback line lost its fixed padded position below the Keys grid")
 
-assert(keysRuntime.Enable(), "Keys could not enable without Wheel")
 RunFrameUpdates()
 local geometry = ApogeePartyHealthBars_RowGeometry
-local keysOnlyActionHeight = geometry.GetActionAreaHeight("player")
-local keysOnlyShortcutHeight = ApogeePartyHealthBars_ShortcutBar.GetHeight("player")
+local permanentActionHeight = geometry.GetActionAreaHeight("player")
+local shortcutHeight = ApogeePartyHealthBars_ShortcutBar.GetHeight("player")
 assert(keysRuntime.GetHeight("player") == 136
-        and keysOnlyActionHeight == keysOnlyShortcutHeight + 136,
-    "Keys-only action geometry did not reserve the full keyboard cluster")
+        and wheelRuntime.GetHeight("player") == 169
+        and permanentActionHeight == shortcutHeight + 169,
+    "permanent Keys and Wheel geometry did not reserve the taller action rail")
 assert(geometry.GetRowTotalHeight("player")
         == ApogeePartyHealthBars_C.ROW_H
             + ApogeePartyHealthBars_HotTracker.GetStripHeight()
             + geometry.GetRowPowerChromeHeight("player")
-            + keysOnlyActionHeight,
-    "Keys-only player row height omitted its action area")
+            + permanentActionHeight,
+    "permanent player row height omitted its action area")
 ApogeePartyHealthBars_S.configMode = true
 ApogeePartyHealthBars_S.RequestLayoutUpdate()
 RunFrameUpdates()
@@ -387,27 +397,29 @@ for index = 1, #positionedRows - 1 do
     local currentOffset = -(current.point[5] or 0)
     local followingOffset = -(following.point[5] or 0)
     assert(followingOffset >= currentOffset + current.height + ApogeePartyHealthBars_C.ROW_GAP,
-        "Keys-only party rows overlapped")
+        "permanent action HUD party rows overlapped")
 end
 ApogeePartyHealthBars_S.configMode = false
 ApogeePartyHealthBars_S.RequestLayoutUpdate()
 RunFrameUpdates()
-assert(keysRuntime.Disable(), "Keys could not return to disabled before dual-feature coverage")
-RunFrameUpdates()
-
-assert(wheelRuntime.Enable(), "Wheel could not take over its physical bindings")
-RunFrameUpdates()
 assert(wheelRuntime.GetHudCastButton("ctrlUp").shown,
-    "Wheel HUD did not become visible before enabling Keys")
-assert(not keysRuntime.GetHudCastButton("key1").shown,
-    "disabled Keys unexpectedly displayed its HUD")
-assert(keysRuntime.Enable(), "Keys could not remain enabled with Wheel")
-RunFrameUpdates()
+    "permanent Wheel HUD did not become visible at login")
 assert(keysRuntime.GetHudCastButton("key1").shown,
-    "Keys HUD stayed hidden when enabled after the taller Wheel rail")
+    "permanent Keys HUD did not become visible at login")
 assert(smokeBindings.F == "CLICK ApogeePartyHealthBarsKeyFHud:LeftButton"
     and smokeBindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton",
     "Keys and Wheel did not own their independent physical bindings")
+assert(ApogeePartyHealthBars_ConfigController.SetAddonEnabled(false),
+    "global disable did not release permanent action bindings")
+assert(smokeBindings.F == "" and smokeBindings.MOUSEWHEELUP == "CAMERAZOOMIN",
+    "global disable did not restore the prior Keys and Wheel bindings")
+router.Dispatch("UPDATE_BINDINGS")
+assert(smokeBindings.F == "" and smokeBindings.MOUSEWHEELUP == "CAMERAZOOMIN",
+    "binding reconciliation reclaimed Keys or Wheel while the add-on was disabled")
+assert(ApogeePartyHealthBars_ConfigController.SetAddonEnabled(true)
+        and smokeBindings.F == "CLICK ApogeePartyHealthBarsKeyFHud:LeftButton"
+        and smokeBindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton",
+    "global re-enable did not reclaim permanent action bindings")
 local keysLayout = keysRuntime.GetActiveLayoutKey()
 local wheelLayout = wheelRuntime.GetActiveLayoutKey()
 assert(keysRuntime.AssignSpell(keysLayout, "key1", 9001, "Fireball")
@@ -435,7 +447,7 @@ assert(keysRuntime.GetSecureButton("key2"):GetAttribute("type") == nil,
     "an empty Keys slot was not a secure no-op")
 assert(keysRuntime.GetHeight("player") == 136 and wheelRuntime.GetHeight("player") == 169
     and math.max(keysRuntime.GetHeight("player"), wheelRuntime.GetHeight("player")) == 169,
-    "dual-enabled action HUD height was summed instead of using the taller Wheel rail")
+    "permanent action HUD height was summed instead of using the taller Wheel rail")
 ApogeeKeysFeedback(10)
 assert(feedbackText:GetText() == "F — Frostbolt", "Keys activation feedback text was incorrect")
 ApogeeWheelFeedback(1)
@@ -467,7 +479,7 @@ assert(healingItemInfoRefreshes == 1,
 smokeItemName = "Linen Bandage"
 router.Dispatch("GET_ITEM_INFO_RECEIVED", 1251, true)
 ApogeePartyHealthBars_ConfigUI.RefreshBindPanel = originalHealingRefresh
-assert(savedBindingCount >= 2, "enabled bound-action features did not persist their bindings")
+assert(savedBindingCount >= 2, "permanent bound-action features did not persist their bindings")
 assert(ApogeePartyHealthBars_ShortcutBar.AssignSpell(1, 9001, "Fireball"))
 assert(ApogeePartyHealthBars_ShortcutBar.GetSlotLane(1) == "player", "ordinary Shortcut spell did not use player lane")
 assert(ApogeePartyHealthBars_ShortcutBar.GetSlotLane(2) == nil, "automatic crowd control occupied a configured slot")
@@ -644,11 +656,34 @@ assert(existingShortcutButton.shown and existingShortcutButton.mouseEnabled
 SpellBookFrame:Hide()
 
 ApogeePartyHealthBars_S.configMode = true
-for _, key in ipairs({ "general", "healing", "shortcuts", "keys", "wheel", "macros" }) do
+for _, key in ipairs({ "profiles", "general", "healing", "shortcuts", "keys", "wheel", "macros" }) do
     ApogeePartyHealthBars_ConfigUI.ActivateTab(key)
     assert(ApogeePartyHealthBars_S.configTab == key, "could not activate settings tab: " .. key)
     ApogeePartyHealthBars_ConfigUI.RefreshTab(key, true)
 end
+ApogeePartyHealthBars_ConfigUI.ActivateTab("profiles")
+ApogeePartyHealthBars_ConfigUI.RefreshTab("profiles")
+assert(ApogeePartyHealthBars_ProfileConfig.GetProfileDropdown().selectedKey
+        == ApogeePartyHealthBars_ProfileStore.GetActiveId(),
+    "Profiles tab did not select the active class profile")
+assert(ApogeePartyHealthBars_ConfigUI.profileLabel:GetText():find("Profile:", 1, true),
+    "settings header did not expose the active profile")
+local shareTextFrame = ApogeePartyHealthBars_ProfileConfig.GetShareTextFrame()
+local shareStatusFrame = ApogeePartyHealthBars_ProfileConfig.GetShareStatusFrame()
+assert(shareTextFrame.template == "InputScrollFrameTemplate"
+        and ApogeePartyHealthBars_ProfileConfig.GetShareText() == shareTextFrame.EditBox,
+    "profile share text was not constrained by Blizzard's scrolling input frame")
+assert(shareStatusFrame.template == "BackdropTemplate"
+        and shareStatusFrame:GetFrameLevel() > shareTextFrame:GetFrameLevel(),
+    "profile import status did not render in a higher-level readable panel")
+local smokeProfile = ApogeePartyHealthBars_ProfileStore.GetActiveProfile()
+local smokeProfileName = smokeProfile.name
+assert(ApogeePartyHealthBars_ProfileStore.Rename(smokeProfile.id, "Smoke Profile"))
+ApogeePartyHealthBars_ProfileConfig.Refresh()
+assert(ApogeePartyHealthBars_ConfigUI.profileLabel:GetText() == "Profile: Smoke Profile",
+    "renaming the active profile left a stale settings header")
+assert(ApogeePartyHealthBars_ProfileStore.Rename(smokeProfile.id, smokeProfileName))
+ApogeePartyHealthBars_ProfileConfig.Refresh()
 ApogeePartyHealthBars_ConfigUI.ActivateTab("keys")
 ApogeePartyHealthBars_ConfigUI.RefreshTab("keys")
 ApogeePartyHealthBars_KeyConfig.GetTiles().keyF.scripts.OnClick()

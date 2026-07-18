@@ -6,6 +6,7 @@ local SC = ApogeePartyHealthBars_ShortcutConfig
 local KC = ApogeePartyHealthBars_KeyConfig
 local WC = ApogeePartyHealthBars_WheelConfig
 local MC = ApogeePartyHealthBars_MacroConfig
+local PC = ApogeePartyHealthBars_ProfileConfig
 local AC = ApogeePartyHealthBars_ActionConfig
 local UIH = ApogeePartyHealthBars_UIHelpers
 
@@ -17,7 +18,8 @@ local built = false
 local D
 
 local configPanel
-local generalTab, healingTab, shortcutsTab, keysTab, wheelTab, macrosTab
+local profilesTab, generalTab, healingTab, shortcutsTab, keysTab, wheelTab, macrosTab
+local profileLabel
 local tabs, tabOrder = {}, {}
 
 local function SaveConfigPosition()
@@ -113,8 +115,18 @@ local function RefreshActiveTab(...)
     RefreshTab(S.configTab or "general", ...)
 end
 
+local function RefreshProfileLabel()
+    local activeProfile = D.ProfileStore and D.ProfileStore.GetActiveProfile()
+    if profileLabel then
+        profileLabel:SetText("Profile: "
+            .. UIH.EscapeText(activeProfile and activeProfile.name or "Loading..."))
+    end
+end
+
 local function RefreshConfigPanel()
     if not S.configMode or not configPanel:IsShown() then return end
+
+    RefreshProfileLabel()
 
     GC.Refresh()
 
@@ -162,9 +174,10 @@ function UI.Build(deps)
     title:SetText("Apogee Party Health Bars")
     title:SetTextColor(1, 0.82, 0)
 
-    local subtitle = header:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -1)
-    subtitle:SetText("Healer frame configuration")
+    profileLabel = header:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    profileLabel:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -1)
+    profileLabel:SetWidth(300); profileLabel:SetWordWrap(false)
+    profileLabel:SetText("Profile: Loading...")
 
     local versionLabel = header:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     versionLabel:SetPoint("BOTTOMRIGHT", header, "BOTTOMRIGHT", -2, 3)
@@ -183,6 +196,8 @@ function UI.Build(deps)
 
     AC.Initialize(configPanel, D.ApplyBackdrop)
 
+    D.RefreshProfileLabel = RefreshProfileLabel
+    profilesTab = PC.Build(configPanel, D)
     generalTab = GC.Build(configPanel, BuildGeneralConfigDeps())
     healingTab = HC.Build(configPanel, D)
     shortcutsTab = SC.Build(configPanel, D)
@@ -190,6 +205,7 @@ function UI.Build(deps)
     wheelTab = WC.Build(configPanel, D)
     macrosTab = MC.Build(configPanel, D)
 
+    RegisterTab({ key = "profiles", label = "Profiles", frame = profilesTab, refresh = PC.Refresh })
     RegisterTab({ key = "general", label = "General", frame = generalTab, refresh = RefreshConfigPanel })
     RegisterTab({ key = "healing", label = "Healing", frame = healingTab, refresh = HC.Refresh })
     RegisterTab({ key = "shortcuts", label = "Shortcuts", frame = shortcutsTab, refresh = SC.Refresh })
@@ -217,12 +233,14 @@ function UI.Build(deps)
     UI.RefreshKeyPanel = KC.Refresh
     UI.RefreshWheelPanel = WC.Refresh
     UI.RefreshMacroPanel = MC.Refresh
+    UI.RefreshProfilePanel = PC.Refresh
     UI.RegisterTab = RegisterTab
     UI.ActivateTab = SetConfigTab
     UI.RefreshTab = RefreshTab
     UI.RefreshActiveTab = RefreshActiveTab
     UI.factoryResetButton = GC.GetFactoryResetButton()
     UI.versionLabel = versionLabel
+    UI.profileLabel = profileLabel
     UI.Show = function()
         RestoreConfigPosition()
         SetConfigTab(S.configTab)

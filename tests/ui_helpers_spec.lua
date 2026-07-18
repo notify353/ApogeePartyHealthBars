@@ -104,5 +104,7 @@ assert(second.label.textColor[1] == 0.42 and second.bg.color[1] == 0.055,
     "disabled dropdown did not use its muted visual state")
 assert(dropdown:SetSelectedKey("missing") == nil and dropdown.label.text == "Select...",
     "invalid dropdown selection did not fail closed")
+assert(helpers.EscapeText("Raid |cff00ff00Profile|r") == "Raid ||cff00ff00Profile||r",
+    "profile display text did not escape WoW markup")
 
 print("PASS UI dropdown helpers")

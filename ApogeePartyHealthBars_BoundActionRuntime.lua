@@ -92,6 +92,33 @@ function Factory.Create(options)
         return S.charSv and S.charSv[options.stateKey]
     end
 
+    local bindingStateProxy = setmetatable({}, {
+        __index = function(_, key)
+            if key == "ownership" or key == "bindingVersion" then
+                local profileStore = ApogeePartyHealthBars_ProfileStore
+                local runtime = profileStore and profileStore.GetBindingRuntime
+                    and profileStore.GetBindingRuntime(options.stateKey)
+                if runtime then return runtime[key] end
+            end
+            local saved = state()
+            return saved and saved[key]
+        end,
+        __newindex = function(_, key, value)
+            if key == "ownership" or key == "bindingVersion" then
+                local profileStore = ApogeePartyHealthBars_ProfileStore
+                local runtime = profileStore and profileStore.GetBindingRuntime
+                    and profileStore.GetBindingRuntime(options.stateKey)
+                if runtime then runtime[key] = value; return end
+            end
+            local saved = state()
+            if saved then saved[key] = value end
+        end,
+    })
+
+    local function bindingState()
+        return state() and bindingStateProxy or nil
+    end
+
     local function refreshSavedItemInfo()
         local saved = state()
         local profiles = saved and type(saved.profiles) == "table" and saved.profiles or {}
@@ -172,7 +199,7 @@ function Factory.Create(options)
     -- prepend it only to the runtime macrotext; saved/editor text stays untouched.
     _G[FEEDBACK_GLOBAL] = function(slotIndex)
         local slot = WD.SLOTS[tonumber(slotIndex)]
-        if slot and W.IsEnabled() then showActivationFeedback(slot) end
+        if slot then showActivationFeedback(slot) end
     end
 
     local function secureMacroText(slot, entry)
@@ -433,7 +460,7 @@ function Factory.Create(options)
         local bindingOptions = {}
         for key, value in pairs(options.bindings) do bindingOptions[key] = value end
         bindingOptions.slots = WD.SLOTS
-        bindingOptions.state = state
+        bindingOptions.state = bindingState
         bindingOptions.ownedAction = ownedAction
         bindingManager = BoundBindings.Create(bindingOptions)
         ensureSecureButtons()
@@ -472,14 +499,8 @@ function Factory.Create(options)
             end
         end
         W.RefreshSecureActions()
-        W.ReconcileBindings()
         W.Refresh()
         requestLayout()
-    end
-
-    function W.IsEnabled()
-        local saved = state()
-        return saved and saved.enabled == true
     end
 
     function W.GetLayouts()
@@ -536,8 +557,8 @@ function Factory.Create(options)
         if not entry then return false, "could not store that spell." end
         WL.SetSlot(layoutKey, slotId, entry)
         clearSlotFeedback(slotId)
-        -- Editing an action must never claim or repair physical bindings. Only
-        -- explicit enable/disable and lifecycle reconciliation own that state.
+        -- Editing an action must never claim or repair physical bindings.
+        -- Startup and lifecycle reconciliation own that state.
         W.RefreshSecureActions(); W.Refresh(); requestLayout()
         return true, "assigned |cff00ff00" .. spellName .. "|r to " .. slot.label .. ".", slotId
     end
@@ -637,25 +658,6 @@ function Factory.Create(options)
         return bindingManager and bindingManager.GetConflicts() or {}
     end
 
-    function W.Enable()
-        if not bindingManager then return false, "unavailable", "Character settings are not ready." end
-        local ok, code, detail = bindingManager.Enable()
-        if not ok then return ok, code, detail end
-        rebaselineFeedback()
-        W.RefreshSecureActions(); W.Refresh(); requestLayout()
-        return ok, code, detail
-    end
-
-    function W.Disable()
-        if not bindingManager then return false, "unavailable", "Character settings are not ready." end
-        local ok, code, detail = bindingManager.Disable()
-        if not ok then return ok, code, detail end
-        rebaselineFeedback()
-        W.RefreshSecureActions(); W.Refresh(); requestLayout()
-        rebaselineFeedback()
-        return ok, code, detail
-    end
-
     function W.ClearSlot(layoutKey, slotId)
         if InCombatLockdown and InCombatLockdown() then return false, "Leave combat before clearing this action." end
         if not WL.IsKnownLayout(layoutKey) then return false, "Unknown " .. options.featureLabel .. " layout." end
@@ -669,6 +671,7 @@ function Factory.Create(options)
 
     function W.ReconcileBindings()
         if not bindingManager then return false end
+        if not S.sv or S.sv.enabled ~= true then return true end
         local ok, detail = bindingManager.Reconcile()
         if detail == "combat" then pendingSecure = true end
         return ok, detail
@@ -690,14 +693,12 @@ function Factory.Create(options)
         local definitions = WL.GetLayouts()
         local activeIndex = WL.GetActiveIndex()
         local activeMacro
-        if W.IsEnabled() then
-            for _, definition in ipairs(definitions) do
-                local index, layoutKey = definition.index, definition.key
-                local entry = W.GetSlot(layoutKey, slot.id)
-                local runtimeMacro = hasMacro(entry) and secureMacroText(slot, entry) or nil
-                button:SetAttribute(SECURE_MACRO_PREFIX .. index, runtimeMacro)
-                if index == activeIndex then activeMacro = runtimeMacro end
-            end
+        for _, definition in ipairs(definitions) do
+            local index, layoutKey = definition.index, definition.key
+            local entry = W.GetSlot(layoutKey, slot.id)
+            local runtimeMacro = hasMacro(entry) and secureMacroText(slot, entry) or nil
+            button:SetAttribute(SECURE_MACRO_PREFIX .. index, runtimeMacro)
+            if index == activeIndex then activeMacro = runtimeMacro end
         end
         button.apogeeStateCount = math.max(priorCount, WL.GetMaxStateIndex())
         button:SetAttribute("type", activeMacro and "macro" or nil)
@@ -705,7 +706,7 @@ function Factory.Create(options)
         button:SetAttribute("type1", activeMacro and "macro" or nil)
         button:SetAttribute("macrotext1", activeMacro)
 
-        if W.IsEnabled() and WL.HasStances() and RegisterStateDriver then
+        if WL.HasStances() and RegisterStateDriver then
             button:SetAttribute("_onstate-" .. SECURE_STATE, SECURE_STATE_SNIPPET)
             RegisterStateDriver(button, SECURE_STATE, WL.GetStateDriver())
             button.apogeeStateDriver = true
@@ -724,7 +725,7 @@ function Factory.Create(options)
             local castButton = icon and icon.castButton
             configureSecureAction(button, slot)
             configureSecureAction(castButton, slot)
-            if castButton and W.IsEnabled() and container and container:IsShown()
+            if castButton and container and container:IsShown()
                 and D and D.PositionSecureOverlay and D.PositionSecureOverlay(castButton, icon) then
                 D.ShowSecureFrame(castButton)
                 D.SetSecureMouseEnabled(castButton, true)
@@ -738,7 +739,6 @@ function Factory.Create(options)
 
     function W.OnCombatEnded()
         if pendingSecure then W.RefreshSecureActions() end
-        W.ReconcileBindings()
     end
 
     function W.OnCombatStarted()
@@ -830,21 +830,19 @@ function Factory.Create(options)
 
     function W.Layout()
         if not container or not row then return end
-        if not W.IsEnabled() then container:Hide(); return end
         container:Show()
         W.Refresh()
         W.RefreshSecureActions()
     end
 
     function W.GetHeight(unitId)
-        return unitId == "player" and W.IsEnabled() and HUD_HEIGHT or 0
+        return unitId == "player" and HUD_HEIGHT or 0
     end
 
     function W.GetBindingStatus()
         local conflicts = W.GetConflicts()
-        if not W.IsEnabled() then return "disabled", conflicts end
         if #conflicts > 0 then return "conflict", conflicts end
-        return "enabled", conflicts
+        return "owned", conflicts
     end
 
     W.GetDefinitions = function() return WD.SLOTS end

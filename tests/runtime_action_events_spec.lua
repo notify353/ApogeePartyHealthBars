@@ -65,6 +65,7 @@ local deps = {
     Print = function(message) record("print:" .. message) end,
     InitPlayerSpells = function() record("player-spells") end,
     GetConfigUI = function() return ui end,
+    ReconcileBoundActionBindings = function() record("bindings-reconcile"); return true end,
 }
 
 dofile("ApogeePartyHealthBars_RuntimeActionEvents.lua")
@@ -141,7 +142,7 @@ expect({
 
 reset()
 dispatch("UPDATE_BINDINGS")
-expect({ "wheel-reconcile", "keys-reconcile", "ui-keys", "ui-wheel" },
+expect({ "bindings-reconcile", "ui-keys", "ui-wheel" },
     "binding reconciliation order changed")
 
 reset()

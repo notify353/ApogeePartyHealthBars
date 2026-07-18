@@ -28,9 +28,9 @@ local actions = ApogeePartyHealthBars_ActionMacros
 assert(layouts.Initialize(), "Keys layouts did not initialize")
 assert(layouts.GetActiveSpecKey() == "1" and layouts.GetActiveKey() == "base",
     "Keys did not initialize the base profile")
-assert(ApogeePartyHealthBars_S.charSv.keyActions.schemaVersion == 1
-    and not ApogeePartyHealthBars_S.charSv.keyActions.enabled,
-    "Keys did not create an independent disabled saved root")
+assert(ApogeePartyHealthBars_S.charSv.keyActions.schemaVersion == 2
+    and ApogeePartyHealthBars_S.charSv.keyActions.enabled == nil,
+    "Keys did not create a permanent saved root")
 
 local fireball = actions.CreateSpell(133, "Fireball")
 assert(layouts.SetSlot("base", "key1", fireball), "Keys base assignment failed")

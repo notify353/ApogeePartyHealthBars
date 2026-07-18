@@ -1,5 +1,5 @@
 local currentSet = 2
-local saved = { enabled = false, ownership = {} }
+local saved = { ownership = {} }
 local bindingSets = {
     [1] = { Q = "ACCOUNT_Q", E = "ACCOUNT_E" },
     [2] = { Q = "CHARACTER_Q", E = "CHARACTER_E" },
@@ -38,14 +38,14 @@ local manager = factory.Create({
     label = "test bindings",
 })
 
-assert(manager.Enable(), "character binding set did not enable")
+assert(manager.ClaimCurrentSet(), "character binding set was not claimed")
 assert(bindingSets[2].Q == owned(slots[1]) and bindingSets[2].E == owned(slots[2]),
     "character binding set was not claimed")
 
 LoadBindings(1)
 local reconciled, conflicts = manager.Reconcile()
 assert(reconciled and #conflicts == 0,
-    "enabled feature did not claim a newly active binding set")
+    "permanent feature did not claim a newly active binding set")
 assert(bindingSets[1].Q == owned(slots[1]) and bindingSets[1].E == owned(slots[2])
     and saved.ownership["1"].keyQ.previousAction == "ACCOUNT_Q"
     and saved.ownership["2"].keyQ.previousAction == "CHARACTER_Q",
@@ -57,38 +57,38 @@ assert(#currentConflicts == 1 and currentConflicts[1].slot.id == "keyQ",
     "external unbind was hidden after a binding-set switch")
 bindingSets[1].Q = owned(slots[1])
 
-assert(manager.Disable(), "multi-set disable failed")
-assert(currentSet == 1, "multi-set disable did not restore the originally active set")
+assert(factory.ReleaseAll({ manager }), "multi-set release failed")
+assert(currentSet == 1, "multi-set release did not restore the originally active set")
 assert(bindingSets[1].Q == "ACCOUNT_Q" and bindingSets[1].E == "ACCOUNT_E"
     and bindingSets[2].Q == "CHARACTER_Q" and bindingSets[2].E == "CHARACTER_E",
-    "multi-set disable did not restore both binding sets")
-assert(not saved.enabled and saved.ownership["1"] == nil and saved.ownership["2"] == nil,
-    "multi-set disable retained enabled state or ownership")
+    "multi-set release did not restore both binding sets")
+assert(saved.ownership["1"] == nil and saved.ownership["2"] == nil,
+    "multi-set release retained ownership")
 
-assert(manager.Enable(), "account binding set could not enable for copied-set coverage")
+assert(manager.ClaimCurrentSet(), "account binding set could not be claimed for copied-set coverage")
 bindingSets[2].Q, bindingSets[2].E = owned(slots[1]), owned(slots[2])
 LoadBindings(2)
 assert(manager.Reconcile(), "copied character binding set could not reconcile")
 assert(saved.ownership["2"].keyQ.previousAction == "ACCOUNT_Q"
     and saved.ownership["2"].keyE.previousAction == "ACCOUNT_E",
     "copied binding set forgot the prior actions captured in the source set")
-assert(manager.Disable(), "copied binding sets could not disable")
+assert(factory.ReleaseAll({ manager }), "copied binding sets could not be released")
 assert(bindingSets[1].Q == "ACCOUNT_Q" and bindingSets[1].E == "ACCOUNT_E"
     and bindingSets[2].Q == "ACCOUNT_Q" and bindingSets[2].E == "ACCOUNT_E",
     "copied binding set did not restore inherited prior actions")
 
 bindingSets[2].Q, bindingSets[2].E = "CHARACTER_Q", "CHARACTER_E"
 LoadBindings(1)
-assert(manager.Enable(), "account binding set could not be re-enabled")
+assert(manager.ClaimCurrentSet(), "account binding set could not be reclaimed")
 LoadBindings(2)
 assert(manager.Reconcile(), "character binding set could not be re-enabled")
 LoadBindings(1)
 rejected = { set = 2, key = "E", action = "CHARACTER_E" }
-local disabled, code = manager.Disable()
-assert(not disabled and code == "binding_restore_failed",
+local released, code = factory.ReleaseAll({ manager })
+assert(not released and code == "binding_restore_failed",
     "multi-set restoration failure was reported as successful")
-assert(currentSet == 1 and saved.enabled,
-    "multi-set restoration failure did not restore active-set and enabled state")
+assert(currentSet == 1,
+    "multi-set restoration failure did not restore the active binding set")
 for set = 1, 2 do
     assert(bindingSets[set].Q == owned(slots[1]) and bindingSets[set].E == owned(slots[2]),
         "multi-set restoration failure did not roll back set " .. set)

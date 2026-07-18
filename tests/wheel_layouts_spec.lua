@@ -47,7 +47,8 @@ ApogeePartyHealthBars_S.charSv.wheelMacros = {
 }
 layouts.Initialize()
 local saved = ApogeePartyHealthBars_S.charSv.wheelMacros
-assert(saved.schemaVersion == layouts.SCHEMA_VERSION and saved.slots == nil and saved.layouts == nil,
+assert(saved.schemaVersion == layouts.SCHEMA_VERSION and saved.enabled == nil
+    and saved.slots == nil and saved.layouts == nil,
     "native Wheel schema retained obsolete single-layout data")
 assert(saved.profiles["1"] and saved.profiles["2"] == nil
     and layouts.GetActiveSpecKey() == "1",

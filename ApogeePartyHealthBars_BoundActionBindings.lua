@@ -1,5 +1,7 @@
 ApogeePartyHealthBars_BoundActionBindings = {}
 local Factory = ApogeePartyHealthBars_BoundActionBindings
+local claimAllPending = false
+local factoryTransactionDepth = 0
 
 local function bindingSet()
     return GetCurrentBindingSet and GetCurrentBindingSet() or 1
@@ -13,8 +15,24 @@ end
 local function setSlotBinding(slot, action)
     if not SetBinding then return false end
     local normalized = type(action) == "string" and action ~= "" and action or nil
-    if not SetBinding(slot.key, normalized) then return false end
-    return currentAction(slot) == (normalized or "")
+    local expected = normalized or ""
+    local original = currentAction(slot)
+    if original == expected then return true end
+
+    -- Blizzard's binding UI clears the key before assigning its replacement.
+    -- In particular, replacing a CLICK binding directly with a normal action can
+    -- be rejected even though clearing and then assigning the same action works.
+    SetBinding(slot.key, nil)
+    if currentAction(slot) ~= "" then return false end
+    if not normalized then return true end
+
+    SetBinding(slot.key, normalized)
+    if currentAction(slot) == expected then return true end
+
+    -- Keep this primitive non-destructive. Higher-level transactions can then
+    -- retry their complete snapshot rollback and report if recovery also fails.
+    if original ~= "" then SetBinding(slot.key, original) end
+    return false
 end
 
 local function saveBindings(set)
@@ -70,18 +88,13 @@ function Factory.Create(options)
 
     function B.GetConflicts()
         local conflicts, ownership = {}, ownershipForCurrentSet(false)
-        local saved = options.state()
-        local enabled = saved and saved.enabled == true
         for _, slot in ipairs(options.slots) do
             local current = currentAction(slot)
             local record = ownership and ownership[slot.id]
             local prior = record and record.previousAction
-            local expectedWheelReset = enabled and options.reclaimPreviousBindings and record
+            local expectedWheelReset = options.reclaimPreviousBindings and record
                 and (current == "" or current == prior)
-            local conflict = enabled
-                and not isOwnedAction(slot, current) and not expectedWheelReset
-                or not enabled and not isOwnedAction(slot, current)
-                    and current ~= "" and current ~= prior
+            local conflict = not isOwnedAction(slot, current) and not expectedWheelReset
             if conflict then
                 conflicts[#conflicts + 1] = {
                     slot = slot,
@@ -94,14 +107,13 @@ function Factory.Create(options)
         return conflicts
     end
 
-    function B.Enable()
+    function B.ClaimCurrentSet()
         local label = options.label or "bindings"
         if InCombatLockdown and InCombatLockdown() then
-            return false, "combat", "Leave combat before enabling " .. label .. "."
+            return false, "combat", "Leave combat before claiming " .. label .. "."
         end
         local saved = options.state()
         if not saved then return false, "unavailable", "Character settings are not ready." end
-        local wasEnabled = saved.enabled == true
         local setKey = tostring(bindingSet())
         local hadOwnership = type(saved.ownership) == "table"
             and type(saved.ownership[setKey]) == "table"
@@ -130,7 +142,7 @@ function Factory.Create(options)
                     end
                 end
                 if not hadOwnership and rollbackOk then saved.ownership[setKey] = nil end
-                if not rollbackOk and wasEnabled then ownership.__claimPending = true end
+                if not rollbackOk then ownership.__claimPending = true end
                 reconciling = false
                 saveBindings()
                 if not rollbackOk then
@@ -143,17 +155,16 @@ function Factory.Create(options)
         end
         for slotId, record in pairs(pendingOwnership) do ownership[slotId] = record end
         ownership.__claimPending = nil
-        saved.enabled = true
         saved.bindingVersion = 1
         reconciling = false
         saveBindings()
-        return true, "enabled", (options.enabledMessage or (label .. " enabled."))
+        return true, "claimed", (options.claimedMessage or (label .. " claimed."))
     end
 
-    function B.DisableCurrentSet()
+    function B.ReleaseCurrentSet()
         local label = options.label or "bindings"
         if InCombatLockdown and InCombatLockdown() then
-            return false, "combat", "Leave combat before disabling " .. label .. "."
+            return false, "combat", "Leave combat before restoring " .. label .. "."
         end
         local saved = options.state()
         if not saved then return false, "unavailable", "Character settings are not ready." end
@@ -171,7 +182,7 @@ function Factory.Create(options)
                     saveBindings()
                     return false, "binding_restore_failed",
                         "WoW rejected restoring the previous " .. slot.label
-                            .. " binding. " .. label .. " remain enabled."
+                            .. " binding. " .. label .. " remain claimed."
                 end
                 restored[#restored + 1] = slot
             end
@@ -180,56 +191,24 @@ function Factory.Create(options)
             for _, slot in ipairs(options.slots) do ownership[slot.id] = nil end
             saved.ownership[tostring(bindingSet())] = nil
         end
-        saved.enabled = false
         reconciling = false
         saveBindings()
-        return true, "disabled", (options.disabledMessage
-            or (label .. " disabled and previous bindings restored."))
-    end
-
-    function B.Disable()
-        return Factory.DisableAll({ B })
-    end
-
-    local function restoreSlotBinding(slot)
-        local ownership = ownershipForCurrentSet(false)
-        local record = ownership and ownership[slot.id]
-        if record and isOwnedAction(slot, currentAction(slot)) then
-            if not setSlotBinding(slot, record.previousAction) then return false end
-        end
-        if ownership then ownership[slot.id] = nil end
-        return true
+        return true, "released", (options.releasedMessage
+            or (label .. " restored."))
     end
 
     function B.Reconcile()
         if reconciling then return true end
         if InCombatLockdown and InCombatLockdown() then return false, "combat" end
         local saved = options.state()
-        if not saved or saved.enabled ~= true then
-            local ownership = ownershipForCurrentSet(false)
-            local changed, failures = false, {}
-            for _, slot in ipairs(options.slots) do
-                if ownership and ownership[slot.id] then
-                    if restoreSlotBinding(slot) then
-                        changed = true
-                    else
-                        failures[#failures + 1] = { slot = slot, action = currentAction(slot) }
-                    end
-                end
-            end
-            if ownership and next(ownership) == nil then
-                saved.ownership[tostring(bindingSet())] = nil
-            end
-            if changed then saveBindings() end
-            return #failures == 0, failures
-        end
+        if not saved then return false, "unavailable" end
         local ownership = ownershipForCurrentSet(false)
         if ownership and ownership.__claimPending then
-            local claimed, code = B.Enable()
+            local claimed, code = B.ClaimCurrentSet()
             return claimed, claimed and {} or code
         end
         if not ownership or next(ownership) == nil then
-            local claimed, code = B.Enable()
+            local claimed, code = B.ClaimCurrentSet()
             return claimed, claimed and {} or code
         end
         reconciling = true
@@ -260,6 +239,11 @@ function Factory.Create(options)
         return #conflicts == 0, conflicts
     end
 
+    function B.NeedsClaim()
+        local ownership = ownershipForCurrentSet(false)
+        return not ownership or next(ownership) == nil or ownership.__claimPending == true
+    end
+
     function B.Snapshot()
         local saved = options.state()
         if not saved then return nil end
@@ -273,7 +257,6 @@ function Factory.Create(options)
             manager = B,
             bindingSet = bindingSet(),
             actions = actions,
-            enabled = saved.enabled == true,
             bindingVersion = saved.bindingVersion,
             ownershipPresent = type(ownership) == "table",
             ownership = copyOwnership(ownership),
@@ -292,7 +275,6 @@ function Factory.Create(options)
         local key = tostring(snapshot.bindingSet)
         saved.ownership = saved.ownership or {}
         saved.ownership[key] = snapshot.ownershipPresent and copyOwnership(snapshot.ownership) or nil
-        saved.enabled = snapshot.enabled
         saved.bindingVersion = snapshot.bindingVersion
         saveBindings()
         return ok
@@ -311,15 +293,69 @@ function Factory.Create(options)
         return result
     end
 
-    function B.GetDisabledMessage()
-        return options.disabledMessage or ((options.label or "bindings")
-            .. " disabled and previous bindings restored.")
+    function B.GetReleasedMessage()
+        return options.releasedMessage or ((options.label or "bindings") .. " restored.")
     end
 
     return B
 end
 
-function Factory.DisableAll(managers)
+local function runFactoryTransaction(callback, managers)
+    factoryTransactionDepth = factoryTransactionDepth + 1
+    local ok, first, second, third, fourth = pcall(callback, managers)
+    factoryTransactionDepth = factoryTransactionDepth - 1
+    if not ok then error(first) end
+    return first, second, third, fourth
+end
+
+local function claimAll(managers)
+    managers = managers or {}
+    if InCombatLockdown and InCombatLockdown() then
+        claimAllPending = true
+        return false, "combat", "Leave combat before claiming Keys and Wheel bindings."
+    end
+    local snapshots = {}
+    for index, manager in ipairs(managers) do snapshots[index] = manager.Snapshot() end
+    for _, manager in ipairs(managers) do
+        local ok, code, detail = manager.ClaimCurrentSet()
+        if not ok then
+            claimAllPending = true
+            local rollbackOk = true
+            for index, rollbackManager in ipairs(managers) do
+                if not rollbackManager.RestoreSnapshot(snapshots[index]) then rollbackOk = false end
+            end
+            return false, code, detail, rollbackOk
+        end
+    end
+    claimAllPending = false
+    return true, "claimed", "Keys and Wheel bindings claimed."
+end
+
+function Factory.ClaimAll(managers)
+    return runFactoryTransaction(claimAll, managers)
+end
+
+function Factory.ReconcileAll(managers)
+    managers = managers or {}
+    if factoryTransactionDepth > 0 then return true, "transaction" end
+    if claimAllPending then return Factory.ClaimAll(managers) end
+    for _, manager in ipairs(managers) do
+        if manager.NeedsClaim and manager.NeedsClaim() then
+            return Factory.ClaimAll(managers)
+        end
+    end
+    local reconciled, details = true, {}
+    for _, manager in ipairs(managers) do
+        local ok, detail = manager.Reconcile()
+        if not ok then
+            reconciled = false
+            details[#details + 1] = detail
+        end
+    end
+    return reconciled, details
+end
+
+local function releaseAll(managers)
     managers = managers or {}
     if InCombatLockdown and InCombatLockdown() then
         return false, "combat", "Leave combat before restoring owned bindings."
@@ -386,8 +422,7 @@ function Factory.DisableAll(managers)
                 "WoW rejected loading binding set " .. set .. ". Settings were not erased.", restored
         end
         for _, manager in ipairs(managers) do
-            local disable = manager.DisableCurrentSet or manager.Disable
-            local ok, code, detail = disable()
+            local ok, code, detail = manager.ReleaseCurrentSet()
             if not ok then return false, code, detail, rollback() end
         end
     end
@@ -396,7 +431,12 @@ function Factory.DisableAll(managers)
         return false, "binding_set_failed",
             "WoW could not return to the original binding set. Settings were not erased.", restored
     end
-    local detail = #managers == 1 and managers[1].GetDisabledMessage
-        and managers[1].GetDisabledMessage() or "Owned bindings restored."
-    return true, "disabled", detail
+    local detail = #managers == 1 and managers[1].GetReleasedMessage
+        and managers[1].GetReleasedMessage() or "Owned bindings restored."
+    claimAllPending = false
+    return true, "released", detail
+end
+
+function Factory.ReleaseAll(managers)
+    return runFactoryTransaction(releaseAll, managers)
 end

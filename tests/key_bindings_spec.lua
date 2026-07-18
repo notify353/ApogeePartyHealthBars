@@ -62,9 +62,8 @@ layouts.Initialize()
 keysRuntime.Configure({})
 local manager = assert(keysRuntime.GetBindingManager(), "Keys binding manager was not created")
 
-local enabled, code = manager.Enable()
-assert(enabled and code == "enabled" and ApogeePartyHealthBars_S.charSv.keyActions.enabled,
-    "Keys did not enable transactionally")
+local claimed, code = manager.ClaimCurrentSet()
+assert(claimed and code == "claimed", "Keys were not claimed transactionally")
 for _, slot in ipairs(data.SLOTS) do
     assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. "Hud:LeftButton",
         "Keys did not claim " .. slot.key)
@@ -85,9 +84,8 @@ local reconciled, conflicts = manager.Reconcile()
 assert(not reconciled and #conflicts == 1 and conflicts[1].slot.key == "Q"
     and bindings.Q == "STRAFELEFT", "Keys overwrote or failed to report a foreign binding")
 
-local disabled, disableCode = manager.Disable()
-assert(disabled and disableCode == "disabled" and not ApogeePartyHealthBars_S.charSv.keyActions.enabled,
-    "Keys did not disable")
+local released, releaseCode = ApogeePartyHealthBars_BoundActionBindings.ReleaseAll({ manager })
+assert(released and releaseCode == "released", "Keys were not released")
 for _, slot in ipairs(data.SLOTS) do
     local expected = slot.key == "Q" and "STRAFELEFT" or expectedPrevious[slot.key]
     assert(bindings[slot.key] == expected, "Keys restored the wrong action for " .. slot.key)
@@ -95,12 +93,13 @@ end
 
 currentSet = 1
 for _, key in ipairs(keys) do bindings[key] = "ACCOUNT_" .. key end
-assert(manager.Enable(), "Keys did not enable for the account binding set")
+assert(manager.ClaimCurrentSet(), "Keys did not claim the account binding set")
 for _, slot in ipairs(data.SLOTS) do
     assert(ApogeePartyHealthBars_S.charSv.keyActions.ownership["1"][slot.id].previousAction
         == "ACCOUNT_" .. slot.key, "Keys did not isolate account ownership for " .. slot.key)
 end
-assert(manager.Disable(), "Keys did not restore the account binding set")
+assert(ApogeePartyHealthBars_BoundActionBindings.ReleaseAll({ manager }),
+    "Keys did not restore the account binding set")
 for _, key in ipairs(keys) do
     assert(bindings[key] == "ACCOUNT_" .. key, "Keys restored the wrong account action for " .. key)
 end
@@ -108,9 +107,8 @@ currentSet = 2
 
 for _, key in ipairs(keys) do bindings[key] = "SECOND_" .. key end
 rejectedKey = "R"
-local failed, failureCode = manager.Enable()
-assert(not failed and failureCode == "binding_failed"
-    and not ApogeePartyHealthBars_S.charSv.keyActions.enabled,
+local failed, failureCode = manager.ClaimCurrentSet()
+assert(not failed and failureCode == "binding_failed",
     "partial Keys takeover reported success")
 for _, key in ipairs(keys) do
     assert(bindings[key] == "SECOND_" .. key, "partial Keys takeover did not roll back " .. key)
@@ -119,9 +117,8 @@ assert(ApogeePartyHealthBars_S.charSv.keyActions.ownership["2"] == nil,
     "partial Keys takeover did not restore the prior ownership schema exactly")
 
 rejectedRestoreKey = "1"
-local rollbackFailed, rollbackFailureCode = manager.Enable()
-assert(not rollbackFailed and rollbackFailureCode == "binding_rollback_failed"
-    and not ApogeePartyHealthBars_S.charSv.keyActions.enabled,
+local rollbackFailed, rollbackFailureCode = manager.ClaimCurrentSet()
+assert(not rollbackFailed and rollbackFailureCode == "binding_rollback_failed",
     "a rejected rollback was not reported distinctly")
 local recoveryOwnership = ApogeePartyHealthBars_S.charSv.keyActions.ownership["2"]
 assert(bindings["1"] == "CLICK " .. data.SLOTS[1].buttonName .. "Hud:LeftButton"
@@ -129,27 +126,15 @@ assert(bindings["1"] == "CLICK " .. data.SLOTS[1].buttonName .. "Hud:LeftButton"
     "a rejected rollback did not preserve its restoration record")
 rejectedKey, rejectedRestoreKey = nil, nil
 local recovered, recoveryFailures = manager.Reconcile()
-assert(recovered and #recoveryFailures == 0 and bindings["1"] == "SECOND_1"
-    and ApogeePartyHealthBars_S.charSv.keyActions.ownership["2"] == nil,
-    "reconciliation did not finish a previously rejected rollback")
-
-ApogeePartyHealthBars_S.charSv.keyActions.enabled = true
-rejectedKey, rejectedRestoreKey = "R", "1"
-local incompleteClaim, incompleteCode = manager.Reconcile()
-local incompleteOwnership = ApogeePartyHealthBars_S.charSv.keyActions.ownership["2"]
-assert(not incompleteClaim and incompleteCode == "binding_rollback_failed"
-    and incompleteOwnership and incompleteOwnership.__claimPending,
-    "an interrupted active-set claim was not preserved for retry")
-rejectedKey, rejectedRestoreKey = nil, nil
-local retriedClaim, retryConflicts = manager.Reconcile()
-assert(retriedClaim and #retryConflicts == 0
+assert(recovered and #recoveryFailures == 0
     and not ApogeePartyHealthBars_S.charSv.keyActions.ownership["2"].__claimPending,
     "reconciliation did not retry an interrupted active-set claim")
 for _, slot in ipairs(data.SLOTS) do
     assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. "Hud:LeftButton",
         "retried active-set claim missed " .. slot.key)
 end
-assert(manager.Disable(), "Keys did not disable after the retried active-set claim")
+assert(ApogeePartyHealthBars_BoundActionBindings.ReleaseAll({ manager }),
+    "Keys did not release after the retried active-set claim")
 for _, key in ipairs(keys) do
     assert(bindings[key] == "SECOND_" .. key,
         "retried active-set claim restored the wrong action for " .. key)
@@ -157,8 +142,8 @@ end
 
 local inCombat = true
 InCombatLockdown = function() return inCombat end
-local combatEnabled, combatCode = manager.Enable()
-assert(not combatEnabled and combatCode == "combat", "Keys enabled in combat")
+local combatClaimed, combatCode = manager.ClaimCurrentSet()
+assert(not combatClaimed and combatCode == "combat", "Keys were claimed in combat")
 assert(saveCount >= 3, "Keys binding mutations were not persisted")
 inCombat = false
 
@@ -166,7 +151,7 @@ local firstState, secondState = "enabled", "enabled"
 local firstRestoreCount, secondRestoreCount = 0, 0
 local firstManager = {
     Snapshot = function() return { state = firstState } end,
-    Disable = function() firstState = "disabled"; return true end,
+    ReleaseCurrentSet = function() firstState = "released"; return true end,
     RestoreSnapshot = function(snapshot)
         firstRestoreCount = firstRestoreCount + 1
         firstState = snapshot.state
@@ -175,14 +160,14 @@ local firstManager = {
 }
 local secondManager = {
     Snapshot = function() return { state = secondState } end,
-    Disable = function() secondState = "failed"; return false, "binding_restore_failed", "second failed" end,
+    ReleaseCurrentSet = function() secondState = "failed"; return false, "binding_restore_failed", "second failed" end,
     RestoreSnapshot = function(snapshot)
         secondRestoreCount = secondRestoreCount + 1
         secondState = snapshot.state
         return true
     end,
 }
-local atomic, atomicCode = ApogeePartyHealthBars_BoundActionBindings.DisableAll({
+local atomic, atomicCode = ApogeePartyHealthBars_BoundActionBindings.ReleaseAll({
     firstManager, secondManager,
 })
 assert(not atomic and atomicCode == "binding_restore_failed",
@@ -190,5 +175,50 @@ assert(not atomic and atomicCode == "binding_restore_failed",
 assert(firstState == "enabled" and secondState == "enabled"
     and firstRestoreCount == 1 and secondRestoreCount == 1,
     "cross-feature binding failure did not restore every feature snapshot")
+
+local firstClaimState, secondClaimState = "original", "original"
+local firstClaimRestores, secondClaimRestores = 0, 0
+local secondClaimAttempts = 0
+local firstClaimManager = {
+    Snapshot = function() return { state = firstClaimState } end,
+    ClaimCurrentSet = function() firstClaimState = "claimed"; return true end,
+    RestoreSnapshot = function(snapshot)
+        firstClaimRestores = firstClaimRestores + 1
+        firstClaimState = snapshot.state
+        return true
+    end,
+}
+local secondClaimManager = {
+    Snapshot = function() return { state = secondClaimState } end,
+    ClaimCurrentSet = function()
+        secondClaimAttempts = secondClaimAttempts + 1
+        if secondClaimAttempts == 1 then
+            secondClaimState = "failed"
+            return false, "binding_failed", "second claim failed"
+        end
+        secondClaimState = "claimed"
+        return true
+    end,
+    RestoreSnapshot = function(snapshot)
+        secondClaimRestores = secondClaimRestores + 1
+        secondClaimState = snapshot.state
+        return true
+    end,
+}
+local allClaimed, allClaimCode = ApogeePartyHealthBars_BoundActionBindings.ClaimAll({
+    firstClaimManager, secondClaimManager,
+})
+assert(not allClaimed and allClaimCode == "binding_failed"
+        and firstClaimState == "original" and secondClaimState == "original"
+        and firstClaimRestores == 1 and secondClaimRestores == 1,
+    "cross-feature startup claim failure did not restore both feature snapshots")
+
+local retryClaimed, retryClaimCode = ApogeePartyHealthBars_BoundActionBindings.ReconcileAll({
+    firstClaimManager, secondClaimManager,
+})
+assert(retryClaimed and retryClaimCode == "claimed"
+        and firstClaimState == "claimed" and secondClaimState == "claimed"
+        and secondClaimAttempts == 2,
+    "pending cross-feature claim was not retried atomically")
 
 print("PASS transactional 15-key bindings")

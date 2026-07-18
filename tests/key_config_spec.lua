@@ -88,7 +88,7 @@ for index, key in ipairs(keys) do
     order[#order + 1] = id
 end
 
-local enabled, currentLayout, currentSpec = false, "base", "1"
+local currentLayout, currentSpec = "base", "1"
 local bindingConflicts = {}
 local layouts = {
     base = {
@@ -98,12 +98,8 @@ local layouts = {
     battle = { key1 = { kind = "spell", spellName = "Charge", macroText = "/cast Charge", soundKey = "none" } },
 }
 local runtime = {}
-function runtime.IsEnabled() return enabled end
-function runtime.Enable() enabled = true; return true, "enabled", "Keys bindings enabled." end
-function runtime.Disable() enabled = false; return true, "disabled", "Keys bindings disabled." end
 function runtime.GetBindingStatus()
-    if not enabled then return "disabled", bindingConflicts end
-    return #bindingConflicts > 0 and "conflict" or "enabled", bindingConflicts
+    return #bindingConflicts > 0 and "conflict" or "owned", bindingConflicts
 end
 function runtime.GetActiveLayoutKey() return currentLayout end
 function runtime.GetActiveSpecKey() return currentSpec end
@@ -173,9 +169,6 @@ assert(layouts.base.keyT and layouts.base.keyT.itemName == "Linen Bandage"
     and ApogeePartyHealthBars_S.focusedKeySlot == "keyT",
     "Keys Previous did not move the complete action payload and focus")
 
-local enableButton = buttons[1]
-enableButton.scripts.OnClick()
-assert(enabled and enableButton.label.text == "Keys: ON", "Keys toggle did not enable bindings")
 bindingConflicts = {
     { slot = { displayKey = "Q" }, action = "STRAFELEFT" },
     { slot = { displayKey = "C" }, action = "TOGGLECHARACTER0" },

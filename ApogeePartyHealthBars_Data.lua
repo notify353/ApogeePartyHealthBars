@@ -1,6 +1,8 @@
 -- Constants and mutable state (separate file — Lua main-chunk 200 local limit).
 ApogeePartyHealthBars_C = {
     SAVED_VARIABLES_VERSION = 5,
+    PROFILE_STORE_VERSION   = 1,
+    PROFILE_PAYLOAD_VERSION = 2,
     ADDON_PREFIX         = "|cffFFD700Party Health:|r",
     FRAME_W              = 200,
     ROW_H                = 26,
@@ -23,7 +25,7 @@ ApogeePartyHealthBars_C = {
     THREAT_TEXT_GAP      = 3,
     OFFLINE_BAR_COLOR    = { 0.22, 0.22, 0.25, 1 },
     MAX_ROWS             = 5,
-    BIND_PANEL_W         = 420,
+    BIND_PANEL_W         = 480,
     BIND_PANEL_H         = 460,
     BIND_ROW_H           = 18,
     BIND_LABEL_W         = 198,
@@ -33,7 +35,7 @@ ApogeePartyHealthBars_C = {
     CONFIG_CHECK_ROW_H   = 20,
     CONFIG_SECTION_GAP   = 8,
     CONFIG_BTN_H         = 22,
-    CONFIG_CONTENT_W     = 396, -- BIND_PANEL_W - BIND_PAD*2 - scrollbar
+    CONFIG_CONTENT_W     = 456, -- BIND_PANEL_W - BIND_PAD*2 - scrollbar
     SHORTCUT_MAX_SLOTS    = 12,
     SHORTCUT_COLUMNS      = 6,
     SHORTCUT_ICON_SIZE    = 24,
@@ -405,6 +407,8 @@ for _, mod in ipairs(C.MODIFIERS) do
 end
 
 ApogeePartyHealthBars_S = {
+    accountRoot              = nil,
+    characterRoot            = nil,
     sv                       = nil,
     charSv                   = nil,
     configMode               = false,

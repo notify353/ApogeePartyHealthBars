@@ -85,6 +85,9 @@ local deps = {
     IsShieldEnabled = function() return true end,
     OnShieldCombatLog = function() record("shield-combat-log") end,
     SetConfigMode = function(active) record("config-mode:" .. tostring(active)) end,
+    ClaimBoundActionBindings = function() record("bindings-claim"); return true end,
+    ReleaseBoundActionBindings = function() record("bindings-release"); return true end,
+    ReconcileBoundActionBindings = function() record("bindings-reconcile"); return true end,
 }
 
 dofile("ApogeePartyHealthBars_RuntimeLifecycleEvents.lua")
@@ -106,13 +109,13 @@ end
 assert(optional.ADDON_LOADED and optional.ADDON_LOADED.owner == "Bootstrap",
     "ADDON_LOADED changed optional registration")
 
-ApogeePartyHealthSV = { combatUIAutoHide = true }
+ApogeePartyHealthSV = { enabled = true, combatUIAutoHide = true }
 ApogeePartyHealthCharSV = {}
 dispatch("PLAYER_LOGIN")
 expect({
     "saved-variables", "binding-store", "fader-init:true", "macro-validation",
     "print:macro validation: broken recipe", "class-bindings", "shortcut-init",
-    "wheel-init", "keys-init", "player-spells", "restore-position", "update-header",
+    "wheel-init", "keys-init", "bindings-claim", "player-spells", "restore-position", "update-header",
     "hook-spellbook", "hook-items", "minimap", "shield-seed", "force-refresh",
 }, "PLAYER_LOGIN order changed")
 assert(ApogeePartyHealthBars_S.sv == ApogeePartyHealthSV
@@ -131,13 +134,13 @@ reset()
 dispatch("PLAYER_REGEN_ENABLED")
 expect({
     "fader-combat-end", "secure-flush", "shortcut-secure", "wheel-combat-end",
-    "keys-combat-end", "threat", "force-refresh",
+    "keys-combat-end", "bindings-reconcile", "threat", "force-refresh",
 }, "combat-exit order changed")
 
 reset()
 dispatch("PLAYER_ENTERING_WORLD")
 expect({
-    "shortcut-rebaseline", "wheel-reconcile", "keys-reconcile", "player-spells",
+    "shortcut-rebaseline", "bindings-reconcile", "player-spells",
     "minimap", "shield-seed", "threat", "request-update",
 }, "world-entry order changed")
 

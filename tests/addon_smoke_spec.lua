@@ -684,13 +684,15 @@ assert(ApogeePartyHealthBars_ProfileStore.Rename(smokeProfile.id, smokeProfileNa
 ApogeePartyHealthBars_ProfileConfig.Refresh()
 ApogeePartyHealthBars_ConfigUI.ActivateTab("keys")
 ApogeePartyHealthBars_ConfigUI.RefreshTab("keys")
-ApogeePartyHealthBars_KeyConfig.GetTiles().keyF.scripts.OnClick()
-assert(ApogeePartyHealthBars_KeyConfig.GetDetailRow().primary:GetText() == "Key F",
-    "Keys detail row did not focus before the reopen test")
-ApogeePartyHealthBars_S.focusedKeySlot = nil
+local smokeKeyRows = ApogeePartyHealthBars_KeyConfig.GetRows()
+local smokeKeyRowCount = 0
+for _ in pairs(smokeKeyRows) do smokeKeyRowCount = smokeKeyRowCount + 1 end
+assert(smokeKeyRowCount == 15
+        and smokeKeyRows.keyF.secondary:GetText():find("Key F", 1, true),
+    "Keys configuration did not expose all fixed destinations as action rows")
 ApogeePartyHealthBars_ConfigUI.Show()
-assert(ApogeePartyHealthBars_KeyConfig.GetDetailRow().primary:GetText() == "Select a key",
-    "reopening settings did not refresh the active Keys tab")
+assert(smokeKeyRows.keyF.secondary:GetText():find("Key F", 1, true),
+    "reopening settings did not refresh the active Keys row list")
 ApogeePartyHealthBars_ConfigUI.Hide()
 ApogeePartyHealthBars_S.configMode = false
 

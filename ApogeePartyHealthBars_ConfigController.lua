@@ -17,10 +17,7 @@ function C.Exit()
     D.panel:SetScript("OnDragStop", nil)
     D.SavePosition()
     S.selectedBindingKey = nil
-    S.selectedShortcutSlot = nil
-    S.selectedWheelSlot = nil
     S.selectedWheelLayout = nil
-    S.focusedKeySlot = nil
     S.selectedKeyLayout = nil
     local ui = D.GetConfigUI()
     if ui then ui.Hide() end

@@ -33,7 +33,7 @@ The Profiles tab manages account-wide named setups for the current class. A prof
 
 Export creates a compressed `APHB1:` share string and selects it automatically; press Ctrl+C to copy it. Import previews the profile name, author, addon version, and class. Import as New is the default, while Merge preserves settings absent from the incoming profile and Replace rebuilds the selected profile from the import. Profiles and imports are restricted to the class that created them.
 
-Drag a Spellbook spell or an item from an open bag directly onto a Shortcuts, Keys, or Wheel HUD position, or onto its row or tile in settings. For bag items, clicking the item and then its settings destination works too. Settings exposes an extra empty Shortcut drop position for adding the next action. Drop directly onto an occupied position to replace it. Shortcuts supports up to 12 assignments and displays them six per row on the player frame. Shortcuts rejects duplicate spell and item IDs; Keys and Wheel permit the same spell or item in multiple positions and across both features. Action changes are blocked in combat.
+Drag a Spellbook spell or an item from an open bag directly onto a Shortcuts, Keys, or Wheel HUD position, or onto its row in settings. For bag items, clicking the item and then its settings destination works too. Shortcuts, Keys, and Wheel use the same compact action rows; settings exposes one extra empty Shortcut row for adding the next action. Drop directly onto an occupied row to replace it. Shortcuts supports up to 12 assignments and displays them six per row on the player frame. Shortcuts rejects duplicate spell and item IDs; Keys and Wheel permit the same spell or item in multiple positions and across both features. Action changes are blocked in combat.
 
 Spell assignments in Shortcuts, Keys, and Wheel start with this generated macro:
 
@@ -53,7 +53,7 @@ Each compact action row identifies itself as a Spell or Item and has sound, Macr
 
 Healing does not expose macro, sound, or movement controls: its native secure action is what preserves the clicked health-bar unit. The Shortcut Bar and active Keys and Wheel HUDs show spell range/cooldown state plus item icons, carried quantities, usability, and cooldowns. Depleted items stay assigned in every feature, so they become available automatically when restocked. Item range prediction is intentionally omitted because normal item targeting and custom macros may behave differently.
 
-The Keys tab uses this fixed keyboard-shaped layout:
+Keys uses this fixed action order in settings and the same keyboard-shaped arrangement on the player HUD:
 
 ```text
 [1] [2] [3] [4] [5]
@@ -62,7 +62,7 @@ The Keys tab uses this fixed keyboard-shaped layout:
 [Z] [X] [C] [V]
 ```
 
-Keys starts empty and is always active while the add-on is enabled. **Warning:** each add-on load replaces the current WoW bindings for all 15 physical keys, including common movement and UI bindings, even when their action slots are empty. Keys follows WoW's active account or character binding set and keeps an independent restoration snapshot for each set it claims. Turning off the whole add-on from General restores each captured binding only while the add-on still owns that key; a binding changed elsewhere after startup is left untouched and reported as a conflict. Gold marks the focused tile; clicking any tile focuses it so its macro, sound, movement, and clear controls appear below. After assignment, focus stays on the action. Each talent spec and newly discovered stance or form starts with an independent empty Keys layout.
+Keys starts empty and is always active while the add-on is enabled. **Warning:** each add-on load replaces the current WoW bindings for all 15 physical keys, including common movement and UI bindings, even when their action slots are empty. Keys follows WoW's active account or character binding set and keeps an independent restoration snapshot for each set it claims. Turning off the whole add-on from General restores each captured binding only while the add-on still owns that key; a binding changed elsewhere after startup is left untouched and reported as a conflict. The Keys tab keeps all 15 destinations visible as scrollable rows with the same inline sound, macro, movement, and Clear controls used by Shortcuts and Wheel. Each talent spec and newly discovered stance or form starts with an independent empty Keys layout.
 
 The Wheel tab always exposes and reserves its six gestures in ladder order, from Ctrl Up through Ctrl Down, while the add-on is enabled. Empty gestures are intentional no-ops. Each talent spec has an independent Wheel profile that follows the equipped spec automatically; a newly activated second spec starts empty, while physical key ownership remains character-wide. Characters with stances or forms reported by the client receive a complete six-slot layout for each known state; classes with a valid no-form state also receive a Base layout, while Warriors see only Battle, Defensive, and Berserker Stance. The active layout switches automatically, including during combat. Wheel actions remain separate from Healing-tab health-bar clicks.
 

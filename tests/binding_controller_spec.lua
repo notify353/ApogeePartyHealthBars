@@ -6,10 +6,7 @@ ApogeePartyHealthBars_C = {
 }
 ApogeePartyHealthBars_S = {
     selectedBindingKey = "1",
-    selectedShortcutSlot = nil,
-    focusedKeySlot = nil,
     selectedKeyLayout = nil,
-    selectedWheelSlot = nil,
     selectedWheelLayout = nil,
 }
 
@@ -106,8 +103,8 @@ assert(controller.AssignCursor("keys", "keyR", "base")
     and assignedKeySpell.layout == "base" and assignedKeySpell.slot == "keyR"
     and assignedKeySpell.spellId == 133 and assignedKeySpell.spellName == "Fireball(Rank 1)",
     "spell cursor did not assign directly to a Keys destination")
-assert(ApogeePartyHealthBars_S.focusedKeySlot == "keyR" and refreshedKeySlot == "keyR",
-    "Keys spell drop did not focus and refresh its destination")
+assert(refreshedKeySlot == "keyR",
+    "Keys spell drop did not refresh its destination")
 assert(clearedCursorCount == 1 and cursorInfo == nil,
     "successful spell drop did not clear the cursor")
 

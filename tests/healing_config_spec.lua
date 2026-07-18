@@ -13,10 +13,7 @@ ApogeePartyHealthBars_C = {
 }
 ApogeePartyHealthBars_S = {
     selectedBindingKey = "LeftButton",
-    selectedShortcutSlot = 2,
-    focusedKeySlot = "keyF",
     selectedKeyLayout = "base",
-    selectedWheelSlot = "ctrlUp",
     selectedWheelLayout = "base",
 }
 
@@ -86,11 +83,9 @@ cursorType = nil
 
 rows[2].btn.scripts.OnClick(rows[2].btn, "LeftButton")
 local S = ApogeePartyHealthBars_S
-assert(S.selectedBindingKey == "RightButton" and S.selectedShortcutSlot == nil
-        and S.focusedKeySlot == nil
-        and S.selectedKeyLayout == nil and S.selectedWheelSlot == nil
+assert(S.selectedBindingKey == "RightButton" and S.selectedKeyLayout == nil
         and S.selectedWheelLayout == nil,
-    "Healing selection did not clear competing action state")
+    "Healing selection did not clear competing layout state")
 assert(rows[2].accent:IsShown() and not rows[1].accent:IsShown(),
     "Healing selection did not refresh row styling")
 

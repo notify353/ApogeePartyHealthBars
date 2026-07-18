@@ -1,19 +1,18 @@
 ApogeePartyHealthBars_C = {
     CONFIG_CONTENT_W = 396, BIND_PAD = 8, CONFIG_HEADER_H = 40, CONFIG_TAB_H = 24,
 }
-ApogeePartyHealthBars_S = { selectedWheelLayout = nil, selectedWheelSlot = nil, selectedShortcutSlot = nil }
+ApogeePartyHealthBars_S = { selectedWheelLayout = nil }
 ApogeePartyHealthBars_ActionMacros = {
     GetName = function(entry) return entry and (entry.itemName or entry.spellName) end,
 }
 
 local function widget()
     local value = { scripts = {}, shown = true, enabled = true, text = "" }
-    local noops = {
+    for _, name in ipairs({
         "SetPoint", "SetSize", "ClearAllPoints", "SetTextColor", "SetWidth", "SetHeight",
         "SetJustifyH", "SetJustifyV", "SetWordWrap", "SetColorTexture", "SetAllPoints",
         "SetTexture", "SetDesaturated", "SetTexCoord",
-    }
-    for _, name in ipairs(noops) do value[name] = function() end end
+    }) do value[name] = function() end end
     function value:SetScript(name, callback) self.scripts[name] = callback end
     function value:CreateFontString() return widget() end
     function value:CreateTexture() return widget() end
@@ -28,15 +27,12 @@ local function widget()
     function value:IsEnabled() return self.enabled end
     return value
 end
-
 function CreateFrame() return widget() end
 
-local buttons, dropdowns = {}, {}
+local dropdowns = {}
 ApogeePartyHealthBars_UIHelpers = {}
 function ApogeePartyHealthBars_UIHelpers.CreateButton(_, label)
-    local button = widget(); button.label = widget(); button.label:SetText(label)
-    buttons[#buttons + 1] = button
-    return button
+    local button = widget(); button.label = widget(); button.label:SetText(label); return button
 end
 function ApogeePartyHealthBars_UIHelpers.CreateDropdown()
     local dropdown = widget()
@@ -50,11 +46,15 @@ function ApogeePartyHealthBars_UIHelpers.SetButtonEnabled(button, enabled)
     if enabled then button:Enable() else button:Disable() end
 end
 
-local rows, editorOptions, closeCount = {}, nil, 0
-local droppedFeature, droppedSlot, droppedLayout
-local cursorType
-function GetCursorInfo() return cursorType end
+local createdRows, actionList, editorOptions, closeCount = {}, nil, nil, 0
 ApogeePartyHealthBars_ActionConfig = {}
+function ApogeePartyHealthBars_ActionConfig.CreateActionList()
+    actionList = {
+        content = widget(), hint = widget(), status = widget(), scroll = widget(), rowWidth = 372,
+    }
+    actionList.hint:SetText("Drag a spell or bag item onto a row.")
+    return actionList
+end
 function ApogeePartyHealthBars_ActionConfig.CreateActionRow()
     local row = widget()
     row.icon, row.primary, row.secondary = widget(), widget(), widget()
@@ -63,17 +63,31 @@ function ApogeePartyHealthBars_ActionConfig.CreateActionRow()
     row.up = ApogeePartyHealthBars_UIHelpers.CreateButton(nil, "Up")
     row.down = ApogeePartyHealthBars_UIHelpers.CreateButton(nil, "Dn")
     row.clear = ApogeePartyHealthBars_UIHelpers.CreateButton(nil, "Clear")
-    row.accent, row.bg = widget(), widget()
-    rows[#rows + 1] = row
+    createdRows[#createdRows + 1] = row
     return row
 end
-function ApogeePartyHealthBars_ActionConfig.SetRowSelected(row, selected) row.selected = selected end
+function ApogeePartyHealthBars_ActionConfig.SetActionRowState(row, options)
+    row.state = options
+    row.primary:SetText(options.name or "Empty")
+    row.secondary:SetText(options.detail or "Empty")
+    row.sound:SetSelectedKey(options.active and (options.soundKey or "none") or "none")
+    if options.active then row.sound:Enable() else row.sound:Disable() end
+    ApogeePartyHealthBars_UIHelpers.SetButtonEnabled(row.macro, options.active == true)
+    ApogeePartyHealthBars_UIHelpers.SetButtonEnabled(row.clear, options.active == true)
+    ApogeePartyHealthBars_UIHelpers.SetButtonEnabled(row.up, options.active and options.canMoveUp)
+    ApogeePartyHealthBars_UIHelpers.SetButtonEnabled(row.down, options.active and options.canMoveDown)
+    row.macro.label:SetText(options.active and options.macroCustomized and "Macro*" or "Macro")
+end
+function ApogeePartyHealthBars_ActionConfig.LayoutActionList(list, rows, layoutControl)
+    list.visibleRows, list.layoutControl = rows, layoutControl
+end
+function ApogeePartyHealthBars_ActionConfig.SetActionListStatus(list, message, good)
+    list.status:SetText(message or ""); list.statusGood = good
+end
 function ApogeePartyHealthBars_ActionConfig.OpenEditor(options) editorOptions = options; return true end
 function ApogeePartyHealthBars_ActionConfig.CloseEditor() closeCount = closeCount + 1; editorOptions = nil end
 
 local order = { "ctrlUp", "shiftUp", "normalUp", "normalDown", "shiftDown", "ctrlDown" }
-local definitions = {}
-for _, id in ipairs(order) do definitions[#definitions + 1] = { id = id } end
 local currentLayout, currentSpec = "base", "1"
 local layouts = {
     base = {
@@ -90,11 +104,7 @@ function wheel.GetActiveSpecKey() return currentSpec end
 function wheel.HasStanceLayouts() return true end
 function wheel.GetLayoutOptions() return { { key = "base", label = "Base" }, { key = "battle", label = "Battle" } } end
 function wheel.IsKnownLayout(key) return layouts[key] ~= nil end
-function wheel.GetDefinitions() return definitions end
 function wheel.GetDisplayOrder() return order end
-function wheel.FindFirstEmptySlot(layout)
-    for _, slot in ipairs(order) do if not layouts[layout][slot] then return slot end end
-end
 function wheel.GetSlot(layout, slot) return layouts[layout][slot] end
 function wheel.GetSlotDisplay(layout, slot)
     local entry = wheel.GetSlot(layout, slot)
@@ -114,7 +124,7 @@ function wheel.ApplyMacro(layout, slot, body)
 end
 function wheel.MoveSlot(layout, slot, direction)
     local index
-    for i, id in ipairs(order) do if id == slot then index = i end end
+    for candidate, id in ipairs(order) do if id == slot then index = candidate end end
     local other = index and order[index + direction]
     if not other then return false end
     layouts[layout][slot], layouts[layout][other] = layouts[layout][other], layouts[layout][slot]
@@ -122,6 +132,8 @@ function wheel.MoveSlot(layout, slot, direction)
 end
 function wheel.ClearSlot(layout, slot) layouts[layout][slot] = nil; return true, "cleared" end
 
+local droppedFeature, droppedSlot, droppedLayout, cursorType
+function GetCursorInfo() return cursorType end
 dofile("ApogeePartyHealthBars_WheelConfig.lua")
 local config = ApogeePartyHealthBars_WheelConfig
 config.Build(widget(), {
@@ -133,55 +145,56 @@ config.Build(widget(), {
     end,
 })
 
-assert(#rows == 6, "permanent Wheel did not keep all action rows visible")
-assert(rows[1].primary.text == "Charge" and rows[3].primary.text == "Linen Bandage",
-    "Wheel rows did not use the shared display order")
-assert(rows[1].secondary.text:find("Spell", 1, true)
-    and rows[3].secondary.text:find("Item", 1, true),
-    "Wheel rows did not identify Spell and Item records")
+local rows = config.GetRows()
+assert(#createdRows == 6 and #actionList.visibleRows == 6
+        and actionList.layoutControl == dropdowns[1],
+    "Wheel did not retain all six gestures in the shared action list")
+assert(actionList.hint:GetText() == "Drag a spell or bag item onto a row.",
+    "Wheel did not use the shared minimal instruction")
+assert(rows.ctrlUp.primary:GetText() == "Charge"
+        and rows.ctrlUp.secondary:GetText() == "Ctrl + Wheel Up — Spell"
+        and rows.normalDown.secondary:GetText() == "Wheel Down — Empty",
+    "Wheel rows did not use uniform action and gesture labels")
+assert(rows.ctrlUp.macro:IsEnabled() and rows.ctrlUp.clear:IsEnabled()
+        and not rows.normalDown.macro:IsEnabled() and not rows.normalDown.clear:IsEnabled(),
+    "Wheel did not use common filled and empty row control states")
 
-rows[4].scripts.OnReceiveDrag()
+rows.normalDown.scripts.OnReceiveDrag()
 assert(droppedFeature == "wheel" and droppedSlot == "normalDown" and droppedLayout == "base",
     "Wheel row did not route a cursor drop to its selected layout")
-
-cursorType = "item"
-droppedFeature, droppedSlot, droppedLayout = nil, nil, nil
-rows[4].scripts.OnClick()
+cursorType = "item"; droppedFeature, droppedSlot, droppedLayout = nil, nil, nil
+rows.normalDown.scripts.OnClick()
 assert(droppedFeature == "wheel" and droppedSlot == "normalDown" and droppedLayout == "base",
     "Wheel row did not accept a picked-up bag item")
-cursorType = nil
+cursorType = nil; droppedFeature, droppedSlot = nil, nil
+rows.ctrlUp.scripts.OnClick()
+assert(droppedFeature == nil and droppedSlot == nil,
+    "normal Wheel row click retained an obsolete selection action")
 
-rows[1].scripts.OnClick()
-assert(ApogeePartyHealthBars_S.selectedWheelSlot == "ctrlUp" and rows[1].selected,
-    "occupied Wheel row was not selected")
-rows[1].macro.scripts.OnClick()
+rows.ctrlUp.macro.scripts.OnClick()
 assert(editorOptions and editorOptions.macroText == "/cast Charge"
-    and editorOptions.resetText == "/default Charge", "Wheel Macro button did not open the focused editor")
-assert(not editorOptions.onSave("  "), "focused Wheel editor accepted a blank macro")
-assert(editorOptions.onSave("/cast Edited Charge") and layouts.base.ctrlUp.macroText == "/cast Edited Charge",
-    "focused Wheel editor did not save custom text")
+        and editorOptions.resetText == "/default Charge",
+    "Wheel inline Macro button did not open its editor")
+assert(not editorOptions.onSave("  ") and editorOptions.onSave("/cast Edited Charge")
+        and layouts.base.ctrlUp.macroText == "/cast Edited Charge",
+    "Wheel editor did not validate and save custom text")
 config.Refresh("ctrlUp")
 assert(editorOptions == nil and closeCount > 0,
-    "Spellbook assignment did not discard the focused Wheel macro draft")
+    "Spellbook assignment did not discard the Wheel macro draft")
 
-rows[1].down.scripts.OnClick()
-assert(layouts.base.shiftUp and layouts.base.shiftUp.spellName == "Charge"
-    and ApogeePartyHealthBars_S.selectedWheelSlot == "shiftUp",
-    "Wheel Down did not move the complete action and selection")
+rows.ctrlUp.down.scripts.OnClick()
+assert(layouts.base.shiftUp and layouts.base.shiftUp.spellName == "Charge",
+    "Wheel Down did not move the complete action")
+dropdowns[1].onSelect("battle")
+assert(ApogeePartyHealthBars_S.selectedWheelLayout == "battle" and closeCount > 0
+        and rows.ctrlUp.primary:GetText() == "Battle Shout",
+    "Wheel layout change did not close editing and refresh all rows")
 
-local layoutDropdown = dropdowns[1]
-layoutDropdown.onSelect("battle")
-assert(ApogeePartyHealthBars_S.selectedWheelLayout == "battle"
-    and ApogeePartyHealthBars_S.selectedWheelSlot == nil and closeCount > 0,
-    "layout change did not cancel editing and row selection")
-
-rows[1].scripts.OnClick()
-rows[1].macro.scripts.OnClick()
+rows.ctrlUp.macro.scripts.OnClick()
 local closesBeforeSpecChange = closeCount
 currentSpec = "2"
 config.Refresh()
-assert(editorOptions == nil and closeCount > closesBeforeSpecChange
-    and ApogeePartyHealthBars_S.selectedWheelSlot == nil,
-    "talent-spec change retained a stale Wheel draft or row selection")
+assert(editorOptions == nil and closeCount > closesBeforeSpecChange,
+    "talent-spec change retained a stale Wheel macro draft")
 
-print("PASS compact wheel action configuration")
+print("PASS uniform Wheel row configuration")

@@ -856,7 +856,6 @@ function T.ResetDefaults()
         entries[slot] = Actions.CreateSpell(nil, spellName, "none")
     end
     S.charSv.shortcutDefaultsVersion = C.SHORTCUT_DEFAULTS_VERSION
-    S.selectedShortcutSlot = nil
     T.ResolveAndRefresh()
     return true
 end

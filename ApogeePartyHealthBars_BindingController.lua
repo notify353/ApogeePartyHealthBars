@@ -54,7 +54,6 @@ local function AssignActionSpell(feature, slot, layoutKey, spellID, spellName)
         if message then D.Print(message) end
         if ok then
             S.selectedKeyLayout = layoutKey
-            S.focusedKeySlot = assignedSlot
             local ui = D.GetConfigUI()
             if ui and ui.RefreshKeyPanel then ui.RefreshKeyPanel(assignedSlot) end
         end
@@ -65,7 +64,6 @@ local function AssignActionSpell(feature, slot, layoutKey, spellID, spellName)
         if message then D.Print(message) end
         if ok then
             S.selectedWheelLayout = layoutKey
-            S.selectedWheelSlot = nil
             local ui = D.GetConfigUI()
             if ui and ui.RefreshWheelPanel then ui.RefreshWheelPanel(assignedSlot) end
         end
@@ -74,7 +72,6 @@ local function AssignActionSpell(feature, slot, layoutKey, spellID, spellName)
         local ok, message, assignedSlot = T.AssignSpell(slot, spellID, spellName)
         if message then D.Print(message) end
         if ok then
-            S.selectedShortcutSlot = nil
             D.SyncVisualTicker()
             local ui = D.GetConfigUI()
             if ui and ui.RefreshShortcutPanel then ui.RefreshShortcutPanel(assignedSlot) end
@@ -95,7 +92,6 @@ local function AssignActionItem(feature, slot, layoutKey, itemId, itemName)
         if message then D.Print(message) end
         if ok then
             S.selectedKeyLayout = layoutKey
-            S.focusedKeySlot = assignedSlot
             local ui = D.GetConfigUI()
             if ui and ui.RefreshKeyPanel then ui.RefreshKeyPanel(assignedSlot) end
         end
@@ -106,7 +102,6 @@ local function AssignActionItem(feature, slot, layoutKey, itemId, itemName)
         if message then D.Print(message) end
         if ok then
             S.selectedWheelLayout = layoutKey
-            S.selectedWheelSlot = nil
             local ui = D.GetConfigUI()
             if ui and ui.RefreshWheelPanel then ui.RefreshWheelPanel(assignedSlot) end
         end
@@ -115,7 +110,6 @@ local function AssignActionItem(feature, slot, layoutKey, itemId, itemName)
         local ok, message, assignedSlot = T.AssignItem(slot, itemId, itemName)
         if message then D.Print(message) end
         if ok then
-            S.selectedShortcutSlot = nil
             D.SyncVisualTicker()
             local ui = D.GetConfigUI()
             if ui and ui.RefreshShortcutPanel then ui.RefreshShortcutPanel(assignedSlot) end

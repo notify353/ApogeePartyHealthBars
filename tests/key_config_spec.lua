@@ -1,47 +1,38 @@
 ApogeePartyHealthBars_C = {
     CONFIG_CONTENT_W = 396, BIND_PAD = 8, CONFIG_HEADER_H = 40, CONFIG_TAB_H = 24,
 }
-ApogeePartyHealthBars_S = {
-    selectedKeyLayout = nil, focusedKeySlot = nil,
-    selectedShortcutSlot = nil, selectedWheelSlot = nil,
-}
+ApogeePartyHealthBars_S = { selectedKeyLayout = nil }
 ApogeePartyHealthBars_ActionMacros = {
     GetName = function(entry) return entry and (entry.itemName or entry.spellName) end,
 }
 
 local function widget()
     local value = { scripts = {}, shown = true, enabled = true, text = "" }
-    local noops = {
-        "SetSize", "ClearAllPoints", "SetTextColor", "SetWidth", "SetHeight",
+    for _, name in ipairs({
+        "SetPoint", "SetSize", "ClearAllPoints", "SetTextColor", "SetWidth", "SetHeight",
         "SetJustifyH", "SetJustifyV", "SetWordWrap", "SetColorTexture", "SetAllPoints",
-        "SetDesaturated", "SetTexCoord",
-    }
-    for _, name in ipairs(noops) do value[name] = function() end end
-    function value:SetPoint(...) self.point = { ... } end
+        "SetTexture", "SetDesaturated", "SetTexCoord",
+    }) do value[name] = function() end end
     function value:SetScript(name, callback) self.scripts[name] = callback end
     function value:CreateFontString() return widget() end
     function value:CreateTexture() return widget() end
     function value:SetText(text) self.text = text or "" end
     function value:GetText() return self.text end
-    function value:SetTexture(texture) self.texture = texture end
     function value:Show() self.shown = true end
     function value:Hide() self.shown = false end
     function value:SetShown(shown) self.shown = shown end
     function value:IsShown() return self.shown end
     function value:Enable() self.enabled = true end
     function value:Disable() self.enabled = false end
+    function value:IsEnabled() return self.enabled end
     return value
 end
 function CreateFrame() return widget() end
 
-local buttons, dropdowns = {}, {}
+local dropdowns = {}
 ApogeePartyHealthBars_UIHelpers = {}
 function ApogeePartyHealthBars_UIHelpers.CreateButton(_, label)
-    local button = widget()
-    button.label, button.bg, button.border = widget(), widget(), widget()
-    button.label:SetText(label)
-    buttons[#buttons + 1] = button
-    return button
+    local button = widget(); button.label = widget(); button.label:SetText(label); return button
 end
 function ApogeePartyHealthBars_UIHelpers.CreateDropdown()
     local dropdown = widget()
@@ -55,11 +46,15 @@ function ApogeePartyHealthBars_UIHelpers.SetButtonEnabled(button, enabled)
     if enabled then button:Enable() else button:Disable() end
 end
 
-local editorOptions, closeCount = nil, 0
-local droppedFeature, droppedSlot, droppedLayout
-local cursorType
-function GetCursorInfo() return cursorType end
+local createdRows, actionList, editorOptions, closeCount = {}, nil, nil, 0
 ApogeePartyHealthBars_ActionConfig = {}
+function ApogeePartyHealthBars_ActionConfig.CreateActionList()
+    actionList = {
+        content = widget(), hint = widget(), status = widget(), scroll = widget(), rowWidth = 372,
+    }
+    actionList.hint:SetText("Drag a spell or bag item onto a row.")
+    return actionList
+end
 function ApogeePartyHealthBars_ActionConfig.CreateActionRow()
     local row = widget()
     row.icon, row.primary, row.secondary = widget(), widget(), widget()
@@ -68,26 +63,35 @@ function ApogeePartyHealthBars_ActionConfig.CreateActionRow()
     row.up = ApogeePartyHealthBars_UIHelpers.CreateButton(nil, "Up")
     row.down = ApogeePartyHealthBars_UIHelpers.CreateButton(nil, "Dn")
     row.clear = ApogeePartyHealthBars_UIHelpers.CreateButton(nil, "Clear")
-    row.accent, row.bg = widget(), widget()
+    createdRows[#createdRows + 1] = row
     return row
 end
-function ApogeePartyHealthBars_ActionConfig.SetRowSelected(row, selected) row.selected = selected end
+function ApogeePartyHealthBars_ActionConfig.SetActionRowState(row, options)
+    row.state = options
+    row.primary:SetText(options.name or "Empty")
+    row.secondary:SetText(options.detail or "Empty")
+    row.sound:SetSelectedKey(options.active and (options.soundKey or "none") or "none")
+    if options.active then row.sound:Enable() else row.sound:Disable() end
+    ApogeePartyHealthBars_UIHelpers.SetButtonEnabled(row.macro, options.active == true)
+    ApogeePartyHealthBars_UIHelpers.SetButtonEnabled(row.clear, options.active == true)
+    ApogeePartyHealthBars_UIHelpers.SetButtonEnabled(row.up, options.active and options.canMoveUp)
+    ApogeePartyHealthBars_UIHelpers.SetButtonEnabled(row.down, options.active and options.canMoveDown)
+    row.macro.label:SetText(options.active and options.macroCustomized and "Macro*" or "Macro")
+end
+function ApogeePartyHealthBars_ActionConfig.LayoutActionList(list, rows, layoutControl)
+    list.visibleRows, list.layoutControl = rows, layoutControl
+end
+function ApogeePartyHealthBars_ActionConfig.SetActionListStatus(list, message, good)
+    list.status:SetText(message or ""); list.statusGood = good
+end
 function ApogeePartyHealthBars_ActionConfig.OpenEditor(options) editorOptions = options; return true end
 function ApogeePartyHealthBars_ActionConfig.CloseEditor() closeCount = closeCount + 1; editorOptions = nil end
 
-local keys = { "1", "2", "3", "4", "5", "Q", "E", "R", "T", "F", "G", "Z", "X", "C", "V" }
+local keyLabels = { "1", "2", "3", "4", "5", "Q", "E", "R", "T", "F", "G", "Z", "X", "C", "V" }
 local definitions, order = {}, {}
-for index, key in ipairs(keys) do
-    local row, column
-    if index <= 5 then row, column = 1, index
-    elseif index <= 9 then row, column = 2, index - 5
-    elseif index <= 11 then row, column = 3, index - 7
-    else row, column = 4, index - 11 end
+for _, key in ipairs(keyLabels) do
     local id = "key" .. key
-    definitions[#definitions + 1] = {
-        id = id, key = key, displayKey = key, label = "Key " .. key,
-        row = row, column = column,
-    }
+    definitions[#definitions + 1] = { id = id, displayKey = key, label = "Key " .. key }
     order[#order + 1] = id
 end
 
@@ -111,9 +115,6 @@ function runtime.GetLayoutOptions() return { { key = "base", label = "Base" }, {
 function runtime.IsKnownLayout(key) return layouts[key] ~= nil end
 function runtime.GetDefinitions() return definitions end
 function runtime.GetDisplayOrder() return order end
-function runtime.FindFirstEmptySlot(layout)
-    for _, id in ipairs(order) do if not layouts[layout][id] then return id end end
-end
 function runtime.GetSlot(layout, slot) return layouts[layout][slot] end
 function runtime.GetSlotDisplay(layout, slot)
     local entry = runtime.GetSlot(layout, slot)
@@ -131,7 +132,7 @@ function runtime.ApplyMacro(layout, slot, body)
 end
 function runtime.MoveSlot(layout, slot, direction)
     local index
-    for i, id in ipairs(order) do if id == slot then index = i end end
+    for candidate, id in ipairs(order) do if id == slot then index = candidate end end
     local other = index and order[index + direction]
     if not other then return false end
     layouts[layout][slot], layouts[layout][other] = layouts[layout][other], layouts[layout][slot]
@@ -139,6 +140,8 @@ function runtime.MoveSlot(layout, slot, direction)
 end
 function runtime.ClearSlot(layout, slot) layouts[layout][slot] = nil; return true, "cleared" end
 
+local droppedFeature, droppedSlot, droppedLayout, cursorType
+function GetCursorInfo() return cursorType end
 dofile("ApogeePartyHealthBars_KeyConfig.lua")
 local config = ApogeePartyHealthBars_KeyConfig
 config.Build(widget(), {
@@ -150,54 +153,53 @@ config.Build(widget(), {
     end,
 })
 
-local tiles, detail = config.GetTiles(), config.GetDetailRow()
-local tileCount = 0
-for _ in pairs(tiles) do tileCount = tileCount + 1 end
-assert(tileCount == 15 and tiles.keyF.point[4] == 94 and tiles.keyF.point[5] == -94
-    and tiles.keyG.point[4] == 141,
-    "Keys selector did not preserve the approved 15-key grid")
+local rows = config.GetRows()
+assert(#createdRows == 15 and #actionList.visibleRows == 15
+        and actionList.layoutControl == dropdowns[1],
+    "Keys did not expose all 15 destinations through the shared scroll list")
+assert(actionList.hint:GetText() == "Drag a spell or bag item onto a row.",
+    "Keys did not use the shared minimal instruction")
+assert(rows.key1.primary:GetText() == "Fireball"
+        and rows.key1.secondary:GetText() == "Key 1 — Spell"
+        and rows.keyG.secondary:GetText() == "Key G — Empty",
+    "Keys rows did not use uniform action and slot labels")
+assert(rows.keyF.macro:IsEnabled() and rows.keyF.clear:IsEnabled()
+        and not rows.keyG.macro:IsEnabled() and not rows.keyG.clear:IsEnabled(),
+    "Keys did not use common filled and empty row control states")
 
-tiles.keyR.scripts.OnReceiveDrag()
+rows.keyR.scripts.OnReceiveDrag()
 assert(droppedFeature == "keys" and droppedSlot == "keyR" and droppedLayout == "base",
-    "Keys tile did not route a cursor drop to its selected layout")
-
-cursorType = "item"
-droppedFeature, droppedSlot, droppedLayout = nil, nil, nil
-tiles.keyR.scripts.OnClick()
+    "Keys row did not route a cursor drop to its selected layout")
+cursorType = "item"; droppedFeature, droppedSlot, droppedLayout = nil, nil, nil
+rows.keyR.scripts.OnClick()
 assert(droppedFeature == "keys" and droppedSlot == "keyR" and droppedLayout == "base",
-    "Keys tile did not accept a picked-up bag item")
-cursorType = nil
+    "Keys row did not accept a picked-up bag item")
+cursorType = nil; droppedFeature, droppedSlot = nil, nil
+rows.keyF.scripts.OnClick()
+assert(droppedFeature == nil and droppedSlot == nil,
+    "normal Keys row click retained an obsolete focus action")
 
-tiles.keyF.scripts.OnClick()
-assert(ApogeePartyHealthBars_S.focusedKeySlot == "keyF"
-    and detail.primary.text == "Linen Bandage" and detail.secondary.text:find("Item", 1, true)
-    and detail.icon.texture == 123,
-    "Keys tile did not focus and display its action")
-detail.macro.scripts.OnClick()
+rows.keyF.macro.scripts.OnClick()
 assert(editorOptions and editorOptions.macroText == "/use Linen Bandage",
-    "Keys focused Macro control did not open the editor")
+    "Keys inline Macro control did not open the editor")
 config.Refresh("keyF")
-assert(ApogeePartyHealthBars_S.focusedKeySlot == "keyF"
-    and editorOptions == nil,
-    "Keys assignment did not keep focus while closing the prior editor")
-
-detail.up.scripts.OnClick()
-assert(layouts.base.keyT and layouts.base.keyT.itemName == "Linen Bandage"
-    and ApogeePartyHealthBars_S.focusedKeySlot == "keyT",
-    "Keys Previous did not move the complete action payload and focus")
+assert(editorOptions == nil and closeCount > 0,
+    "Keys assignment did not close the prior macro draft")
+rows.keyF.up.scripts.OnClick()
+assert(layouts.base.keyT and layouts.base.keyT.itemName == "Linen Bandage",
+    "Keys Up did not move the complete action payload")
 
 bindingConflicts = {
     { slot = { displayKey = "Q" }, action = "STRAFELEFT" },
     { slot = { displayKey = "C" }, action = "TOGGLECHARACTER0" },
 }
 config.Refresh()
-assert(config.GetStatusText():GetText():find("Binding conflicts: Q, C", 1, true),
-    "Keys editor did not surface foreign binding conflicts")
+assert(actionList.status:GetText():find("Binding conflicts: Q, C", 1, true),
+    "Keys list did not surface foreign binding conflicts")
 
-local layoutDropdown = dropdowns[1]
-layoutDropdown.onSelect("battle")
-assert(ApogeePartyHealthBars_S.selectedKeyLayout == "battle"
-    and ApogeePartyHealthBars_S.focusedKeySlot == nil and closeCount > 0,
-    "Keys layout change retained stale focus")
+dropdowns[1].onSelect("battle")
+assert(ApogeePartyHealthBars_S.selectedKeyLayout == "battle" and closeCount > 0
+        and rows.key1.primary:GetText() == "Charge",
+    "Keys layout change did not close editing and refresh all rows")
 
-print("PASS keyboard-shaped Keys configuration")
+print("PASS uniform Keys row configuration")

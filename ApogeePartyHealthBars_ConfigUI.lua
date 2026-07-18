@@ -86,8 +86,6 @@ local function SetConfigTab(tabName)
     AC.CloseEditor()
     if S.configTab ~= tabName then
         S.selectedBindingKey = nil
-        S.selectedShortcutSlot = nil
-        S.selectedWheelSlot = nil
     end
     S.configTab = tabName
     for _, key in ipairs(tabOrder) do

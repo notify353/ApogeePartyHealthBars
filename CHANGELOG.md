@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.38.0] - 2026-07-18
+
 ### Added
 
 - Added aligned party target-of-target bars with the same healing, resource, shield, incoming-heal, HoT, range, buff-reminder, and secure click behavior as every other unit bar.

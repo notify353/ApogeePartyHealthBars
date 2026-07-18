@@ -7,6 +7,13 @@ ApogeePartyHealthBars_C = {
     SHORTCUT_ICON_SIZE = 24,
     SHORTCUT_ICON_GAP = 3,
     SHORTCUT_TOP_GAP = 2,
+    BUFF_ICON_SIZE = 16,
+    BUFF_SLOT_GAP = 2,
+    BUFF_EDGE_INSET = 2,
+    ACCESSORY_ICON_SIZE = 16,
+    ACCESSORY_ICON_GAP = 2,
+    ACCESSORY_EDGE_INSET = 2,
+    ACCESSORY_BOTTOM_GAP = 4,
     SHORTCUT_READY_PULSE = 0.65,
     SHORTCUT_SOUND_DEBOUNCE = 2,
     OUT_OF_RANGE_ALPHA = 0.35,
@@ -134,6 +141,7 @@ GameTooltip.Hide = function() tooltipHides = tooltipHides + 1 end
 
 dofile("ApogeePartyHealthBars_Sounds.lua")
 dofile("ApogeePartyHealthBars_UIHelpers.lua")
+dofile("ApogeePartyHealthBars_AccessoryLayout.lua")
 dofile("ApogeePartyHealthBars_ShortcutItems.lua")
 dofile("ApogeePartyHealthBars_ActionData.lua")
 dofile("ApogeePartyHealthBars_ActionMacros.lua")
@@ -143,7 +151,7 @@ local deferred = 0
 local layoutRequests = 0
 local geometryNeedsLayout = false
 local droppedFeature, droppedSlot
-shortcuts.Attach({ btn = widget() }, {
+shortcuts.Attach({ player = widget(), target = widget() }, {
     RequestLayout = function()
         layoutRequests = layoutRequests + 1
         geometryNeedsLayout = false
@@ -263,17 +271,21 @@ for slot = 5, 12 do
 end
 local shortcutStride = ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE
     + ApogeePartyHealthBars_C.SHORTCUT_ICON_GAP
-assert(shortcuts.GetHeight("player") == ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
+assert(shortcuts.GetFooterHeight() == ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
         + ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE * 2
         + ApogeePartyHealthBars_C.SHORTCUT_ICON_GAP,
     "twelve Shortcuts did not reserve exactly two icon rows")
-assert(visualButtons[1].points[1][4] == 0 and visualButtons[1].points[1][5] == 0
+assert(shortcuts.GetFooterHeight() == shortcuts.GetLaneHeight("player"),
+    "Shortcut footer height diverged from the configured player lane")
+assert(visualButtons[1].points[1][4] == 0
+    and visualButtons[1].points[1][5] == -ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
     and visualButtons[6].points[1][4] == shortcutStride * 5
-    and visualButtons[6].points[1][5] == 0,
+    and visualButtons[6].points[1][5] == -ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP,
     "first Shortcut row was not capped at six columns")
-assert(visualButtons[7].points[1][4] == 0 and visualButtons[7].points[1][5] == -shortcutStride
+assert(visualButtons[7].points[1][4] == 0
+    and visualButtons[7].points[1][5] == -ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP - shortcutStride
     and visualButtons[12].points[1][4] == shortcutStride * 5
-    and visualButtons[12].points[1][5] == -shortcutStride,
+    and visualButtons[12].points[1][5] == -ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP - shortcutStride,
     "Shortcuts 7 through 12 did not continue on the second row")
 assert(secureButtons[7].shown and secureButtons[7].mouseEnabled
     and secureButtons[7].attributes.macrotext:find(
@@ -286,7 +298,7 @@ local overflowAssigned, overflowMessage = shortcuts.AssignSpell(nil, 7000, "Over
 assert(not overflowAssigned and overflowMessage:find("Drop onto a row", 1, true),
     "full Shortcut Bar did not instruct the user to replace or clear an action")
 for slot = 12, 5, -1 do shortcuts.ClearSlot(slot) end
-assert(shortcuts.GetHeight("player") == ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
+assert(shortcuts.GetFooterHeight() == ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
         + ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE,
     "Shortcut Bar did not collapse to one row after removing slots 5 through 12")
 ApogeePartyHealthBars_S.configMode = true
@@ -294,13 +306,13 @@ shortcuts.Layout(0)
 local dropButton = visualButtons[13]
 assert(dropButton and dropButton.shown
         and dropButton.points[1][4] == shortcutStride * 4
-        and dropButton.points[1][5] == 0,
+        and dropButton.points[1][5] == -ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP,
     "Shortcut HUD add target did not occupy the first empty grid position")
 droppedFeature, droppedSlot = nil, nil
 dropButton.scripts.OnReceiveDrag()
 assert(droppedFeature == "shortcuts" and droppedSlot == 5,
     "Shortcut HUD add target did not route to the first empty slot")
-assert(shortcuts.GetHeight("player") == ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
+assert(shortcuts.GetFooterHeight() == ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
         + ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE,
     "Shortcut HUD add target unnecessarily expanded a partially filled row")
 ApogeePartyHealthBars_S.configMode = false

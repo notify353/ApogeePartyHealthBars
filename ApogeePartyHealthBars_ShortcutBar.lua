@@ -2,13 +2,14 @@ local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local Sounds = ApogeePartyHealthBars_Sounds
 local UIH = ApogeePartyHealthBars_UIHelpers
+local Accessory = ApogeePartyHealthBars_AccessoryLayout
 local Actions = ApogeePartyHealthBars_ActionMacros
 local Items = ApogeePartyHealthBars_ShortcutItems
 
 ApogeePartyHealthBars_ShortcutBar = {}
 local T = ApogeePartyHealthBars_ShortcutBar
 
-local row, requestLayout, syncTicker, handleCursorDrop
+local anchors, requestLayout, syncTicker, handleCursorDrop
 local positionSecureOverlay, showSecureFrame, hideSecureFrame, setSecureMouseEnabled, deferSecureUpdate
 local icons = {}
 local dropIcon
@@ -262,32 +263,6 @@ local function SetBorder(icon, color)
     for _, edge in ipairs(icon.border) do edge:SetColorTexture(unpack(color)) end
 end
 
-local function CreateBorder(parent, inset)
-    local edges = {}
-    local size = 1
-    local left = parent:CreateTexture(nil, "OVERLAY")
-    left:SetPoint("TOPLEFT", parent, "TOPLEFT", inset, -inset)
-    left:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", inset, inset)
-    left:SetWidth(size)
-    edges[#edges + 1] = left
-    local right = parent:CreateTexture(nil, "OVERLAY")
-    right:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -inset, -inset)
-    right:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -inset, inset)
-    right:SetWidth(size)
-    edges[#edges + 1] = right
-    local top = parent:CreateTexture(nil, "OVERLAY")
-    top:SetPoint("TOPLEFT", parent, "TOPLEFT", inset, -inset)
-    top:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -inset, -inset)
-    top:SetHeight(size)
-    edges[#edges + 1] = top
-    local bottom = parent:CreateTexture(nil, "OVERLAY")
-    bottom:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", inset, inset)
-    bottom:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -inset, inset)
-    bottom:SetHeight(size)
-    edges[#edges + 1] = bottom
-    return edges
-end
-
 local function CreateIcon(parent)
     local button = CreateFrame("Button", nil, parent)
     button:SetSize(C.SHORTCUT_ICON_SIZE, C.SHORTCUT_ICON_SIZE)
@@ -322,8 +297,8 @@ local function CreateIcon(parent)
     button.texture = texture
     button.cooldown = cooldown
     button.count = count
-    button.border = CreateBorder(button, 0)
-    button.pulseBorder = CreateBorder(button, 1)
+    button.border = Accessory.CreateBorder(button, 0)
+    button.pulseBorder = Accessory.CreateBorder(button, 1)
     button.castButton = castButton
     for _, edge in ipairs(button.pulseBorder) do
         edge:SetColorTexture(1, 0.82, 0, 1)
@@ -359,7 +334,7 @@ local function CreateDropIcon(parent)
     local background = button:CreateTexture(nil, "BACKGROUND")
     background:SetAllPoints()
     background:SetColorTexture(0.025, 0.025, 0.03, 1)
-    button.border = CreateBorder(button, 0)
+    button.border = Accessory.CreateBorder(button, 0)
     for _, edge in ipairs(button.border) do edge:SetColorTexture(0.45, 0.45, 0.48, 1) end
     button:SetScript("OnReceiveDrag", function()
         if handleCursorDrop then handleCursorDrop("shortcuts", T.FindFirstEmptySlot()) end
@@ -583,45 +558,61 @@ local function PlayReadySound(key)
     return Sounds.Play(key or "none")
 end
 
-function T.GetHeight(unitId)
-    local showDrop = S.configMode and T.FindFirstEmptySlot() ~= nil
-    if unitId ~= "player" or not IsEnabled() or (visibleCount <= 0 and not showDrop) then return 0 end
-    local laneCount = math.max((visibleLaneCounts.player or 0) + (showDrop and 1 or 0),
-        visibleLaneCounts.target or 0)
-    local rowCount = math.ceil(laneCount / C.SHORTCUT_COLUMNS)
-    return rowCount * C.SHORTCUT_ICON_SIZE
-        + math.max(0, rowCount - 1) * C.SHORTCUT_ICON_GAP
-        + C.SHORTCUT_TOP_GAP
+local function GetPlayerLaneMetrics()
+    return C.SHORTCUT_ICON_SIZE, C.SHORTCUT_ICON_GAP, C.SHORTCUT_TOP_GAP
+end
+
+local function ApplyLaneStyle(icon, lane)
+    if lane == "target" then
+        Accessory.SetCompactSize(icon)
+        Accessory.InsetTexture(icon.texture, 1)
+        return
+    end
+    icon:SetSize(C.SHORTCUT_ICON_SIZE, C.SHORTCUT_ICON_SIZE)
+    Accessory.InsetTexture(icon.texture, 2)
+end
+
+function T.GetFooterHeight()
+    return T.GetLaneHeight("player")
+end
+
+function T.GetLaneHeight(lane)
+    local showDrop = lane == "player" and S.configMode and T.FindFirstEmptySlot() ~= nil
+    local count = (visibleLaneCounts[lane] or 0) + (showDrop and 1 or 0)
+    if not IsEnabled() or count <= 0 then return 0 end
+    if lane == "target" then return Accessory.GetHeight(count, C.SHORTCUT_COLUMNS) end
+    local iconSize, iconGap, topGap = GetPlayerLaneMetrics()
+    local rowCount = math.ceil(count / C.SHORTCUT_COLUMNS)
+    return rowCount * iconSize
+        + math.max(0, rowCount - 1) * iconGap
+        + topGap
 end
 
 function T.IsActive()
     return IsEnabled() and visibleCount > 0
 end
 
-function T.Layout(topOffset)
-    if not row then return end
-    if topOffset == nil and ApogeePartyHealthBars_WheelMacros then
-        topOffset = ApogeePartyHealthBars_WheelMacros.GetHeight("player")
-    end
-    topOffset = tonumber(topOffset) or 0
+function T.Layout()
+    if not anchors then return end
     local lanePositions = { player = 0, target = 0 }
-    local shortcutHeight = T.GetHeight("player")
-    local stride = C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP
     for i = 1, MAX_DISPLAY_ICONS do
         local icon = icons[i]
         local info = resolved[i]
         icon:ClearAllPoints()
         if IsEnabled() and info then
             local lane = info.lane or "player"
-            local anchor = lane == "target" and row.targetBtn or row.btn
+            local anchor = anchors[lane] or anchors.player
             local lanePosition = lanePositions[lane]
-            local column = lanePosition % C.SHORTCUT_COLUMNS
-            local gridRow = math.floor(lanePosition / C.SHORTCUT_COLUMNS)
-            local x = column * stride
-            local y = lane == "target"
-                and shortcutHeight - gridRow * stride
-                or -topOffset - gridRow * stride
-            icon:SetPoint("TOPLEFT", anchor, "TOPLEFT", x, y)
+            ApplyLaneStyle(icon, lane)
+            if lane == "target" then
+                Accessory.Place(icon, anchor, "left", lanePosition + 1, C.SHORTCUT_COLUMNS)
+            else
+                local stride = C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP
+                local column = lanePosition % C.SHORTCUT_COLUMNS
+                local gridRow = math.floor(lanePosition / C.SHORTCUT_COLUMNS)
+                icon:SetPoint("TOPLEFT", anchor, "TOPLEFT", column * stride,
+                    -C.SHORTCUT_TOP_GAP - gridRow * stride)
+            end
             icon:Show()
             lanePositions[lane] = lanePosition + 1
         else
@@ -631,11 +622,12 @@ function T.Layout(topOffset)
     if dropIcon then
         if IsEnabled() and S.configMode and T.FindFirstEmptySlot() then
             local lanePosition = lanePositions.player
+            local stride = C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP
             local column = lanePosition % C.SHORTCUT_COLUMNS
             local gridRow = math.floor(lanePosition / C.SHORTCUT_COLUMNS)
             dropIcon:ClearAllPoints()
-            dropIcon:SetPoint("TOPLEFT", row.btn, "TOPLEFT", column * stride,
-                -topOffset - gridRow * stride)
+            dropIcon:SetPoint("TOPLEFT", anchors.player, "TOPLEFT", column * stride,
+                -C.SHORTCUT_TOP_GAP - gridRow * stride)
             dropIcon:Show()
         else
             dropIcon:Hide()
@@ -645,7 +637,7 @@ function T.Layout(topOffset)
 end
 
 function T.Refresh(suppressSound)
-    if not row then return end
+    if not anchors then return end
     local entries = GetEntries()
     local now = GetTime and GetTime() or 0
     local soundPlayed = false
@@ -733,8 +725,9 @@ function T.RefreshItemInfo()
     T.Refresh(false)
 end
 
-function T.Attach(playerRow, callbacks)
-    row = playerRow
+function T.Attach(playerAnchors, callbacks)
+    anchors = assert(playerAnchors)
+    assert(anchors.player and anchors.target, "ShortcutBar requires player and target anchors")
     requestLayout = callbacks and callbacks.RequestLayout
     syncTicker = callbacks and callbacks.SyncTicker
     positionSecureOverlay = assert(callbacks and callbacks.PositionSecureOverlay)
@@ -743,8 +736,8 @@ function T.Attach(playerRow, callbacks)
     setSecureMouseEnabled = assert(callbacks and callbacks.SetSecureMouseEnabled)
     deferSecureUpdate = assert(callbacks and callbacks.DeferSecureUpdate)
     handleCursorDrop = callbacks and callbacks.AssignCursorDrop
-    for i = 1, MAX_DISPLAY_ICONS do icons[i] = CreateIcon(row.btn) end
-    dropIcon = CreateDropIcon(row.btn)
+    for i = 1, MAX_DISPLAY_ICONS do icons[i] = CreateIcon(anchors.player) end
+    dropIcon = CreateDropIcon(anchors.player)
 end
 
 function T.Initialize()

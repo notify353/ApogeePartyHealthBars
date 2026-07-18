@@ -8,6 +8,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
+- Added aligned party target-of-target bars with the same healing, resource, shield, incoming-heal, HoT, range, buff-reminder, and secure click behavior as every other unit bar.
 - Added contextual Middle, Mouse Button 4, and Mouse Button 5 actions: unit-frame clicks retain native Healing targeting while nine Normal/Shift/Ctrl bindings provide Wheel-style combat actions elsewhere, with a 3×3 HUD to the right of Wheel and full profile support.
 
 - Added smart generated spell macros with self-channel protection, spam-safe Shoot and Auto Shot behavior, and an in-addon Macros glossary covering templates, syntax, application, and tradeoffs.
@@ -19,6 +20,11 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Rebuilt player, party, target, and target-of-target displays around one adaptive unit-bar component and isolated client-facing unit APIs behind a compatibility adapter; player self-buffs and target crowd-control visuals now attach as independent utilities.
+- Moved player self-buff reminders into a dedicated utility lane above the health bar so additional independent reminders can be added without shrinking or covering health.
+- Restyled player self-buff and target crowd-control utilities as compact left-aligned accessories, with CC growing rightward and upward instead of floating at the top of the full row.
+- Reserved the supported player self-buff utility tier while its reminder is enabled, preventing the health-bar layout from shifting when the suggested buff is cast or expires.
+- Restyled raid-marker controls as compact right-aligned target accessories, reserved their tier while hidden, and added spell tooltips to clickable self-buff reminders.
 - Limited automatic enemy targeting and `/startattack` to confirmed attack families; ordinary spells now use a neutral self-channel-safe cast, while melee Attack, Auto Shot, and wand Shoot receive dedicated templates.
 - Expanded macro documentation with mouseover and focus targeting, `/stopattack`, cursor casting, help/harm and modifier choices, stealth protection, queued next-swing attacks, and castsequence limitations.
 - Compacted Macros documentation topics and moved exact macro and syntax bodies into a focused read-only Macro dialog.
@@ -37,6 +43,14 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Fixed
 
+- Kept party target and target-of-target health, power, aura, and overlay values current when Anniversary omits second-depth unit events.
+- Kept buff reminder textures and their protected click regions synchronized across combat lockdown, and cleared stale hostile backgrounds when a unit becomes offline.
+- Fixed party-buff reminders rendering beneath the health `StatusBar` and player self-buff reminders occupying the same accessory slot.
+- Restored raid-marker toggling so clicking the marker already applied to the current target explicitly clears it and releases its tracked assignment.
+- Removed the dark raid-marker backing; active markers now stay bright with a gold outline, available replacements stay full color, and markers assigned elsewhere use a readable 55% treatment.
+- Standardized external accessory padding with a four-pixel bottom gutter and matching one-pixel content insets for self-buff, crowd-control, and raid-marker icons.
+- Moved configured player Shortcuts into an independent footer beneath the complete party-health row stack; automatic crowd-control utilities remain attached to the current target.
+- Bottom-aligned the Keys and Buttons icon grids with Wheel while preserving the Keys feedback strip below its shifted grid.
 - Fixed Shoot and Auto Shot smart defaults depending on the currently equipped ranged weapon; known ranged auto-attacks now remain spam-safe when assigned while their weapon is unequipped.
 - Removed question-mark fallbacks from Shortcut HUD slots and ensured the temporary add target disappears immediately when settings close.
 - Fixed right-dragging the minimap button moving it horizontally opposite the cursor while preserving existing saved button positions.

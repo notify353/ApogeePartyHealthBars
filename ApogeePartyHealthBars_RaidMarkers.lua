@@ -1,10 +1,10 @@
+local Accessory = ApogeePartyHealthBars_AccessoryLayout
+
 ApogeePartyHealthBars_RaidMarkers = {}
 local M = ApogeePartyHealthBars_RaidMarkers
 
 local ICON_TEXTURE = "Interface\\TargetingFrame\\UI-RaidTargetingIcons"
-local ICON_SIZE = 20
-local ICON_GAP = 3
-local ASSIGNED_ALPHA = 0.30
+local ASSIGNED_ALPHA = 0.55
 
 local MARKERS = {
     { index = 8, label = "Skull", left = 0.75, right = 1.00, top = 0.50, bottom = 1.00 },
@@ -20,9 +20,12 @@ local function SetMarkerState(button, assigned, targetMarked, currentTargetMarke
     button.markerAssigned = assigned and true or false
     button.targetMarked = targetMarked and true or false
     button.currentTargetMarker = currentTargetMarker and true or false
-    local faded = button.targetMarked or button.markerAssigned
-    button.texture:SetDesaturated(faded)
-    button.texture:SetAlpha(faded and ASSIGNED_ALPHA or 1)
+    local assignedElsewhere = button.markerAssigned and not button.currentTargetMarker
+    button.texture:SetDesaturated(assignedElsewhere)
+    button.texture:SetAlpha(assignedElsewhere and ASSIGNED_ALPHA or 1)
+    for _, edge in ipairs(button.selectionBorder) do
+        edge:SetAlpha(button.currentTargetMarker and 1 or 0)
+    end
 end
 
 local function ClearGuidAssignments(guid)
@@ -35,21 +38,23 @@ end
 local function ApplyMarker(index)
     if not UnitExists or not UnitExists("target") or not SetRaidTarget then return end
     local guid = UnitGUID and UnitGUID("target")
+    local currentMarker = GetRaidTargetIndex and GetRaidTargetIndex("target")
+    local clearing = currentMarker == index
     if guid then
         ClearGuidAssignments(guid)
-        assignedGuids[index] = guid
+        if not clearing then assignedGuids[index] = guid end
     end
-    SetRaidTarget("target", index)
+    SetRaidTarget("target", clearing and 0 or index)
     M.Refresh()
 end
 
 local function CreateMarkerButton(parent, definition)
     local button = CreateFrame("Button", nil, parent)
-    button:SetSize(ICON_SIZE, ICON_SIZE)
+    Accessory.SetCompactSize(button)
     button:RegisterForClicks("LeftButtonUp")
 
     local texture = button:CreateTexture(nil, "ARTWORK")
-    texture:SetAllPoints()
+    Accessory.InsetTexture(texture, 1)
     texture:SetTexture(ICON_TEXTURE)
     if SetRaidTargetIconTexture then
         SetRaidTargetIconTexture(texture, definition.index)
@@ -58,6 +63,16 @@ local function CreateMarkerButton(parent, definition)
     end
     button.texture = texture
 
+    button.selectionBorder = Accessory.CreateBorder(button, 0)
+    for _, edge in ipairs(button.selectionBorder) do
+        edge:SetColorTexture(1, 0.82, 0, 1)
+        edge:SetAlpha(0)
+    end
+
+    local highlight = button:CreateTexture(nil, "HIGHLIGHT")
+    highlight:SetAllPoints()
+    highlight:SetColorTexture(1, 1, 1, 0.10)
+
     button:SetScript("OnClick", function() ApplyMarker(definition.index) end)
     button:SetScript("OnEnter", function(self)
         if not GameTooltip then return end
@@ -65,7 +80,7 @@ local function CreateMarkerButton(parent, definition)
         GameTooltip:AddLine(definition.label .. " target marker")
         if self.targetMarked then
             if self.currentTargetMarker then
-                GameTooltip:AddLine("Currently applied to this target.", 0.85, 0.85, 0.85)
+                GameTooltip:AddLine("Currently applied. Click to remove.", 0.85, 0.85, 0.85)
             else
                 GameTooltip:AddLine("Click to replace the current marker.", 0.85, 0.85, 0.85)
             end
@@ -82,20 +97,22 @@ local function CreateMarkerButton(parent, definition)
     return button
 end
 
-function M.Attach(playerRow)
-    assert(playerRow and playerRow.btn and playerRow.targetBtn, "RaidMarkers requires the player row and target pane")
+function M.Attach(targetSurface)
+    assert(targetSurface and targetSurface.GetAccessoryAnchor,
+        "RaidMarkers requires the current-target accessory anchor")
+    local anchor = targetSurface:GetAccessoryAnchor()
     for position, definition in ipairs(MARKERS) do
-        local button = CreateMarkerButton(playerRow.btn, definition)
-        button:SetFrameLevel((playerRow.btn:GetFrameLevel() or 0) + 10)
-        button:SetPoint(
-            "BOTTOMRIGHT",
-            playerRow.targetBtn,
-            "TOPRIGHT",
-            -((position - 1) * (ICON_SIZE + ICON_GAP)),
-            3)
+        local button = CreateMarkerButton(anchor, definition)
+        button:SetFrameLevel((anchor:GetFrameLevel() or 0) + 10)
+        Accessory.Place(button, anchor, "right", position, #MARKERS)
         buttons[position] = button
     end
     M.Refresh()
+end
+
+function M.GetHeight(unitId)
+    if unitId ~= "player" then return 0 end
+    return Accessory.GetHeight(1, 1)
 end
 
 local function RefreshInternal(ignoredGuid)

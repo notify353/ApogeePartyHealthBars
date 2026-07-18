@@ -43,14 +43,12 @@ local bindings = {
     ["4"] = { kind = "spell", spellId = 139, spellName = "Renew(Rank 12)" },
     ["ctrl-5"] = { kind = "spell", spellId = 2061, spellName = "Flash Heal(Rank 7)" },
 }
-local row = {
-    unitId = "party1",
-    btn = frame(),
-    castBtn = frame(false),
-    showTargetPane = true,
-    targetBtn = frame(),
-    targetCastBtn = frame(false),
+local primary = { unitId = "party1", btn = frame(), castBtn = frame(false), visible = true }
+local target = { unitId = "party1target", btn = frame(), castBtn = frame(false), visible = true }
+local targetOfTarget = {
+    unitId = "party1targettarget", btn = frame(), castBtn = frame(false), visible = true,
 }
+local row = { btn = primary.btn, surfaces = { primary, target, targetOfTarget } }
 
 dofile("ApogeePartyHealthBars_ActionData.lua")
 dofile("ApogeePartyHealthBars_ClickBindings.lua")
@@ -65,50 +63,52 @@ clicks.Initialize({
     end,
     GetBindingsTable = function() return bindings end,
     GetBindingAction = ApogeePartyHealthBars_ActionData.Normalize,
-    GetUnitTargetToken = function() return "target" end,
 })
 
 clicks.ApplyAll()
-assert(row.castBtn.attributes.unit == "party1" and row.targetCastBtn.attributes.unit == "target",
+assert(primary.castBtn.attributes.unit == "party1"
+        and target.castBtn.attributes.unit == "party1target"
+        and targetOfTarget.castBtn.attributes.unit == "party1targettarget",
     "secure click buttons did not receive their displayed units")
-assert(row.castBtn.attributes.type1 == "spell" and row.castBtn.attributes.spell1 == 2061
-    and row.castBtn.attributes.type == "spell" and row.castBtn.attributes.spell == 2061,
+assert(primary.castBtn.attributes.type1 == "spell" and primary.castBtn.attributes.spell1 == 2061
+    and primary.castBtn.attributes.type == "spell" and primary.castBtn.attributes.spell == 2061,
     "left-click spell attributes were not applied")
-assert(row.castBtn.attributes["shift-type2"] == "item"
-    and row.castBtn.attributes["shift-item2"] == "item:1251",
+assert(primary.castBtn.attributes["shift-type2"] == "item"
+    and primary.castBtn.attributes["shift-item2"] == "item:1251",
     "modified item attributes were not applied")
-assert(row.castBtn.attributes.type4 == "spell" and row.castBtn.attributes.spell4 == 139
-        and row.castBtn.attributes["ctrl-type5"] == "spell"
-        and row.castBtn.attributes["ctrl-spell5"] == 2061,
+assert(primary.castBtn.attributes.type4 == "spell" and primary.castBtn.attributes.spell4 == 139
+        and primary.castBtn.attributes["ctrl-type5"] == "spell"
+        and primary.castBtn.attributes["ctrl-spell5"] == 2061,
     "side-button Healing attributes were not applied")
-assert(row.castBtn.shown and row.castBtn.mouseEnabled
-    and row.targetCastBtn.shown and row.targetCastBtn.mouseEnabled,
+assert(primary.castBtn.shown and primary.castBtn.mouseEnabled
+    and target.castBtn.shown and target.castBtn.mouseEnabled
+    and targetOfTarget.castBtn.shown and targetOfTarget.castBtn.mouseEnabled,
     "active secure click overlays were not enabled")
 
 bindings["shift-2"] = { kind = "spell", spellId = 139, spellName = "Renew(Rank 12)" }
 clicks.ApplyAll()
-assert(row.castBtn.attributes["shift-item2"] == nil
-    and row.castBtn.attributes["shift-spell2"] == 139,
+assert(primary.castBtn.attributes["shift-item2"] == nil
+    and primary.castBtn.attributes["shift-spell2"] == 139,
     "replacing an item left stale secure item attributes")
 
 bindings["1"] = { kind = "item", itemId = 1251, itemName = "Linen Bandage" }
 clicks.ApplyAll()
-assert(row.castBtn.attributes.type == "item" and row.castBtn.attributes.item == "item:1251"
-    and row.castBtn.attributes.type1 == "item" and row.castBtn.attributes.item1 == "item:1251"
-    and row.castBtn.attributes.spell == nil and row.castBtn.attributes.spell1 == nil,
+assert(primary.castBtn.attributes.type == "item" and primary.castBtn.attributes.item == "item:1251"
+    and primary.castBtn.attributes.type1 == "item" and primary.castBtn.attributes.item1 == "item:1251"
+    and primary.castBtn.attributes.spell == nil and primary.castBtn.attributes.spell1 == nil,
     "replacing the primary spell with an item left stale base spell attributes")
 
-local mutations = row.castBtn.mutations
+local mutations = primary.castBtn.mutations
 inCombat = true
 clicks.ApplyAll()
-assert(secureUpdateRequests == 1 and row.castBtn.mutations == mutations,
+assert(secureUpdateRequests == 1 and primary.castBtn.mutations == mutations,
     "combat application mutated secure attributes instead of deferring")
 
 inCombat = false
 bindings = {}
 clicks.ApplyAll()
-assert(not row.castBtn.shown and not row.castBtn.mouseEnabled
-    and row.castBtn.attributes.type == nil and row.castBtn.attributes.item == nil,
+assert(not primary.castBtn.shown and not primary.castBtn.mouseEnabled
+    and primary.castBtn.attributes.type == nil and primary.castBtn.attributes.item == nil,
     "clearing all actions left an active secure click overlay")
 
 print("PASS secure Healing spell and item clicks")

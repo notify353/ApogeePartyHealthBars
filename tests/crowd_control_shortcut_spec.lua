@@ -2,6 +2,7 @@ unpack = unpack or table.unpack
 function wipe(value) for key in pairs(value or {}) do value[key] = nil end return value end
 
 dofile("ApogeePartyHealthBars_Data.lua")
+dofile("ApogeePartyHealthBars_AccessoryLayout.lua")
 local definitions = ApogeePartyHealthBars_C.CROWD_CONTROL_DEFINITIONS
 ApogeePartyHealthBars_C.SHORTCUT_CLASS_DEFAULTS = {}
 
@@ -31,8 +32,9 @@ ApogeePartyHealthBars_S.charSv.shortcuts[1] = {
 local secureButtons, visualButtons = {}, {}
 local function widget(shown)
     local value = { shown = shown ~= false, attributes = {}, scripts = {}, points = {}, mutations = 0 }
-    local noops = { "SetSize", "EnableMouse", "SetTexCoord", "SetAllPoints", "SetDrawEdge", "SetText", "SetTextColor", "SetWidth", "SetHeight", "SetColorTexture", "SetAlpha", "SetTexture", "SetDesaturated", "SetCooldown", "Clear", "SetFrameStrata", "SetFrameLevel", "RegisterForClicks" }
+    local noops = { "EnableMouse", "SetTexCoord", "SetAllPoints", "SetDrawEdge", "SetText", "SetTextColor", "SetWidth", "SetHeight", "SetColorTexture", "SetAlpha", "SetTexture", "SetDesaturated", "SetCooldown", "Clear", "SetFrameStrata", "SetFrameLevel", "RegisterForClicks" }
     for _, name in ipairs(noops) do value[name] = function() end end
+    function value:SetSize(width, height) self.width, self.height = width, height end
     function value:CreateTexture() return widget() end
     function value:CreateFontString() return widget() end
     function value:SetScript(name, callback) self.scripts[name] = callback end
@@ -104,7 +106,7 @@ dofile("ApogeePartyHealthBars_ShortcutBar.lua")
 local shortcuts = ApogeePartyHealthBars_ShortcutBar
 local playerBtn, targetBtn = widget(), widget()
 local deferred = 0
-shortcuts.Attach({ btn = playerBtn, targetBtn = targetBtn }, {
+shortcuts.Attach({ player = playerBtn, target = targetBtn }, {
     RequestLayout = function() end, SyncTicker = function() end,
     PositionSecureOverlay = function() return true end,
     ShowSecureFrame = function(frame) frame:Show() end,
@@ -121,21 +123,29 @@ for displayIndex = 2, shortcuts.GetDisplayCount() do
     assert(shortcuts.GetDisplayLane(displayIndex) == "target", "automatic CC used the wrong lane")
 end
 local targetRows = math.ceil(#definitions / ApogeePartyHealthBars_C.SHORTCUT_COLUMNS)
-local expectedShortcutHeight = targetRows * ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE
-    + (targetRows - 1) * ApogeePartyHealthBars_C.SHORTCUT_ICON_GAP
+local expectedTargetHeight = targetRows * ApogeePartyHealthBars_C.ACCESSORY_ICON_SIZE
+    + (targetRows - 1) * ApogeePartyHealthBars_C.ACCESSORY_ICON_GAP
+    + ApogeePartyHealthBars_C.ACCESSORY_BOTTOM_GAP
+local expectedPlayerHeight = ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE
     + ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
-assert(shortcuts.GetHeight("player") == expectedShortcutHeight
-    and shortcuts.GetHeight("party1") == 0)
+assert(shortcuts.GetFooterHeight() == expectedPlayerHeight
+        and shortcuts.GetLaneHeight("player") == expectedPlayerHeight
+        and shortcuts.GetLaneHeight("target") == expectedTargetHeight,
+    "Shortcut footer and target lane did not report independent geometry")
 assert(visualButtons[1].points[1][2] == playerBtn, "ordinary spell was not anchored to player lane")
 assert(visualButtons[2].points[1][2] == targetBtn, "CC spell was not anchored to target lane")
-assert(visualButtons[2].points[1][4] == 0
-    and visualButtons[2].points[1][5] == expectedShortcutHeight
-    and visualButtons[7].points[1][4] == 5 * (ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE
-        + ApogeePartyHealthBars_C.SHORTCUT_ICON_GAP)
-    and visualButtons[8].points[1][4] == 0
-    and visualButtons[8].points[1][5] == expectedShortcutHeight
-        - ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE - ApogeePartyHealthBars_C.SHORTCUT_ICON_GAP,
-    "target-lane Shortcuts were not capped at six columns")
+local targetStride = ApogeePartyHealthBars_C.ACCESSORY_ICON_SIZE
+    + ApogeePartyHealthBars_C.ACCESSORY_ICON_GAP
+assert(visualButtons[1].width == ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE
+        and visualButtons[2].width == ApogeePartyHealthBars_C.ACCESSORY_ICON_SIZE,
+    "CC utilities did not use the compact accessory icon size")
+assert(visualButtons[2].points[1][1] == "BOTTOMLEFT"
+    and visualButtons[2].points[1][4] == ApogeePartyHealthBars_C.ACCESSORY_EDGE_INSET
+    and visualButtons[2].points[1][5] == ApogeePartyHealthBars_C.ACCESSORY_BOTTOM_GAP
+    and visualButtons[7].points[1][4] == ApogeePartyHealthBars_C.ACCESSORY_EDGE_INSET + 5 * targetStride
+    and visualButtons[8].points[1][4] == ApogeePartyHealthBars_C.ACCESSORY_EDGE_INSET
+    and visualButtons[8].points[1][5] == ApogeePartyHealthBars_C.ACCESSORY_BOTTOM_GAP + targetStride,
+    "target-lane CC utilities were not bottom-left aligned in compact rows")
 assert(secureButtons[1].attributes.unit == nil)
 assert(secureButtons[2].attributes.unit == nil and secureButtons[2].attributes.type == "macro"
     and secureButtons[2].attributes.macrotext:find(

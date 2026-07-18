@@ -26,6 +26,7 @@ ApogeePartyHealthBars_WheelMacros = Factory.Create({
     hud = {
         panelHeight = PANEL_HEIGHT,
         totalHeight = PANEL_HEIGHT + 10,
+        iconHeight = PANEL_HEIGHT,
         positionIcon = function(icon, container, _, displayIndex)
             local y = -(displayIndex - 1) * (C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP)
             icon:SetPoint("TOPLEFT", container, "TOPLEFT", ICON_X, y)

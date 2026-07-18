@@ -1,7 +1,7 @@
 -- =============================================================================
 -- ApogeePartyHealthBars.lua
 -- =============================================================================
--- Party HP bars for healing (player + party1-4, inline unit targets).
+-- Party HP bars for healing (player + party1-4, aligned two-level unit targets).
 -- Class-agnostic: click-cast, range, mana, shields, and buff icons use your spellbook.
 -- Configure via minimap button (left-click).
 -- =============================================================================
@@ -21,6 +21,10 @@ local buffReminders = ApogeePartyHealthBars_BuffReminders
 local shieldTracker = ApogeePartyHealthBars_ShieldTracker
 local incomingHeals = ApogeePartyHealthBars_IncomingHeals
 local hotTracker = ApogeePartyHealthBars_HotTracker
+local unitTopology = ApogeePartyHealthBars_UnitTopology
+local unitAPI = ApogeePartyHealthBars_UnitAPI
+local unitBar = ApogeePartyHealthBars_UnitBar
+local playerUtility = ApogeePartyHealthBars_PlayerUtility
 
 local panel, configUI, minimapController
 local rows = {}
@@ -69,7 +73,6 @@ end
 
 local UpdateUI
 local UpdateHeader
-local RefreshRowBuffs
 local UpdateRowValues
 local LayoutRows
 local unitToRow = {}
@@ -110,48 +113,37 @@ local function IsUnitTargetsEnabled()
     return IsSavedFeatureEnabled("showUnitTargets")
 end
 
-local function GetUnitTargetToken(unitId)
-    if unitId == "player" then return "target" end
-    return unitId .. "target"
-end
-
-local function RowHasTargetPane(row)
-    if not row or not row.unitId or not UnitExists(row.unitId) then return false end
-    if UnitIsConnected and not UnitIsConnected(row.unitId) then return false end
-    if not IsUnitTargetsEnabled() then return false end
-    return UnitExists(GetUnitTargetToken(row.unitId))
-end
-
-local function GetTargetColumnWidth(rowOrUnit)
+local function GetTargetColumnWidth()
     if not IsUnitTargetsEnabled() then return 0 end
-    local unitId = type(rowOrUnit) == "table" and rowOrUnit.unitId or rowOrUnit
-    local columns = unitId == "player" and 2 or 1
-    return columns * (C.TARGET_BAR_W + C.TARGET_GAP)
+    return 2 * (C.UNIT_BAR_W + C.UNIT_COLUMN_GAP)
 end
 
 local function GetRowBtnWidth(row)
     return C.ROW_CONTENT_W + GetTargetColumnWidth(row)
 end
 
-local function SyncRowTargetPane(row)
-    row.showTargetPane = RowHasTargetPane(row)
-end
-
 local function IsPanelTrackedUnit(unit)
-    if not unit then return false end
-    if unit == "player" or unit == "target" or unit == "targettarget" then return true end
-    if unit:match("^party%d$") or unit:match("^party%dtarget$") then return true end
-    return false
+    return unitTopology.IsTracked(unit)
 end
 
 -- =============================================================================
 -- Effect runtimes
 -- =============================================================================
 
+local function GetAllSurfaces()
+    local surfaces = {}
+    for _, row in ipairs(rows) do
+        if row.surfaces then
+            for _, surface in ipairs(row.surfaces) do surfaces[#surfaces + 1] = surface end
+        end
+    end
+    return surfaces
+end
+
 hotTracker.Initialize({
     Auras = A,
     Effects = E,
-    rows = rows,
+    GetSurfaces = GetAllSurfaces,
     SyncVisualTicker = SyncVisualTicker,
     IsSavedFeatureEnabled = IsSavedFeatureEnabled,
     GetSavedVariables = function() return S.sv end,
@@ -167,14 +159,16 @@ local UpdateRowHotVisuals = hotTracker.UpdateRowVisuals
 buffReminders.Initialize({
     Auras = A,
     Effects = E,
-    rows = rows,
+    GetSurfaces = GetAllSurfaces,
     IsSavedFeatureEnabled = IsSavedFeatureEnabled,
     IsConfigMode = function() return S.configMode end,
     GetCharacterSavedVariables = function() return S.charSv end,
     ApplyAllSelfBuffBindings = function() ApplyAllSelfBuffBindings() end,
     RequestLayoutUpdate = S.RequestLayoutUpdate,
+    SetSelfBuffIconTexture = function(texture)
+        ApogeePartyHealthBars_PlayerUtility.SetIconTexture(texture)
+    end,
 })
-local CanPlayerHealUnit = buffReminders.CanHealUnit
 local ShouldShowPartyBuffIcon = buffReminders.ShouldShowPartyIcon
 local ShouldShowSelfBuffIcon = buffReminders.ShouldShowSelfIcon
 local GetSelfBuffPreferenceOptions = buffReminders.GetSelfPreferenceOptions
@@ -192,6 +186,8 @@ shieldTracker.Initialize({
     IsSavedFeatureEnabled = IsSavedFeatureEnabled,
     IsConfigMode = function() return S.configMode end,
     RequestUpdate = S.RequestUpdate,
+    IsTrackedUnit = IsPanelTrackedUnit,
+    GetTrackedUnits = unitTopology.GetTrackedTokens,
 })
 local IsShieldEnabled = shieldTracker.IsEnabled
 local ShouldTrackShieldUnit = shieldTracker.ShouldTrackUnit
@@ -204,21 +200,49 @@ local UpdateRowShieldVisual = shieldTracker.UpdateRowVisual
 incomingHeals.Initialize({
     IsSavedFeatureEnabled = IsSavedFeatureEnabled,
     IsConfigMode = function() return S.configMode end,
+    IsTrackedUnit = IsPanelTrackedUnit,
 })
 local UpdateIncomingHealBarVisual = incomingHeals.UpdateBarVisual
 local UpdateRowIncomingHealVisual = incomingHeals.UpdateRowVisual
 
+local function IsUnitInPrimaryActionRange(unitId)
+    if not IsSavedFeatureEnabled("rangeCheckEnabled") or S.configMode then return true end
+    if not unitAPI.Exists(unitId) or unitAPI.IsDead(unitId) then return true end
+    local action = ApogeePartyHealthBars_ActionData.Normalize(S.GetBinding("1"))
+    if not action or action.kind ~= "spell" or not IsSpellInRange then
+        return unitAPI.GetDefaultRange(unitId)
+    end
+    local spellName = action.spellName or (action.spellId and GetSpellInfo(action.spellId))
+    if not spellName then return unitAPI.GetDefaultRange(unitId) end
+    local inRange = IsSpellInRange(spellName, unitId)
+    if inRange == nil then return unitAPI.GetDefaultRange(unitId) end
+    return inRange == 1 or inRange == true
+end
+
 rowGeometry.Initialize({
     GetHotStripHeight = GetHotStripHeight,
+    PlayerUtility = playerUtility,
     ShortcutBar = T,
+    RaidMarkers = M,
     WheelMacros = W,
     KeyActions = K,
     MouseButtonActions = B,
 })
-local GetPlayerPowerInfo = rowGeometry.GetPlayerPowerInfo
-local GetRowPowerChromeHeight = rowGeometry.GetRowPowerChromeHeight
 local GetActionAreaHeight = rowGeometry.GetActionAreaHeight
-local GetRowTotalHeight = rowGeometry.GetRowTotalHeight
+
+unitBar.Initialize({
+    GetHotStripHeight = GetHotStripHeight,
+    GetActiveHotTrackCount = GetActiveHotTrackCount,
+    IsUnitInPrimaryActionRange = IsUnitInPrimaryActionRange,
+    ShouldShowPartyBuffIcon = ShouldShowPartyBuffIcon,
+    IsShieldEnabled = IsShieldEnabled,
+    ShouldTrackShieldUnit = ShouldTrackShieldUnit,
+    GetUnitShieldRemaining = GetUnitShieldRemaining,
+    UpdateShieldVisual = UpdateRowShieldVisual,
+    UpdateIncomingVisual = UpdateRowIncomingHealVisual,
+    UpdateHotVisuals = UpdateRowHotVisuals,
+    RequestLayoutUpdate = S.RequestLayoutUpdate,
+})
 
 -- =============================================================================
 
@@ -272,30 +296,13 @@ local function ForceRefresh()
     end
 end
 
-local unitDisplay = ApogeePartyHealthBars_UnitDisplay
-unitDisplay.Initialize({
-    rows = rows,
-    GetPlayerPowerInfo = GetPlayerPowerInfo,
-    IsSavedFeatureEnabled = IsSavedFeatureEnabled,
-    GetUnitTargetToken = GetUnitTargetToken,
-    CanPlayerHealUnit = CanPlayerHealUnit,
-    IsOppositeFactionPlayer = buffReminders.IsOppositeFactionPlayer,
-    IsShieldEnabled = IsShieldEnabled,
-    ShouldTrackShieldUnit = ShouldTrackShieldUnit,
-    GetUnitShieldRemaining = GetUnitShieldRemaining,
-    UpdateRowShieldVisual = UpdateRowShieldVisual,
-    UpdateIncomingHealBarVisual = UpdateIncomingHealBarVisual,
-    UpdateRowIncomingHealVisual = UpdateRowIncomingHealVisual,
-    UpdateRowHotVisuals = UpdateRowHotVisuals,
-    ShouldShowPartyBuffIcon = ShouldShowPartyBuffIcon,
-})
-
 visualTicker.Initialize({
     IsAddonEnabled = IsEnabled,
     IsRangeCheckEnabled = function() return IsSavedFeatureEnabled("rangeCheckEnabled") end,
     IsConfigMode = function() return S.configMode end,
     HasActiveHotVisuals = HasActiveHotVisuals,
     TickHotVisuals = TickHotVisuals,
+    RefreshUnitChains = function() S.RefreshUnitChains() end,
     RefreshRangeAlpha = function() S.RefreshRangeAlpha() end,
     ShortcutBar = T,
     WheelMacros = W,
@@ -303,12 +310,51 @@ visualTicker.Initialize({
     MouseButtonActions = B,
     Threat = H,
 })
-local StyleReadableText = unitDisplay.StyleReadableText
-local ApplyFlatStatusBar = unitDisplay.ApplyFlatStatusBar
-local ApplyFlatBg = unitDisplay.ApplyFlatBg
-local UpdateRowPowerVisual = unitDisplay.UpdateRowPowerVisual
-local PopulateHealthRow = unitDisplay.PopulateHealthRow
-local RefreshTargetPartyBuff = unitDisplay.RefreshTargetPartyBuff
+local targetChainGUIDs = {}
+
+function S.RefreshUnitChains()
+    if not IsEnabled() then return end
+
+    local targetChainChanged = false
+    local visibleSurfaces = {}
+    if IsSavedFeatureEnabled("showUnitTargets") then
+        for _, row in ipairs(rows) do
+            if row.btn:IsShown() then
+                for _, surface in ipairs({ row.target, row.targetOfTarget }) do
+                    local guid = unitAPI.GetGUID(surface.unitId) or false
+                    if targetChainGUIDs[surface.unitId] ~= guid then
+                        targetChainGUIDs[surface.unitId] = guid
+                        targetChainChanged = true
+                    end
+                    if surface.visible then
+                        visibleSurfaces[#visibleSurfaces + 1] = surface
+                    end
+                end
+            end
+        end
+    else
+        targetChainGUIDs = {}
+    end
+
+    if targetChainChanged then
+        S.RequestLayoutUpdate()
+        return
+    end
+
+    if #visibleSurfaces > 0 then
+        A.BeginAuraCacheGeneration()
+        for _, surface in ipairs(visibleSurfaces) do surface:RefreshValues() end
+    end
+end
+
+function S.RefreshRangeAlpha()
+    if not IsEnabled() then return end
+    for _, surface in ipairs(GetAllSurfaces()) do
+        if surface.visible then surface:RefreshAlpha() end
+    end
+    if T.IsActive() then T.Refresh(false) end
+end
+local StyleReadableText = unitBar.StyleReadableText
 
 
 local function ShouldShowRow(slotIndex, unitId)
@@ -365,9 +411,6 @@ B.Configure({
 local unitFrames = ApogeePartyHealthBars_UnitFrames.Build({
     rows = rows,
     StyleReadableText = StyleReadableText,
-    ApplyFlatStatusBar = ApplyFlatStatusBar,
-    ApplyFlatBg = ApplyFlatBg,
-    GetRowTotalHeight = GetRowTotalHeight,
     SyncVisualTicker = SyncVisualTicker,
     PositionSecureOverlay = PositionSecureOverlay,
     ShowSecureFrame = ShowSecureFrame,
@@ -381,11 +424,23 @@ rows = unitFrames.rows
 local titleFS = unitFrames.titleFS
 local sepTex = unitFrames.sepTex
 local rowAnchor = unitFrames.rowAnchor
+local shortcutFooterAnchor = unitFrames.shortcutFooterAnchor
 local SavePosition = unitFrames.SavePosition
 local ApplyDefaultPosition = unitFrames.ApplyDefaultPosition
 local RestorePosition = unitFrames.RestorePosition
 local ApplyBackdrop = unitFrames.ApplyBackdrop
 local ApplyPanelChrome = unitFrames.ApplyPanelChrome
+playerUtility.Attach(rows[1].primary, {
+    ShouldShowSelfBuffIcon = ShouldShowSelfBuffIcon,
+    IsSelfBuffKnown = buffReminders.IsSelfKnown,
+    GetSelfBuffCastSpellName = buffReminders.GetSelfCastSpellName,
+    IsSavedFeatureEnabled = IsSavedFeatureEnabled,
+    DeferSecureUpdate = DeferSecureUpdate,
+    PositionSecureOverlay = PositionSecureOverlay,
+    ShowSecureFrame = ShowSecureFrame,
+    HideSecureFrame = HideSecureFrame,
+    SetSecureMouseEnabled = SetSecureMouseEnabled,
+})
 
 -- Layout & update
 
@@ -394,8 +449,10 @@ local function RebuildUnitToRow()
     wipe(unitToRow)
     for i = 1, C.MAX_ROWS do
         local row = rows[i]
-        if row.btn:IsShown() and row.unitId then
-            unitToRow[row.unitId] = row
+        if row.btn:IsShown() then
+            for _, surface in ipairs(row.surfaces) do
+                unitToRow[surface.unitId] = row
+            end
         end
     end
 end
@@ -405,33 +462,18 @@ local function FindRowForUnit(unitId)
     local row = unitToRow[unitId]
     if row then return row end
     for i = 1, C.MAX_ROWS do
-        if rows[i].unitId == unitId then return rows[i] end
+        if unitTopology.GetOwner(unitId) == rows[i].unitId then return rows[i] end
     end
     return nil
 end
 
 local function ResolvePanelUnit(unitId)
-    if FindRowForUnit(unitId) then return unitId end
-    if unitId == "target" or unitId == "targettarget" then return "player" end
-    local n = unitId and unitId:match("^party(%d)target$")
-    if n then return "party" .. n end
-    return unitId
-end
-
-local function ComputeRowLayoutKey(unitId, row)
-    local showPartyBuff = unitId and ShouldShowPartyBuffIcon(unitId) or false
-    local showSelfBuff = unitId and ShouldShowSelfBuffIcon(unitId) or false
-    local targetReserve = row and GetTargetColumnWidth(row) or 0
-    return string.format("%s|%s|%s|%d|%d|%d|%d|%d|%d",
-        tostring(showPartyBuff), tostring(showSelfBuff), GetHotStripHeight(), targetReserve,
-        GetRowPowerChromeHeight(unitId), T.GetHeight(unitId), W.GetHeight(unitId),
-        math.max(K.GetHeight(unitId), B.GetHeight(unitId)), H.GetGutterWidth())
+    return unitTopology.GetOwner(unitId) or unitId
 end
 
 local function AuraEventNeedsLayout(unitId)
     local row = FindRowForUnit(unitId)
-    if not row or not row.btn:IsShown() then return false end
-    return row._layoutKey ~= ComputeRowLayoutKey(unitId, row)
+    return row ~= nil and row.btn:IsShown()
 end
 
 -- Layout functions live in ApogeePartyHealthBars_Layout.lua (registered after bindings init).
@@ -462,12 +504,6 @@ UpdateUI = function()
     end
 
     if doLayout then
-        for i = 1, C.MAX_ROWS do
-            if not ShouldShowRow(i, rows[i].unitId) then
-                rows[i].showTargetPane = false
-            end
-        end
-
         if LayoutRows() ~= false then
             UpdateRowContent()
             SyncCastOverlays()
@@ -519,7 +555,6 @@ clickBindings.Initialize({
     KeyToActionAttrs = KeyToActionAttrs,
     GetBindingsTable = GetBindingsTable,
     GetBindingAction = GetBindingAction,
-    GetUnitTargetToken = GetUnitTargetToken,
 })
 ApplyAllBindings = clickBindings.ApplyAll
 
@@ -531,6 +566,7 @@ L.Register({
     titleFS = titleFS,
     sepTex = sepTex,
     rowAnchor = rowAnchor,
+    shortcutFooterAnchor = shortcutFooterAnchor,
     DeferSecureUpdate = DeferSecureUpdate,
     HideSecureFrame = HideSecureFrame,
     ShowSecureFrame = ShowSecureFrame,
@@ -539,40 +575,30 @@ L.Register({
     ApplyPanelChrome = ApplyPanelChrome,
     ShouldShowRow = ShouldShowRow,
     GetRowBtnWidth = GetRowBtnWidth,
-    GetRowTotalHeight = GetRowTotalHeight,
-    GetRowPowerChromeHeight = GetRowPowerChromeHeight,
     GetActionAreaHeight = GetActionAreaHeight,
+    GetActionHudGeometry = rowGeometry.GetActionHudGeometry,
     GetPlayerActionWidth = function()
         return math.max(C.ROW_CONTENT_W, B.GetWidth("player"))
     end,
-    LayoutShortcuts = function()
-        W.Layout(); K.Layout(); B.Layout()
-        T.Layout(math.max(W.GetHeight("player"), K.GetHeight("player"), B.GetHeight("player")))
+    LayoutPlayerActions = function(actionGeometry)
+        W.Layout(actionGeometry.offsets.wheel)
+        K.Layout(actionGeometry.offsets.keys)
+        B.Layout(actionGeometry.offsets.buttons)
     end,
+    GetShortcutFooterHeight = T.GetFooterHeight,
+    LayoutShortcutFooter = T.Layout,
     GetThreatGutterWidth = H.GetGutterWidth,
     RefreshThreat = H.Refresh,
-    GetHotStripHeight = GetHotStripHeight,
-    GetActiveHotTrackCount = GetActiveHotTrackCount,
-    GetTargetColumnWidth = GetTargetColumnWidth,
-    ShouldShowPartyBuffIcon = ShouldShowPartyBuffIcon,
-    ShouldShowSelfBuffIcon = ShouldShowSelfBuffIcon,
+    IsUnitTargetsEnabled = IsUnitTargetsEnabled,
     GetPartyBuffCastSpellName = buffReminders.GetPartyCastSpellName,
-    GetSelfBuffCastSpellName = buffReminders.GetSelfCastSpellName,
     IsSavedFeatureEnabled = IsSavedFeatureEnabled,
-    ComputeRowLayoutKey = ComputeRowLayoutKey,
-    PopulateHealthRow = PopulateHealthRow,
-    SyncRowTargetPane = SyncRowTargetPane,
-    RefreshTargetPartyBuff = RefreshTargetPartyBuff,
-    UpdateRowPowerVisual = UpdateRowPowerVisual,
-    UpdateRowHotVisuals = UpdateRowHotVisuals,
-    GetUnitTargetToken = GetUnitTargetToken,
     ApplyAllBindings = ApplyAllBindings,
     IsEnabled = IsEnabled,
     RebuildUnitToRow = RebuildUnitToRow,
+    PlayerUtility = playerUtility,
 })
 
 UpdateHeader = L.UpdateHeader
-RefreshRowBuffs = L.RefreshRowBuffs
 LayoutRows = L.LayoutRows
 UpdateRowValues = L.UpdateRowValues
 UpdateRowContent = L.UpdateRowContent

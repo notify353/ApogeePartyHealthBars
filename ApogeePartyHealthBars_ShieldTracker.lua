@@ -15,6 +15,7 @@ local remainingByGuid = {}
 function X.Initialize(deps)
     for _, key in ipairs({
         "Auras", "IsSavedFeatureEnabled", "IsConfigMode", "RequestUpdate",
+        "IsTrackedUnit", "GetTrackedUnits",
     }) do
         assert(deps[key] ~= nil, "ShieldTracker missing dependency: " .. key)
     end
@@ -30,9 +31,7 @@ function X.ShouldTrackUnit(unitId)
     if not unitId or not UnitExists(unitId) or UnitIsDeadOrGhost(unitId) then
         return false
     end
-    if unitId == "player" then return true end
-    if unitId:match("^party%d$") then return UnitExists(unitId) end
-    return false
+    return D.IsTrackedUnit(unitId)
 end
 
 local function UnitHasPWShield(unitId)
@@ -132,7 +131,7 @@ function X.OnCombatLog()
 end
 
 function X.SeedFromAuras()
-    for _, unitId in ipairs(C.SLOT_UNITS) do
+    for _, unitId in ipairs(D.GetTrackedUnits()) do
         X.SyncUnit(unitId)
         if X.ShouldTrackUnit(unitId) and UnitHasPWShield(unitId) then
             local guid = UnitGUID(unitId)

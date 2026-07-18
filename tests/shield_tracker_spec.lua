@@ -82,12 +82,16 @@ tracker.Initialize({
     end,
     IsConfigMode = function() return configMode end,
     RequestUpdate = function() requestUpdates = requestUpdates + 1 end,
+    IsTrackedUnit = function(unitId)
+        return unitId == "player" or unitId == "party1" or unitId == "target"
+    end,
+    GetTrackedUnits = function() return { "player", "party1", "target" } end,
 })
 
 assert(tracker.IsEnabled(), "shield feature state was not forwarded")
-assert(tracker.ShouldTrackUnit("player") and tracker.ShouldTrackUnit("party1"),
-    "player or party unit was rejected")
-assert(not tracker.ShouldTrackUnit("target"), "target became a primary shield-ledger unit")
+assert(tracker.ShouldTrackUnit("player") and tracker.ShouldTrackUnit("party1")
+        and tracker.ShouldTrackUnit("target"),
+    "registered primary or target unit was rejected")
 dead.party1 = true
 assert(not tracker.ShouldTrackUnit("party1"), "dead party unit remained trackable")
 dead.party1 = nil

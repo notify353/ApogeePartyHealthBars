@@ -249,6 +249,13 @@ assert(tocLoadOrder["ApogeePartyHealthBars_ActionData.lua"]
 assert(tocLoadOrder["ApogeePartyHealthBars_ActionMacros.lua"]
     < tocLoadOrder["ApogeePartyHealthBars_ShortcutBar.lua"],
     "Shortcut Bar runtime loaded before its shared action dependency")
+assert(tocLoadOrder["ApogeePartyHealthBars_AccessoryLayout.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_PlayerUtility.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_AccessoryLayout.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_ShortcutBar.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_AccessoryLayout.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_RaidMarkers.lua"],
+    "compact accessory consumers loaded before their shared geometry dependency")
 assert(tocLoadOrder["ApogeePartyHealthBars_WheelLayouts.lua"]
     < tocLoadOrder["ApogeePartyHealthBars_WheelMacros.lua"],
     "wheel runtime loaded before its class-state layout dependency")
@@ -385,12 +392,32 @@ assert(feedbackText.point[4] == 4 and feedbackText.point[5] == -117,
 RunFrameUpdates()
 local geometry = ApogeePartyHealthBars_RowGeometry
 local permanentActionHeight = geometry.GetActionAreaHeight("player")
-local shortcutHeight = ApogeePartyHealthBars_ShortcutBar.GetHeight("player")
+local playerUtilityHeight = ApogeePartyHealthBars_PlayerUtility.GetHeight("player")
+local targetShortcutHeight = ApogeePartyHealthBars_ShortcutBar.GetLaneHeight("target")
+local raidMarkerHeight = ApogeePartyHealthBars_RaidMarkers.GetHeight("player")
+local actionHudHeight = geometry.GetActionHudHeight("player")
+local actionHudGeometry = geometry.GetActionHudGeometry("player")
+local expectedActionHeight = math.max(
+    actionHudHeight + playerUtilityHeight,
+    targetShortcutHeight,
+    raidMarkerHeight)
 assert(keysRuntime.GetHeight("player") == 136
         and wheelRuntime.GetHeight("player") == 169
         and buttonRuntime.GetHeight("player") == 78
-        and permanentActionHeight == shortcutHeight + 169,
-    "permanent Keys and Wheel geometry did not reserve the taller action rail")
+        and permanentActionHeight == expectedActionHeight,
+    "parallel player and target utility stacks did not reserve the taller action column")
+assert(actionHudGeometry.offsets.wheel == 0
+        and actionHudGeometry.offsets.keys == 54
+        and actionHudGeometry.offsets.buttons == 81
+        and actionHudGeometry.height == actionHudHeight
+        and actionHudHeight == 190
+        and wheelRuntime.GetHudContainer().point[5] == 0
+        and keysRuntime.GetHudContainer().point[5] == -54
+        and buttonRuntime.GetHudContainer().point[5] == -81,
+    "Keys and Buttons HUD containers did not bottom-align their icon grids with Wheel")
+assert(ApogeePartyHealthBars_ShortcutBar.GetFooterHeight()
+        == ApogeePartyHealthBars_ShortcutBar.GetLaneHeight("player"),
+    "configured Shortcuts did not reserve their independent panel footer")
 assert(geometry.GetRowTotalHeight("player")
         == ApogeePartyHealthBars_C.ROW_H
             + ApogeePartyHealthBars_HotTracker.GetStripHeight()

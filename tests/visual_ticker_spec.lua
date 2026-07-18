@@ -25,6 +25,7 @@ local calls = {
     hotTicks = 0,
     shortcutTicks = 0,
     wheelRefreshes = 0,
+    chainRefreshes = 0,
     rangeRefreshes = 0,
     threatRefreshes = 0,
     keyRefreshes = 0,
@@ -44,6 +45,7 @@ ticker.Initialize({
     IsConfigMode = function() return flags.config end,
     HasActiveHotVisuals = function() return flags.hots end,
     TickHotVisuals = function() calls.hotTicks = calls.hotTicks + 1 end,
+    RefreshUnitChains = function() calls.chainRefreshes = calls.chainRefreshes + 1 end,
     RefreshRangeAlpha = function() calls.rangeRefreshes = calls.rangeRefreshes + 1 end,
     ShortcutBar = {
         IsActive = function() return flags.shortcuts end,
@@ -96,21 +98,24 @@ ticker.Sync()
 update(frame, 0.05)
 assert(calls.hotTicks == 1 and calls.shortcutTicks == 1 and calls.wheelRefreshes == 1,
     "per-frame visual callbacks did not run exactly once")
-assert(calls.rangeRefreshes == 1 and calls.threatRefreshes == 1 and calls.keyRefreshes == 1
+assert(calls.chainRefreshes == 1 and calls.rangeRefreshes == 1
+        and calls.threatRefreshes == 1 and calls.keyRefreshes == 1
         and calls.buttonRefreshes == 1,
     "initial range-cadence callbacks did not run")
 
 update(frame, 0.10)
 assert(calls.hotTicks == 2 and calls.shortcutTicks == 2 and calls.wheelRefreshes == 2,
     "per-frame visual callbacks missed an intermediate tick")
-assert(calls.rangeRefreshes == 1 and calls.threatRefreshes == 1 and calls.keyRefreshes == 1
+assert(calls.chainRefreshes == 1 and calls.rangeRefreshes == 1
+        and calls.threatRefreshes == 1 and calls.keyRefreshes == 1
         and calls.buttonRefreshes == 1,
     "range callbacks ran before the 0.2-second cadence")
 
 update(frame, 0.11)
 assert(calls.hotTicks == 3 and calls.shortcutTicks == 3,
     "per-frame callbacks did not continue on the range tick")
-assert(calls.rangeRefreshes == 2 and calls.threatRefreshes == 2 and calls.keyRefreshes == 2
+assert(calls.chainRefreshes == 2 and calls.rangeRefreshes == 2
+        and calls.threatRefreshes == 2 and calls.keyRefreshes == 2
         and calls.buttonRefreshes == 2,
     "range callbacks did not run at the 0.2-second cadence")
 assert(calls.wheelRefreshes == 3,
@@ -120,13 +125,15 @@ ticker.Stop()
 assert(not frame:IsShown(), "Stop did not hide the ticker")
 ticker.Sync()
 update(frame, 0.01)
-assert(calls.rangeRefreshes == 3 and calls.threatRefreshes == 3 and calls.keyRefreshes == 3
+assert(calls.chainRefreshes == 3 and calls.rangeRefreshes == 3
+        and calls.threatRefreshes == 3 and calls.keyRefreshes == 3
         and calls.buttonRefreshes == 3,
     "Stop did not reset the private range accumulator")
 
 local beforeDisable = {
     calls.hotTicks, calls.shortcutTicks, calls.wheelRefreshes,
-    calls.rangeRefreshes, calls.threatRefreshes, calls.keyRefreshes, calls.buttonRefreshes,
+    calls.chainRefreshes, calls.rangeRefreshes, calls.threatRefreshes,
+    calls.keyRefreshes, calls.buttonRefreshes,
 }
 flags.addon = false
 update(frame, 0.25)
@@ -134,10 +141,11 @@ assert(not frame:IsShown(), "update after addon disable did not stop the ticker"
 assert(calls.hotTicks == beforeDisable[1]
         and calls.shortcutTicks == beforeDisable[2]
         and calls.wheelRefreshes == beforeDisable[3]
-        and calls.rangeRefreshes == beforeDisable[4]
-        and calls.threatRefreshes == beforeDisable[5]
-        and calls.keyRefreshes == beforeDisable[6]
-        and calls.buttonRefreshes == beforeDisable[7],
+        and calls.chainRefreshes == beforeDisable[4]
+        and calls.rangeRefreshes == beforeDisable[5]
+        and calls.threatRefreshes == beforeDisable[6]
+        and calls.keyRefreshes == beforeDisable[7]
+        and calls.buttonRefreshes == beforeDisable[8],
     "disabled addon continued visual ticking")
 
 print("PASS visual ticker")

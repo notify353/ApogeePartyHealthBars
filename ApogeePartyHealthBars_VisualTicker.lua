@@ -40,6 +40,7 @@ local function OnUpdate(_, elapsed)
     rangeTimer = rangeTimer - (elapsed or 0)
     if rangeTimer <= 0 then
         rangeTimer = C.RANGE_UPDATE_RATE
+        D.RefreshUnitChains()
         D.RefreshRangeAlpha()
         D.Threat.Refresh()
         D.KeyActions.Refresh()
@@ -52,7 +53,7 @@ end
 function V.Initialize(deps)
     for _, key in ipairs({
         "IsAddonEnabled", "IsRangeCheckEnabled", "IsConfigMode",
-        "HasActiveHotVisuals", "TickHotVisuals", "RefreshRangeAlpha",
+        "HasActiveHotVisuals", "TickHotVisuals", "RefreshUnitChains", "RefreshRangeAlpha",
         "ShortcutBar", "WheelMacros", "KeyActions", "MouseButtonActions", "Threat",
     }) do
         assert(deps[key] ~= nil, "VisualTicker missing dependency: " .. key)

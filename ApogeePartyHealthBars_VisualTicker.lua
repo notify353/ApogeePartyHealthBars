@@ -11,13 +11,7 @@ local function IsRangeActive()
 end
 
 local function ShouldRun()
-    if not D.IsAddonEnabled() then return false end
-    return IsRangeActive()
-        or D.HasActiveHotVisuals()
-        or D.ShortcutBar.IsActive()
-        or D.WheelMacros.IsEnabled()
-        or D.KeyActions.IsEnabled()
-        or D.Threat.IsActive()
+    return D.IsAddonEnabled()
 end
 
 function V.Stop()

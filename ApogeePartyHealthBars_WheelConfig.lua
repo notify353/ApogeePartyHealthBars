@@ -6,7 +6,7 @@ local AC = ApogeePartyHealthBars_ActionConfig
 ApogeePartyHealthBars_WheelConfig = {}
 local WC = ApogeePartyHealthBars_WheelConfig
 
-local tab, W, D, hint, enableButton, layoutSelector, statusText
+local tab, W, D, hint, layoutSelector, statusText
 local lastSpecKey, lastLayoutKey
 local slotRows = {}
 local DISPLAY_LABELS = {
@@ -62,11 +62,6 @@ function WC.Refresh(assignedSlot)
         S.selectedWheelSlot = nil
     end
     lastSpecKey, lastLayoutKey = specKey, layoutKey
-    local enabled = W.IsEnabled()
-    enableButton.label:SetText(enabled and "Wheel: ON" or "Wheel: OFF")
-    enableButton.label:SetTextColor(enabled and 0.35 or 0.85, enabled and 1 or 0.85,
-        enabled and 0.35 or 0.88)
-
     local hasStances = W.HasStanceLayouts()
     layoutSelector:SetOptions(W.GetLayoutOptions())
     layoutSelector:SetSelectedKey(layoutKey)
@@ -79,7 +74,7 @@ function WC.Refresh(assignedSlot)
     elseif not W.FindFirstEmptySlot(layoutKey) then
         hint:SetText("All six Wheel gestures are assigned. Select a row to replace it or Clear one.")
     else
-        hint:SetText("Shift-click a Spellbook spell or bag item to fill the first empty gesture. Select a row to replace it.")
+        hint:SetText("All six wheel gestures are reserved while the addon is enabled. Shift-click to fill the first empty gesture.")
     end
 
     local order = W.GetDisplayOrder()
@@ -127,20 +122,6 @@ function WC.Build(parent, deps)
 
     local heading = tab:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     heading:SetPoint("TOPLEFT"); heading:SetText("|cffFFD700Mouse wheel actions|r")
-    enableButton = UIH.CreateButton(tab, "Wheel: OFF", 96, 22)
-    enableButton:SetPoint("TOPRIGHT", tab, "TOPRIGHT", 0, 2)
-    enableButton:SetScript("OnClick", function()
-        local ok, message, detail
-        if W.IsEnabled() then
-            ok, _, detail = W.Disable()
-            message = detail
-        else
-            ok, _, detail = W.Enable()
-            message = detail
-        end
-        setStatus(message, ok)
-        WC.Refresh()
-    end)
 
     hint = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     hint:SetPoint("TOPLEFT", heading, "BOTTOMLEFT", 0, -4)

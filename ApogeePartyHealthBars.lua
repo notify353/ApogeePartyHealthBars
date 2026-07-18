@@ -88,6 +88,7 @@ local RefreshBindPanel
 local HookSpellbook
 local HookContainerItems
 local ApplyAllSecureBindings
+local ReconcileBoundActionBindings
 local EnsureMinimapButton
 local InitHotSpells
 
@@ -569,8 +570,7 @@ local function ReconcileAllSecureOverlays()
     T.RefreshSecureActions()
     W.RefreshSecureActions()
     K.RefreshSecureActions()
-    W.ReconcileBindings()
-    K.ReconcileBindings()
+    ReconcileBoundActionBindings()
 end
 
 secureFrames.InitializeReconciler(ReconcileAllSecureOverlays)
@@ -629,6 +629,28 @@ SetHotTrackEnabled = function(key, enabled)
     ForceRefresh()
 end
 
+local function GetBoundActionManagers()
+    local managers = {}
+    for _, feature in ipairs({ W, K }) do
+        local manager = feature.GetBindingManager and feature.GetBindingManager()
+        if manager then managers[#managers + 1] = manager end
+    end
+    return managers
+end
+
+local function ClaimBoundActionBindings()
+    return ApogeePartyHealthBars_BoundActionBindings.ClaimAll(GetBoundActionManagers())
+end
+
+local function ReleaseBoundActionBindings()
+    return ApogeePartyHealthBars_BoundActionBindings.ReleaseAll(GetBoundActionManagers())
+end
+
+ReconcileBoundActionBindings = function()
+    if not S.sv or S.sv.enabled ~= true then return true, "disabled" end
+    return ApogeePartyHealthBars_BoundActionBindings.ReconcileAll(GetBoundActionManagers())
+end
+
 local configController = ApogeePartyHealthBars_ConfigController
 configController.Initialize({
     panel = panel,
@@ -643,15 +665,19 @@ configController.Initialize({
     HookSpellbook = function() HookSpellbook() end,
     HookContainerItems = function() HookContainerItems() end,
     ScheduleSecureReconcile = secureFrames.RequestReconcile,
-    WheelMacros = W,
-    KeyActions = K,
-    BoundActionBindings = ApogeePartyHealthBars_BoundActionBindings,
+    ClaimBoundActionBindings = ClaimBoundActionBindings,
+    ReleaseBoundActionBindings = ReleaseBoundActionBindings,
+    ReconcileBoundActionBindings = ReconcileBoundActionBindings,
+    ProfileStore = ApogeePartyHealthBars_ProfileStore,
     Print = Print,
 })
 ExitConfigMode = configController.Exit
 SetAddonEnabled = configController.SetAddonEnabled
 SetConfigMode = configController.SetMode
 FactoryReset = configController.FactoryReset
+local ActivateProfile = configController.ActivateProfile
+local MutateActiveProfile = configController.MutateActiveProfile
+local CreateAndActivateProfile = configController.CreateAndActivateProfile
 
 configUI = ApogeePartyHealthBars_ConfigUI.Build({
     ApplyBackdrop               = ApplyBackdrop,
@@ -663,6 +689,12 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
     ShortcutBar               = T,
     KeyActions                = K,
     WheelMacros                = W,
+    ProfileStore              = ApogeePartyHealthBars_ProfileStore,
+    ProfileCodec              = ApogeePartyHealthBars_ProfileCodec,
+    ActivateProfile           = ActivateProfile,
+    MutateActiveProfile       = MutateActiveProfile,
+    CreateAndActivateProfile = CreateAndActivateProfile,
+    AddonVersion              = C_AddOns.GetAddOnMetadata("ApogeePartyHealthBars", "Version"),
     GeneralConfig = {
         ForceRefresh                = ForceRefresh,
         InitHotSpells               = InitHotSpells,
@@ -712,6 +744,9 @@ ApogeePartyHealthBars_RuntimeEvents.Register(ApogeePartyHealthBars_EventRouter, 
     IsShieldEnabled = IsShieldEnabled,
     OnShieldCombatLog = OnShieldCombatLog,
     SetConfigMode = SetConfigMode,
+    ClaimBoundActionBindings = ClaimBoundActionBindings,
+    ReleaseBoundActionBindings = ReleaseBoundActionBindings,
+    ReconcileBoundActionBindings = ReconcileBoundActionBindings,
     IsPanelTrackedUnit = IsPanelTrackedUnit,
     ResolvePanelUnit = ResolvePanelUnit,
     ShieldTrackerSyncUnit = ShieldTrackerSyncUnit,

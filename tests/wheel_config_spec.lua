@@ -71,7 +71,7 @@ function ApogeePartyHealthBars_ActionConfig.CloseEditor() closeCount = closeCoun
 local order = { "ctrlUp", "shiftUp", "normalUp", "normalDown", "shiftDown", "ctrlDown" }
 local definitions = {}
 for _, id in ipairs(order) do definitions[#definitions + 1] = { id = id } end
-local enabled, currentLayout, currentSpec = false, "base", "1"
+local currentLayout, currentSpec = "base", "1"
 local layouts = {
     base = {
         ctrlUp = { kind = "spell", spellName = "Charge", macroText = "/cast Charge", soundKey = "none" },
@@ -82,9 +82,6 @@ local layouts = {
     },
 }
 local wheel = {}
-function wheel.IsEnabled() return enabled end
-function wheel.Enable() enabled = true; return true, "enabled", "Wheel bindings enabled." end
-function wheel.Disable() enabled = false; return true, "disabled", "Wheel bindings disabled." end
 function wheel.GetActiveLayoutKey() return currentLayout end
 function wheel.GetActiveSpecKey() return currentSpec end
 function wheel.HasStanceLayouts() return true end
@@ -129,16 +126,12 @@ config.Build(widget(), {
     Sounds = { GetOptions = function() return { { key = "none", label = "None" } } end },
 })
 
-assert(#rows == 6 and not enabled, "disabled Wheel did not keep all action rows visible")
+assert(#rows == 6, "permanent Wheel did not keep all action rows visible")
 assert(rows[1].primary.text == "Charge" and rows[3].primary.text == "Linen Bandage",
     "Wheel rows did not use the shared display order")
 assert(rows[1].secondary.text:find("Spell", 1, true)
     and rows[3].secondary.text:find("Item", 1, true),
     "Wheel rows did not identify Spell and Item records")
-
-local enableButton = buttons[1]
-enableButton.scripts.OnClick()
-assert(enabled and enableButton.label.text == "Wheel: ON", "compact Wheel control did not enable bindings")
 
 rows[1].scripts.OnClick()
 assert(ApogeePartyHealthBars_S.selectedWheelSlot == "ctrlUp" and rows[1].selected,

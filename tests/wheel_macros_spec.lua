@@ -3,7 +3,7 @@ unpack = unpack or table.unpack
 ApogeePartyHealthBars_C = { SHORTCUT_ICON_SIZE = 24, SHORTCUT_ICON_GAP = 3,
     SHORTCUT_READY_PULSE = 0.65, SHORTCUT_SOUND_DEBOUNCE = 2,
     OUT_OF_RANGE_ALPHA = 0.35, ROW_CONTENT_W = 184 }
-ApogeePartyHealthBars_S = { charSv = {} }
+ApogeePartyHealthBars_S = { sv = { enabled = true }, charSv = {} }
 
 local function widget()
     local value = { shown = true, attributes = {}, mutations = 0, scripts = {} }
@@ -139,12 +139,18 @@ local bindings = {
 }
 local saveCount = 0
 local rejectedBindingKey
+local rejectedBindingKind
 function GetCurrentBindingSet() return 2 end
 function GetBindingAction(key, mode) assert(mode == nil, "binding read received saved-set mode"); return bindings[key] or "" end
 function GetBindingName(action) return action end
 function SetBinding(key, action, mode)
     assert(mode == nil, "binding write received saved-set mode")
-    if rejectedBindingKey == key and action then return false end
+    local isClick = type(action) == "string" and action:find("^CLICK ") ~= nil
+    if rejectedBindingKey == key and action
+        and (rejectedBindingKind == "click" and isClick
+            or rejectedBindingKind == "normal" and not isClick) then
+        return false
+    end
     bindings[key] = action or ""
     return true
 end
@@ -182,23 +188,21 @@ wheel.Configure({
 })
 wheel.Attach({ btn = widget() })
 wheel.InitializeSaved()
-assert(not wheel.IsEnabled(), "wheel bindings should require opt-in")
+local bindingManager = assert(wheel.GetBindingManager(), "Wheel binding manager was not created")
 for _, slot in ipairs(data.SLOTS) do
     assert(wheel.GetSlot(PRIMARY, slot.id) == nil, "new wheel slot did not start empty")
     local icon = wheel.GetHudIcon(slot.id)
     assert(icon and not icon.texture.shown and icon.emptyFill.shown,
         "empty wheel slot did not render as a plain grey box")
 end
-local conflicts = wheel.GetConflicts()
-assert(#conflicts == 2, "camera zoom conflicts were not detected")
-assert(wheel.Enable(), "first-run wheel enable failed")
+assert(bindingManager.ClaimCurrentSet(), "first-run Wheel claim failed")
 wheel.Layout()
-assert(wheel.IsEnabled() and saveCount == 1, "first-run enable did not persist bindings")
+assert(saveCount == 1, "first-run claim did not persist bindings")
 assert(wheel.GetHeight("player") == 169,
     "wheel HUD did not reserve a gap before the Shortcut Bar icons")
 for _, slot in ipairs(data.SLOTS) do
     assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. "Hud:LeftButton",
-        "first-run enable did not claim " .. slot.key)
+        "first-run startup did not claim " .. slot.key)
 end
 assert(wheel.AssignSpell(PRIMARY, "normalUp", 2061, "Flash Heal"), "wheel spell assignment failed")
 bindings.MOUSEWHEELUP = "SOMEOTHERADDONACTION"
@@ -284,8 +288,8 @@ local bindingSavesBeforeSpecChange = saveCount
 local ownershipBeforeSpecChange = ApogeePartyHealthBars_S.charSv.wheelMacros.ownership
 activeSpecGroup = 2
 assert(wheel.OnActiveSpecChanged(), "active talent-group change was not detected")
-assert(wheel.GetActiveSpecKey() == "2" and wheel.IsEnabled(),
-    "talent-group change did not preserve the character-wide Wheel state")
+assert(wheel.GetActiveSpecKey() == "2",
+    "talent-group change did not preserve the permanent Wheel runtime")
 assert(wheel.GetSlot(PRIMARY, "normalUp") == nil
     and stanceSecure.attributes["wheel-macro-1"] == nil
     and stanceSecure.attributes.macrotext == nil,
@@ -554,38 +558,24 @@ wheel.OnActiveSpecChanged()
 
 bindings["CTRL-MOUSEWHEELUP"] = "CLICK ApogeePartyHealthBarsWheelCtrlUpHud:LeftButton"
 rejectedBindingKey = "MOUSEWHEELDOWN"
-local disabled, disableFailure, disableDetail = wheel.Disable()
-assert(not disabled and disableFailure == "binding_restore_failed"
-    and disableDetail:find("Normal Down", 1, true) and wheel.IsEnabled(),
-    "failed binding restoration did not leave Wheel atomically enabled")
+rejectedBindingKind = "normal"
+local released, releaseFailure, releaseDetail = ApogeePartyHealthBars_BoundActionBindings.ReleaseAll({ bindingManager })
+assert(not released and releaseFailure == "binding_restore_failed"
+    and releaseDetail:find("Normal Down", 1, true),
+    "failed binding restoration did not leave Wheel atomically claimed")
 assert(bindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton",
-    "failed Wheel disable did not roll back bindings restored earlier in the transaction")
-rejectedBindingKey = nil
-local disabledSuccessfully, disableCode = wheel.Disable()
-assert(disabledSuccessfully and disableCode == "disabled", "wheel disable failed")
+    "failed Wheel release did not roll back bindings restored earlier in the transaction")
+rejectedBindingKey, rejectedBindingKind = nil, nil
+local releasedSuccessfully, releaseCode = ApogeePartyHealthBars_BoundActionBindings.ReleaseAll({ bindingManager })
+assert(releasedSuccessfully and releaseCode == "released", "Wheel release failed")
 assert(bindings.MOUSEWHEELUP == "CAMERAZOOMIN", "camera zoom was not restored")
 assert(bindings.MOUSEWHEELDOWN == "CAMERAZOOMOUT", "camera zoom out was not restored")
 assert(bindings["CTRL-MOUSEWHEELUP"] == "", "empty prior binding was not restored")
-assert(secure.attributes.type == nil and secure.attributes.macrotext == nil,
-    "disabled wheel retained secure macro attributes")
-
-bindings.MOUSEWHEELUP = "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton"
-ApogeePartyHealthBars_S.charSv.wheelMacros.ownership["2"] = {
-    normalUp = { previousAction = "CAMERAZOOMIN" },
-}
-rejectedBindingKey = "MOUSEWHEELUP"
-local restoredDisabled, restoreFailures = wheel.ReconcileBindings()
-assert(not restoredDisabled and #restoreFailures == 1
-    and bindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton"
-    and ApogeePartyHealthBars_S.charSv.wheelMacros.ownership["2"].normalUp,
-    "failed disabled-state restoration was reported as successful or discarded ownership")
-rejectedBindingKey = nil
-assert(wheel.ReconcileBindings(), "disabled-state binding restoration did not retry")
-assert(bindings.MOUSEWHEELUP == "CAMERAZOOMIN",
-    "disabled feature did not restore ownership left in the active binding set")
+assert(secure.attributes.type == "macro" and secure.attributes.macrotext,
+    "binding release incorrectly removed permanent secure action state")
 
 ApogeePartyHealthBars_S.charSv.wheelMacros = {
-    schemaVersion = 3, enabled = false, bindingVersion = 1, ownership = {},
+    schemaVersion = 3, bindingVersion = 1, ownership = {},
     profiles = { ["1"] = { layouts = { base = { slots = {} } } } },
 }
 for _, slot in ipairs(data.SLOTS) do
@@ -601,15 +591,15 @@ ApogeePartyHealthBars_S.charSv.wheelMacros.profiles["1"].layouts.base.slots.norm
 }
 wheel.InitializeSaved()
 local migrated = wheel.GetSlot(PRIMARY, "normalUp")
-assert(ApogeePartyHealthBars_S.charSv.wheelMacros.schemaVersion == 5
+assert(ApogeePartyHealthBars_S.charSv.wheelMacros.schemaVersion == 6
     and migrated.kind == "spell" and migrated.spellId == 78 and migrated.spellName == "Legacy Heroic Strike"
     and migrated.macroText == "/cast Legacy Custom Action" and migrated.soundKey == "toast"
     and migrated.displaySpellId == nil and migrated.displaySpellName == nil,
     "Wheel schema migration did not preserve and canonicalize the legacy action")
 rejectedBindingKey = "CTRL-MOUSEWHEELUP"
-local enabled, failure = wheel.Enable()
-assert(not enabled and failure == "binding_failed", "rejected wheel binding reported success")
-assert(not wheel.IsEnabled(), "partial binding failure left Wheel enabled")
+rejectedBindingKind = "click"
+local claimed, failure = bindingManager.ClaimCurrentSet()
+assert(not claimed and failure == "binding_failed", "rejected Wheel binding reported success")
 for _, slot in ipairs(data.SLOTS) do
     local expected = (slot.id == "normalUp" and "CAMERAZOOMIN")
         or (slot.id == "normalDown" and "CAMERAZOOMOUT") or ""

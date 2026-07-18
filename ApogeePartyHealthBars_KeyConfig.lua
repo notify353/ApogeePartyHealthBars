@@ -7,7 +7,7 @@ local Actions = ApogeePartyHealthBars_ActionMacros
 ApogeePartyHealthBars_KeyConfig = {}
 local KC = ApogeePartyHealthBars_KeyConfig
 
-local tab, K, D, hint, enableButton, layoutSelector, gridFrame, detailRow, statusText
+local tab, K, D, hint, layoutSelector, gridFrame, detailRow, statusText
 local lastSpecKey, lastLayoutKey
 local tiles, definitions = {}, {}
 local TILE_SIZE, TILE_GAP = 42, 5
@@ -98,10 +98,6 @@ function KC.Refresh(assignedSlot)
     end
     lastSpecKey, lastLayoutKey = specKey, layoutKey
 
-    local enabled = K.IsEnabled()
-    enableButton.label:SetText(enabled and "Keys: ON" or "Keys: OFF")
-    enableButton.label:SetTextColor(enabled and 0.35 or 0.85, enabled and 1 or 0.85,
-        enabled and 0.35 or 0.88)
     local bindingStatus, conflicts = K.GetBindingStatus()
     if bindingStatus == "conflict" then
         statusText:SetText("|cffffaa00" .. bindingConflictMessage(conflicts) .. "|r")
@@ -122,13 +118,10 @@ function KC.Refresh(assignedSlot)
     if S.selectedKeySlot then
         hint:SetText("|cff00ff00" .. definitions[S.selectedKeySlot].label
             .. " selected for replacement.|r Shift-click a Spellbook spell or bag item.")
-    elseif not enabled then
-        hint:SetText("|cffffaa00Warning: enabling Keys replaces 1–5, Q/E/R/T, F/G, and Z/X/C/V."
-            .. " Disabling restores bindings still owned by the add-on.|r")
     elseif not K.FindFirstEmptySlot(layoutKey) then
         hint:SetText("All 15 Keys are assigned. Select a key to replace it or Clear one.")
     else
-        hint:SetText("Select a key for an exact assignment, or Shift-click to fill the first empty key.")
+        hint:SetText("All 15 keys are reserved while the addon is enabled. Select a key, or Shift-click to fill the first empty key.")
     end
 
     for slotId, tile in pairs(tiles) do
@@ -184,14 +177,6 @@ function KC.Build(parent, deps)
 
     local heading = tab:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     heading:SetPoint("TOPLEFT"); heading:SetText("|cffFFD700Key actions|r")
-    enableButton = UIH.CreateButton(tab, "Keys: OFF", 96, 22)
-    enableButton:SetPoint("TOPRIGHT", tab, "TOPRIGHT", 0, 2)
-    enableButton:SetScript("OnClick", function()
-        local ok, _, detail
-        if K.IsEnabled() then ok, _, detail = K.Disable() else ok, _, detail = K.Enable() end
-        setStatus(detail, ok)
-        KC.Refresh()
-    end)
 
     hint = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     hint:SetPoint("TOPLEFT", heading, "BOTTOMLEFT", 0, -4)

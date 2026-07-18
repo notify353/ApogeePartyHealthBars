@@ -6,6 +6,20 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Added
+
+- Added account-wide, class-specific named profiles with safe switching, New, Duplicate, Rename, Delete, Copy From, and complete portable settings including Healing, Shortcuts, Keys, Wheel, macros, sounds, and UI positions.
+- Added compressed, versioned profile share strings with author and addon metadata, import previews, class validation, and Create, Merge, or Replace workflows.
+
+### Changed
+
+- Made Keys and Wheel permanent while the add-on is enabled, automatically claiming all 15 keyboard inputs and six wheel gestures at startup and removing their separate activation controls and profile state.
+- Kept Keys and Wheel binding ownership character-local while allowing their assignments to travel with profiles; profile changes restore owned bindings transactionally before reloading the UI.
+
+### Fixed
+
+- Fixed global disable, profile changes, and Factory Reset failing when WoW required an owned `CLICK` key to be cleared before its previous normal action could be restored, without allowing the resulting binding events to re-enter the active transaction.
+
 ## [0.37.0] - 2026-07-17
 
 ### Added

@@ -16,7 +16,8 @@ function L.Register(eventRouter, deps)
         "Print", "InitPlayerSpells", "RestorePosition", "UpdateHeader",
         "HookSpellbook", "HookContainerItems", "EnsureMinimapButton",
         "SeedShieldTrackerFromAuras", "ForceRefresh", "IsShieldEnabled",
-        "OnShieldCombatLog", "SetConfigMode",
+        "OnShieldCombatLog", "SetConfigMode", "ClaimBoundActionBindings",
+        "ReleaseBoundActionBindings", "ReconcileBoundActionBindings",
     }) do
         assert(deps[key] ~= nil, "RuntimeLifecycleEvents missing dependency: " .. key)
     end
@@ -27,12 +28,22 @@ function L.Register(eventRouter, deps)
                 if type(ApogeePartyHealthSV) ~= "table" then
                     ApogeePartyHealthSV = {}
                 end
-                S.sv = ApogeePartyHealthSV
-
                 if type(ApogeePartyHealthCharSV) ~= "table" then
                     ApogeePartyHealthCharSV = {}
                 end
-                S.charSv = ApogeePartyHealthCharSV
+                if ApogeePartyHealthBars_ProfileStore and ApogeePartyHealthBars_ProfileStore.Initialize then
+                    local _, playerClass = UnitClass and UnitClass("player")
+                    local playerName, playerRealm
+                    if UnitFullName then playerName, playerRealm = UnitFullName("player") end
+                    if not playerName and UnitName then playerName = UnitName("player") end
+                    playerRealm = playerRealm or (GetRealmName and GetRealmName()) or "Unknown Realm"
+                    local profileAuthor = tostring(playerName or "Unknown") .. " - " .. tostring(playerRealm)
+                    ApogeePartyHealthBars_ProfileStore.Initialize(
+                        ApogeePartyHealthSV, ApogeePartyHealthCharSV, playerClass, profileAuthor
+                    )
+                else
+                    S.sv, S.charSv = ApogeePartyHealthSV, ApogeePartyHealthCharSV
+                end
                 E.InitializeSavedVariables(S.sv, S.charSv)
                 ApogeePartyHealthBars_BindingStore.Initialize()
                 U.Initialize(S.sv.combatUIAutoHide)
@@ -46,6 +57,16 @@ function L.Register(eventRouter, deps)
                 T.Initialize()
                 W.InitializeSaved()
                 K.InitializeSaved()
+                local bindingsOk, bindingsCode, bindingsDetail
+                if S.sv.enabled then
+                    bindingsOk, bindingsCode, bindingsDetail = deps.ClaimBoundActionBindings()
+                else
+                    bindingsOk, bindingsCode, bindingsDetail = deps.ReleaseBoundActionBindings()
+                end
+                if not bindingsOk then
+                    deps.Print(bindingsDetail or bindingsCode
+                        or "could not update Keys and Wheel bindings.")
+                end
 
                 deps.InitPlayerSpells()
                 deps.RestorePosition()
@@ -84,6 +105,7 @@ function L.Register(eventRouter, deps)
                 T.RefreshSecureActions()
                 W.OnCombatEnded()
                 K.OnCombatEnded()
+                deps.ReconcileBoundActionBindings()
                 H.Refresh()
                 deps.ForceRefresh()
 
@@ -98,8 +120,7 @@ function L.Register(eventRouter, deps)
                 or event == "GROUP_ROSTER_UPDATE" then
                 if event == "PLAYER_ENTERING_WORLD" then
                     T.Rebaseline()
-                    W.ReconcileBindings()
-                    K.ReconcileBindings()
+                    deps.ReconcileBoundActionBindings()
                 end
                 deps.InitPlayerSpells()
                 deps.EnsureMinimapButton()

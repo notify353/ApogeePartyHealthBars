@@ -7,7 +7,9 @@ ApogeePartyHealthBars_RuntimeActionEvents = {}
 local A = ApogeePartyHealthBars_RuntimeActionEvents
 
 function A.Register(eventRouter, deps)
-    for _, key in ipairs({ "Print", "InitPlayerSpells", "GetConfigUI" }) do
+    for _, key in ipairs({
+        "Print", "InitPlayerSpells", "GetConfigUI", "ReconcileBoundActionBindings",
+    }) do
         assert(deps[key] ~= nil, "RuntimeActionEvents missing dependency: " .. key)
     end
 
@@ -42,8 +44,7 @@ function A.Register(eventRouter, deps)
                 S.RequestUpdate()
 
             elseif event == "UPDATE_BINDINGS" then
-                W.ReconcileBindings()
-                K.ReconcileBindings()
+                deps.ReconcileBoundActionBindings()
                 if deps.GetConfigUI().RefreshKeyPanel then deps.GetConfigUI().RefreshKeyPanel() end
                 if deps.GetConfigUI().RefreshWheelPanel then deps.GetConfigUI().RefreshWheelPanel() end
 

@@ -29,6 +29,8 @@ ApogeePartyHealthBars_WheelMacros.lua
 ApogeePartyHealthBars_KeyActions.lua
 ApogeePartyHealthBars_CombatUIFader.lua
 ApogeePartyHealthBars_Effects.lua
+ApogeePartyHealthBars_ProfileCodec.lua
+ApogeePartyHealthBars_ProfileStore.lua
 ApogeePartyHealthBars_HealthAlerts.lua
 ApogeePartyHealthBars_Auras.lua
 ApogeePartyHealthBars_BuffReminders.lua
@@ -55,6 +57,7 @@ ApogeePartyHealthBars_ShortcutConfig.lua
 ApogeePartyHealthBars_KeyConfig.lua
 ApogeePartyHealthBars_WheelConfig.lua
 ApogeePartyHealthBars_MacroConfig.lua
+ApogeePartyHealthBars_ProfileConfig.lua
 ApogeePartyHealthBars_ConfigUI.lua
 ApogeePartyHealthBars_RuntimeLifecycleEvents.lua
 ApogeePartyHealthBars_RuntimeUnitEvents.lua

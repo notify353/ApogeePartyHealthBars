@@ -15,8 +15,8 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `ActionMacros`: generated `/cast` and `/use` defaults, sound/macro extensions, custom-text detection, and 255-byte validation for Shortcuts, Keys, and Wheel
 - `ActionConfig`: shared compact action rows and the focused draft macro editor used by Shortcuts, Keys, and Wheel
 - `BoundActionLayouts`: shared per-spec/per-form typed-action layout engine with feature-specific new-layout policy
-- `BoundActionBindings`: binding-set-specific transactional ownership, reconciliation, conflict detection, restoration, and cross-feature Factory Reset rollback
-- `BoundActionRuntime`: per-instance Keys/Wheel action evaluation, secure execution, HUD state, feedback, and binding lifecycle
+- `BoundActionBindings`: permanent binding-set-specific transactional claiming, reconciliation, conflict detection, restoration, and cross-feature rollback
+- `BoundActionRuntime`: per-instance Keys/Wheel action evaluation, secure execution, HUD state, and feedback
 - `ActionHud`: the single activation-feedback line shared by Keys and Wheel
 - `HealthAlerts`: configurable party low-health threshold state, recovery hysteresis, and sound throttling
 - `SecureFrames`: combat-safe visibility, position, and mouse mutations
@@ -40,6 +40,9 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `HealingConfig`: Healing binding rows, selection state, display refresh, and right-click clearing
 - `ConfigUI`: settings-window shell, tab registry, activation, and cross-tab refresh routing
 - `ConfigController`, `MinimapController`: settings-mode and minimap lifecycle
+- `ProfileStore`: account-wide class profiles, legacy SavedVariables migration, portable payload normalization, stable identity, and CRUD/copy/import mutations
+- `ProfileCodec`: native CBOR, Deflate, and URL-safe Base64 profile sharing with versioned metadata and bounded decoding
+- `ProfileConfig`: profile selection and management plus export/import preview and confirmation workflows
 - `MacroData`, `MacroLibrary`, `MacroConfig`: immutable universal/current-class combat recipe catalog, validation, filtering, and copy-only presentation
 
 ## Invariants
@@ -61,6 +64,10 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - Keep tab-specific controls and mutable refresh state in their configuration modules; `ConfigUI` owns only the shared window and tab lifecycle.
 - Keep runtime event policy in its domain subscriber; `RuntimeEvents` initializes the router and registers subscribers without handling events itself.
 - Keep feature data out of the main orchestration file.
+- Keep portable settings and action intent in the active account profile while binding ownership, pending claims, and recovery state remain character-local and are never copied or exported.
+- Never persist Keys or Wheel activation intent: both runtimes are permanent whenever the global add-on setting is enabled.
+- Claim all 21 Keys and Wheel inputs atomically after startup; release them transactionally before switching profiles, disabling the whole add-on, or clearing saved state.
+- Treat profile IDs as stable identity, names as class-local labels, and imported data as untrusted until size, format, class, schema, allowlist, and type validation succeeds.
 
 ## Validation
 

@@ -4,6 +4,10 @@ ApogeePartyHealthBars_UIHelpers = {}
 local H = ApogeePartyHealthBars_UIHelpers
 local activeDropdown
 
+function H.EscapeText(value)
+    return tostring(value or ""):gsub("|", "||")
+end
+
 function H.CloseActiveDropdown()
     if activeDropdown then activeDropdown:Close() end
 end

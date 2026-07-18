@@ -108,18 +108,14 @@ function Factory.Create(options)
             or not acceptedVersion(options.acceptedSchemaVersions, schemaVersion) then
             saved = {
                 schemaVersion = L.SCHEMA_VERSION,
-                enabled = false,
-                bindingVersion = 1,
-                ownership = {},
                 profiles = {},
             }
             S.charSv[options.stateKey] = saved
         else
             saved.schemaVersion = L.SCHEMA_VERSION
         end
-        if type(saved.ownership) ~= "table" then saved.ownership = {} end
         if type(saved.profiles) ~= "table" then saved.profiles = {} end
-        if saved.enabled == nil then saved.enabled = false end
+        saved.enabled = nil
         for _, profile in pairs(saved.profiles) do
             if type(profile) == "table" and type(profile.layouts) == "table" then
                 for layoutKey, layout in pairs(profile.layouts) do

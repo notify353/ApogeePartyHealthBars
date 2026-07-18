@@ -49,11 +49,9 @@ ticker.Initialize({
         Tick = function() calls.shortcutTicks = calls.shortcutTicks + 1 end,
     },
     WheelMacros = {
-        IsEnabled = function() return flags.wheel end,
         Refresh = function() calls.wheelRefreshes = calls.wheelRefreshes + 1 end,
     },
     KeyActions = {
-        IsEnabled = function() return flags.keys end,
         Refresh = function() calls.keyRefreshes = calls.keyRefreshes + 1 end,
     },
     Threat = {
@@ -76,29 +74,9 @@ local function ClearActivationFlags()
     flags.threat = false
 end
 
-local function AssertActivates(flagName)
-    ClearActivationFlags()
-    flags[flagName] = true
-    ticker.Sync()
-    assert(frame:IsShown(), flagName .. " did not activate the ticker")
-    flags[flagName] = false
-    ticker.Sync()
-    assert(not frame:IsShown(), flagName .. " did not release the ticker")
-end
-
-for _, flagName in ipairs({ "range", "hots", "shortcuts", "wheel", "keys", "threat" }) do
-    AssertActivates(flagName)
-end
-
 ClearActivationFlags()
-flags.range = true
-flags.config = true
 ticker.Sync()
-assert(not frame:IsShown(), "configuration mode kept range-only ticking active")
-
-flags.keys = true
-ticker.Sync()
-assert(frame:IsShown(), "Keys-only use did not keep the ticker active in configuration mode")
+assert(frame:IsShown(), "permanent Keys and Wheel did not keep the ticker active")
 
 flags.addon = false
 flags.hots = true
@@ -110,7 +88,6 @@ assert(not frame:IsShown(), "disabled addon retained an active visual ticker")
 
 flags.addon = true
 ClearActivationFlags()
-flags.keys = true
 ticker.Sync()
 update(frame, 0.05)
 assert(calls.hotTicks == 1 and calls.shortcutTicks == 1 and calls.wheelRefreshes == 1,

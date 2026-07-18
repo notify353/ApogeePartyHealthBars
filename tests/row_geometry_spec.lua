@@ -17,7 +17,7 @@ function UnitPowerMax(_, requestedType)
 end
 
 local hotHeight = 0
-local shortcutHeight, wheelHeight, keyHeight = 0, 0, 0
+local shortcutHeight, wheelHeight, keyHeight, mouseHeight = 0, 0, 0, 0
 local function PlayerOnlyHeight(value)
     return function(unitId)
         return unitId == "player" and value() or 0
@@ -36,6 +36,7 @@ geometry.Initialize({
     ShortcutBar = { GetHeight = PlayerOnlyHeight(function() return shortcutHeight end) },
     WheelMacros = { GetHeight = PlayerOnlyHeight(function() return wheelHeight end) },
     KeyActions = { GetHeight = PlayerOnlyHeight(function() return keyHeight end) },
+    MouseButtonActions = { GetHeight = PlayerOnlyHeight(function() return mouseHeight end) },
 })
 
 assert(geometry.GetActionAreaHeight("player") == 0, "empty actions reserved height")
@@ -59,6 +60,11 @@ assert(geometry.GetActionAreaHeight("player") == 197,
     "action area did not combine Shortcuts with the taller bound-action feature")
 assert(geometry.GetActionAreaHeight("player") ~= shortcutHeight + keyHeight + wheelHeight,
     "Keys and Wheel heights were summed instead of taking the maximum")
+
+wheelHeight, mouseHeight = 0, 81
+assert(geometry.GetActionAreaHeight("player") == 164,
+    "Buttons HUD height was not included in the bound-action maximum")
+mouseHeight, wheelHeight = 0, 169
 
 powerType, powerToken, manaMax, activeMax = 1, "RAGE", 100, 50
 assert(geometry.GetRowPowerChromeHeight("player") == 14,

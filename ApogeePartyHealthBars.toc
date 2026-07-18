@@ -9,6 +9,7 @@
 ApogeePartyHealthBars_Data.lua
 ApogeePartyHealthBars_WheelData.lua
 ApogeePartyHealthBars_KeyData.lua
+ApogeePartyHealthBars_MouseButtonData.lua
 ApogeePartyHealthBars_UIHelpers.lua
 ApogeePartyHealthBars_MacroData.lua
 ApogeePartyHealthBars_MacroLibrary.lua
@@ -25,8 +26,10 @@ ApogeePartyHealthBars_ActionHud.lua
 ApogeePartyHealthBars_BoundActionRuntime.lua
 ApogeePartyHealthBars_WheelLayouts.lua
 ApogeePartyHealthBars_KeyLayouts.lua
+ApogeePartyHealthBars_MouseButtonLayouts.lua
 ApogeePartyHealthBars_WheelMacros.lua
 ApogeePartyHealthBars_KeyActions.lua
+ApogeePartyHealthBars_MouseButtonActions.lua
 ApogeePartyHealthBars_CombatUIFader.lua
 ApogeePartyHealthBars_Effects.lua
 ApogeePartyHealthBars_ProfileCodec.lua
@@ -56,6 +59,7 @@ ApogeePartyHealthBars_HealingConfig.lua
 ApogeePartyHealthBars_ShortcutConfig.lua
 ApogeePartyHealthBars_KeyConfig.lua
 ApogeePartyHealthBars_WheelConfig.lua
+ApogeePartyHealthBars_MouseButtonConfig.lua
 ApogeePartyHealthBars_MacroConfig.lua
 ApogeePartyHealthBars_ProfileConfig.lua
 ApogeePartyHealthBars_ConfigUI.lua

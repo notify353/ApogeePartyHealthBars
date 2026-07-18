@@ -3,6 +3,7 @@ local S = ApogeePartyHealthBars_S
 local T = ApogeePartyHealthBars_ShortcutBar
 local W = ApogeePartyHealthBars_WheelMacros
 local K = ApogeePartyHealthBars_KeyActions
+local MB = ApogeePartyHealthBars_MouseButtonActions
 local Items = ApogeePartyHealthBars_ShortcutItems
 
 ApogeePartyHealthBars_BindingController = {}
@@ -64,6 +65,16 @@ local function AssignActionSpell(feature, slot, layoutKey, spellID, spellName)
             if ui and ui.RefreshWheelPanel then ui.RefreshWheelPanel(assignedSlot) end
         end
         return ok
+    elseif feature == "mouseButtons" then
+        if not MB.IsKnownLayout(layoutKey) then layoutKey = MB.GetActiveLayoutKey() end
+        local ok, message, assignedSlot = MB.AssignSpell(layoutKey, slot, spellID, spellName)
+        if message then D.Print(message) end
+        if ok then
+            S.selectedMouseButtonLayout = layoutKey
+            local ui = D.GetConfigUI()
+            if ui and ui.RefreshMouseButtonPanel then ui.RefreshMouseButtonPanel(assignedSlot) end
+        end
+        return ok
     elseif feature == "shortcuts" then
         local ok, message, assignedSlot = T.AssignSpell(slot, spellID, spellName)
         if message then D.Print(message) end
@@ -100,6 +111,16 @@ local function AssignActionItem(feature, slot, layoutKey, itemId, itemName)
             S.selectedWheelLayout = layoutKey
             local ui = D.GetConfigUI()
             if ui and ui.RefreshWheelPanel then ui.RefreshWheelPanel(assignedSlot) end
+        end
+        return ok
+    elseif feature == "mouseButtons" then
+        if not MB.IsKnownLayout(layoutKey) then layoutKey = MB.GetActiveLayoutKey() end
+        local ok, message, assignedSlot = MB.AssignItem(layoutKey, slot, itemId, itemName)
+        if message then D.Print(message) end
+        if ok then
+            S.selectedMouseButtonLayout = layoutKey
+            local ui = D.GetConfigUI()
+            if ui and ui.RefreshMouseButtonPanel then ui.RefreshMouseButtonPanel(assignedSlot) end
         end
         return ok
     elseif feature == "shortcuts" then
@@ -144,7 +165,7 @@ function B.AssignCursor(feature, slot, layoutKey)
         return false
     end
     if feature ~= "healing" and feature ~= "shortcuts"
-        and feature ~= "keys" and feature ~= "wheel" then
+        and feature ~= "keys" and feature ~= "wheel" and feature ~= "mouseButtons" then
         return false
     end
     if feature ~= "shortcuts" and not slot then return false end

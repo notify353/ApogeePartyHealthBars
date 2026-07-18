@@ -371,6 +371,8 @@ ApogeePartyHealthBars_C = {
         { key = "1", label = "Left Click" },
         { key = "2", label = "Right Click" },
         { key = "3", label = "Middle Click" },
+        { key = "4", label = "Mouse Button 4" },
+        { key = "5", label = "Mouse Button 5" },
     },
     BINDING_SLOTS = {},
     CLASS_HEALER_BINDING_DEFAULTS = {
@@ -425,6 +427,7 @@ ApogeePartyHealthBars_S = {
     auraCache                = {},
     selectedWheelLayout      = nil,
     selectedKeyLayout        = nil,
+    selectedMouseButtonLayout = nil,
     castBtnSerial            = 0,
     secureUpdatePending      = false,
 }

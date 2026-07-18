@@ -2,6 +2,7 @@ local S = ApogeePartyHealthBars_S
 local T = ApogeePartyHealthBars_ShortcutBar
 local W = ApogeePartyHealthBars_WheelMacros
 local K = ApogeePartyHealthBars_KeyActions
+local B = ApogeePartyHealthBars_MouseButtonActions
 
 ApogeePartyHealthBars_RuntimeActionEvents = {}
 local A = ApogeePartyHealthBars_RuntimeActionEvents
@@ -23,8 +24,10 @@ function A.Register(eventRouter, deps)
             if event == "ACTIVE_TALENT_GROUP_CHANGED" then
                 W.OnActiveSpecChanged()
                 K.OnActiveSpecChanged()
+                B.OnActiveSpecChanged()
                 if deps.GetConfigUI().RefreshKeyPanel then deps.GetConfigUI().RefreshKeyPanel() end
                 if deps.GetConfigUI().RefreshWheelPanel then deps.GetConfigUI().RefreshWheelPanel() end
+                if deps.GetConfigUI().RefreshMouseButtonPanel then deps.GetConfigUI().RefreshMouseButtonPanel() end
 
             elseif event == "SPELLS_CHANGED" then
                 S.InitializeClassDefaultBindings()
@@ -32,13 +35,18 @@ function A.Register(eventRouter, deps)
                 T.ResolveAndRefresh()
                 local wheelLayoutsChanged = W.RefreshLayouts()
                 local keyLayoutsChanged = K.RefreshLayouts()
+                local buttonLayoutsChanged = B.RefreshLayouts()
                 if not wheelLayoutsChanged then W.Refresh() end
                 if not keyLayoutsChanged then K.Refresh() end
+                if not buttonLayoutsChanged then B.Refresh() end
                 if keyLayoutsChanged and deps.GetConfigUI().RefreshKeyPanel then
                     deps.GetConfigUI().RefreshKeyPanel()
                 end
                 if wheelLayoutsChanged and deps.GetConfigUI().RefreshWheelPanel then
                     deps.GetConfigUI().RefreshWheelPanel()
+                end
+                if buttonLayoutsChanged and deps.GetConfigUI().RefreshMouseButtonPanel then
+                    deps.GetConfigUI().RefreshMouseButtonPanel()
                 end
                 RefreshMacroRequirements()
                 S.RequestUpdate()
@@ -47,18 +55,22 @@ function A.Register(eventRouter, deps)
                 deps.ReconcileBoundActionBindings()
                 if deps.GetConfigUI().RefreshKeyPanel then deps.GetConfigUI().RefreshKeyPanel() end
                 if deps.GetConfigUI().RefreshWheelPanel then deps.GetConfigUI().RefreshWheelPanel() end
+                if deps.GetConfigUI().RefreshMouseButtonPanel then deps.GetConfigUI().RefreshMouseButtonPanel() end
 
             elseif event == "UPDATE_SHAPESHIFT_FORM" or event == "UPDATE_STEALTH" then
                 T.Refresh(false)
                 W.OnStateChanged()
                 K.OnStateChanged()
+                B.OnStateChanged()
                 S.RequestLayoutUpdate()
 
             elseif event == "UPDATE_SHAPESHIFT_FORMS" then
                 W.RefreshLayouts()
                 K.RefreshLayouts()
+                B.RefreshLayouts()
                 if deps.GetConfigUI().RefreshKeyPanel then deps.GetConfigUI().RefreshKeyPanel() end
                 if deps.GetConfigUI().RefreshWheelPanel then deps.GetConfigUI().RefreshWheelPanel() end
+                if deps.GetConfigUI().RefreshMouseButtonPanel then deps.GetConfigUI().RefreshMouseButtonPanel() end
                 S.RequestLayoutUpdate()
             end
         end)
@@ -80,7 +92,7 @@ function A.Register(eventRouter, deps)
         "CURRENT_SPELL_CAST_CHANGED", "PLAYER_EQUIPMENT_CHANGED",
     }) do
         eventRouter.RegisterOptional(event, "ShortcutBar", function()
-            T.Refresh(false); W.Refresh(); K.Refresh()
+            T.Refresh(false); W.Refresh(); K.Refresh(); B.Refresh()
         end)
     end
 
@@ -93,20 +105,24 @@ function A.Register(eventRouter, deps)
             T.Refresh(false)
             W.Refresh()
             K.Refresh()
+            B.Refresh()
             local ui = deps.GetConfigUI()
             if ui.RefreshShortcutPanel then ui.RefreshShortcutPanel() end
             if ui.RefreshKeyPanel then ui.RefreshKeyPanel() end
             if ui.RefreshWheelPanel then ui.RefreshWheelPanel() end
+            if ui.RefreshMouseButtonPanel then ui.RefreshMouseButtonPanel() end
         end)
     end
     eventRouter.RegisterOptional("GET_ITEM_INFO_RECEIVED", "ShortcutItemInfo", function()
         T.RefreshItemInfo()
         W.RefreshItemInfo()
         K.RefreshItemInfo()
+        B.RefreshItemInfo()
         local ui = deps.GetConfigUI()
         if ui.RefreshShortcutPanel then ui.RefreshShortcutPanel() end
         if ui.RefreshKeyPanel then ui.RefreshKeyPanel() end
         if ui.RefreshWheelPanel then ui.RefreshWheelPanel() end
+        if ui.RefreshMouseButtonPanel then ui.RefreshMouseButtonPanel() end
         if ui.RefreshBindPanel then ui.RefreshBindPanel() end
     end)
 

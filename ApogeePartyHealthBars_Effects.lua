@@ -93,6 +93,9 @@ function E.InitializeSavedVariables(saved, characterSaved)
     if type(characterSaved.keyActions) ~= "table" then
         characterSaved.keyActions = {}
     end
+    if type(characterSaved.mouseActions) ~= "table" then
+        characterSaved.mouseActions = {}
+    end
 
     saved.schemaVersion = math.max(version, C.SAVED_VARIABLES_VERSION)
 end

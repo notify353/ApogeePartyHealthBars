@@ -378,7 +378,7 @@ function G.Build(parent, deps)
 
         DisarmPrepareDisable()
         if D.SetAddonEnabled(false) then
-            D.Print("Keys and Wheel bindings restored. You can now disable the addon in WoW's AddOns manager.")
+            D.Print("Keys, Wheel, and Buttons bindings restored. You can now disable the addon in WoW's AddOns manager.")
         end
     end)
 

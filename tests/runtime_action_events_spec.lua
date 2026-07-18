@@ -9,7 +9,7 @@ local function expect(expected, message)
     end
 end
 
-local wheelLayoutsChanged, keyLayoutsChanged = false, false
+local wheelLayoutsChanged, keyLayoutsChanged, buttonLayoutsChanged = false, false, false
 ApogeePartyHealthBars_S = {
     InitializeClassDefaultBindings = function() record("class-bindings") end,
     RequestUpdate = function() record("request-update") end,
@@ -42,11 +42,22 @@ ApogeePartyHealthBars_KeyActions = {
     ReconcileBindings = function() record("keys-reconcile") end,
     OnStateChanged = function() record("keys-state") end,
 }
+ApogeePartyHealthBars_MouseButtonActions = {
+    Refresh = function() record("buttons-refresh") end,
+    RefreshItemInfo = function() record("buttons-item-info") end,
+    OnActiveSpecChanged = function() record("buttons-spec") end,
+    RefreshLayouts = function()
+        record("buttons-layouts")
+        return buttonLayoutsChanged
+    end,
+    OnStateChanged = function() record("buttons-state") end,
+}
 
 local ui = {
     RefreshShortcutPanel = function() record("ui-shortcuts") end,
     RefreshKeyPanel = function() record("ui-keys") end,
     RefreshWheelPanel = function() record("ui-wheel") end,
+    RefreshMouseButtonPanel = function() record("ui-buttons") end,
     RefreshBindPanel = function() record("ui-healing") end,
     RefreshMacroPanel = function() record("ui-macros") end,
 }
@@ -91,7 +102,7 @@ assert(optional.SPELL_UPDATE_COOLDOWN.owner == "ShortcutBar"
     "action refresh owner labels changed")
 
 dispatch("SPELL_UPDATE_COOLDOWN")
-expect({ "shortcut-refresh:false", "wheel-refresh", "keys-refresh" },
+expect({ "shortcut-refresh:false", "wheel-refresh", "keys-refresh", "buttons-refresh" },
     "cooldown refresh fan-out changed")
 
 reset()
@@ -102,15 +113,15 @@ expect({ "shortcut-refresh:false" }, "target flag filtering changed")
 reset()
 dispatch("BAG_UPDATE_DELAYED")
 expect({
-    "shortcut-refresh:false", "wheel-refresh", "keys-refresh",
-    "ui-shortcuts", "ui-keys", "ui-wheel",
+    "shortcut-refresh:false", "wheel-refresh", "keys-refresh", "buttons-refresh",
+    "ui-shortcuts", "ui-keys", "ui-wheel", "ui-buttons",
 }, "bag update fan-out changed")
 
 reset()
 dispatch("GET_ITEM_INFO_RECEIVED", 1251, true)
 expect({
-    "shortcut-item-info", "wheel-item-info", "keys-item-info",
-    "ui-shortcuts", "ui-keys", "ui-wheel", "ui-healing",
+    "shortcut-item-info", "wheel-item-info", "keys-item-info", "buttons-item-info",
+    "ui-shortcuts", "ui-keys", "ui-wheel", "ui-buttons", "ui-healing",
 }, "item-info fan-out changed")
 
 reset()
@@ -121,43 +132,45 @@ expect({ "ui-macros", "ui-macros" }, "pet requirement filtering changed")
 
 reset()
 dispatch("ACTIVE_TALENT_GROUP_CHANGED", 2, 1)
-expect({ "wheel-spec", "keys-spec", "ui-keys", "ui-wheel" },
+expect({ "wheel-spec", "keys-spec", "buttons-spec", "ui-keys", "ui-wheel", "ui-buttons" },
     "active-spec transition order changed")
 
 reset()
-wheelLayoutsChanged, keyLayoutsChanged = false, false
+wheelLayoutsChanged, keyLayoutsChanged, buttonLayoutsChanged = false, false, false
 dispatch("SPELLS_CHANGED")
 expect({
     "class-bindings", "player-spells", "shortcut-resolve", "wheel-layouts",
-    "keys-layouts", "wheel-refresh", "keys-refresh", "ui-macros", "request-update",
+    "keys-layouts", "buttons-layouts", "wheel-refresh", "keys-refresh", "buttons-refresh",
+    "ui-macros", "request-update",
 }, "stable spell-layout refresh order changed")
 
 reset()
-wheelLayoutsChanged, keyLayoutsChanged = true, true
+wheelLayoutsChanged, keyLayoutsChanged, buttonLayoutsChanged = true, true, true
 dispatch("SPELLS_CHANGED")
 expect({
     "class-bindings", "player-spells", "shortcut-resolve", "wheel-layouts",
-    "keys-layouts", "ui-keys", "ui-wheel", "ui-macros", "request-update",
+    "keys-layouts", "buttons-layouts", "ui-keys", "ui-wheel", "ui-buttons",
+    "ui-macros", "request-update",
 }, "changed spell-layout refresh order changed")
 
 reset()
 dispatch("UPDATE_BINDINGS")
-expect({ "bindings-reconcile", "ui-keys", "ui-wheel" },
+expect({ "bindings-reconcile", "ui-keys", "ui-wheel", "ui-buttons" },
     "binding reconciliation order changed")
 
 reset()
 dispatch("UPDATE_SHAPESHIFT_FORM")
-expect({ "shortcut-refresh:false", "wheel-state", "keys-state", "layout" },
+expect({ "shortcut-refresh:false", "wheel-state", "keys-state", "buttons-state", "layout" },
     "form-state transition order changed")
 
 reset()
 dispatch("UPDATE_STEALTH")
-expect({ "shortcut-refresh:false", "wheel-state", "keys-state", "layout" },
+expect({ "shortcut-refresh:false", "wheel-state", "keys-state", "buttons-state", "layout" },
     "stealth-state transition order changed")
 
 reset()
 dispatch("UPDATE_SHAPESHIFT_FORMS")
-expect({ "wheel-layouts", "keys-layouts", "ui-keys", "ui-wheel", "layout" },
+expect({ "wheel-layouts", "keys-layouts", "buttons-layouts", "ui-keys", "ui-wheel", "ui-buttons", "layout" },
     "form-state registry refresh order changed")
 
 reset()

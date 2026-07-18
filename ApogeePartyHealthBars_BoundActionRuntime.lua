@@ -64,7 +64,7 @@ function Factory.Create(options)
         self:SetAttribute("macrotext1", macro)
     ]], SECURE_MACRO_PREFIX)
     local QUESTION_MARK = "Interface\\Icons\\INV_Misc_QuestionMark"
-    local HUD_PANEL_W = C.ROW_CONTENT_W
+    local HUD_PANEL_W = options.hud.panelWidth or C.ROW_CONTENT_W
     local HUD_PANEL_H = options.hud.panelHeight
     local HUD_HEIGHT = options.hud.totalHeight
     local STATE_COLORS = {
@@ -532,6 +532,10 @@ function Factory.Create(options)
         return WL.GetSlots(layoutKey) or {}
     end
 
+    function W.GetSlotDefinition(slotId)
+        return slotById[slotId]
+    end
+
     function W.GetSlot(layoutKey, slotId)
         return WL.GetSlot(layoutKey, slotId)
     end
@@ -847,6 +851,10 @@ function Factory.Create(options)
 
     function W.GetHeight(unitId)
         return unitId == "player" and HUD_HEIGHT or 0
+    end
+
+    function W.GetWidth(unitId)
+        return unitId == "player" and HUD_PANEL_W or 0
     end
 
     function W.GetBindingStatus()

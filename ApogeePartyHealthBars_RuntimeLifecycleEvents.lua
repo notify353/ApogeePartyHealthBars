@@ -3,6 +3,7 @@ local E = ApogeePartyHealthBars_Effects
 local T = ApogeePartyHealthBars_ShortcutBar
 local W = ApogeePartyHealthBars_WheelMacros
 local K = ApogeePartyHealthBars_KeyActions
+local B = ApogeePartyHealthBars_MouseButtonActions
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 local F = ApogeePartyHealthBars_SecureFrames
@@ -57,6 +58,7 @@ function L.Register(eventRouter, deps)
                 T.Initialize()
                 W.InitializeSaved()
                 K.InitializeSaved()
+                B.InitializeSaved()
                 local bindingsOk, bindingsCode, bindingsDetail
                 if S.sv.enabled then
                     bindingsOk, bindingsCode, bindingsDetail = deps.ClaimBoundActionBindings()
@@ -65,7 +67,7 @@ function L.Register(eventRouter, deps)
                 end
                 if not bindingsOk then
                     deps.Print(bindingsDetail or bindingsCode
-                        or "could not update Keys and Wheel bindings.")
+                        or "could not update action bindings.")
                 end
 
                 deps.InitPlayerSpells()
@@ -85,6 +87,7 @@ function L.Register(eventRouter, deps)
                 U.OnCombatStart()
                 W.OnCombatStarted()
                 K.OnCombatStarted()
+                B.OnCombatStarted()
                 if S.configMode then
                     deps.Print("config closed - combat started.")
                     deps.SetConfigMode(false)
@@ -97,6 +100,7 @@ function L.Register(eventRouter, deps)
                 T.RefreshSecureActions()
                 W.OnCombatEnded()
                 K.OnCombatEnded()
+                B.OnCombatEnded()
                 deps.ReconcileBoundActionBindings()
                 H.Refresh()
                 deps.ForceRefresh()
@@ -105,6 +109,7 @@ function L.Register(eventRouter, deps)
                 T.Rebaseline()
                 W.Refresh()
                 K.Refresh()
+                B.Refresh()
                 H.Refresh()
                 S.RequestUpdate()
 

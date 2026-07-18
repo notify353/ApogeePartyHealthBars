@@ -312,7 +312,7 @@ local function claimAll(managers)
     managers = managers or {}
     if InCombatLockdown and InCombatLockdown() then
         claimAllPending = true
-        return false, "combat", "Leave combat before claiming Keys and Wheel bindings."
+        return false, "combat", "Leave combat before claiming action bindings."
     end
     local snapshots = {}
     for index, manager in ipairs(managers) do snapshots[index] = manager.Snapshot() end
@@ -328,7 +328,7 @@ local function claimAll(managers)
         end
     end
     claimAllPending = false
-    return true, "claimed", "Keys and Wheel bindings claimed."
+    return true, "claimed", "Action bindings claimed."
 end
 
 function Factory.ClaimAll(managers)

@@ -3,6 +3,7 @@ local S = ApogeePartyHealthBars_S
 local T = ApogeePartyHealthBars_ShortcutBar
 local W = ApogeePartyHealthBars_WheelMacros
 local K = ApogeePartyHealthBars_KeyActions
+local B = ApogeePartyHealthBars_MouseButtonActions
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 
@@ -321,6 +322,7 @@ function F.Build(D)
     })
     W.Attach(rows[1])
     K.Attach(rows[1])
+    B.Attach(rows[1])
     M.Attach(rows[1])
     H.Attach(rows, D.SyncVisualTicker)
     

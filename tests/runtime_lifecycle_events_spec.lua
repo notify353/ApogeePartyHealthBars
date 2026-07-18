@@ -36,6 +36,12 @@ ApogeePartyHealthBars_KeyActions = {
     ReconcileBindings = function() record("keys-reconcile") end,
     Refresh = function() record("keys-refresh") end,
 }
+ApogeePartyHealthBars_MouseButtonActions = {
+    InitializeSaved = function() record("buttons-init") end,
+    OnCombatStarted = function() record("buttons-combat-start") end,
+    OnCombatEnded = function() record("buttons-combat-end") end,
+    Refresh = function() record("buttons-refresh") end,
+}
 ApogeePartyHealthBars_RaidMarkers = {
     OnCombatLogEvent = function() record("raid-combat-log") end,
 }
@@ -113,7 +119,7 @@ dispatch("PLAYER_LOGIN")
 expect({
     "saved-variables", "binding-store", "fader-init:true", "macro-validation",
     "print:macro validation: broken recipe", "class-bindings", "shortcut-init",
-    "wheel-init", "keys-init", "bindings-claim", "player-spells", "restore-position", "update-header",
+    "wheel-init", "keys-init", "buttons-init", "bindings-claim", "player-spells", "restore-position", "update-header",
     "minimap", "shield-seed", "force-refresh",
 }, "PLAYER_LOGIN order changed")
 assert(ApogeePartyHealthBars_S.sv == ApogeePartyHealthSV
@@ -124,7 +130,7 @@ reset()
 ApogeePartyHealthBars_S.configMode = true
 dispatch("PLAYER_REGEN_DISABLED")
 expect({
-    "fader-combat-start", "wheel-combat-start", "keys-combat-start",
+    "fader-combat-start", "wheel-combat-start", "keys-combat-start", "buttons-combat-start",
     "print:config closed - combat started.", "config-mode:false", "force-refresh",
 }, "combat-entry order changed")
 
@@ -132,7 +138,7 @@ reset()
 dispatch("PLAYER_REGEN_ENABLED")
 expect({
     "fader-combat-end", "secure-flush", "shortcut-secure", "wheel-combat-end",
-    "keys-combat-end", "bindings-reconcile", "threat", "force-refresh",
+    "keys-combat-end", "buttons-combat-end", "bindings-reconcile", "threat", "force-refresh",
 }, "combat-exit order changed")
 
 reset()
@@ -149,7 +155,7 @@ expect({ "player-spells", "minimap", "shield-seed", "threat", "request-update" }
 
 reset()
 dispatch("PLAYER_TARGET_CHANGED")
-expect({ "shortcut-rebaseline", "wheel-refresh", "keys-refresh", "threat", "request-update" },
+expect({ "shortcut-rebaseline", "wheel-refresh", "keys-refresh", "buttons-refresh", "threat", "request-update" },
     "target-change order changed")
 
 reset()

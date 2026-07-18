@@ -7,7 +7,7 @@ local Items = ApogeePartyHealthBars_ShortcutItems
 ApogeePartyHealthBars_BindingStore = {}
 local B = ApogeePartyHealthBars_BindingStore
 
-B.SCHEMA_VERSION = 1
+B.SCHEMA_VERSION = 2
 
 local slotByKey = {}
 local slotIndexByKey = {}

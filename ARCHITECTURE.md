@@ -12,13 +12,13 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `Sounds`: shared sound catalog, saved-key normalization, and SFX playback
 - `ShortcutItems`: shared item-information, carried-count, usability, cooldown, and depletion evaluation
 - `ActionData`: macro-independent spell/item identity, legacy normalization, cloning, and display resolution shared by every configurable action feature
-- `ActionMacros`: shared classification-aware smart-template rendering and documentation metadata, neutral spell-specific channel guards, dedicated melee/Auto Shot/wand Shoot families, sound/macro extensions, custom-text detection, and 255-byte validation for Shortcuts, Keys, and Wheel
-- `ActionConfig`: shared scrollable action-list scaffold and compact row state used by Healing, Shortcuts, Keys, and Wheel, plus the focused macro editor used by the macro-capable features
+- `ActionMacros`: shared classification-aware smart-template rendering and documentation metadata, neutral spell-specific channel guards, dedicated melee/Auto Shot/wand Shoot families, sound/macro extensions, custom-text detection, and 255-byte validation for Shortcuts, Keys, Wheel, and Buttons
+- `ActionConfig`: shared scrollable action-list scaffold and compact row state used by Healing, Shortcuts, Keys, Wheel, and Buttons, plus the focused macro editor used by the macro-capable features
 - `UIHelpers`: common buttons, dropdowns, tabs, scrolling, and the shared non-action form scaffold used by Profiles, General, and Macros
 - `BoundActionLayouts`: shared per-spec class-state catalog and typed-action layout engine for native forms, secure stealth fallbacks, and composite Cat/Prowl state
 - `BoundActionBindings`: permanent binding-set-specific transactional claiming, reconciliation, conflict detection, restoration, and cross-feature rollback
-- `BoundActionRuntime`: per-instance Keys/Wheel action evaluation, secure execution, HUD state, and feedback
-- `ActionHud`: the single activation-feedback line shared by Keys and Wheel
+- `BoundActionRuntime`: per-instance Keys/Wheel/Buttons action evaluation, secure execution, HUD state, and feedback
+- `ActionHud`: the single activation-feedback line shared by Keys, Wheel, and Buttons
 - `HealthAlerts`: configurable party low-health threshold state, recovery hysteresis, and sound throttling
 - `SecureFrames`: combat-safe visibility, position, and mouse mutations
 - `CombatUIFader`: opt-in Blizzard UI alpha fading and mouseover reveal during combat
@@ -34,6 +34,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `ShortcutBar`, `ShortcutConfig`: 12-slot typed shortcut storage, six-column player/crowd-control grids, spell/item state icons, sound feedback, secure macros, smart Spellbook/bag assignment, and scrollable compact configuration
 - `WheelData`, `WheelLayouts`, `WheelMacros`, `WheelConfig`: fixed gesture definitions, Wheel-specific shared-runtime policy, active talent-spec profiles, per-form typed shortcut layouts, right-side HUD geometry, and compact configuration
 - `KeyData`, `KeyLayouts`, `KeyActions`, `KeyConfig`: fixed keyboard definitions, Keys-specific shared-runtime policy, independent empty per-spec/per-form profiles, left-side HUD geometry, and uniform row-based configuration
+- `MouseButtonData`, `MouseButtonLayouts`, `MouseButtonActions`, `MouseButtonConfig`: fixed Button 3–5 combat definitions, independent per-spec/per-form profiles, right-of-Wheel 3×3 HUD geometry, and uniform configuration
 - `RaidMarkers`: target marker controls
 - `Threat`: party and target threat
 - `BindingStore`, `BindingController`, `ClickBindings`: typed Healing spell/item persistence, adjacent gesture swaps, cursor-based destination assignment, and native unit-targeted secure actions
@@ -50,11 +51,11 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 
 - Preserve TOC dependency order and Lua 5.1 compatibility.
 - Never mutate secure attributes, position, visibility, or mouse state during combat.
-- Keep Keys and Wheel activation-feedback prefixes runtime-only; persisted and edited text is the user-controlled macro body.
-- Keep every `BoundActionRuntime` instance's mutable state inside its factory closure so Keys and Wheel cannot leak buttons, feedback, cooldown state, or binding ownership into each other.
+- Keep Keys, Wheel, and Buttons activation-feedback prefixes runtime-only; persisted and edited text is the user-controlled macro body.
+- Keep every `BoundActionRuntime` instance's mutable state inside its factory closure so Keys, Wheel, and Buttons cannot leak buttons, feedback, cooldown state, or binding ownership into each other.
 - Keep class-state saved keys stable and runtime state values ephemeral; preload every native and composite state's secure macro before combat, with composite conditions ordered before their parent form.
 - Limit class-state layouts to secure form or stealth conditions. Ordinary Hunter Aspects, Paladin Auras, arbitrary buffs, and temporary encounter states must not become action layouts.
-- Derive total row height and internal action positioning from `RowGeometry`; Shortcuts stack below the taller of Keys and Wheel, never the sum of both.
+- Derive total row height and internal action positioning from `RowGeometry`; Shortcuts stack below the tallest bound-action HUD, never the sum, while Buttons extends the player action footprint without widening health rows.
 - Keep the visual ticker's range accumulator private and refresh Wheel only once per active visual frame.
 - Keep resolved buff spells, aura matchers, family preferences, icon textures, and secure cast names behind `BuffReminders` APIs rather than session-state fields.
 - Keep shield ledger writes inside `ShieldTracker`; display reads may use aura or rank estimates but must never persist those fallbacks over tracked depletion.
@@ -69,8 +70,8 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - Keep runtime event policy in its domain subscriber; `RuntimeEvents` initializes the router and registers subscribers without handling events itself.
 - Keep feature data out of the main orchestration file.
 - Keep portable settings and action intent in the active account profile while binding ownership, pending claims, and recovery state remain character-local and are never copied or exported.
-- Never persist Keys or Wheel activation intent: both runtimes are permanent whenever the global add-on setting is enabled.
-- Claim all 21 Keys and Wheel inputs atomically after startup; release them transactionally before switching profiles, disabling the whole add-on, or clearing saved state.
+- Never persist Keys, Wheel, or Buttons activation intent: all three runtimes are permanent whenever the global add-on setting is enabled.
+- Claim all 30 Keys, Wheel, and Buttons inputs atomically after startup; release them transactionally before switching profiles, disabling the whole add-on, or clearing saved state.
 - Treat profile IDs as stable identity, names as class-local labels, and imported data as untrusted until size, format, class, schema, allowlist, and type validation succeeds.
 
 ## Validation

@@ -3,6 +3,8 @@ ApogeePartyHealthBars_C = {
         { key = "1", label = "Left Click" },
         { key = "2", label = "Right Click" },
         { key = "shift-2", label = "Shift + Right Click" },
+        { key = "4", label = "Mouse Button 4" },
+        { key = "ctrl-alt-5", label = "Ctrl + Alt + Mouse Button 5" },
     },
 }
 ApogeePartyHealthBars_S = {
@@ -42,7 +44,7 @@ local store = ApogeePartyHealthBars_BindingStore
 local state = ApogeePartyHealthBars_S
 
 assert(store.Initialize(), "binding store did not initialize")
-assert(state.charSv.bindingSchemaVersion == 1, "binding schema version was not recorded")
+assert(state.charSv.bindingSchemaVersion == 2, "binding schema version was not recorded")
 assert(state.charSv.bindings["1"].kind == "spell"
     and state.charSv.bindings["1"].spellId == 2061
     and state.charSv.bindings["1"].spellName == "Flash Heal(Rank 7)",
@@ -68,6 +70,10 @@ assert(store.GetDisplayName(state.charSv.bindings["shift-2"]) == "Item: Linen Ba
 local typeAttr, spellAttr, itemAttr = store.KeyToActionAttrs("shift-2")
 assert(typeAttr == "shift-type2" and spellAttr == "shift-spell2" and itemAttr == "shift-item2",
     "modified secure action attributes were not generated")
+local sideType, sideSpell, sideItem = store.KeyToActionAttrs("ctrl-alt-5")
+assert(sideType == "alt-ctrl-type5" and sideSpell == "alt-ctrl-spell5"
+        and sideItem == "alt-ctrl-item5",
+    "side-button secure action attributes were not generated")
 
 local ok, message = store.AssignItem("2", 9999, "Not Usable")
 assert(not ok and message == "that item has no usable effect.", "unusable item was accepted")

@@ -12,6 +12,7 @@ local E = ApogeePartyHealthBars_Effects
 local T = ApogeePartyHealthBars_ShortcutBar
 local W = ApogeePartyHealthBars_WheelMacros
 local K = ApogeePartyHealthBars_KeyActions
+local B = ApogeePartyHealthBars_MouseButtonActions
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 local rowGeometry = ApogeePartyHealthBars_RowGeometry
@@ -212,6 +213,7 @@ rowGeometry.Initialize({
     ShortcutBar = T,
     WheelMacros = W,
     KeyActions = K,
+    MouseButtonActions = B,
 })
 local GetPlayerPowerInfo = rowGeometry.GetPlayerPowerInfo
 local GetRowPowerChromeHeight = rowGeometry.GetRowPowerChromeHeight
@@ -298,6 +300,7 @@ visualTicker.Initialize({
     ShortcutBar = T,
     WheelMacros = W,
     KeyActions = K,
+    MouseButtonActions = B,
     Threat = H,
 })
 local StyleReadableText = unitDisplay.StyleReadableText
@@ -338,6 +341,16 @@ W.Configure({
     AssignCursorDrop = AssignCursorDrop,
 })
 K.Configure({
+    Print = Print,
+    RequestLayout = S.RequestLayoutUpdate,
+    SyncTicker = SyncVisualTicker,
+    PositionSecureOverlay = PositionSecureOverlay,
+    ShowSecureFrame = ShowSecureFrame,
+    HideSecureFrame = HideSecureFrame,
+    SetSecureMouseEnabled = SetSecureMouseEnabled,
+    AssignCursorDrop = AssignCursorDrop,
+})
+B.Configure({
     Print = Print,
     RequestLayout = S.RequestLayoutUpdate,
     SyncTicker = SyncVisualTicker,
@@ -412,7 +425,7 @@ local function ComputeRowLayoutKey(unitId, row)
     return string.format("%s|%s|%s|%d|%d|%d|%d|%d|%d",
         tostring(showPartyBuff), tostring(showSelfBuff), GetHotStripHeight(), targetReserve,
         GetRowPowerChromeHeight(unitId), T.GetHeight(unitId), W.GetHeight(unitId),
-        K.GetHeight(unitId), H.GetGutterWidth())
+        math.max(K.GetHeight(unitId), B.GetHeight(unitId)), H.GetGutterWidth())
 end
 
 local function AuraEventNeedsLayout(unitId)
@@ -460,6 +473,7 @@ UpdateUI = function()
             SyncCastOverlays()
             W.RefreshSecureActions()
             K.RefreshSecureActions()
+            B.RefreshSecureActions()
         end
     elseif doValues then
         UpdateRowValues()
@@ -528,9 +542,12 @@ L.Register({
     GetRowTotalHeight = GetRowTotalHeight,
     GetRowPowerChromeHeight = GetRowPowerChromeHeight,
     GetActionAreaHeight = GetActionAreaHeight,
+    GetPlayerActionWidth = function()
+        return math.max(C.ROW_CONTENT_W, B.GetWidth("player"))
+    end,
     LayoutShortcuts = function()
-        W.Layout(); K.Layout()
-        T.Layout(math.max(W.GetHeight("player"), K.GetHeight("player")))
+        W.Layout(); K.Layout(); B.Layout()
+        T.Layout(math.max(W.GetHeight("player"), K.GetHeight("player"), B.GetHeight("player")))
     end,
     GetThreatGutterWidth = H.GetGutterWidth,
     RefreshThreat = H.Refresh,
@@ -577,6 +594,7 @@ local function ReconcileAllSecureOverlays()
     T.RefreshSecureActions()
     W.RefreshSecureActions()
     K.RefreshSecureActions()
+    B.RefreshSecureActions()
     ReconcileBoundActionBindings()
 end
 
@@ -638,7 +656,7 @@ end
 
 local function GetBoundActionManagers()
     local managers = {}
-    for _, feature in ipairs({ W, K }) do
+    for _, feature in ipairs({ W, K, B }) do
         local manager = feature.GetBindingManager and feature.GetBindingManager()
         if manager then managers[#managers + 1] = manager end
     end
@@ -697,6 +715,7 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
     ShortcutBar               = T,
     KeyActions                = K,
     WheelMacros                = W,
+    MouseButtonActions         = B,
     ProfileStore              = ApogeePartyHealthBars_ProfileStore,
     ProfileCodec              = ApogeePartyHealthBars_ProfileCodec,
     ActivateProfile           = ActivateProfile,

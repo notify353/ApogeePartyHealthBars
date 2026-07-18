@@ -3,6 +3,8 @@ ApogeePartyHealthBars_C = {
     BINDING_SLOTS = {
         { key = "1", label = "Left Click" },
         { key = "shift-2", label = "Shift + Right Click" },
+        { key = "4", label = "Mouse Button 4" },
+        { key = "ctrl-5", label = "Ctrl + Mouse Button 5" },
     },
 }
 ApogeePartyHealthBars_S = { configMode = false }
@@ -38,6 +40,8 @@ end
 local bindings = {
     ["1"] = { kind = "spell", spellId = 2061, spellName = "Flash Heal(Rank 7)" },
     ["shift-2"] = { kind = "item", itemId = 1251, itemName = "Linen Bandage" },
+    ["4"] = { kind = "spell", spellId = 139, spellName = "Renew(Rank 12)" },
+    ["ctrl-5"] = { kind = "spell", spellId = 2061, spellName = "Flash Heal(Rank 7)" },
 }
 local row = {
     unitId = "party1",
@@ -55,7 +59,9 @@ clicks.Initialize({
     rows = { row },
     KeyToActionAttrs = function(slotKey)
         if slotKey == "1" then return "type1", "spell1", "item1" end
-        return "shift-type2", "shift-spell2", "shift-item2"
+        if slotKey == "shift-2" then return "shift-type2", "shift-spell2", "shift-item2" end
+        if slotKey == "4" then return "type4", "spell4", "item4" end
+        return "ctrl-type5", "ctrl-spell5", "ctrl-item5"
     end,
     GetBindingsTable = function() return bindings end,
     GetBindingAction = ApogeePartyHealthBars_ActionData.Normalize,
@@ -71,6 +77,10 @@ assert(row.castBtn.attributes.type1 == "spell" and row.castBtn.attributes.spell1
 assert(row.castBtn.attributes["shift-type2"] == "item"
     and row.castBtn.attributes["shift-item2"] == "item:1251",
     "modified item attributes were not applied")
+assert(row.castBtn.attributes.type4 == "spell" and row.castBtn.attributes.spell4 == 139
+        and row.castBtn.attributes["ctrl-type5"] == "spell"
+        and row.castBtn.attributes["ctrl-spell5"] == 2061,
+    "side-button Healing attributes were not applied")
 assert(row.castBtn.shown and row.castBtn.mouseEnabled
     and row.targetCastBtn.shown and row.targetCastBtn.mouseEnabled,
     "active secure click overlays were not enabled")

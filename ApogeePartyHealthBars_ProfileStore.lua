@@ -15,7 +15,7 @@ local SETTINGS_KEYS = {
 local ACTION_KEYS = {
     "bindings", "bindingSchemaVersion", "bindingDefaultsInitialized",
     "shortcuts", "shortcutSchemaVersion", "shortcutDefaultsVersion",
-    "selfBuffSelections", "wheelMacros", "keyActions",
+    "selfBuffSelections", "wheelMacros", "keyActions", "mouseActions",
 }
 local LEGACY_SETTINGS_KEYS = {
     "schemaVersion", "enabled", "combatUIAutoHide", "showAllSlots",
@@ -40,7 +40,7 @@ local SETTINGS_TYPES = {
 local ACTION_TYPES = {
     bindings = "table", bindingSchemaVersion = "number", bindingDefaultsInitialized = "boolean",
     shortcuts = "table", shortcutSchemaVersion = "number", shortcutDefaultsVersion = "number",
-    selfBuffSelections = "table", wheelMacros = "table", keyActions = "table",
+    selfBuffSelections = "table", wheelMacros = "table", keyActions = "table", mouseActions = "table",
 }
 local LEGACY_SETTINGS_TYPES = {}
 for key, valueType in pairs(SETTINGS_TYPES) do LEGACY_SETTINGS_TYPES[key] = valueType end
@@ -82,7 +82,7 @@ local function copyKeys(source, keys, expectedTypes)
 end
 
 local function stripBoundActionRuntime(actions)
-    for _, key in ipairs({ "wheelMacros", "keyActions" }) do
+    for _, key in ipairs({ "wheelMacros", "keyActions", "mouseActions" }) do
         local state = actions[key]
         if type(state) == "table" then
             state.enabled = nil
@@ -254,7 +254,7 @@ end
 local function captureBindingRuntime(source, target)
     source = type(source) == "table" and source or {}
     target = type(target) == "table" and target or {}
-    for _, stateKey in ipairs({ "wheelMacros", "keyActions" }) do
+    for _, stateKey in ipairs({ "wheelMacros", "keyActions", "mouseActions" }) do
         local saved = source[stateKey]
         if type(saved) == "table" then
             local runtime = type(target[stateKey]) == "table" and target[stateKey] or {}

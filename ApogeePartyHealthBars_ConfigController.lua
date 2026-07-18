@@ -19,6 +19,7 @@ function C.Exit()
     D.SavePosition()
     S.selectedWheelLayout = nil
     S.selectedKeyLayout = nil
+    S.selectedMouseButtonLayout = nil
     local ui = D.GetConfigUI()
     if ui then ui.Hide() end
     D.UpdateHeader()
@@ -33,7 +34,7 @@ function C.SetAddonEnabled(enabled)
         changed, code, detail = D.ReleaseBoundActionBindings()
     end
     if not changed then
-        D.Print(detail or code or "could not update Keys and Wheel bindings.")
+        D.Print(detail or code or "could not update action bindings.")
         return false
     end
     S.sv.enabled = enabled

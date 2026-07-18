@@ -8,6 +8,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
+- Added contextual Middle, Mouse Button 4, and Mouse Button 5 actions: unit-frame clicks retain native Healing targeting while nine Normal/Shift/Ctrl bindings provide Wheel-style combat actions elsewhere, with a 3×3 HUD to the right of Wheel and full profile support.
+
 - Added smart generated spell macros with self-channel protection, spam-safe Shoot and Auto Shot behavior, and an in-addon Macros glossary covering templates, syntax, application, and tradeoffs.
 - Added secure class-state layouts for Priest Shadowform, Rogue Stealth and Vanish, Druid Cat Form with a separate Prowl state, and Shaman Ghost Wolf when reported by the client; every newly discovered Keys or Wheel state starts empty.
 - Added activation feedback for unassigned Keys and Wheel inputs, highlighting the corresponding HUD square and identifying the empty trigger.
@@ -26,7 +28,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 - Repositioned the default settings window toward center-left and the party bars toward upper-right so settings, party bars, and the open Spellbook form a clear three-column workspace without covering one another.
 - Changed the default low-health alert sound to Focus for new profiles and Factory Reset while preserving existing sound selections.
 - Enabled all five solo party slots and Blizzard UI auto-hide in combat by default for new profiles and Factory Reset while preserving existing profile choices.
-- Reordered settings to General, Healing, Keys, Wheel, Shortcuts, Macros, and Profiles so first-time configuration starts with core behavior and keeps Shortcuts beside Macros; removed the redundant add-on enable checkbox and movement hint, and replaced the toggle with a binding-safe Prepare to Disable action for use before WoW's AddOns manager.
+- Reordered settings to General, Healing, Keys, Wheel, Buttons, Shortcuts, Macros, and Profiles so first-time configuration starts with core behavior and keeps related action features together; removed the redundant add-on enable checkbox and movement hint, and replaced the toggle with a binding-safe Prepare to Disable action for use before WoW's AddOns manager.
 - Unified Profiles, General, and Macros around the same muted instruction, compact section/row rhythm, status placement, and overflow-only scrollbar used throughout settings; General now groups related controls and consolidates position resets.
 - Unified Healing settings with the shared scrollable action rows, fixed click-gesture labels, inline Up/Dn swapping, explicit Clear controls, and no persistent row selection.
 - Unified Shortcuts, Keys, and Wheel settings around the same compact scrollable action rows, inline controls, empty drop targets, and minimal drag guidance.

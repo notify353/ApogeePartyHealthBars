@@ -5,6 +5,7 @@ local HC = ApogeePartyHealthBars_HealingConfig
 local SC = ApogeePartyHealthBars_ShortcutConfig
 local KC = ApogeePartyHealthBars_KeyConfig
 local WC = ApogeePartyHealthBars_WheelConfig
+local BC = ApogeePartyHealthBars_MouseButtonConfig
 local MC = ApogeePartyHealthBars_MacroConfig
 local PC = ApogeePartyHealthBars_ProfileConfig
 local AC = ApogeePartyHealthBars_ActionConfig
@@ -18,7 +19,7 @@ local built = false
 local D
 
 local configPanel
-local profilesTab, generalTab, healingTab, shortcutsTab, keysTab, wheelTab, macrosTab
+local profilesTab, generalTab, healingTab, shortcutsTab, keysTab, wheelTab, buttonsTab, macrosTab
 local profileLabel
 local tabs, tabOrder = {}, {}
 
@@ -199,12 +200,14 @@ function UI.Build(deps)
     shortcutsTab = SC.Build(configPanel, D)
     keysTab = KC.Build(configPanel, D)
     wheelTab = WC.Build(configPanel, D)
+    buttonsTab = BC.Build(configPanel, D)
     macrosTab = MC.Build(configPanel, D)
 
     RegisterTab({ key = "general", label = "General", frame = generalTab, refresh = RefreshConfigPanel })
     RegisterTab({ key = "healing", label = "Healing", frame = healingTab, refresh = HC.Refresh })
     RegisterTab({ key = "keys", label = "Keys", frame = keysTab, refresh = KC.Refresh })
     RegisterTab({ key = "wheel", label = "Wheel", frame = wheelTab, refresh = WC.Refresh })
+    RegisterTab({ key = "buttons", label = "Buttons", frame = buttonsTab, refresh = BC.Refresh })
     RegisterTab({ key = "shortcuts", label = "Shortcuts", frame = shortcutsTab, refresh = SC.Refresh })
     RegisterTab({ key = "macros", label = "Macros", frame = macrosTab, refresh = MC.Refresh })
     RegisterTab({ key = "profiles", label = "Profiles", frame = profilesTab, refresh = PC.Refresh })
@@ -228,6 +231,7 @@ function UI.Build(deps)
     UI.RefreshShortcutPanel = SC.Refresh
     UI.RefreshKeyPanel = KC.Refresh
     UI.RefreshWheelPanel = WC.Refresh
+    UI.RefreshMouseButtonPanel = BC.Refresh
     UI.RefreshMacroPanel = MC.Refresh
     UI.RefreshProfilePanel = PC.Refresh
     UI.RegisterTab = RegisterTab

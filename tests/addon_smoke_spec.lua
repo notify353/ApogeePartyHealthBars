@@ -343,13 +343,18 @@ assert(ApogeePartyHealthBarsBindPanel.point[1] == "CENTER"
         and ApogeePartyHealthBarsBindPanel.point[4] == -96
         and ApogeePartyHealthBarsBindPanel.point[5] == -32,
     "settings did not use the Spellbook-safe center-left default")
-assert(ApogeePartyHealthBars_S.charSv.bindingSchemaVersion == 1,
+assert(ApogeePartyHealthBars_S.charSv.bindingSchemaVersion == 2,
     "Healing binding data was not initialized before runtime setup")
 local keysRuntime = ApogeePartyHealthBars_KeyActions
 local wheelRuntime = ApogeePartyHealthBars_WheelMacros
+local buttonRuntime = ApogeePartyHealthBars_MouseButtonActions
 for _, slotId in ipairs(keysRuntime.GetDisplayOrder()) do
     assert(keysRuntime.GetSlot(keysRuntime.GetActiveLayoutKey(), slotId) == nil,
         "Keys did not start empty: " .. slotId)
+end
+for _, slotId in ipairs(buttonRuntime.GetDisplayOrder()) do
+    assert(buttonRuntime.GetSlot(buttonRuntime.GetActiveLayoutKey(), slotId) == nil,
+        "Buttons did not start empty: " .. slotId)
 end
 local key1Icon = assert(keysRuntime.GetHudIcon("key1"), "Keys HUD was not attached")
 local keyFIcon = assert(keysRuntime.GetHudIcon("keyF"), "Keys F HUD tile was not attached")
@@ -365,6 +370,13 @@ assert(keyFIcon.keyLabel == nil and keyGIcon.keyLabel == nil,
 local wheelTopIcon = assert(wheelRuntime.GetHudIcon("ctrlUp"), "Wheel HUD was not attached")
 assert(wheelTopIcon.point[4] == 160 and wheelTopIcon.point[5] == 0,
     "Wheel HUD was not a right-aligned vertical rail")
+local middleIcon = assert(buttonRuntime.GetHudIcon("normal3"), "Middle Button HUD was not attached")
+local sideIcon = assert(buttonRuntime.GetHudIcon("normal5"), "Mouse Button 5 HUD was not attached")
+local ctrlSideIcon = assert(buttonRuntime.GetHudIcon("ctrl5"), "Ctrl Mouse Button 5 HUD was not attached")
+assert(middleIcon.point[4] == 214 and middleIcon.point[5] == 0
+        and sideIcon.point[4] == 268 and sideIcon.point[5] == 0
+        and ctrlSideIcon.point[4] == 268 and ctrlSideIcon.point[5] == -54,
+    "Buttons HUD did not use the three-by-three grid to the right of Wheel")
 local feedbackText = assert(ApogeePartyHealthBars_ActionHud.GetFeedbackText(),
     "shared action feedback line was not attached")
 assert(feedbackText.point[4] == 4 and feedbackText.point[5] == -117,
@@ -376,6 +388,7 @@ local permanentActionHeight = geometry.GetActionAreaHeight("player")
 local shortcutHeight = ApogeePartyHealthBars_ShortcutBar.GetHeight("player")
 assert(keysRuntime.GetHeight("player") == 136
         and wheelRuntime.GetHeight("player") == 169
+        and buttonRuntime.GetHeight("player") == 78
         and permanentActionHeight == shortcutHeight + 169,
     "permanent Keys and Wheel geometry did not reserve the taller action rail")
 assert(geometry.GetRowTotalHeight("player")
@@ -417,27 +430,34 @@ assert(wheelRuntime.GetHudCastButton("ctrlUp").shown,
 assert(keysRuntime.GetHudCastButton("key1").shown,
     "permanent Keys HUD did not become visible at login")
 assert(smokeBindings.F == "CLICK ApogeePartyHealthBarsKeyFHud:LeftButton"
-    and smokeBindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton",
-    "Keys and Wheel did not own their independent physical bindings")
+    and smokeBindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton"
+    and smokeBindings.BUTTON3 == "CLICK ApogeePartyHealthBarsMouseNormal3Hud:LeftButton"
+    and smokeBindings["CTRL-BUTTON5"] == "CLICK ApogeePartyHealthBarsMouseCtrl5Hud:LeftButton",
+    "Keys, Wheel, and Buttons did not own their independent physical bindings")
 assert(ApogeePartyHealthBars_ConfigController.SetAddonEnabled(false),
     "global disable did not release permanent action bindings")
-assert(smokeBindings.F == "" and smokeBindings.MOUSEWHEELUP == "CAMERAZOOMIN",
-    "global disable did not restore the prior Keys and Wheel bindings")
+assert(smokeBindings.F == "" and smokeBindings.MOUSEWHEELUP == "CAMERAZOOMIN"
+        and smokeBindings.BUTTON3 == "" and smokeBindings["CTRL-BUTTON5"] == "",
+    "global disable did not restore the prior action bindings")
 router.Dispatch("UPDATE_BINDINGS")
 assert(smokeBindings.F == "" and smokeBindings.MOUSEWHEELUP == "CAMERAZOOMIN",
     "binding reconciliation reclaimed Keys or Wheel while the add-on was disabled")
 assert(ApogeePartyHealthBars_ConfigController.SetAddonEnabled(true)
         and smokeBindings.F == "CLICK ApogeePartyHealthBarsKeyFHud:LeftButton"
-        and smokeBindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton",
+        and smokeBindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton"
+        and smokeBindings.BUTTON3 == "CLICK ApogeePartyHealthBarsMouseNormal3Hud:LeftButton",
     "global re-enable did not reclaim permanent action bindings")
 local keysLayout = keysRuntime.GetActiveLayoutKey()
 local wheelLayout = wheelRuntime.GetActiveLayoutKey()
+local buttonLayout = buttonRuntime.GetActiveLayoutKey()
 assert(keysRuntime.AssignSpell(keysLayout, "key1", 9001, "Fireball")
     and keysRuntime.AssignSpell(keysLayout, "keyF", 9003, "Frostbolt")
     and keysRuntime.AssignItem(keysLayout, "keyG", 1251, "Linen Bandage"),
     "Keys did not accept spell and usable-item actions")
 assert(wheelRuntime.AssignSpell(wheelLayout, "normalUp", 9001, "Fireball"),
     "the same action could not be assigned across Keys and Wheel")
+assert(buttonRuntime.AssignSpell(buttonLayout, "normal3", 9003, "Frostbolt"),
+    "Buttons did not accept a combat spell action")
 assert(keysRuntime.ApplyMacro(keysLayout, "keyF", "/cast [@mouseover,help] Frostbolt"),
     "Keys custom macro was rejected")
 assert(not keysRuntime.ApplyMacro(keysLayout, "keyF", string.rep("x", 256)),
@@ -455,12 +475,16 @@ assert(keyGSecure:GetAttribute("macrotext"):find("/use Linen Bandage", 1, true),
 assert(keyGIcon.count:GetText() == "3", "Keys item HUD did not show its carried quantity")
 local emptyKeySecure = keysRuntime.GetSecureButton("key2")
 local emptyWheelSecure = wheelRuntime.GetSecureButton("ctrlUp")
+local emptyButtonSecure = buttonRuntime.GetSecureButton("normal4")
 assert(emptyKeySecure:GetAttribute("type") == "macro"
         and emptyKeySecure:GetAttribute("macrotext") == "/run ApogeeKeysFeedback(2)",
     "an empty Keys slot did not receive feedback-only activation")
 assert(emptyWheelSecure:GetAttribute("type") == "macro"
         and emptyWheelSecure:GetAttribute("macrotext") == "/run ApogeeWheelFeedback(5)",
     "an empty Wheel slot did not receive feedback-only activation")
+assert(emptyButtonSecure:GetAttribute("type") == "macro"
+        and emptyButtonSecure:GetAttribute("macrotext") == "/run ApogeeMouseButtonsFeedback(2)",
+    "an empty Buttons slot did not receive feedback-only activation")
 assert(keysRuntime.GetHeight("player") == 136 and wheelRuntime.GetHeight("player") == 169
     and math.max(keysRuntime.GetHeight("player"), wheelRuntime.GetHeight("player")) == 169,
     "permanent action HUD height was summed instead of using the taller Wheel rail")
@@ -471,6 +495,9 @@ assert(feedbackText:GetText() == "2 — Empty", "empty Keys feedback text was in
 ApogeeWheelFeedback(1)
 assert(feedbackText:GetText() == "Normal Up — Fireball",
     "Wheel did not share the fixed activation feedback line")
+ApogeeMouseButtonsFeedback(1)
+assert(feedbackText:GetText() == "Middle Button — Frostbolt",
+    "Buttons activation feedback text was incorrect")
 ApogeeWheelFeedback(5)
 assert(feedbackText:GetText() == "Ctrl Up — Empty", "empty Wheel feedback text was incorrect")
 smokeSpellRange = 0
@@ -499,7 +526,7 @@ assert(healingItemInfoRefreshes == 1,
 smokeItemName = "Linen Bandage"
 router.Dispatch("GET_ITEM_INFO_RECEIVED", 1251, true)
 ApogeePartyHealthBars_ConfigUI.RefreshBindPanel = originalHealingRefresh
-assert(savedBindingCount >= 2, "permanent bound-action features did not persist their bindings")
+assert(savedBindingCount >= 3, "permanent bound-action features did not persist their bindings")
 assert(ApogeePartyHealthBars_ShortcutBar.AssignSpell(1, 9001, "Fireball"))
 assert(ApogeePartyHealthBars_ShortcutBar.GetSlotLane(1) == "player", "ordinary Shortcut spell did not use player lane")
 assert(ApogeePartyHealthBars_ShortcutBar.GetSlotLane(2) == nil, "automatic crowd control occupied a configured slot")
@@ -626,7 +653,7 @@ assert(ApogeePartyHealthBars_ConfigUI.prepareDisableButton
         == ApogeePartyHealthBars_GeneralConfig.GetPrepareDisableButton(),
     "ConfigUI did not bridge the binding-safe disable preparation control")
 assert(table.concat(ApogeePartyHealthBars_ConfigUI.tabOrder, ",")
-        == "general,healing,keys,wheel,shortcuts,macros,profiles",
+        == "general,healing,keys,wheel,buttons,shortcuts,macros,profiles",
     "settings tabs did not follow the core-to-advanced order")
 assert(SpellBookFrame:IsShown(), "opening settings did not open the spellbook")
 assert(spellbookOpenCount == 1, "spellbook did not open exactly once")

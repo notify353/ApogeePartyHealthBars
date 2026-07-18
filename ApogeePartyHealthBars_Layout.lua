@@ -92,6 +92,9 @@ local function ComputePanelWidth()
             w = math.max(w, D.GetRowBtnWidth(row) + C.PAD_H * 2 + gutter)
         end
     end
+    if D.GetPlayerActionWidth then
+        w = math.max(w, D.GetPlayerActionWidth() + C.PAD_H * 2 + gutter)
+    end
     return w
 end
 

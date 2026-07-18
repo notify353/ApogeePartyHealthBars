@@ -11,7 +11,7 @@ end
 
 function G.Initialize(deps)
     for _, key in ipairs({
-        "GetHotStripHeight", "ShortcutBar", "WheelMacros", "KeyActions",
+        "GetHotStripHeight", "ShortcutBar", "WheelMacros", "KeyActions", "MouseButtonActions",
     }) do
         assert(deps[key] ~= nil, "RowGeometry missing dependency: " .. key)
     end
@@ -40,7 +40,8 @@ end
 function G.GetActionAreaHeight(rowOrUnit)
     local unitId = ResolveUnitId(rowOrUnit)
     return D.ShortcutBar.GetHeight(unitId)
-        + math.max(D.WheelMacros.GetHeight(unitId), D.KeyActions.GetHeight(unitId))
+        + math.max(D.WheelMacros.GetHeight(unitId), D.KeyActions.GetHeight(unitId),
+            D.MouseButtonActions.GetHeight(unitId))
 end
 
 function G.GetRowTotalHeight(rowOrUnit)

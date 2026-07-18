@@ -27,6 +27,7 @@ ApogeePartyHealthBars_Effects = {
         actions.selfBuffSelections = type(actions.selfBuffSelections) == "table" and actions.selfBuffSelections or {}
         actions.wheelMacros = type(actions.wheelMacros) == "table" and actions.wheelMacros or {}
         actions.keyActions = type(actions.keyActions) == "table" and actions.keyActions or {}
+        actions.mouseActions = type(actions.mouseActions) == "table" and actions.mouseActions or {}
     end,
 }
 local clock = 100
@@ -46,6 +47,13 @@ local character = {
         profiles = { ["1"] = { layouts = { base = { slots = {} } } } },
     },
     wheelMacros = { enabled = false, ownership = {} },
+    mouseActions = {
+        ownership = { ["2"] = { normal3 = { previousAction = "TOGGLEAUTORUN" } } },
+        bindingVersion = 1,
+        profiles = { ["1"] = { layouts = { base = { slots = {
+            normal3 = { kind = "spell", spellName = "Smite" },
+        } } } } },
+    },
 }
 local active = store.Initialize(account, character, "PRIEST", "Healer - Realm")
 assert(active.name == "Healer - Realm" and active.classToken == "PRIEST",
@@ -64,6 +72,10 @@ local migratedRuntime = store.GetBindingRuntime("keyActions")
 assert(migratedRuntime.bindingVersion == 1
     and migratedRuntime.ownership["2"].keyQ.previousAction == "MOVEFORWARD",
     "legacy binding recovery state was not moved to character-local storage")
+local migratedMouseRuntime = store.GetBindingRuntime("mouseActions")
+assert(active.payload.actions.mouseActions.profiles["1"].layouts.base.slots.normal3.spellName == "Smite"
+        and migratedMouseRuntime.ownership["2"].normal3.previousAction == "TOGGLEAUTORUN",
+    "Buttons profile actions or binding recovery state were not migrated correctly")
 assert(account.enabled == nil and character.bindings == nil
     and account.profileStore and character.activeProfileId == active.id,
     "legacy roots were not converted to profile storage")
@@ -104,10 +116,15 @@ assert(active.author == "Author - Realm" and active.payload.settings.x == nil,
 
 active.payload.actions.keyActions.ownership = { bad = true }
 active.payload.actions.keyActions.enabled = true
+active.payload.actions.mouseActions.ownership = { bad = true }
+active.payload.actions.mouseActions.bindingVersion = 1
 local exported = store.Exportable(active.id)
 assert(exported.payload.actions.keyActions.ownership == nil
     and exported.payload.actions.keyActions.enabled == nil,
     "exportable profile leaked binding ownership or activation intent")
+assert(exported.payload.actions.mouseActions.ownership == nil
+        and exported.payload.actions.mouseActions.bindingVersion == nil,
+    "exportable profile leaked Buttons binding ownership")
 
 local secondCharacter = { shortcuts = { { kind = "spell", spellName = "Smite" } } }
 local second = store.Initialize(account, secondCharacter, "PRIEST", "Alt - Realm")

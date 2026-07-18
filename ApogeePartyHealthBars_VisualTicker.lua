@@ -43,6 +43,7 @@ local function OnUpdate(_, elapsed)
         D.RefreshRangeAlpha()
         D.Threat.Refresh()
         D.KeyActions.Refresh()
+        D.MouseButtonActions.Refresh()
     end
 
     V.Sync()
@@ -52,7 +53,7 @@ function V.Initialize(deps)
     for _, key in ipairs({
         "IsAddonEnabled", "IsRangeCheckEnabled", "IsConfigMode",
         "HasActiveHotVisuals", "TickHotVisuals", "RefreshRangeAlpha",
-        "ShortcutBar", "WheelMacros", "KeyActions", "Threat",
+        "ShortcutBar", "WheelMacros", "KeyActions", "MouseButtonActions", "Threat",
     }) do
         assert(deps[key] ~= nil, "VisualTicker missing dependency: " .. key)
     end

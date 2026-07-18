@@ -69,6 +69,7 @@ local function widget()
         GetChecked = function() return false end,
         SetText = function(self, value) self.text = value or "" end,
         GetText = function(self) return self.text or "" end,
+        SetJustifyH = function(self, value) self.justifyH = value end,
     }
     local noopMethods = {
         "SetAllPoints", "SetTexture",
@@ -77,7 +78,7 @@ local function widget()
         "EnableMouseWheel", "SetMovable", "SetClampedToScreen",
         "SetHighlightTexture", "SetBackdrop", "SetBackdropColor", "SetBackdropBorderColor",
         "SetStatusBarTexture", "SetStatusBarColor", "SetMinMaxValues", "SetValue",
-        "SetFontObject", "SetFont", "SetTextColor", "SetJustifyH",
+        "SetFontObject", "SetFont", "SetTextColor",
         "SetJustifyV", "SetWidth", "SetHeight", "SetWordWrap", "SetMaxLines",
         "SetVertexColor", "SetColorTexture", "SetScrollChild",
         "SetVerticalScroll", "SetMultiLine", "SetAutoFocus", "SetTextInsets",
@@ -200,7 +201,8 @@ C_Container = {
     GetContainerItemID = function() return 1251 end,
 }
 function GetTime() return 1 end
-function GetCursorPosition() return 100, 100 end
+local cursorX, cursorY = 100, 100
+function GetCursorPosition() return cursorX, cursorY end
 function GetMouseFocus() return nil end
 function CombatLogGetCurrentEventInfo() return 0, "SPELL_DAMAGE" end
 function hooksecurefunc() end
@@ -331,6 +333,16 @@ assert(ApogeePartyHealthBars_EffectsTracker == nil,
 
 local router = ApogeePartyHealthBars_EventRouter
 router.Dispatch("PLAYER_LOGIN")
+assert(ApogeePartyHealthBarsPanel.point[1] == "RIGHT"
+        and ApogeePartyHealthBarsPanel.point[3] == "RIGHT"
+        and ApogeePartyHealthBarsPanel.point[4] == -8
+        and ApogeePartyHealthBarsPanel.point[5] == -24,
+    "party bars did not use the right-side non-overlapping default")
+assert(ApogeePartyHealthBarsBindPanel.point[1] == "CENTER"
+        and ApogeePartyHealthBarsBindPanel.point[3] == "CENTER"
+        and ApogeePartyHealthBarsBindPanel.point[4] == -96
+        and ApogeePartyHealthBarsBindPanel.point[5] == -32,
+    "settings did not use the Spellbook-safe center-left default")
 assert(ApogeePartyHealthBars_S.charSv.bindingSchemaVersion == 1,
     "Healing binding data was not initialized before runtime setup")
 local keysRuntime = ApogeePartyHealthBars_KeyActions
@@ -521,6 +533,13 @@ router.Dispatch("PLAYER_TALENT_UPDATE")
 local configUI = ApogeePartyHealthBars_ConfigUI
 assert(configUI.versionLabel and configUI.versionLabel:GetText() == "Version 0.36.0-test",
     "configuration did not display the loaded TOC version")
+assert(configUI.profileLabel and configUI.profileLabel.justifyH == "LEFT",
+    "configuration profile metadata did not align with the header title")
+assert(configUI.profileLabel.point and configUI.profileLabel.point[1] == "BOTTOMLEFT"
+        and configUI.profileLabel.point[3] == "BOTTOMLEFT"
+        and configUI.profileLabel.point[4] == 2
+        and configUI.profileLabel.point[5] == 3,
+    "configuration profile metadata did not retain its lower header baseline")
 local originalRefreshLayouts = wheelRuntime.RefreshLayouts
 local originalRefreshWheelPanel = configUI.RefreshWheelPanel
 local wheelPanelRefreshCount = 0
@@ -593,6 +612,12 @@ assert(ApogeePartyHealthBars_ConfigUI.factoryResetButton,
 assert(ApogeePartyHealthBars_ConfigUI.factoryResetButton
         == ApogeePartyHealthBars_GeneralConfig.GetFactoryResetButton(),
     "ConfigUI did not bridge the extracted General factory-reset control")
+assert(ApogeePartyHealthBars_ConfigUI.prepareDisableButton
+        == ApogeePartyHealthBars_GeneralConfig.GetPrepareDisableButton(),
+    "ConfigUI did not bridge the binding-safe disable preparation control")
+assert(table.concat(ApogeePartyHealthBars_ConfigUI.tabOrder, ",")
+        == "general,healing,keys,wheel,shortcuts,macros,profiles",
+    "settings tabs did not follow the core-to-advanced order")
 assert(SpellBookFrame:IsShown(), "opening settings did not open the spellbook")
 assert(spellbookOpenCount == 1, "spellbook did not open exactly once")
 assert(directSpellbookToggleCount == 0, "add-on called ToggleSpellBook directly")
@@ -620,7 +645,16 @@ router.Dispatch("BAG_UPDATE_COOLDOWN")
 router.Dispatch("GET_ITEM_INFO_RECEIVED", 1251, true)
 assert(ApogeePartyHealthBars_ShortcutBar.GetSlotState(3) == "ready",
     "item events did not restore a restocked Shortcut")
+local originalHideShortcutDropTarget = ApogeePartyHealthBars_ShortcutBar.HideDropTarget
+local shortcutDropTargetHideCount = 0
+ApogeePartyHealthBars_ShortcutBar.HideDropTarget = function(...)
+    shortcutDropTargetHideCount = shortcutDropTargetHideCount + 1
+    return originalHideShortcutDropTarget(...)
+end
 ApogeePartyHealthBars_ConfigController.SetMode(false)
+ApogeePartyHealthBars_ShortcutBar.HideDropTarget = originalHideShortcutDropTarget
+assert(shortcutDropTargetHideCount == 1,
+    "settings close did not immediately hide the Shortcut HUD add target")
 local existingImmediatePoints = existingShortcutButton.pointWrites
 local addedImmediatePoints = addedShortcutButton.pointWrites
 RunFrameUpdates()
@@ -699,18 +733,20 @@ ApogeePartyHealthBars_S.configMode = false
 RunFrameUpdates()
 
 assert(type(ApogeePartyHealthBars_S.sv) == "table", "saved variables did not initialize")
-assert(ApogeePartyHealthBars_S.sv.combatUIAutoHide == false, "combat UI fade should default off")
+assert(ApogeePartyHealthBars_S.sv.combatUIAutoHide == true, "combat UI fade should default on")
+assert(ApogeePartyHealthBars_S.sv.showAllSlots == true, "all solo slots should default visible")
 assert(ApogeePartyHealthBars_S.sv.clickableBuffIcons == true, "clickable buff icons should default on")
 assert(ApogeePartyHealthBars_S.sv.spellTrackerEnabled == nil, "retired tracker checkbox state persisted")
 assert(ApogeePartyHealthBars_S.sv.spellTrackerSoundsEnabled == nil, "retired tracker sounds checkbox state persisted")
 assert(ApogeePartyHealthBars_S.sv.lowHealthSoundEnabled == nil, "retired low-health checkbox state persisted")
-assert(ApogeePartyHealthBars_S.sv.lowHealthSoundKey == "alarm_soft", "low-health sound choice should default soft")
+assert(ApogeePartyHealthBars_S.sv.lowHealthSoundKey == "focus", "low-health sound choice should default to Focus")
 assert(next(ApogeePartyHealthBars_C.SHORTCUT_CLASS_DEFAULTS) == nil,
     "Shortcut slots should start empty for every class")
 assert(ApogeePartyHealthBars_S.sv.lowHealthThreshold == 50, "low-health threshold should default to 50%")
 local existingPreferences = {
     schemaVersion = 3,
     combatUIAutoHide = true,
+    showAllSlots = false,
     spellTrackerEnabled = false,
     spellTrackerSoundsEnabled = false,
     lowHealthSoundKey = "alarm_bell",
@@ -718,6 +754,7 @@ local existingPreferences = {
 }
 ApogeePartyHealthBars_Effects.InitializeSavedVariables(existingPreferences, {})
 assert(existingPreferences.combatUIAutoHide == true, "saved combat UI fade preference was overwritten")
+assert(existingPreferences.showAllSlots == false, "saved solo-slot preference was overwritten")
 assert(existingPreferences.spellTrackerEnabled == nil, "saved tracker preference was not retired")
 assert(existingPreferences.spellTrackerSoundsEnabled == nil, "saved tracker sounds preference was not retired")
 assert(existingPreferences.lowHealthSoundKey == "alarm_bell", "saved low-health sound choice was overwritten")
@@ -755,6 +792,22 @@ assert(legacyEnabledPreferences.lowHealthSoundEnabled == nil,
 assert(legacyEnabledPreferences.lowHealthSoundKey == "alarm_high",
     "enabled legacy low-health sound choice was not preserved")
 assert(ApogeePartyHealthBars_MinimapController.IsCreated(), "minimap controller did not create")
+local minimapButton = assert(_G.ApogeePartyHealthBarsMinimapButton,
+    "minimap controller did not expose its button frame")
+minimapButton.scripts.OnDragStart(minimapButton)
+cursorX, cursorY = 200, 100
+minimapButton.scripts.OnUpdate()
+assert(math.abs(ApogeePartyHealthBars_S.sv.minimapAngle - 180) < 0.001
+        and minimapButton.point[4] > 52,
+    "right-drag moved the minimap button away from the cursor")
+cursorX, cursorY = 0, 100
+minimapButton.scripts.OnUpdate()
+assert(math.abs(ApogeePartyHealthBars_S.sv.minimapAngle) < 0.001
+        and minimapButton.point[4] < 52,
+    "left-drag moved the minimap button away from the cursor")
+minimapButton.scripts.OnDragStop(minimapButton)
+assert(minimapButton.scripts.OnUpdate == nil,
+    "minimap button kept tracking the cursor after right-drag ended")
 for _, message in ipairs(messages) do
     assert(not message:find("error", 1, true), "captured runtime failure: " .. message)
 end

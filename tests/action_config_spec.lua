@@ -9,9 +9,10 @@ local function widget()
         "SetFrameStrata", "SetFrameLevel", "EnableMouse", "SetColorTexture",
         "SetSize", "SetWidth", "SetJustifyH", "SetJustifyV", "SetWordWrap",
         "SetMultiLine", "SetAutoFocus", "SetFontObject", "SetTextColor", "SetTexCoord",
-        "SetTexture", "SetDesaturated",
+        "SetDesaturated",
     }
     for _, name in ipairs(noops) do value[name] = function() end end
+    function value:SetTexture(texture) self.texture = texture end
     function value:SetAllPoints() self.allPoints = true end
     function value:ClearAllPoints() self.points = {} end
     function value:SetPoint(...) self.points = self.points or {}; self.points[#self.points + 1] = { ... } end
@@ -76,14 +77,18 @@ assert(list.scroll.template == "UIPanelScrollFrameTemplate" and list.rowWidth ==
 local actionRow = config.CreateActionRow(list.content, list.rowWidth)
 config.SetActionRowState(actionRow, { detail = "Key G — Empty" })
 assert(actionRow.primary:GetText() == "Empty" and actionRow.secondary:GetText() == "Key G — Empty"
+        and actionRow.iconSlot and actionRow.icon.texture == nil
         and not actionRow.sound:IsEnabled() and not actionRow.macro:IsEnabled()
         and not actionRow.clear:IsEnabled(),
-    "shared action row did not render a disabled empty drop target")
+    "shared action row did not render a clean, glyph-free empty drop target")
 config.SetActionRowState(actionRow, {
-    active = true, name = "Fireball", detail = "Key G — Spell", soundKey = "toast",
+    active = true, name = "Fireball", detail = "Key G — Spell",
+    icon = "Interface\\Icons\\Spell_Fire_FlameBolt", soundKey = "toast",
     macroCustomized = true, canMoveUp = true, canMoveDown = false,
 })
-assert(actionRow.primary:GetText() == "Fireball" and actionRow.sound.selectedKey == "toast"
+assert(actionRow.primary:GetText() == "Fireball"
+        and actionRow.icon.texture == "Interface\\Icons\\Spell_Fire_FlameBolt"
+        and actionRow.sound.selectedKey == "toast"
         and actionRow.sound:IsEnabled() and actionRow.macro:IsEnabled()
         and actionRow.macro.label:GetText() == "Macro*" and actionRow.up:IsEnabled()
         and not actionRow.down:IsEnabled() and actionRow.clear:IsEnabled(),

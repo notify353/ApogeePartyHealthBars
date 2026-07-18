@@ -16,8 +16,6 @@ local LIST_ROW_GAP = 3
 local LIST_FIRST_ROW_GAP = 9
 local LIST_STATUS_GAP = 7
 local LIST_STATUS_H = 16
-local QUESTION_MARK_ICON = "Interface\\Icons\\INV_Misc_QuestionMark"
-
 local function setStatus(message, good)
     if not statusText then return end
     statusText:SetText((good and "|cff00ff00" or "|cffffaa00") .. tostring(message or "") .. "|r")
@@ -62,8 +60,16 @@ function AC.CreateActionRow(parent, width, options)
     bg:SetAllPoints(); bg:SetColorTexture(0.075, 0.075, 0.09, 1)
     local highlight = row:CreateTexture(nil, "HIGHLIGHT")
     highlight:SetAllPoints(); highlight:SetColorTexture(1, 1, 1, 0.05)
-    local icon = row:CreateTexture(nil, "ARTWORK")
-    icon:SetSize(24, 24); icon:SetPoint("LEFT", row, "LEFT", 7, 0)
+    local iconSlot = CreateFrame("Frame", nil, row)
+    iconSlot:SetSize(26, 26); iconSlot:SetPoint("LEFT", row, "LEFT", 6, 0)
+    local iconOutline = iconSlot:CreateTexture(nil, "BACKGROUND")
+    iconOutline:SetAllPoints(); iconOutline:SetColorTexture(0.22, 0.22, 0.24, 1)
+    local iconFill = iconSlot:CreateTexture(nil, "BORDER")
+    iconFill:SetPoint("TOPLEFT", iconSlot, "TOPLEFT", 1, -1)
+    iconFill:SetPoint("BOTTOMRIGHT", iconSlot, "BOTTOMRIGHT", -1, 1)
+    iconFill:SetColorTexture(0.025, 0.025, 0.03, 1)
+    local icon = iconSlot:CreateTexture(nil, "ARTWORK")
+    icon:SetSize(22, 22); icon:SetPoint("CENTER")
     icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
     local clear = UIH.CreateButton(row, "Clear", 40, 22)
@@ -81,7 +87,7 @@ function AC.CreateActionRow(parent, width, options)
     macro:SetShown(showMacro)
 
     local primary = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    primary:SetPoint("LEFT", icon, "RIGHT", 6, 5)
+    primary:SetPoint("LEFT", iconSlot, "RIGHT", 6, 5)
     local textControl = showSound and sound or (showMacro and macro or up)
     primary:SetPoint("RIGHT", textControl, "LEFT", -5, 5)
     primary:SetJustifyH("LEFT"); primary:SetWordWrap(false)
@@ -90,7 +96,8 @@ function AC.CreateActionRow(parent, width, options)
     secondary:SetPoint("RIGHT", primary, "RIGHT", 0, -12)
     secondary:SetJustifyH("LEFT"); secondary:SetWordWrap(false)
 
-    row.bg, row.icon = bg, icon
+    row.bg, row.iconSlot, row.icon = bg, iconSlot, icon
+    row.iconOutline, row.iconFill = iconOutline, iconFill
     row.primary, row.secondary = primary, secondary
     row.sound, row.macro, row.up, row.down, row.clear = sound, macro, up, down, clear
     row.showSound, row.showMacro = showSound, showMacro
@@ -102,7 +109,7 @@ function AC.SetActionRowState(row, options)
     options = options or {}
     local active = options.active == true
     local available = options.available ~= false
-    row.icon:SetTexture(options.icon or QUESTION_MARK_ICON)
+    row.icon:SetTexture(options.icon)
     row.icon:SetDesaturated(not active or not available)
     row.primary:SetText(options.name or "Empty")
     if active and available then

@@ -4,8 +4,9 @@ local UIH = ApogeePartyHealthBars_UIHelpers
 ApogeePartyHealthBars_ProfileConfig = {}
 local P = ApogeePartyHealthBars_ProfileConfig
 
-local tab, D, profileDropdown, copyDropdown, statusText
+local tab, D, form, profileDropdown, copyDropdown, statusText
 local useButton, newButton, duplicateButton, renameButton, deleteButton, copyButton
+local currentSection, profileRow, actionsRow, copySection, copyRow, shareSection, shareRow
 local shareFrame, shareTitle, shareTextFrame, shareText, shareStatusFrame, shareStatus
 local sharePrimary, shareMerge, shareReplace
 local nameFrame, nameTitle, nameEdit, nameSave
@@ -13,8 +14,7 @@ local selectedProfileId, copySourceId, decodedImport, nameAction, loadingShareTe
 local deleteArmed, copyArmed, importArmed = false, false, nil
 
 local function setStatus(message, good)
-    if not statusText then return end
-    statusText:SetText((good and "|cff00ff00" or "|cffffaa00") .. tostring(message or "") .. "|r")
+    UIH.SetFormStatus(form, message, good)
 end
 
 local function profileOptions(excludeId)
@@ -85,7 +85,7 @@ function P.Refresh()
     copyArmed = false
     importArmed = nil
     deleteButton.label:SetText("Delete")
-    copyButton.label:SetText("Copy into Active")
+    copyButton.label:SetText("Copy to Active")
     updateControls()
 end
 
@@ -156,32 +156,35 @@ function P.Build(parent, deps)
     tab:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -C.BIND_PAD, C.BIND_PAD)
     tab:Hide()
 
-    local heading = tab:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    heading:SetPoint("TOPLEFT"); heading:SetText("|cffFFD700Profiles|r")
-    local subtitle = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    subtitle:SetPoint("TOPLEFT", heading, "BOTTOMLEFT", 0, -3)
-    subtitle:SetText("Account-wide setups for this class. Changes save to the active profile.")
+    form = UIH.CreateFormScaffold(tab, "ApogeePartyHealthBarsProfileConfigScroll",
+        "Create, switch, copy, or share profiles for this class.")
+    statusText = form.status
 
-    profileDropdown = UIH.CreateDropdown(tab, C.CONFIG_CONTENT_W - 96, 22, C.CONFIG_CONTENT_W - 96)
-    profileDropdown:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -9)
+    currentSection = UIH.CreateFormSection(form.content, form.rowWidth, "Current profile")
+    profileRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    profileDropdown = UIH.CreateDropdown(profileRow, form.rowWidth - 111, 22,
+        form.rowWidth - 111)
+    profileDropdown:SetPoint("LEFT", profileRow, "LEFT", 5, 0)
     profileDropdown:SetSelectionCallback(function(id)
         selectedProfileId = id; deleteArmed = false; deleteButton.label:SetText("Delete"); updateControls()
     end)
-    useButton = UIH.CreateButton(tab, "Use Profile", 88, 22)
-    useButton:SetPoint("LEFT", profileDropdown, "RIGHT", 8, 0)
+    useButton = UIH.CreateButton(profileRow, "Use", 96, 22)
+    useButton:SetPoint("LEFT", profileDropdown, "RIGHT", 5, 0)
     useButton:SetScript("OnClick", function()
         local ok, message = D.ActivateProfile(selectedProfileId)
         if not ok then setStatus(message) end
     end)
 
-    newButton = UIH.CreateButton(tab, "New", 82, 22)
-    newButton:SetPoint("TOPLEFT", profileDropdown, "BOTTOMLEFT", 0, -8)
-    duplicateButton = UIH.CreateButton(tab, "Duplicate", 98, 22)
-    duplicateButton:SetPoint("LEFT", newButton, "RIGHT", 8, 0)
-    renameButton = UIH.CreateButton(tab, "Rename", 82, 22)
-    renameButton:SetPoint("LEFT", duplicateButton, "RIGHT", 8, 0)
-    deleteButton = UIH.CreateButton(tab, "Delete", 82, 22)
-    deleteButton:SetPoint("LEFT", renameButton, "RIGHT", 8, 0)
+    actionsRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    local actionWidth = (form.rowWidth - 28) / 4
+    newButton = UIH.CreateButton(actionsRow, "New", actionWidth, 22)
+    newButton:SetPoint("LEFT", actionsRow, "LEFT", 5, 0)
+    duplicateButton = UIH.CreateButton(actionsRow, "Duplicate", actionWidth, 22)
+    duplicateButton:SetPoint("LEFT", newButton, "RIGHT", 6, 0)
+    renameButton = UIH.CreateButton(actionsRow, "Rename", actionWidth, 22)
+    renameButton:SetPoint("LEFT", duplicateButton, "RIGHT", 6, 0)
+    deleteButton = UIH.CreateButton(actionsRow, "Delete", actionWidth, 22)
+    deleteButton:SetPoint("LEFT", renameButton, "RIGHT", 6, 0)
 
     newButton:SetScript("OnClick", function()
         openNameEditor("New profile name", "", function(name)
@@ -215,16 +218,16 @@ function P.Build(parent, deps)
         selectedProfileId = D.ProfileStore.GetActiveId(); P.Refresh(); setStatus("Profile deleted.", true)
     end)
 
-    local copyLabel = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    copyLabel:SetPoint("TOPLEFT", newButton, "BOTTOMLEFT", 0, -14)
-    copyLabel:SetText("COPY FROM EXISTING PROFILE")
-    copyDropdown = UIH.CreateDropdown(tab, C.CONFIG_CONTENT_W - 128, 22, C.CONFIG_CONTENT_W - 128)
-    copyDropdown:SetPoint("TOPLEFT", copyLabel, "BOTTOMLEFT", 0, -4)
+    copySection = UIH.CreateFormSection(form.content, form.rowWidth, "Copy setup")
+    copyRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    copyDropdown = UIH.CreateDropdown(copyRow, form.rowWidth - 142, 22,
+        form.rowWidth - 142)
+    copyDropdown:SetPoint("LEFT", copyRow, "LEFT", 5, 0)
     copyDropdown:SetSelectionCallback(function(id)
-        copySourceId = id; copyArmed = false; copyButton.label:SetText("Copy into Active"); updateControls()
+        copySourceId = id; copyArmed = false; copyButton.label:SetText("Copy to Active"); updateControls()
     end)
-    copyButton = UIH.CreateButton(tab, "Copy into Active", 120, 22)
-    copyButton:SetPoint("LEFT", copyDropdown, "RIGHT", 8, 0)
+    copyButton = UIH.CreateButton(copyRow, "Copy to Active", 126, 22)
+    copyButton:SetPoint("LEFT", copyDropdown, "RIGHT", 6, 0)
     copyButton:SetScript("OnClick", function()
         if not copyArmed then
             copyArmed = true
@@ -238,17 +241,23 @@ function P.Build(parent, deps)
         if not ok then setStatus(message) end
     end)
 
-    local shareLabel = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    shareLabel:SetPoint("TOPLEFT", copyDropdown, "BOTTOMLEFT", 0, -14)
-    shareLabel:SetText("SHARE")
-    local exportButton = UIH.CreateButton(tab, "Export Selected", 160, 22)
-    exportButton:SetPoint("TOPLEFT", shareLabel, "BOTTOMLEFT", 0, -4)
-    local importButton = UIH.CreateButton(tab, "Import Profile", 160, 22)
-    importButton:SetPoint("LEFT", exportButton, "RIGHT", 8, 0)
+    shareSection = UIH.CreateFormSection(form.content, form.rowWidth, "Share")
+    shareRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    local shareWidth = (form.rowWidth - 16) / 2
+    local exportButton = UIH.CreateButton(shareRow, "Export", shareWidth, 22)
+    exportButton:SetPoint("LEFT", shareRow, "LEFT", 5, 0)
+    local importButton = UIH.CreateButton(shareRow, "Import", shareWidth, 22)
+    importButton:SetPoint("LEFT", exportButton, "RIGHT", 6, 0)
 
-    statusText = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    statusText:SetPoint("TOPLEFT", exportButton, "BOTTOMLEFT", 0, -10)
-    statusText:SetWidth(C.CONFIG_CONTENT_W); statusText:SetJustifyH("LEFT"); statusText:SetWordWrap(true)
+    UIH.LayoutForm(form, {
+        { frame = currentSection, height = 16, gap = 9 },
+        { frame = profileRow, height = 32 },
+        { frame = actionsRow, height = 32 },
+        { frame = copySection, height = 16, gap = 10 },
+        { frame = copyRow, height = 32 },
+        { frame = shareSection, height = 16, gap = 10 },
+        { frame = shareRow, height = 32 },
+    })
 
     nameFrame = CreateFrame("Frame", nil, tab, "BackdropTemplate")
     nameFrame:SetPoint("TOPLEFT", tab, "TOPLEFT", 36, -70)
@@ -274,7 +283,11 @@ function P.Build(parent, deps)
 
     shareFrame = CreateFrame("Frame", nil, tab, "BackdropTemplate")
     shareFrame:SetAllPoints(tab); shareFrame:SetFrameLevel(tab:GetFrameLevel() + 10)
-    D.ApplyBackdrop(shareFrame, 1, { 0.55, 0.45, 0.12, 1 }); shareFrame:Hide()
+    D.ApplyBackdrop(shareFrame, 1, { 0.55, 0.45, 0.12, 1 })
+    local shareBackground = shareFrame:CreateTexture(nil, "BACKGROUND", nil, -8)
+    shareBackground:SetAllPoints()
+    shareBackground:SetColorTexture(0.06, 0.06, 0.08, 1)
+    shareFrame:Hide()
     shareTitle = shareFrame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     shareTitle:SetPoint("TOPLEFT", shareFrame, "TOPLEFT", 10, -10)
     shareTextFrame, shareText = createEditBox(shareFrame, 190)
@@ -338,3 +351,4 @@ P.GetShareFrame = function() return shareFrame end
 P.GetShareTextFrame = function() return shareTextFrame end
 P.GetShareText = function() return shareText end
 P.GetShareStatusFrame = function() return shareStatusFrame end
+P.GetForm = function() return form end

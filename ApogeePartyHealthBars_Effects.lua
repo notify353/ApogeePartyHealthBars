@@ -9,8 +9,8 @@ local E = ApogeePartyHealthBars_Effects
 
 local FEATURE_DEFAULTS = {
     enabled = true,
-    combatUIAutoHide = false,
-    showAllSlots = false,
+    combatUIAutoHide = true,
+    showAllSlots = true,
     partyBuffEnabled = true,
     selfBuffEnabled = true,
     clickableBuffIcons = true,
@@ -61,6 +61,10 @@ function E.InitializeSavedVariables(saved, characterSaved)
             saved[key] = defaultValue
         end
     end
+    -- Loading the addon is the enable action. The internal flag is only kept
+    -- false for the remainder of a session after restoring owned bindings so
+    -- the user can safely disable the addon through WoW's AddOns manager.
+    saved.enabled = true
     if type(saved.hotDisabled) ~= "table" then
         saved.hotDisabled = {}
     end

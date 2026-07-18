@@ -4,6 +4,12 @@ ApogeePartyHealthBars_UIHelpers = {}
 local H = ApogeePartyHealthBars_UIHelpers
 local activeDropdown
 
+local FORM_SCROLLBAR_W = 24
+local FORM_HINT_H = 18
+local FORM_SECTION_H = 16
+local FORM_ROW_H = 32
+local FORM_STATUS_H = 30
+
 function H.EscapeText(value)
     return tostring(value or ""):gsub("|", "||")
 end
@@ -305,4 +311,111 @@ function H.CreateScrollFrame(parent)
     child:SetWidth(C.CONFIG_CONTENT_W)
     scroll:SetScrollChild(child)
     return scroll, child
+end
+
+function H.CreateFormScaffold(parent, frameName, hintText, showStatus)
+    local scroll = CreateFrame("ScrollFrame", frameName, parent, "UIPanelScrollFrameTemplate")
+    scroll:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 0)
+    scroll:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -FORM_SCROLLBAR_W, 0)
+
+    local content = CreateFrame("Frame", nil, scroll)
+    local rowWidth = C.CONFIG_CONTENT_W - FORM_SCROLLBAR_W
+    content:SetWidth(rowWidth)
+    scroll:SetScrollChild(content)
+
+    local hint = content:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    hint:SetPoint("TOPLEFT", content, "TOPLEFT", 0, 0)
+    hint:SetSize(rowWidth, FORM_HINT_H)
+    hint:SetJustifyH("LEFT"); hint:SetJustifyV("TOP"); hint:SetWordWrap(false)
+    hint:SetText(hintText or "")
+
+    local status = content:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    status:SetWidth(rowWidth); status:SetHeight(FORM_STATUS_H)
+    status:SetJustifyH("LEFT"); status:SetJustifyV("TOP"); status:SetWordWrap(true)
+    showStatus = showStatus ~= false
+    status:SetShown(showStatus)
+
+    local form = {
+        scroll = scroll,
+        content = content,
+        hint = hint,
+        status = status,
+        showStatus = showStatus,
+        rowWidth = rowWidth,
+    }
+
+    local scrollBar = scroll.ScrollBar
+    if scrollBar then
+        scrollBar:Hide()
+        scroll:HookScript("OnScrollRangeChanged", function(_, _, verticalRange)
+            scrollBar:SetShown((verticalRange or 0) > 0)
+        end)
+    end
+    H.AttachScrollWheel(scroll, FORM_ROW_H * 2)
+    return form
+end
+
+function H.CreateFormSection(parent, width, labelText)
+    local section = CreateFrame("Frame", nil, parent)
+    section:SetSize(width, FORM_SECTION_H)
+    local label = section:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    label:SetPoint("LEFT", section, "LEFT", 1, 0)
+    label:SetPoint("RIGHT", section, "RIGHT", -1, 0)
+    label:SetJustifyH("LEFT"); label:SetWordWrap(false)
+    label:SetText(labelText or "")
+    label:SetTextColor(0.58, 0.58, 0.61)
+    section.label = label
+    return section
+end
+
+function H.CreateFormRow(parent, width, height)
+    local row = CreateFrame("Frame", nil, parent)
+    row:SetSize(width, height or FORM_ROW_H)
+    local bg = row:CreateTexture(nil, "BACKGROUND")
+    bg:SetAllPoints(); bg:SetColorTexture(0.075, 0.075, 0.09, 1)
+    row.bg = bg
+    return row
+end
+
+function H.SetFormStatus(form, message, good)
+    if not form or not form.status then return end
+    if not message or message == "" then
+        form.status:SetText("")
+        return
+    end
+    form.status:SetText((good and "|cff00ff00" or "|cffffaa00")
+        .. tostring(message) .. "|r")
+end
+
+function H.LayoutForm(form, entries)
+    if not form then return end
+    local y = FORM_HINT_H
+    for _, entry in ipairs(entries or {}) do
+        local frame = entry.frame
+        local visible = entry.visible ~= false
+        frame:SetShown(visible)
+        if visible then
+            y = y + (entry.gap or 3)
+            frame:ClearAllPoints()
+            frame:SetPoint("TOPLEFT", form.content, "TOPLEFT", entry.indent or 0, -y)
+            frame:SetWidth(form.rowWidth - (entry.indent or 0))
+            if entry.height then frame:SetHeight(entry.height) end
+            y = y + (entry.height or FORM_ROW_H)
+        end
+    end
+
+    if form.showStatus then
+        form.status:Show()
+        form.status:ClearAllPoints()
+        form.status:SetPoint("TOPLEFT", form.content, "TOPLEFT", 0, -(y + 7))
+        form.content:SetHeight(y + 7 + FORM_STATUS_H)
+    else
+        form.status:Hide()
+        form.content:SetHeight(y)
+    end
+
+    local scrollBar = form.scroll.ScrollBar
+    if scrollBar and form.scroll.GetVerticalScrollRange then
+        scrollBar:SetShown((form.scroll:GetVerticalScrollRange() or 0) > 0)
+    end
 end

@@ -11,6 +11,7 @@ end
 function C.Exit()
     if not S.configMode then return end
     S.configMode = false
+    if D.HideShortcutDropTarget then D.HideShortcutDropTarget() end
     D.panel:EnableMouse(false)
     D.panel:RegisterForDrag()
     D.panel:SetScript("OnDragStart", nil)

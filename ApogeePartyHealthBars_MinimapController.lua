@@ -61,7 +61,11 @@ local function UpdateMinimapAngleFromCursor()
     if not scale or scale <= 0 then return end
     local cx, cy = GetCursorPosition()
     cx, cy = cx / scale, cy / scale
-    S.sv.minimapAngle = math.deg(math.atan2(cy - my, cx - mx))
+    -- Saved angles are measured from the minimap's left edge because the
+    -- established anchor formula subtracts the cosine component. Mirror the
+    -- cursor's horizontal delta into that convention so right-drag follows
+    -- the cursor without changing existing saved positions.
+    S.sv.minimapAngle = math.deg(math.atan2(cy - my, mx - cx))
     UpdateMinimapButtonPosition()
 end
 

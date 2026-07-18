@@ -67,6 +67,17 @@ function ApogeePartyHealthBars_UIHelpers.CreateDropdown()
     function dropdown:SetSelectionCallback(callback) self.onSelect = callback end
     return dropdown
 end
+function ApogeePartyHealthBars_UIHelpers.CreateFormScaffold(_, _, hintText)
+    local form = {
+        scroll = widget(), content = widget(), hint = widget(), status = widget(), rowWidth = 372,
+    }
+    form.hint:SetText(hintText)
+    return form
+end
+function ApogeePartyHealthBars_UIHelpers.CreateFormRow(_, width, height)
+    local row = widget(); row.requestedWidth = width; row.requestedHeight = height; return row
+end
+function ApogeePartyHealthBars_UIHelpers.LayoutForm(form, entries) form.entries = entries end
 
 local safeAttack = {
     id = "safe", category = "attack", title = "Safe Attack", explanation = "Starts attacking safely.",
@@ -103,8 +114,8 @@ assert(dropdown.options[1].label == "All Examples (2)" and dropdown.options[2].l
     "category dropdown did not show recipe counts")
 assert(macroText:GetText() == safeAttack.body, "first curated example was not loaded")
 assert(buttons["Reset Example"] == nil, "obsolete reset control still exists")
-assert(buttons["< Previous"].requestedWidth + buttons["Next >"].requestedWidth
-    + buttons["Select Text to Copy"].requestedWidth + 16 == 396,
+assert(buttons["Prev"].requestedWidth + buttons["Next"].requestedWidth
+    + buttons["Select to Copy"].requestedWidth + 12 <= config.GetForm().rowWidth,
     "read-only controls overflow the content width")
 for label in pairs(buttons) do
     assert(not label:find("Create", 1, true) and not label:find("Pick Up", 1, true)
@@ -114,9 +125,9 @@ end
 
 local foundCopyOnlyLabel, foundByteFeedback, foundRecipeCount = false, false, false
 for _, fontString in ipairs(fontStrings) do
-    if fontString.text == "MACRO TEXT (COPY-ONLY)" then foundCopyOnlyLabel = true end
+    if fontString.text == "Copy-only macro" then foundCopyOnlyLabel = true end
     if fontString.text and fontString.text:find("bytes", 1, true) then foundByteFeedback = true end
-    if fontString.text == "Example 1 of 2" then foundRecipeCount = true end
+    if fontString.text == "1 of 2" then foundRecipeCount = true end
 end
 assert(foundCopyOnlyLabel, "macro text was not labeled copy-only")
 assert(not foundByteFeedback, "obsolete byte feedback still exists")
@@ -124,10 +135,10 @@ assert(foundRecipeCount, "recipe position included obsolete managed-macro state"
 
 macroText:UserSetText("/say user edit")
 assert(macroText:GetText() == safeAttack.body, "user typing changed the curated macro text")
-buttons["Select Text to Copy"].scripts.OnClick()
+buttons["Select to Copy"].scripts.OnClick()
 assert(macroText.focused and macroText.highlighted, "read-only macro text could not be selected for copying")
 
-buttons["Next >"].scripts.OnClick()
+buttons["Next"].scripts.OnClick()
 assert(macroText:GetText() == counter.body, "next recipe did not load its curated body")
 config.Refresh(true)
 assert(dropdown.selectedKey == "all" and macroText:GetText() == counter.body,
@@ -139,4 +150,6 @@ assert(dropdown.selectedKey == "interrupt" and macroText:GetText() == counter.bo
 config.Refresh(true)
 assert(dropdown.selectedKey == "interrupt" and macroText:GetText() == counter.body,
     "panel refresh reset the selected category")
+assert(config.GetForm().hint:GetText() == "Browse and copy curated combat macros for Mage.",
+    "Macros did not use the shared muted instruction")
 print("PASS copy-only combat macro config UX")

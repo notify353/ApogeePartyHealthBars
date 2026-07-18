@@ -13,7 +13,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `ShortcutItems`: shared item-information, carried-count, usability, cooldown, and depletion evaluation
 - `ActionData`: macro-independent spell/item identity, legacy normalization, cloning, and display resolution shared by every configurable action feature
 - `ActionMacros`: generated `/cast` and `/use` defaults, sound/macro extensions, custom-text detection, and 255-byte validation for Shortcuts, Keys, and Wheel
-- `ActionConfig`: shared scrollable action-list scaffold, compact row state, and focused draft macro editor used by Shortcuts, Keys, and Wheel
+- `ActionConfig`: shared scrollable action-list scaffold and compact row state used by Healing, Shortcuts, Keys, and Wheel, plus the focused macro editor used by the macro-capable features
 - `BoundActionLayouts`: shared per-spec/per-form typed-action layout engine with feature-specific new-layout policy
 - `BoundActionBindings`: permanent binding-set-specific transactional claiming, reconciliation, conflict detection, restoration, and cross-feature rollback
 - `BoundActionRuntime`: per-instance Keys/Wheel action evaluation, secure execution, HUD state, and feedback
@@ -35,9 +35,9 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `KeyData`, `KeyLayouts`, `KeyActions`, `KeyConfig`: fixed keyboard definitions, Keys-specific shared-runtime policy, independent empty per-spec/per-form profiles, left-side HUD geometry, and uniform row-based configuration
 - `RaidMarkers`: target marker controls
 - `Threat`: party and target threat
-- `BindingStore`, `BindingController`, `ClickBindings`: typed Healing spell/item persistence, cursor-based destination assignment, and native unit-targeted secure actions
+- `BindingStore`, `BindingController`, `ClickBindings`: typed Healing spell/item persistence, adjacent gesture swaps, cursor-based destination assignment, and native unit-targeted secure actions
 - `GeneralConfig`: General-tab visibility, feature toggles, alert preferences, HoT controls, and reset confirmation
-- `HealingConfig`: Healing binding rows, selection state, display refresh, and right-click clearing
+- `HealingConfig`: fixed-gesture Healing action rows, inline movement and clearing, display refresh, and right-click clearing compatibility
 - `ConfigUI`: settings-window shell, tab registry, activation, and cross-tab refresh routing
 - `ConfigController`, `MinimapController`: settings-mode and minimap lifecycle
 - `ProfileStore`: account-wide class profiles, legacy SavedVariables migration, portable payload normalization, stable identity, and CRUD/copy/import mutations

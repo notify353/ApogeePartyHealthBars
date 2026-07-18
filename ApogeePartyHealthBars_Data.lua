@@ -419,7 +419,6 @@ ApogeePartyHealthBars_S = {
     uiTimer                  = 0,
     auraCacheGen             = 0,
     auraCache                = {},
-    selectedBindingKey       = nil,
     selectedWheelLayout      = nil,
     selectedKeyLayout        = nil,
     castBtnSerial            = 0,

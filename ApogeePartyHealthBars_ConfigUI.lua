@@ -84,9 +84,6 @@ local function SetConfigTab(tabName)
     UIH.CloseActiveDropdown()
     if not tabs[tabName] then tabName = "general" end
     AC.CloseEditor()
-    if S.configTab ~= tabName then
-        S.selectedBindingKey = nil
-    end
     S.configTab = tabName
     for _, key in ipairs(tabOrder) do
         local spec = tabs[key]

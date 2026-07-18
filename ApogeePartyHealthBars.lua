@@ -318,7 +318,7 @@ end
 local bindingStore = ApogeePartyHealthBars_BindingStore
 local KeyToActionAttrs = bindingStore.KeyToActionAttrs
 local GetBindingAction = bindingStore.GetAction
-local GetBindingDisplayName = bindingStore.GetDisplayName
+local GetBindingDisplay = bindingStore.GetDisplay
 local GetBindingsTable = bindingStore.GetTable
 
 local function AssignCursorDrop(feature, slot, layoutKey)
@@ -591,6 +591,7 @@ bindingController.Initialize({
     AssignBindingSpell = bindingStore.AssignSpell,
     AssignBindingItem = bindingStore.AssignItem,
     ClearBindingAction = bindingStore.Clear,
+    MoveBindingAction = bindingStore.Move,
     RefreshBindPanel = function() RefreshBindPanel() end,
     ForceRefresh = ForceRefresh,
     Print = Print,
@@ -599,6 +600,7 @@ bindingController.Initialize({
     GetConfigUI = function() return configUI end,
 })
 local ClearBinding = bindingController.ClearBinding
+local MoveBinding = bindingController.MoveBinding
 
 -- Minimap controller
 minimapController = ApogeePartyHealthBars_MinimapController
@@ -685,9 +687,10 @@ local CreateAndActivateProfile = configController.CreateAndActivateProfile
 configUI = ApogeePartyHealthBars_ConfigUI.Build({
     ApplyBackdrop               = ApplyBackdrop,
     SetConfigMode              = SetConfigMode,
-    GetBindingDisplayName       = GetBindingDisplayName,
+    GetBindingDisplay           = GetBindingDisplay,
     GetBinding                  = S.GetBinding,
     ClearBinding                = ClearBinding,
+    MoveBinding                 = MoveBinding,
     Sounds                     = ApogeePartyHealthBars_Sounds,
     AssignCursorDrop           = AssignCursorDrop,
     ShortcutBar               = T,

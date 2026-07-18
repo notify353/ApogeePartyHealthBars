@@ -54,6 +54,12 @@ assert(state.charSv.bindings["shift-2"].kind == "item"
 assert(store.GetDisplayName(state.charSv.bindings["1"]) == "Spell: Flash Heal(Rank 7)"
     and store.GetDisplayName(state.charSv.bindings["shift-2"]) == "Item: Linen Bandage",
     "typed Healing display names were not produced")
+local spellName, _, spellAvailable, spellKind = store.GetDisplay(state.charSv.bindings["1"])
+local itemName, itemIcon, itemAvailable, itemKind = store.GetDisplay(state.charSv.bindings["shift-2"])
+assert(spellName == "Flash Heal(Rank 7)" and spellAvailable and spellKind == "spell"
+        and itemName == "Linen Bandage" and itemIcon == 134436
+        and itemAvailable and itemKind == "item",
+    "Healing display data did not expose shared action-row identity and availability")
 state.charSv.bindings["shift-2"].itemName = "Old Bandage"
 assert(store.GetDisplayName(state.charSv.bindings["shift-2"]) == "Item: Linen Bandage"
     and state.charSv.bindings["shift-2"].itemName == "Linen Bandage",
@@ -71,7 +77,16 @@ assert(state.charSv.bindings["2"].kind == "item" and state.charSv.bindings["2"].
 assert(store.AssignSpell("2", 2061, "Flash Heal(Rank 7)"))
 assert(state.charSv.bindings["2"].kind == "spell", "spell did not replace an item binding")
 
+assert(store.Move("2", 1)
+        and state.charSv.bindings["2"].kind == "item"
+        and state.charSv.bindings["shift-2"].kind == "spell",
+    "Healing movement did not swap complete adjacent binding payloads")
+assert(not store.Move("1", -1), "Healing movement crossed the first-row boundary")
+
 inCombat = true
+local combatBinding = state.charSv.bindings["2"]
+assert(not store.Move("2", 1) and state.charSv.bindings["2"] == combatBinding,
+    "combat movement changed a Healing binding")
 assert(not store.Clear("2") and state.charSv.bindings["2"] ~= nil,
     "combat clearing changed a Healing binding")
 inCombat = false

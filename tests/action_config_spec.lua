@@ -88,6 +88,19 @@ assert(actionRow.primary:GetText() == "Fireball" and actionRow.sound.selectedKey
         and actionRow.macro.label:GetText() == "Macro*" and actionRow.up:IsEnabled()
         and not actionRow.down:IsEnabled() and actionRow.clear:IsEnabled(),
     "shared action row did not render consistent filled controls")
+local healingRow = config.CreateActionRow(list.content, list.rowWidth, {
+    showSound = false,
+    showMacro = false,
+})
+config.SetActionRowState(healingRow, {
+    active = true, name = "Flash Heal", detail = "Left Click — Spell",
+    canMoveUp = false, canMoveDown = true,
+})
+assert(not healingRow.sound:IsShown() and not healingRow.macro:IsShown()
+        and not healingRow.sound:IsEnabled() and not healingRow.macro:IsEnabled()
+        and not healingRow.up:IsEnabled() and healingRow.down:IsEnabled()
+        and healingRow.clear:IsEnabled(),
+    "shared action row did not support Healing's native-action control variant")
 config.LayoutActionList(list, { actionRow })
 assert(list.content.height == 86, "shared action list did not calculate compact row content height")
 list.scroll.scripts.OnScrollRangeChanged(list.scroll, 0, 120)

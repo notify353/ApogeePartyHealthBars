@@ -22,12 +22,10 @@ local function RefreshHealingBindings()
 end
 
 local function AssignBindingSpell(spellID, spellName, slotKey)
-    slotKey = slotKey or S.selectedBindingKey
     if not slotKey then return false end
     local ok, message, action = D.AssignBindingSpell(slotKey, spellID, spellName)
     if message then D.Print(message) end
     if not ok then return false end
-    S.selectedBindingKey = slotKey
     D.Print("bound |cff00ff00" .. action.spellName .. "|r to "
         .. GetBindingSlotLabel(slotKey))
     RefreshHealingBindings()
@@ -35,12 +33,10 @@ local function AssignBindingSpell(spellID, spellName, slotKey)
 end
 
 local function AssignBindingItem(itemId, itemName, slotKey)
-    slotKey = slotKey or S.selectedBindingKey
     if not slotKey then return false end
     local ok, message, action = D.AssignBindingItem(slotKey, itemId, itemName)
     if message then D.Print(message) end
     if not ok then return false end
-    S.selectedBindingKey = slotKey
     D.Print("bound |cff00ff00" .. action.itemName .. "|r to "
         .. GetBindingSlotLabel(slotKey))
     RefreshHealingBindings()
@@ -122,13 +118,24 @@ end
 local function ClearBinding(slotKey)
     local ok, message = D.ClearBindingAction(slotKey)
     if message then D.Print(message) end
-    if not ok then return false end
+    if not ok then return false, message end
     RefreshHealingBindings()
-    return true
+    return true, message or (GetBindingSlotLabel(slotKey) .. " cleared.")
+end
+
+local function MoveBinding(slotKey, direction)
+    local ok, message = D.MoveBindingAction(slotKey, direction)
+    if not ok then
+        if message then D.Print(message) end
+        return false, message
+    end
+    RefreshHealingBindings()
+    return true, message
 end
 
 function B.Initialize(deps) D = deps end
 B.ClearBinding = ClearBinding
+B.MoveBinding = MoveBinding
 
 function B.AssignCursor(feature, slot, layoutKey)
     if not D or type(GetCursorInfo) ~= "function" then return false end

@@ -16,7 +16,6 @@ function C.Exit()
     D.panel:SetScript("OnDragStart", nil)
     D.panel:SetScript("OnDragStop", nil)
     D.SavePosition()
-    S.selectedBindingKey = nil
     S.selectedWheelLayout = nil
     S.selectedKeyLayout = nil
     local ui = D.GetConfigUI()

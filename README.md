@@ -27,7 +27,7 @@ Interface/AddOns/ApogeePartyHealthBars/ApogeePartyHealthBars.toc
 
 ## Use
 
-Left-click the minimap button to open settings; the Spellbook opens alongside it. In the Healing tab, drag a healing or cleansing spell or a usable item from an open bag onto the click you want to assign. Bag items also support WoW's native click-to-pick-up flow: click the item, then click its destination. Healing uses native secure spell and item actions so the action targets the party unit whose health bar you click. Right-click an assignment to clear it.
+Left-click the minimap button to open settings; the Spellbook opens alongside it. In the Healing tab, drag a healing or cleansing spell or a usable item from an open bag onto the click you want to assign. Bag items also support WoW's native click-to-pick-up flow: click the item, then click its destination. Healing uses native secure spell and item actions so the action targets the party unit whose health bar you click. Use Up or Dn to swap an assignment with the adjacent fixed click gesture, and Clear to remove it; right-click clearing remains available as a shortcut.
 
 The Profiles tab manages account-wide named setups for the current class. A profile contains all feature settings, action assignments, custom macros, sounds, and the positions of the bars, settings window, and minimap button. Use New for addon defaults, Duplicate to branch from an existing setup, or Copy From to replace the active profile while retaining its name. Profile changes are blocked in combat and reload the UI after safely restoring owned Keys and Wheel bindings.
 
@@ -51,7 +51,7 @@ Item assignments in Shortcuts, Keys, and Wheel start with the localized item nam
 
 Each compact action row identifies itself as a Spell or Item and has sound, Macro, movement, and Clear controls. Macro opens a focused editor with Reset, Cancel, Save, and a 255-byte counter; blank or oversized text cannot be saved. Clear is the only way to remove an action. Clearing a Shortcuts row compacts the list, while moving a Keys or Wheel action swaps its complete shortcut, macro, and sound payload with the adjacent position.
 
-Healing does not expose macro, sound, or movement controls: its native secure action is what preserves the clicked health-bar unit. The Shortcut Bar and active Keys and Wheel HUDs show spell range/cooldown state plus item icons, carried quantities, usability, and cooldowns. Depleted items stay assigned in every feature, so they become available automatically when restocked. Item range prediction is intentionally omitted because normal item targeting and custom macros may behave differently.
+Healing uses the same scrollable action-row presentation as Shortcuts, Keys, and Wheel, but deliberately omits macro and sound controls: its native secure action is what preserves the clicked health-bar unit. Healing gesture labels remain fixed while Up and Dn swap the complete spell/item assignments between adjacent gestures. The Shortcut Bar and active Keys and Wheel HUDs show spell range/cooldown state plus item icons, carried quantities, usability, and cooldowns. Depleted items stay assigned in every feature, so they become available automatically when restocked. Item range prediction is intentionally omitted because normal item targeting and custom macros may behave differently.
 
 Keys uses this fixed action order in settings and the same keyboard-shaped arrangement on the player HUD:
 

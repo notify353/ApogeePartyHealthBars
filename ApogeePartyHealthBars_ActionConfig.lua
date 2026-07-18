@@ -52,7 +52,10 @@ function AC.OpenEditor(options)
     return true
 end
 
-function AC.CreateActionRow(parent, width)
+function AC.CreateActionRow(parent, width, options)
+    options = options or {}
+    local showSound = options.showSound ~= false
+    local showMacro = options.showMacro ~= false
     local row = CreateFrame("Button", nil, parent)
     row:SetSize(width or C.CONFIG_CONTENT_W, 36)
     local bg = row:CreateTexture(nil, "BACKGROUND")
@@ -74,10 +77,13 @@ function AC.CreateActionRow(parent, width)
     local sound = UIH.CreateDropdown(row, 62, 22, 150)
     sound:SetArrowShown(false)
     sound:SetPoint("RIGHT", macro, "LEFT", -2, 0)
+    sound:SetShown(showSound)
+    macro:SetShown(showMacro)
 
     local primary = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     primary:SetPoint("LEFT", icon, "RIGHT", 6, 5)
-    primary:SetPoint("RIGHT", sound, "LEFT", -5, 5)
+    local textControl = showSound and sound or (showMacro and macro or up)
+    primary:SetPoint("RIGHT", textControl, "LEFT", -5, 5)
     primary:SetJustifyH("LEFT"); primary:SetWordWrap(false)
     local secondary = row:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     secondary:SetPoint("LEFT", primary, "LEFT", 0, -12)
@@ -87,6 +93,7 @@ function AC.CreateActionRow(parent, width)
     row.bg, row.icon = bg, icon
     row.primary, row.secondary = primary, secondary
     row.sound, row.macro, row.up, row.down, row.clear = sound, macro, up, down, clear
+    row.showSound, row.showMacro = showSound, showMacro
     return row
 end
 
@@ -107,8 +114,8 @@ function AC.SetActionRowState(row, options)
     end
     row.secondary:SetText(options.detail or "Empty")
     row.sound:SetSelectedKey(active and (options.soundKey or "none") or "none")
-    if active then row.sound:Enable() else row.sound:Disable() end
-    UIH.SetButtonEnabled(row.macro, active)
+    if row.showSound and active then row.sound:Enable() else row.sound:Disable() end
+    UIH.SetButtonEnabled(row.macro, row.showMacro and active)
     UIH.SetButtonEnabled(row.clear, active)
     UIH.SetButtonEnabled(row.up, active and options.canMoveUp == true)
     UIH.SetButtonEnabled(row.down, active and options.canMoveDown == true)

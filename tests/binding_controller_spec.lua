@@ -5,7 +5,6 @@ ApogeePartyHealthBars_C = {
     },
 }
 ApogeePartyHealthBars_S = {
-    selectedBindingKey = "1",
     selectedKeyLayout = nil,
     selectedWheelLayout = nil,
 }
@@ -78,6 +77,13 @@ controller.Initialize({
         return true, nil, bindings[slot]
     end,
     ClearBindingAction = function(slot) bindings[slot] = nil; return true end,
+    MoveBindingAction = function(slot, direction)
+        local other = slot == "1" and direction == 1 and "2"
+            or slot == "2" and direction == -1 and "1"
+        if not other then return false, "boundary" end
+        bindings[slot], bindings[other] = bindings[other], bindings[slot]
+        return true, "moved"
+    end,
     RefreshBindPanel = function() refreshes = refreshes + 1 end,
     ForceRefresh = function() refreshes = refreshes + 1 end,
     Print = function() end,
@@ -136,16 +142,18 @@ cursorInfo = { "spell", 7, "spell", 133 }
 assert(controller.AssignCursor("healing", "2")
     and bindings["2"] and bindings["2"].kind == "spell" and bindings["2"].spellId == 133,
     "spell cursor did not assign directly to a Healing click row")
-assert(ApogeePartyHealthBars_S.selectedBindingKey == "2",
-    "Healing spell drop left a different click row selected")
 
 cursorInfo = { "item", 1251 }
 assert(controller.AssignCursor("healing", "1")
     and bindings["1"] and bindings["1"].kind == "item" and bindings["1"].itemId == 1251,
     "item cursor did not assign directly to a Healing click row")
-assert(ApogeePartyHealthBars_S.selectedBindingKey == "1",
-    "Healing item drop left a different click row selected")
 assert(refreshes == 4, "Healing cursor assignments did not refresh settings and secure frames")
+assert(controller.MoveBinding("1", 1)
+        and bindings["1"].kind == "spell" and bindings["2"].kind == "item"
+        and refreshes == 6,
+    "Healing movement did not swap bindings and refresh secure frames")
+assert(controller.ClearBinding("2") and bindings["2"] == nil and refreshes == 8,
+    "Healing clearing did not refresh settings and secure frames")
 
 local beforeRejectedDrop = clearedCursorCount
 cursorInfo = { "macro", 3 }

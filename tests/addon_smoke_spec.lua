@@ -199,10 +199,8 @@ C_Container = {
     GetItemCooldown = function(itemId) return 0, smokeItemCooldown, 1 end,
     GetContainerItemID = function() return 1251 end,
 }
-function ContainerFrameItemButton_OnModifiedClick() end
 function GetTime() return 1 end
 function GetCursorPosition() return 100, 100 end
-function IsShiftKeyDown() return false end
 function GetMouseFocus() return nil end
 function CombatLogGetCurrentEventInfo() return 0, "SPELL_DAMAGE" end
 function hooksecurefunc() end
@@ -690,7 +688,6 @@ ApogeePartyHealthBars_KeyConfig.GetTiles().keyF.scripts.OnClick()
 assert(ApogeePartyHealthBars_KeyConfig.GetDetailRow().primary:GetText() == "Key F",
     "Keys detail row did not focus before the reopen test")
 ApogeePartyHealthBars_S.focusedKeySlot = nil
-ApogeePartyHealthBars_S.selectedKeySlot = nil
 ApogeePartyHealthBars_ConfigUI.Show()
 assert(ApogeePartyHealthBars_KeyConfig.GetDetailRow().primary:GetText() == "Select a key",
     "reopening settings did not refresh the active Keys tab")

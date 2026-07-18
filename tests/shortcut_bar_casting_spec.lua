@@ -142,6 +142,7 @@ local shortcuts = ApogeePartyHealthBars_ShortcutBar
 local deferred = 0
 local layoutRequests = 0
 local geometryNeedsLayout = false
+local droppedFeature, droppedSlot
 shortcuts.Attach({ btn = widget() }, {
     RequestLayout = function()
         layoutRequests = layoutRequests + 1
@@ -153,6 +154,10 @@ shortcuts.Attach({ btn = widget() }, {
     HideSecureFrame = function(frame) frame:Hide() end,
     SetSecureMouseEnabled = function(frame, enabled) frame.mouseEnabled = enabled end,
     DeferSecureUpdate = function() deferred = deferred + 1 end,
+    AssignCursorDrop = function(feature, slot)
+        droppedFeature, droppedSlot = feature, slot
+        return true
+    end,
 })
 shortcuts.Initialize()
 
@@ -181,6 +186,9 @@ assert(castButton.attributes.macrotext
 assert(castButton.attributes.type1 == "macro")
 assert(castButton.attributes.macrotext1 == castButton.attributes.macrotext)
 assert(castButton.shown and castButton.mouseEnabled, "Shortcut cast button is not clickable")
+castButton.scripts.OnReceiveDrag()
+assert(droppedFeature == "shortcuts" and droppedSlot == 1,
+    "Shortcut HUD icon did not route a cursor drop to its assigned slot")
 
 geometryNeedsLayout = true
 local beforeAssignmentLayout = layoutRequests
@@ -273,12 +281,29 @@ assert(secureButtons[7].shown and secureButtons[7].mouseEnabled
     and secureButtons[12].attributes.macrotext:find("/cast Test Spell 12(Rank 1)", 1, true),
     "second-row Shortcuts did not receive clickable secure actions")
 local overflowAssigned, overflowMessage = shortcuts.AssignSpell(nil, 7000, "Overflow Spell")
-assert(not overflowAssigned and overflowMessage:find("Select a row", 1, true),
+assert(not overflowAssigned and overflowMessage:find("Drop onto a row", 1, true),
     "full Shortcut Bar did not instruct the user to replace or clear an action")
 for slot = 12, 5, -1 do shortcuts.ClearSlot(slot) end
 assert(shortcuts.GetHeight("player") == ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
         + ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE,
     "Shortcut Bar did not collapse to one row after removing slots 5 through 12")
+ApogeePartyHealthBars_S.configMode = true
+shortcuts.Layout(0)
+local dropButton = visualButtons[13]
+assert(dropButton and dropButton.shown
+        and dropButton.points[1][4] == shortcutStride * 4
+        and dropButton.points[1][5] == 0,
+    "Shortcut HUD add target did not occupy the first empty grid position")
+droppedFeature, droppedSlot = nil, nil
+dropButton.scripts.OnReceiveDrag()
+assert(droppedFeature == "shortcuts" and droppedSlot == 5,
+    "Shortcut HUD add target did not route to the first empty slot")
+assert(shortcuts.GetHeight("player") == ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
+        + ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE,
+    "Shortcut HUD add target unnecessarily expanded a partially filled row")
+ApogeePartyHealthBars_S.configMode = false
+shortcuts.Layout(0)
+assert(not dropButton.shown, "Shortcut HUD add target remained visible outside config mode")
 local expectedCastNames = {
     "Fireball(Rank 1)", "Frostbolt(Rank 1)",
     "Fire Blast(Rank 1)", "Arcane Missiles(Rank 1)",

@@ -21,7 +21,6 @@ function C.Exit()
     S.selectedWheelSlot = nil
     S.selectedWheelLayout = nil
     S.focusedKeySlot = nil
-    S.selectedKeySlot = nil
     S.selectedKeyLayout = nil
     local ui = D.GetConfigUI()
     if ui then ui.Hide() end
@@ -151,8 +150,6 @@ function C.SetMode(active)
             D.SavePosition()
         end)
         D.GetConfigUI().Show()
-        D.HookSpellbook()
-        D.HookContainerItems()
     else
         C.Exit()
     end

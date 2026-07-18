@@ -15,7 +15,6 @@ ApogeePartyHealthBars_S = {
     selectedBindingKey = "LeftButton",
     selectedShortcutSlot = 2,
     focusedKeySlot = "keyF",
-    selectedKeySlot = "keyF",
     selectedKeyLayout = "base",
     selectedWheelSlot = "ctrlUp",
     selectedWheelLayout = "base",
@@ -45,10 +44,17 @@ ApogeePartyHealthBars_UIHelpers = {
 
 local bindings = { LeftButton = "Renew" }
 local cleared
+local droppedFeature, droppedSlot
+local cursorType
+function GetCursorInfo() return cursorType end
 local deps = {
     ClearBinding = function(key) cleared = key; bindings[key] = nil end,
     GetBinding = function(key) return bindings[key] end,
     GetBindingDisplayName = function(binding) return binding .. " (Rank 1)" end,
+    AssignCursorDrop = function(feature, slot)
+        droppedFeature, droppedSlot = feature, slot
+        return true
+    end,
 }
 
 dofile("ApogeePartyHealthBars_HealingConfig.lua")
@@ -67,13 +73,24 @@ assert(rows[1].accent:IsShown() and not rows[2].accent:IsShown()
         and config.GetHint().text:find("Selected", 1, true),
     "selected Healing row did not retain its highlight and hint")
 
+rows[2].btn.scripts.OnReceiveDrag()
+assert(droppedFeature == "healing" and droppedSlot == "RightButton",
+    "Healing row did not route a cursor drop to its click binding")
+
+cursorType = "item"
+droppedFeature, droppedSlot = nil, nil
+rows[2].btn.scripts.OnClick(rows[2].btn, "LeftButton")
+assert(droppedFeature == "healing" and droppedSlot == "RightButton",
+    "Healing row did not accept a picked-up bag item")
+cursorType = nil
+
 rows[2].btn.scripts.OnClick(rows[2].btn, "LeftButton")
 local S = ApogeePartyHealthBars_S
 assert(S.selectedBindingKey == "RightButton" and S.selectedShortcutSlot == nil
-        and S.focusedKeySlot == nil and S.selectedKeySlot == nil
+        and S.focusedKeySlot == nil
         and S.selectedKeyLayout == nil and S.selectedWheelSlot == nil
         and S.selectedWheelLayout == nil,
-    "Healing selection did not clear competing assignment state")
+    "Healing selection did not clear competing action state")
 assert(rows[2].accent:IsShown() and not rows[1].accent:IsShown(),
     "Healing selection did not refresh row styling")
 

@@ -38,10 +38,9 @@ local function selectedLayout()
     return S.selectedKeyLayout
 end
 
-local function focusAndArm(slotId)
+local function focusSlot(slotId)
     if not definitions[slotId] then return end
     S.focusedKeySlot = slotId
-    S.selectedKeySlot = slotId
     S.selectedBindingKey = nil
     S.selectedShortcutSlot = nil
     S.selectedWheelSlot = nil
@@ -68,11 +67,8 @@ local function openMacroEditor()
     })
 end
 
-local function styleTile(tile, focused, armed)
-    if armed then
-        tile.bg:SetColorTexture(0.07, 0.25, 0.10, 1)
-        tile.border:SetColorTexture(0.20, 1.00, 0.35, 1)
-    elseif focused then
+local function styleTile(tile, focused)
+    if focused then
         tile.bg:SetColorTexture(0.24, 0.20, 0.06, 1)
         tile.border:SetColorTexture(1.00, 0.82, 0.00, 1)
     else
@@ -86,7 +82,6 @@ function KC.Refresh(assignedSlot)
     if assignedSlot then
         AC.CloseEditor()
         S.focusedKeySlot = assignedSlot
-        S.selectedKeySlot = nil
     end
     local specKey = K.GetActiveSpecKey()
     local layoutKey = selectedLayout()
@@ -94,7 +89,6 @@ function KC.Refresh(assignedSlot)
         or (lastLayoutKey and lastLayoutKey ~= layoutKey) then
         AC.CloseEditor()
         S.focusedKeySlot = nil
-        S.selectedKeySlot = nil
     end
     lastSpecKey, lastLayoutKey = specKey, layoutKey
 
@@ -115,14 +109,7 @@ function KC.Refresh(assignedSlot)
     gridFrame:ClearAllPoints()
     gridFrame:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -8)
 
-    if S.selectedKeySlot then
-        hint:SetText("|cff00ff00" .. definitions[S.selectedKeySlot].label
-            .. " selected for replacement.|r Shift-click a Spellbook spell or bag item.")
-    elseif not K.FindFirstEmptySlot(layoutKey) then
-        hint:SetText("All 15 Keys are assigned. Select a key to replace it or Clear one.")
-    else
-        hint:SetText("All 15 keys are reserved while the addon is enabled. Select a key, or Shift-click to fill the first empty key.")
-    end
+    hint:SetText("Drag a Spellbook spell or bag item onto a key. Click a key to inspect its macro and sound.")
 
     for slotId, tile in pairs(tiles) do
         local entry = K.GetSlot(layoutKey, slotId)
@@ -130,7 +117,7 @@ function KC.Refresh(assignedSlot)
         tile.icon:SetTexture(icon or QUESTION_MARK)
         tile.icon:SetDesaturated(not entry)
         tile.tooltipName = name or "Empty"
-        styleTile(tile, S.focusedKeySlot == slotId, S.selectedKeySlot == slotId)
+        styleTile(tile, S.focusedKeySlot == slotId)
     end
 
     local slotId = focusedSlot()
@@ -145,8 +132,7 @@ function KC.Refresh(assignedSlot)
         entry and 1 or 0.58)
     local kindLabel = entry and (entry.kind == "item" and "Item" or "Spell") or "Empty"
     detailRow.secondary:SetText(definition
-        and (definition.label .. " — " .. kindLabel
-            .. (S.selectedKeySlot == slotId and " — Shift-click to replace" or ""))
+        and (definition.label .. " — " .. kindLabel)
         or "Choose a tile in the key layout")
     if entry then
         detailRow.sound:SetSelectedKey(K.GetSlotSoundKey(layoutKey, slotId) or "none")
@@ -164,7 +150,7 @@ function KC.Refresh(assignedSlot)
     UIH.SetButtonEnabled(detailRow.up, entry ~= nil and index and index > 1)
     UIH.SetButtonEnabled(detailRow.down,
         entry ~= nil and index and index < #K.GetDisplayOrder())
-    AC.SetRowSelected(detailRow, S.selectedKeySlot == slotId)
+    AC.SetRowSelected(detailRow, slotId ~= nil)
 end
 
 function KC.Build(parent, deps)
@@ -188,7 +174,6 @@ function KC.Build(parent, deps)
         if not K.IsKnownLayout(layoutKey) then return end
         S.selectedKeyLayout = layoutKey
         S.focusedKeySlot = nil
-        S.selectedKeySlot = nil
         AC.CloseEditor(); statusText:SetText("")
         KC.Refresh()
     end)
@@ -208,7 +193,17 @@ function KC.Build(parent, deps)
         icon:SetSize(28, 28); icon:SetPoint("BOTTOMRIGHT", tile, "BOTTOMRIGHT", -3, 3)
         icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         tile.icon = icon
-        tile:SetScript("OnClick", function() focusAndArm(slotId) end)
+        tile:SetScript("OnClick", function()
+            local cursorType = GetCursorInfo and GetCursorInfo()
+            if (cursorType == "spell" or cursorType == "item") and D.AssignCursorDrop then
+                D.AssignCursorDrop("keys", slotId, selectedLayout())
+                return
+            end
+            focusSlot(slotId)
+        end)
+        tile:SetScript("OnReceiveDrag", function()
+            if D.AssignCursorDrop then D.AssignCursorDrop("keys", slotId, selectedLayout()) end
+        end)
         tiles[slotId] = tile
     end
 
@@ -228,7 +223,7 @@ function KC.Build(parent, deps)
         local slotId = focusedSlot()
         if not slotId then return end
         local moved, nextSlot = K.MoveSlot(selectedLayout(), slotId, -1)
-        if moved then S.focusedKeySlot = nextSlot; S.selectedKeySlot = nil end
+        if moved then S.focusedKeySlot = nextSlot end
         KC.Refresh()
     end)
     detailRow.down.label:SetText("Next")
@@ -236,14 +231,13 @@ function KC.Build(parent, deps)
         local slotId = focusedSlot()
         if not slotId then return end
         local moved, nextSlot = K.MoveSlot(selectedLayout(), slotId, 1)
-        if moved then S.focusedKeySlot = nextSlot; S.selectedKeySlot = nil end
+        if moved then S.focusedKeySlot = nextSlot end
         KC.Refresh()
     end)
     detailRow.clear:SetScript("OnClick", function()
         local slotId = focusedSlot()
         if not slotId then return end
         local ok, message = K.ClearSlot(selectedLayout(), slotId)
-        if ok then S.selectedKeySlot = nil end
         AC.CloseEditor(); setStatus(message, ok); KC.Refresh()
     end)
 

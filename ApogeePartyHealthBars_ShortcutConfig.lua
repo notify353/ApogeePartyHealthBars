@@ -14,7 +14,7 @@ local ROW_HEIGHT = 36
 local ROW_GAP = 3
 local ADD_ROW_HEIGHT = 34
 
-local function armReplacement(slot)
+local function selectRow(slot)
     local entries = D.ShortcutBar.GetSlots() or {}
     if not entries[slot] then return end
     S.selectedShortcutSlot = S.selectedShortcutSlot == slot and nil or slot
@@ -45,12 +45,12 @@ function SC.Refresh(assignedSlot)
     if S.selectedShortcutSlot and not entries[S.selectedShortcutSlot] then S.selectedShortcutSlot = nil end
 
     if S.selectedShortcutSlot then
-        hint:SetText("|cff00ff00Selected for replacement.|r Shift-click a Spellbook spell or bag item.")
+        hint:SetText("|cff00ff00Selected.|r Drop a Spellbook spell or bag item onto this row, or edit its macro and sound.")
     elseif #entries >= C.SHORTCUT_MAX_SLOTS then
         hint:SetText("All " .. C.SHORTCUT_MAX_SLOTS
-            .. " Shortcuts are assigned. Select a row to replace it or Clear one.")
+            .. " Shortcuts are assigned. Drop onto a row to replace it or Clear one.")
     else
-        hint:SetText("Shift-click a Spellbook spell or bag item to add it. Select a row first to replace it.")
+        hint:SetText("Drag a Spellbook spell or bag item onto a row, or use the empty position to add one.")
     end
 
     local anchor = hint
@@ -69,7 +69,7 @@ function SC.Refresh(assignedSlot)
                 available and 1 or 0.50)
             local kindLabel = entry.kind == "item" and "Item" or "Spell"
             row.secondary:SetText(S.selectedShortcutSlot == i
-                and (kindLabel .. " — Shift-click to replace") or kindLabel)
+                and (kindLabel .. " — Selected") or kindLabel)
             row.sound:SetSelectedKey(shortcuts.GetSlotSoundKey(i) or "none")
             row.sound:Enable(); row.macro:Enable(); row.clear:Enable()
             row.macro.label:SetText(shortcuts.IsMacroCustomized(i) and "Macro*" or "Macro")
@@ -85,8 +85,8 @@ function SC.Refresh(assignedSlot)
     addRow:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, #entries == 0 and -9 or -3)
     addRow:SetShown(#entries < C.SHORTCUT_MAX_SLOTS)
     addRow.label:SetText(#entries == 0
-        and "Shift-click a spell or bag item to add your first Shortcut"
-        or "Shift-click another spell or bag item to add it")
+        and "Drop a spell or bag item here to add your first Shortcut"
+        or "Drop another spell or bag item here")
 
     local contentHeight = HINT_HEIGHT
     if #entries > 0 then
@@ -121,7 +121,17 @@ function SC.Build(parent, deps)
         local slot = i
         local row = AC.CreateActionRow(content, C.CONFIG_CONTENT_W)
         row.sound:SetOptions(D.Sounds.GetOptions(true))
-        row:SetScript("OnClick", function() armReplacement(slot) end)
+        row:SetScript("OnClick", function()
+            local cursorType = GetCursorInfo and GetCursorInfo()
+            if (cursorType == "spell" or cursorType == "item") and D.AssignCursorDrop then
+                D.AssignCursorDrop("shortcuts", slot)
+                return
+            end
+            selectRow(slot)
+        end)
+        row:SetScript("OnReceiveDrag", function()
+            if D.AssignCursorDrop then D.AssignCursorDrop("shortcuts", slot) end
+        end)
         row.sound:SetSelectionCallback(function(soundKey)
             if not shortcuts.GetSlots()[slot] then return end
             local selected = shortcuts.SetSlotSound(slot, soundKey)
@@ -150,7 +160,15 @@ function SC.Build(parent, deps)
 
     addRow = UIH.CreateButton(content, "", C.CONFIG_CONTENT_W, ADD_ROW_HEIGHT)
     addRow.bg:SetColorTexture(0.045, 0.045, 0.055, 1)
-    addRow:Disable()
+    addRow:SetScript("OnReceiveDrag", function()
+        if D.AssignCursorDrop then D.AssignCursorDrop("shortcuts", nil) end
+    end)
+    addRow:SetScript("OnClick", function()
+        local cursorType = GetCursorInfo and GetCursorInfo()
+        if (cursorType == "spell" or cursorType == "item") and D.AssignCursorDrop then
+            D.AssignCursorDrop("shortcuts", nil)
+        end
+    end)
     local icon = addRow:CreateTexture(nil, "ARTWORK")
     icon:SetSize(22, 22); icon:SetPoint("LEFT", addRow, "LEFT", 8, 0)
     icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark"); icon:SetDesaturated(true)

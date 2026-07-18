@@ -14,7 +14,7 @@ local L = ApogeePartyHealthBars_RuntimeLifecycleEvents
 function L.Register(eventRouter, deps)
     for _, key in ipairs({
         "Print", "InitPlayerSpells", "RestorePosition", "UpdateHeader",
-        "HookSpellbook", "HookContainerItems", "EnsureMinimapButton",
+        "EnsureMinimapButton",
         "SeedShieldTrackerFromAuras", "ForceRefresh", "IsShieldEnabled",
         "OnShieldCombatLog", "SetConfigMode", "ClaimBoundActionBindings",
         "ReleaseBoundActionBindings", "ReconcileBoundActionBindings",
@@ -71,17 +71,9 @@ function L.Register(eventRouter, deps)
                 deps.InitPlayerSpells()
                 deps.RestorePosition()
                 deps.UpdateHeader()
-                deps.HookSpellbook()
-                deps.HookContainerItems()
                 deps.EnsureMinimapButton()
                 deps.SeedShieldTrackerFromAuras()
                 deps.ForceRefresh()
-
-            elseif event == "ADDON_LOADED" then
-                if unit == "Blizzard_UIPanels_Game" or unit == "Blizzard_SpellBook" then
-                    deps.HookSpellbook()
-                    deps.HookContainerItems()
-                end
 
             elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
                 M.OnCombatLogEvent()
@@ -141,5 +133,4 @@ function L.Register(eventRouter, deps)
     }) do
         eventRouter.Subscribe(event, "Bootstrap", HandleEvent)
     end
-    eventRouter.RegisterOptional("ADDON_LOADED", "Bootstrap", HandleEvent)
 end

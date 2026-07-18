@@ -77,8 +77,6 @@ local deps = {
     InitPlayerSpells = function() record("player-spells") end,
     RestorePosition = function() record("restore-position") end,
     UpdateHeader = function() record("update-header") end,
-    HookSpellbook = function() record("hook-spellbook") end,
-    HookContainerItems = function() record("hook-items") end,
     EnsureMinimapButton = function() record("minimap") end,
     SeedShieldTrackerFromAuras = function() record("shield-seed") end,
     ForceRefresh = function() record("force-refresh") end,
@@ -106,8 +104,8 @@ for _, event in ipairs({
     assert(required[event] and required[event].owner == "Bootstrap",
         "required lifecycle event changed registration: " .. event)
 end
-assert(optional.ADDON_LOADED and optional.ADDON_LOADED.owner == "Bootstrap",
-    "ADDON_LOADED changed optional registration")
+assert(optional.ADDON_LOADED == nil,
+    "lifecycle still subscribes to ADDON_LOADED for modified-click hooks")
 
 ApogeePartyHealthSV = { enabled = true, combatUIAutoHide = true }
 ApogeePartyHealthCharSV = {}
@@ -116,7 +114,7 @@ expect({
     "saved-variables", "binding-store", "fader-init:true", "macro-validation",
     "print:macro validation: broken recipe", "class-bindings", "shortcut-init",
     "wheel-init", "keys-init", "bindings-claim", "player-spells", "restore-position", "update-header",
-    "hook-spellbook", "hook-items", "minimap", "shield-seed", "force-refresh",
+    "minimap", "shield-seed", "force-refresh",
 }, "PLAYER_LOGIN order changed")
 assert(ApogeePartyHealthBars_S.sv == ApogeePartyHealthSV
         and ApogeePartyHealthBars_S.charSv == ApogeePartyHealthCharSV,
@@ -153,12 +151,6 @@ reset()
 dispatch("PLAYER_TARGET_CHANGED")
 expect({ "shortcut-rebaseline", "wheel-refresh", "keys-refresh", "threat", "request-update" },
     "target-change order changed")
-
-reset()
-dispatch("ADDON_LOADED", "unrelated")
-expect({}, "unrelated ADDON_LOADED triggered hooks")
-dispatch("ADDON_LOADED", "Blizzard_SpellBook")
-expect({ "hook-spellbook", "hook-items" }, "Spellbook load did not restore hooks")
 
 reset()
 dispatch("COMBAT_LOG_EVENT_UNFILTERED")

@@ -2,7 +2,7 @@ ApogeePartyHealthBars_C = {
     CONFIG_CONTENT_W = 396, BIND_PAD = 8, CONFIG_HEADER_H = 40, CONFIG_TAB_H = 24,
 }
 ApogeePartyHealthBars_S = {
-    selectedKeyLayout = nil, focusedKeySlot = nil, selectedKeySlot = nil,
+    selectedKeyLayout = nil, focusedKeySlot = nil,
     selectedShortcutSlot = nil, selectedWheelSlot = nil,
 }
 ApogeePartyHealthBars_ActionMacros = {
@@ -56,6 +56,9 @@ function ApogeePartyHealthBars_UIHelpers.SetButtonEnabled(button, enabled)
 end
 
 local editorOptions, closeCount = nil, 0
+local droppedFeature, droppedSlot, droppedLayout
+local cursorType
+function GetCursorInfo() return cursorType end
 ApogeePartyHealthBars_ActionConfig = {}
 function ApogeePartyHealthBars_ActionConfig.CreateActionRow()
     local row = widget()
@@ -141,6 +144,10 @@ local config = ApogeePartyHealthBars_KeyConfig
 config.Build(widget(), {
     KeyActions = runtime,
     Sounds = { GetOptions = function() return { { key = "none", label = "None" } } end },
+    AssignCursorDrop = function(feature, slot, layout)
+        droppedFeature, droppedSlot, droppedLayout = feature, slot, layout
+        return true
+    end,
 })
 
 local tiles, detail = config.GetTiles(), config.GetDetailRow()
@@ -150,19 +157,29 @@ assert(tileCount == 15 and tiles.keyF.point[4] == 94 and tiles.keyF.point[5] == 
     and tiles.keyG.point[4] == 141,
     "Keys selector did not preserve the approved 15-key grid")
 
+tiles.keyR.scripts.OnReceiveDrag()
+assert(droppedFeature == "keys" and droppedSlot == "keyR" and droppedLayout == "base",
+    "Keys tile did not route a cursor drop to its selected layout")
+
+cursorType = "item"
+droppedFeature, droppedSlot, droppedLayout = nil, nil, nil
+tiles.keyR.scripts.OnClick()
+assert(droppedFeature == "keys" and droppedSlot == "keyR" and droppedLayout == "base",
+    "Keys tile did not accept a picked-up bag item")
+cursorType = nil
+
 tiles.keyF.scripts.OnClick()
 assert(ApogeePartyHealthBars_S.focusedKeySlot == "keyF"
-    and ApogeePartyHealthBars_S.selectedKeySlot == "keyF"
     and detail.primary.text == "Linen Bandage" and detail.secondary.text:find("Item", 1, true)
     and detail.icon.texture == 123,
-    "Keys tile did not focus, arm, and display its action")
+    "Keys tile did not focus and display its action")
 detail.macro.scripts.OnClick()
 assert(editorOptions and editorOptions.macroText == "/use Linen Bandage",
     "Keys focused Macro control did not open the editor")
 config.Refresh("keyF")
 assert(ApogeePartyHealthBars_S.focusedKeySlot == "keyF"
-    and ApogeePartyHealthBars_S.selectedKeySlot == nil and editorOptions == nil,
-    "Keys assignment did not keep focus while clearing the replacement arm")
+    and editorOptions == nil,
+    "Keys assignment did not keep focus while closing the prior editor")
 
 detail.up.scripts.OnClick()
 assert(layouts.base.keyT and layouts.base.keyT.itemName == "Linen Bandage"
@@ -180,8 +197,7 @@ assert(config.GetStatusText():GetText():find("Binding conflicts: Q, C", 1, true)
 local layoutDropdown = dropdowns[1]
 layoutDropdown.onSelect("battle")
 assert(ApogeePartyHealthBars_S.selectedKeyLayout == "battle"
-    and ApogeePartyHealthBars_S.focusedKeySlot == nil
-    and ApogeePartyHealthBars_S.selectedKeySlot == nil and closeCount > 0,
-    "Keys layout change retained stale focus or replacement state")
+    and ApogeePartyHealthBars_S.focusedKeySlot == nil and closeCount > 0,
+    "Keys layout change retained stale focus")
 
 print("PASS keyboard-shaped Keys configuration")

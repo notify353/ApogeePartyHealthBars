@@ -32,10 +32,10 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `HotTracker`: private known-spell and active-track state, player-cast aura matching, strip geometry inputs, and duration visuals
 - `ShortcutBar`, `ShortcutConfig`: 12-slot typed shortcut storage, six-column player/crowd-control grids, spell/item state icons, sound feedback, secure macros, smart Spellbook/bag assignment, and scrollable compact configuration
 - `WheelData`, `WheelLayouts`, `WheelMacros`, `WheelConfig`: fixed gesture definitions, Wheel-specific shared-runtime policy, active talent-spec profiles, per-form typed shortcut layouts, right-side HUD geometry, and compact configuration
-- `KeyData`, `KeyLayouts`, `KeyActions`, `KeyConfig`: fixed keyboard definitions, Keys-specific shared-runtime policy, independent empty per-spec/per-form profiles, left-side HUD geometry, and focused/armed tile editing
+- `KeyData`, `KeyLayouts`, `KeyActions`, `KeyConfig`: fixed keyboard definitions, Keys-specific shared-runtime policy, independent empty per-spec/per-form profiles, left-side HUD geometry, and focused tile editing
 - `RaidMarkers`: target marker controls
 - `Threat`: party and target threat
-- `BindingStore`, `BindingController`, `ClickBindings`: typed Healing spell/item persistence, Shift-click assignment, and native unit-targeted secure actions
+- `BindingStore`, `BindingController`, `ClickBindings`: typed Healing spell/item persistence, cursor-based destination assignment, and native unit-targeted secure actions
 - `GeneralConfig`: General-tab visibility, feature toggles, alert preferences, HoT controls, and reset confirmation
 - `HealingConfig`: Healing binding rows, selection state, display refresh, and right-click clearing
 - `ConfigUI`: settings-window shell, tab registry, activation, and cross-tab refresh routing
@@ -58,7 +58,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - Keep known and active HoT tracks inside `HotTracker`; aura scanning, layout, configuration, row display, and visual ticking consume only its explicit APIs.
 - Preserve custom macro text during normalization and migration; regenerate defaults only for new assignments, explicit resets, or legacy entries without macro text.
 - Keep Healing actions macro-independent; native secure spell/item actions must retain the clicked health-bar unit.
-- Never call Blizzard Spellbook toggles, replace Spellbook or bag-item scripts, or use pre-hooks; use the minimap action template and secure post-hooks.
+- Never call Blizzard Spellbook toggles, replace Spellbook or bag-item scripts, or hook their click handlers; use the minimap action template and destination-based cursor drops.
 - Do not rename saved variables or named secure frames without migration.
 - Add settings through the tab registry.
 - Keep tab-specific controls and mutable refresh state in their configuration modules; `ConfigUI` owns only the shared window and tab lifecycle.

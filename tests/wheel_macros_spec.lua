@@ -56,7 +56,7 @@ local inCombat = false
 function InCombatLockdown() return inCombat end
 function UnitClass() return "Warrior", "WARRIOR" end
 
-local activeStance = 1
+local activeState = 1
 local activeSpecGroup = 1
 C_SpecializationInfo = {
     GetActiveSpecGroup = function(isInspect, isPet)
@@ -70,10 +70,10 @@ local forms = {
     { texture = 132275, spellId = 2458, name = "Berserker Stance" },
 }
 function GetNumShapeshiftForms() return #forms end
-function GetShapeshiftForm() return activeStance end
+function GetShapeshiftForm() return activeState end
 function GetShapeshiftFormInfo(index)
     local form = forms[index]
-    return form and form.texture, activeStance == index, true, form and form.spellId
+    return form and form.texture, activeState == index, true, form and form.spellId
 end
 function RegisterStateDriver(frame, state, driver)
     frame.stateDrivers = frame.stateDrivers or {}
@@ -217,7 +217,7 @@ assert(bindings.MOUSEWHEELUP == "SOMEOTHERADDONACTION",
     "editing a Wheel action silently reclaimed its physical binding")
 bindings.MOUSEWHEELUP = "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton"
 assert(wheel.GetSlot(PRIMARY, "normalUp").macroText
-    == "/targetenemy [noexists][dead][help]\n/startattack\n/cast Flash Heal",
+    == "/cast [nochanneling:Flash Heal] Flash Heal",
     "Spellbook assignment seeded unexpected wheel macro text")
 assert(not wheel.GetSlot(PRIMARY, "normalUp").macroText:find("#showtooltip", 1, true),
     "Spellbook assignment still seeded #showtooltip")
@@ -264,30 +264,30 @@ assert(moved and movedTo == "shiftUp"
 assert(wheel.MoveSlot(PRIMARY, "shiftUp", -1), "Wheel action could not move back")
 assert(not wheel.MoveSlot(PRIMARY, "ctrlUp", 0), "Wheel accepted an invalid move direction")
 wheel.SetSlotSound(PRIMARY, "ctrlUp", "none")
-assert(wheel.HasStanceLayouts(), "Warrior forms did not enable stance layouts")
+assert(wheel.HasStateLayouts(), "Warrior forms did not enable state layouts")
 assert(#wheel.GetLayouts() == 3 and wheel.GetLayouts()[1].key == PRIMARY
     and not wheel.IsKnownLayout("base"),
-    "Warrior stance registry exposed a nonexistent Base layout")
+    "Warrior state registry exposed a nonexistent Base layout")
 local defensive = "spell:71"
 assert(wheel.GetSlot(defensive, "normalUp") == nil,
-    "initial Warrior stance layout was not copied from the first stance")
+    "new Warrior state did not start empty")
 assert(wheel.AssignSpell(defensive, "normalUp", nil, "Charge"),
-    "stance-specific wheel spell assignment failed")
+    "state-specific wheel spell assignment failed")
 assert(wheel.AssignItem(defensive, "shiftDown", 1251, "Linen Bandage"),
-    "stance-specific Wheel item assignment failed")
+    "state-specific Wheel item assignment failed")
 assert(wheel.GetSlot(defensive, "shiftDown").kind == "item"
     and wheel.GetSlot(PRIMARY, "shiftDown").kind == "spell",
-    "editing a stance-specific item mutated another layout")
+    "editing a state-specific item mutated another layout")
 assert(wheel.GetSlot(PRIMARY, "normalUp").spellName == warriorSpells[1],
-    "editing one Warrior stance layout mutated another")
+    "editing one Warrior state layout mutated another")
 wheel.RefreshSecureActions()
-local stanceSecure = wheel.GetSecureButton("normalUp")
-assert(stanceSecure.stateDrivers.wheelstance
-    == "[stance:1] 1; [stance:2] 2; [stance:3] 3; 1",
-    "secure stance driver did not cover every detected form")
-assert(stanceSecure.attributes["wheel-macro-1"]:find(warriorSpells[1], 1, true)
-    and stanceSecure.attributes["wheel-macro-2"]:find("Charge", 1, true),
-    "secure action did not preload independent Warrior stance macros")
+local stateSecure = wheel.GetSecureButton("normalUp")
+assert(stateSecure.stateDrivers.wheelstate
+    == "[form:1] 1; [form:2] 2; [form:3] 3; 1",
+    "secure state driver did not cover every detected form")
+assert(stateSecure.attributes["wheel-macro-1"]:find(warriorSpells[1], 1, true)
+    and stateSecure.attributes["wheel-macro-2"]:find("Charge", 1, true),
+    "secure action did not preload independent Warrior state macros")
 
 local bindingSavesBeforeSpecChange = saveCount
 local ownershipBeforeSpecChange = ApogeePartyHealthBars_S.charSv.wheelMacros.ownership
@@ -296,9 +296,9 @@ assert(wheel.OnActiveSpecChanged(), "active talent-group change was not detected
 assert(wheel.GetActiveSpecKey() == "2",
     "talent-group change did not preserve the permanent Wheel runtime")
 assert(wheel.GetSlot(PRIMARY, "normalUp") == nil
-    and stanceSecure.attributes["wheel-macro-1"] == nil
-    and stanceSecure.attributes.macrotext == nil,
-    "new talent-group profile did not start as a secure no-op")
+    and stateSecure.attributes["wheel-macro-1"] == "/run ApogeeWheelFeedback(1)"
+    and stateSecure.attributes.macrotext == "/run ApogeeWheelFeedback(1)",
+    "new talent-group profile did not start with feedback-only activation")
 assert(saveCount == bindingSavesBeforeSpecChange
     and ApogeePartyHealthBars_S.charSv.wheelMacros.ownership == ownershipBeforeSpecChange,
     "talent-group change rewrote global Wheel binding ownership")
@@ -306,15 +306,15 @@ for _, slot in ipairs(data.SLOTS) do
     assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. "Hud:LeftButton",
         "talent-group change modified " .. slot.key)
 end
-local mutationsAfterSpecChange = stanceSecure.mutations
-assert(not wheel.OnActiveSpecChanged() and stanceSecure.mutations == mutationsAfterSpecChange,
+local mutationsAfterSpecChange = stateSecure.mutations
+assert(not wheel.OnActiveSpecChanged() and stateSecure.mutations == mutationsAfterSpecChange,
     "duplicate talent-group event rebuilt secure actions")
 assert(wheel.AssignSpell(PRIMARY, "normalUp", nil, "Charge"),
     "second talent-group profile could not be configured")
 activeSpecGroup = 1
 assert(wheel.OnActiveSpecChanged()
     and wheel.GetSlot(PRIMARY, "normalUp").spellName == warriorSpells[1]
-    and stanceSecure.attributes.macrotext:find(warriorSpells[1], 1, true),
+    and stateSecure.attributes.macrotext:find(warriorSpells[1], 1, true),
     "returning to the first talent group did not restore its secure macro")
 activeSpecGroup = 2
 assert(wheel.OnActiveSpecChanged()
@@ -323,14 +323,14 @@ assert(wheel.OnActiveSpecChanged()
 activeSpecGroup = 1
 wheel.OnActiveSpecChanged()
 
-activeStance = 2
-wheel.OnStanceChanged()
+activeState = 2
+wheel.OnStateChanged()
 wheel.RefreshSecureActions()
 assert(wheel.GetActiveLayoutKey() == defensive
-    and stanceSecure.attributes.macrotext:find("Charge", 1, true),
-    "active stance did not select its secure macro layout")
-activeStance = 1
-wheel.OnStanceChanged()
+    and stateSecure.attributes.macrotext:find("Charge", 1, true),
+    "active state did not select its secure macro layout")
+activeState = 1
+wheel.OnStateChanged()
 wheel.RefreshSecureActions()
 local normalUpIcon = assert(wheel.GetHudIcon("normalUp"), "wheel HUD icon was not created")
 assert(normalUpIcon.point[1] == "TOPLEFT" and normalUpIcon.point[4] == 160,
@@ -502,13 +502,13 @@ assert(activatedSlot == "normalUp" and feedbackEnd > GetTime(),
     "wheel activation did not identify the clicked slot")
 assert(normalUpIcon.feedbackOverlay and normalUpIcon.flash.alpha == 0.55,
     "wheel activation glow was not raised and shown above the cooldown")
-activeStance = 2
-wheel.OnStanceChanged()
+activeState = 2
+wheel.OnStateChanged()
 local clearedFeedbackSlot, clearedFeedbackUntil = wheel.GetLastActivation()
 assert(clearedFeedbackSlot == nil and clearedFeedbackUntil == 0 and normalUpIcon.flash.alpha == 0,
-    "stance change retained activation feedback from the previous layout")
-activeStance = 1
-wheel.OnStanceChanged()
+    "state change retained activation feedback from the previous layout")
+activeState = 1
+wheel.OnStateChanged()
 
 assert(wheel.ApplyMacro(PRIMARY, "normalUp", "#showtooltip Heroic Strike\n/cast [mod] Heroic Strike"))
 assert(not wheel.ApplyMacro(PRIMARY, "normalUp", string.rep("x", 256)), "oversized macro was accepted")

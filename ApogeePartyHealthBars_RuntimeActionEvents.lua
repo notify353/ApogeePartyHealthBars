@@ -48,10 +48,10 @@ function A.Register(eventRouter, deps)
                 if deps.GetConfigUI().RefreshKeyPanel then deps.GetConfigUI().RefreshKeyPanel() end
                 if deps.GetConfigUI().RefreshWheelPanel then deps.GetConfigUI().RefreshWheelPanel() end
 
-            elseif event == "UPDATE_SHAPESHIFT_FORM" then
+            elseif event == "UPDATE_SHAPESHIFT_FORM" or event == "UPDATE_STEALTH" then
                 T.Refresh(false)
-                W.OnStanceChanged()
-                K.OnStanceChanged()
+                W.OnStateChanged()
+                K.OnStateChanged()
                 S.RequestLayoutUpdate()
 
             elseif event == "UPDATE_SHAPESHIFT_FORMS" then
@@ -69,7 +69,7 @@ function A.Register(eventRouter, deps)
 
     for _, event in ipairs({
         "SPELLS_CHANGED", "ACTIVE_TALENT_GROUP_CHANGED", "UPDATE_BINDINGS",
-        "UPDATE_SHAPESHIFT_FORM", "UPDATE_SHAPESHIFT_FORMS",
+        "UPDATE_SHAPESHIFT_FORM", "UPDATE_SHAPESHIFT_FORMS", "UPDATE_STEALTH",
     }) do
         eventRouter.RegisterOptional(event, "Bootstrap", HandleEvent)
     end

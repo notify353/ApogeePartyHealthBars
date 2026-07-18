@@ -24,10 +24,30 @@ end
 local function refreshEditorState()
     if not editor then return end
     local body = editor:GetText() or ""
+    if current and current.readOnly then
+        byteCount:SetText(current.copyable and (#body .. " bytes") or "Reference only")
+        byteCount:SetTextColor(0.62, 0.62, 0.64)
+        UIH.SetButtonEnabled(saveButton, current.copyable == true)
+        return
+    end
     local valid = body:find("%S") ~= nil and #body <= Actions.MAX_BODY_BYTES
     byteCount:SetText(#body .. " / " .. Actions.MAX_BODY_BYTES .. " bytes")
     byteCount:SetTextColor(valid and 0.62 or 1, valid and 0.62 or 0.25, valid and 0.64 or 0.25)
     UIH.SetButtonEnabled(saveButton, valid)
+end
+
+local function configureDialog(readOnly, copyable)
+    resetButton:SetShown(not readOnly)
+    cancelButton:ClearAllPoints()
+    if readOnly then
+        cancelButton:SetPoint("BOTTOMLEFT", dialog, "BOTTOMLEFT", 12, 38)
+        cancelButton.label:SetText("Close")
+        saveButton.label:SetText(copyable and "Select to Copy" or "Reference only")
+    else
+        cancelButton:SetPoint("LEFT", resetButton, "RIGHT", 6, 0)
+        cancelButton.label:SetText("Cancel")
+        saveButton.label:SetText("Save")
+    end
 end
 
 function AC.CloseEditor()
@@ -40,6 +60,8 @@ end
 function AC.OpenEditor(options)
     if not overlay or type(options) ~= "table" or type(options.onSave) ~= "function" then return false end
     current = options
+    current.readOnly = false
+    configureDialog(false)
     title:SetText(options.title or "Edit macro")
     actionName:SetText(options.actionName or "Shortcut")
     statusText:SetText("")
@@ -47,6 +69,26 @@ function AC.OpenEditor(options)
     refreshEditorState()
     overlay:Show()
     editor:SetFocus()
+    return true
+end
+
+function AC.OpenViewer(options)
+    if not overlay or type(options) ~= "table" or type(options.macroText) ~= "string" then return false end
+    current = {
+        readOnly = true,
+        copyable = options.copyable == true,
+        macroText = options.macroText,
+    }
+    configureDialog(true, current.copyable)
+    title:SetText(options.title or "View macro")
+    actionName:SetText(options.actionName or "Macro documentation")
+    editor:SetText(current.macroText)
+    refreshEditorState()
+    overlay:Show()
+    editor:ClearFocus()
+    setStatus(current.copyable
+        and "Read-only macro. Use Select to Copy, then press Ctrl+C."
+        or "Reference only. This example is not directly executable.", current.copyable)
     return true
 end
 
@@ -246,7 +288,12 @@ function AC.Initialize(parent, applyBackdrop)
     editor:SetJustifyH("LEFT"); editor:SetJustifyV("TOP")
     editor:SetPoint("TOPLEFT", editorFrame, "TOPLEFT", 8, -7)
     editor:SetPoint("BOTTOMRIGHT", editorFrame, "BOTTOMRIGHT", -8, 7)
-    editor:SetScript("OnTextChanged", refreshEditorState)
+    editor:SetScript("OnTextChanged", function(_, user)
+        if current and current.readOnly and user and editor:GetText() ~= current.macroText then
+            editor:SetText(current.macroText)
+        end
+        refreshEditorState()
+    end)
     editor:SetScript("OnEscapePressed", AC.CloseEditor)
 
     resetButton = UIH.CreateButton(dialog, "Reset", 74, 22)
@@ -261,6 +308,12 @@ function AC.Initialize(parent, applyBackdrop)
     saveButton:SetPoint("BOTTOMRIGHT", dialog, "BOTTOMRIGHT", -12, 38)
     saveButton:SetScript("OnClick", function()
         if not current then return end
+        if current.readOnly then
+            if not current.copyable then return end
+            editor:SetFocus(); editor:HighlightText()
+            setStatus("Macro selected. Press Ctrl+C to copy it.", true)
+            return
+        end
         local ok, message = current.onSave(editor:GetText() or "")
         if not ok then setStatus(message, false); return end
         local onSaved = current.onSaved

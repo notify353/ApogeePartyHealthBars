@@ -33,9 +33,9 @@ function Factory.Create(options)
     assert(type(options.allSlotsMessage) == "string", "bound action runtime requires a full-slots message")
 
     for _, method in ipairs({
-        "Initialize", "GetLayouts", "HasStances", "GetActiveKey", "GetActiveSpecKey",
-        "GetSlots", "GetSlot", "SetSlot", "IsKnownLayout", "GetActiveIndex",
-        "GetMaxStateIndex", "GetStateDriver", "RefreshActiveContext", "GetOptions",
+        "Initialize", "GetLayouts", "HasStates", "GetActiveKey", "GetActiveSpecKey",
+        "GetSlots", "GetSlot", "SetSlot", "IsKnownLayout", "GetActiveStateValue",
+        "GetMaxStateValue", "GetStateDriver", "RefreshActiveContext", "GetOptions",
     }) do
         assert(type(options.layouts[method]) == "function",
             "bound action runtime layouts require " .. method)
@@ -202,8 +202,12 @@ function Factory.Create(options)
         if slot then showActivationFeedback(slot) end
     end
 
+    local function feedbackMacroText(slot)
+        return "/run " .. FEEDBACK_GLOBAL .. "(" .. slot.index .. ")"
+    end
+
     local function secureMacroText(slot, entry)
-        local feedback = "/run " .. FEEDBACK_GLOBAL .. "(" .. slot.index .. ")"
+        local feedback = feedbackMacroText(slot)
         return entry.macroText == "" and feedback or feedback .. "\n" .. entry.macroText
     end
 
@@ -512,8 +516,8 @@ function Factory.Create(options)
         return WL.GetLayouts()
     end
 
-    function W.HasStanceLayouts()
-        return WL.HasStances()
+    function W.HasStateLayouts()
+        return WL.HasStates()
     end
 
     function W.GetActiveLayoutKey()
@@ -696,22 +700,23 @@ function Factory.Create(options)
         button:SetAttribute("type1", nil); button:SetAttribute("macrotext1", nil)
 
         local definitions = WL.GetLayouts()
-        local activeIndex = WL.GetActiveIndex()
+        local activeState = WL.GetActiveStateValue()
         local activeMacro
         for _, definition in ipairs(definitions) do
-            local index, layoutKey = definition.index, definition.key
+            local stateValue, layoutKey = definition.runtimeState, definition.key
             local entry = W.GetSlot(layoutKey, slot.id)
-            local runtimeMacro = hasMacro(entry) and secureMacroText(slot, entry) or nil
-            button:SetAttribute(SECURE_MACRO_PREFIX .. index, runtimeMacro)
-            if index == activeIndex then activeMacro = runtimeMacro end
+            local runtimeMacro = hasMacro(entry) and secureMacroText(slot, entry)
+                or feedbackMacroText(slot)
+            button:SetAttribute(SECURE_MACRO_PREFIX .. stateValue, runtimeMacro)
+            if stateValue == activeState then activeMacro = runtimeMacro end
         end
-        button.apogeeStateCount = math.max(priorCount, WL.GetMaxStateIndex())
+        button.apogeeStateCount = math.max(priorCount, WL.GetMaxStateValue())
         button:SetAttribute("type", activeMacro and "macro" or nil)
         button:SetAttribute("macrotext", activeMacro)
         button:SetAttribute("type1", activeMacro and "macro" or nil)
         button:SetAttribute("macrotext1", activeMacro)
 
-        if WL.HasStances() and RegisterStateDriver then
+        if WL.HasStates() and RegisterStateDriver then
             button:SetAttribute("_onstate-" .. SECURE_STATE, SECURE_STATE_SNIPPET)
             RegisterStateDriver(button, SECURE_STATE, WL.GetStateDriver())
             button.apogeeStateDriver = true
@@ -771,7 +776,7 @@ function Factory.Create(options)
         return changed
     end
 
-    function W.OnStanceChanged()
+    function W.OnStateChanged()
         rebaselineFeedback()
         W.Refresh()
     end

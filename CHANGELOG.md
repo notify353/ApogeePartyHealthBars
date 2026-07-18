@@ -8,12 +8,18 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
+- Added smart generated spell macros with self-channel protection, spam-safe Shoot and Auto Shot behavior, and an in-addon Macros glossary covering templates, syntax, application, and tradeoffs.
+- Added secure class-state layouts for Priest Shadowform, Rogue Stealth and Vanish, Druid Cat Form with a separate Prowl state, and Shaman Ghost Wolf when reported by the client; every newly discovered Keys or Wheel state starts empty.
+- Added activation feedback for unassigned Keys and Wheel inputs, highlighting the corresponding HUD square and identifying the empty trigger.
 - Added native drag-and-drop assignment from the Spellbook and open bags onto Healing rows plus Shortcuts, Keys, and Wheel settings or HUD positions, including WoW-style click-pick/click-place for bag items in settings.
 - Added account-wide, class-specific named profiles with safe switching, New, Duplicate, Rename, Delete, Copy From, and complete portable settings including Healing, Shortcuts, Keys, Wheel, macros, sounds, and UI positions.
 - Added compressed, versioned profile share strings with author and addon metadata, import previews, class validation, and Create, Merge, or Replace workflows.
 
 ### Changed
 
+- Limited automatic enemy targeting and `/startattack` to confirmed attack families; ordinary spells now use a neutral self-channel-safe cast, while melee Attack, Auto Shot, and wand Shoot receive dedicated templates.
+- Expanded macro documentation with mouseover and focus targeting, `/stopattack`, cursor casting, help/harm and modifier choices, stealth protection, queued next-swing attacks, and castsequence limitations.
+- Compacted Macros documentation topics and moved exact macro and syntax bodies into a focused read-only Macro dialog.
 - Simplified the draggable party-bar configuration header to the concise “Party Health” title.
 - Refined the settings-header typography with a roomier two-line hierarchy and a shared lower baseline for the left-aligned active profile and version.
 - Replaced question-mark placeholders in empty Healing, Shortcuts, Keys, and Wheel rows with understated outlined slots while preserving assigned spell and item icons.
@@ -29,6 +35,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Fixed
 
+- Fixed Shoot and Auto Shot smart defaults depending on the currently equipped ranged weapon; known ranged auto-attacks now remain spam-safe when assigned while their weapon is unequipped.
 - Removed question-mark fallbacks from Shortcut HUD slots and ensured the temporary add target disappears immediately when settings close.
 - Fixed right-dragging the minimap button moving it horizontally opposite the cursor while preserving existing saved button positions.
 - Fixed global disable, profile changes, and Factory Reset failing when WoW required an owned `CLICK` key to be cleared before its previous normal action could be restored, without allowing the resulting binding events to re-enter the active transaction.

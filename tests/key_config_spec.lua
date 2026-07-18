@@ -110,7 +110,7 @@ function runtime.GetBindingStatus()
 end
 function runtime.GetActiveLayoutKey() return currentLayout end
 function runtime.GetActiveSpecKey() return currentSpec end
-function runtime.HasStanceLayouts() return true end
+function runtime.HasStateLayouts() return true end
 function runtime.GetLayoutOptions() return { { key = "base", label = "Base" }, { key = "battle", label = "Battle" } } end
 function runtime.IsKnownLayout(key) return layouts[key] ~= nil end
 function runtime.GetDefinitions() return definitions end

@@ -4,6 +4,19 @@ local Actions = ApogeePartyHealthBars_ActionMacros
 ApogeePartyHealthBars_BoundActionLayouts = {}
 local Factory = ApogeePartyHealthBars_BoundActionLayouts
 
+local CLASS_WITH_NATIVE_STATES = {
+    DRUID = true,
+    PRIEST = true,
+    ROGUE = true,
+    SHAMAN = true,
+    WARRIOR = true,
+}
+local DRUID_CAT_FORM_SPELL_ID = 768
+local DRUID_PROWL_SPELL_ID = 5215
+local PRIEST_SHADOWFORM_SPELL_ID = 15473
+local ROGUE_STEALTH_SPELL_ID = 1784
+local DRUID_PROWL_LAYOUT_KEY = "state:768:5215"
+
 local function acceptedVersion(accepted, version)
     if type(accepted) ~= "table" then return false end
     return accepted[version] == true
@@ -19,8 +32,8 @@ function Factory.Create(options)
         SCHEMA_VERSION = options.schemaVersion,
         BASE_KEY = "base",
     }
-    local layouts, layoutByKey, layoutKeyByIndex = {}, {}, {}
-    local defaultStateIndex, maxStateIndex = 0, 0
+    local layouts, layoutByKey, layoutKeyByState = {}, {}, {}
+    local defaultStateValue, maxStateValue = 0, 0
     local activeSpecKey, activeProfile = "1", nil
 
     local function state()
@@ -45,6 +58,14 @@ function Factory.Create(options)
         return layout
     end
 
+    local function layoutHasAssignments(layout)
+        layout = normalizeLayout(layout)
+        for _, slot in ipairs(options.slots) do
+            if layout.slots[slot.id] then return true end
+        end
+        return false
+    end
+
     local function cloneLayout(source)
         local result = { slots = {} }
         source = normalizeLayout(source)
@@ -55,7 +76,7 @@ function Factory.Create(options)
         return result
     end
 
-    local function spellName(spellId, index)
+    local function spellName(spellId, fallback)
         if spellId and C_Spell and C_Spell.GetSpellInfo then
             local info = C_Spell.GetSpellInfo(spellId)
             if info and info.name then return info.name end
@@ -64,7 +85,7 @@ function Factory.Create(options)
             local name = GetSpellInfo(spellId)
             if name then return name end
         end
-        return "Stance " .. tostring(index)
+        return fallback
     end
 
     local function formKey(spellId, index)
@@ -76,18 +97,38 @@ function Factory.Create(options)
         if #layouts ~= #nextLayouts then return false end
         for index, layout in ipairs(nextLayouts) do
             local current = layouts[index]
-            if not current or current.key ~= layout.key or current.index ~= layout.index
-                or current.label ~= layout.label then
+            if not current or current.key ~= layout.key
+                or current.runtimeState ~= layout.runtimeState
+                or current.label ~= layout.label
+                or current.condition ~= layout.condition
+                or current.parentKey ~= layout.parentKey then
                 return false
             end
         end
         return true
     end
 
-    local function shouldExposeBase(formCount)
+    local function playerClass()
         local class
         if UnitClass then _, class = UnitClass("player") end
+        return class
+    end
+
+    local function shouldExposeBase(class, formCount)
         return not (class == "WARRIOR" and formCount > 0)
+    end
+
+    local function isSpellKnown(spellId)
+        if C_SpellBook and C_SpellBook.IsSpellKnown then
+            return C_SpellBook.IsSpellKnown(spellId)
+        end
+        if IsPlayerSpell then return IsPlayerSpell(spellId) end
+        if IsSpellKnown then return IsSpellKnown(spellId) end
+        return false
+    end
+
+    local function isStealthed()
+        return IsStealthed and IsStealthed() == true
     end
 
     local function ensureProfile(saved, specKey)
@@ -131,46 +172,115 @@ function Factory.Create(options)
         if not saved then return false end
         local nextSpecKey = resolveActiveSpecKey()
         local profile = ensureProfile(saved, nextSpecKey)
-        local count = tonumber(GetNumShapeshiftForms and GetNumShapeshiftForms()) or 0
+        local class = playerClass()
+        local count = CLASS_WITH_NATIVE_STATES[class]
+            and tonumber(GetNumShapeshiftForms and GetNumShapeshiftForms()) or 0
         count = math.max(0, math.floor(count))
-        local exposeBase = shouldExposeBase(count)
-        local nextLayouts, nextByKey, nextKeyByIndex = {}, {}, {}
-        if exposeBase then
-            local base = { key = L.BASE_KEY, label = "Base", index = 0 }
-            nextLayouts[1], nextByKey[L.BASE_KEY], nextKeyByIndex[0] = base, base, L.BASE_KEY
+        local exposeBase = shouldExposeBase(class, count)
+        local nextLayouts, nextByKey, nextKeyByState = {}, {}, {}
+        local nextMaxState = count
+
+        local function addDefinition(definition)
+            nextLayouts[#nextLayouts + 1] = definition
+            nextByKey[definition.key] = definition
+            nextKeyByState[definition.runtimeState] = definition.key
+            if definition.runtimeState > nextMaxState then
+                nextMaxState = definition.runtimeState
+            end
+            if type(profile.layouts[definition.key]) ~= "table" then
+                local migrationSource = definition.migrateFrom
+                    and profile.layouts[definition.migrateFrom]
+                profile.layouts[definition.key] = migrationSource
+                    and layoutHasAssignments(migrationSource)
+                    and cloneLayout(migrationSource) or normalizeLayout({})
+            else
+                profile.layouts[definition.key] = normalizeLayout(profile.layouts[definition.key])
+            end
         end
-        local seedLayout = profile.layouts[L.BASE_KEY]
+
+        if exposeBase then
+            addDefinition({
+                key = L.BASE_KEY,
+                label = "Base",
+                runtimeState = 0,
+                matches = function(activeForm) return activeForm == 0 end,
+            })
+        end
+
+        local formKeyBySpellId = {}
+        local formIndexBySpellId = {}
         for index = 1, count do
+            local formIndex = index
             local texture, _, _, spellId = GetShapeshiftFormInfo(index)
             local key = formKey(spellId, index)
-            local definition = {
+            if spellId then
+                formKeyBySpellId[spellId] = key
+                formIndexBySpellId[spellId] = formIndex
+            end
+            addDefinition({
                 key = key,
-                label = spellName(spellId, index),
-                index = index,
+                label = spellName(spellId, "Form " .. tostring(index)),
+                runtimeState = formIndex,
+                condition = "[form:" .. formIndex .. "]",
+                matches = function(activeForm) return activeForm == formIndex end,
                 spellId = spellId,
                 texture = texture,
-            }
-            nextLayouts[#nextLayouts + 1] = definition
-            nextByKey[key] = definition
-            nextKeyByIndex[index] = key
-            if type(profile.layouts[key]) ~= "table" then
-                profile.layouts[key] = options.newLayoutsStartEmpty
-                    and normalizeLayout({}) or cloneLayout(seedLayout)
-            else
-                profile.layouts[key] = normalizeLayout(profile.layouts[key])
-            end
-            if not exposeBase and index == 1 then seedLayout = profile.layouts[key] end
+                migrateFrom = not exposeBase and formIndex == 1 and L.BASE_KEY or nil,
+            })
         end
+
+        if count == 0 and class == "PRIEST" and isSpellKnown(PRIEST_SHADOWFORM_SPELL_ID) then
+            nextMaxState = 1
+            addDefinition({
+                key = formKey(PRIEST_SHADOWFORM_SPELL_ID, 1),
+                label = spellName(PRIEST_SHADOWFORM_SPELL_ID, "Shadowform"),
+                runtimeState = 1,
+                condition = "[form:1]",
+                matches = function(activeForm) return activeForm == 1 end,
+                spellId = PRIEST_SHADOWFORM_SPELL_ID,
+            })
+        elseif count == 0 and class == "ROGUE" and isSpellKnown(ROGUE_STEALTH_SPELL_ID) then
+            nextMaxState = 1
+            addDefinition({
+                key = formKey(ROGUE_STEALTH_SPELL_ID, 1),
+                label = spellName(ROGUE_STEALTH_SPELL_ID, "Stealth"),
+                runtimeState = 1,
+                condition = "[stealth]",
+                matches = function() return isStealthed() end,
+                composite = true,
+                spellId = ROGUE_STEALTH_SPELL_ID,
+            })
+        end
+
+        local catFormKey = formKeyBySpellId[DRUID_CAT_FORM_SPELL_ID]
+        local catFormIndex = formIndexBySpellId[DRUID_CAT_FORM_SPELL_ID]
+        if class == "DRUID" and catFormKey and isSpellKnown(DRUID_PROWL_SPELL_ID) then
+            local prowlState = nextMaxState + 1
+            addDefinition({
+                key = DRUID_PROWL_LAYOUT_KEY,
+                label = spellName(DRUID_CAT_FORM_SPELL_ID, "Cat Form")
+                    .. " — " .. spellName(DRUID_PROWL_SPELL_ID, "Prowl"),
+                runtimeState = prowlState,
+                condition = "[form:" .. catFormIndex .. ",stealth]",
+                parentKey = catFormKey,
+                composite = true,
+                matches = function(activeForm)
+                    return activeForm == catFormIndex and isStealthed()
+                end,
+                spellId = DRUID_PROWL_SPELL_ID,
+            })
+        end
+
         local changed = nextSpecKey ~= activeSpecKey or profile ~= activeProfile
             or not sameRegistry(nextLayouts)
         activeSpecKey, activeProfile = nextSpecKey, profile
-        layouts, layoutByKey, layoutKeyByIndex = nextLayouts, nextByKey, nextKeyByIndex
-        defaultStateIndex = exposeBase and 0 or 1
-        maxStateIndex = count
+        layouts, layoutByKey, layoutKeyByState = nextLayouts, nextByKey, nextKeyByState
+        defaultStateValue = exposeBase and 0 or 1
+        maxStateValue = nextMaxState
         return changed
     end
 
-    L.RefreshForms = L.RefreshActiveContext
+    L.RefreshStates = L.RefreshActiveContext
 
     function L.GetActiveSpecKey() return activeSpecKey end
     function L.GetLayouts() return layouts end
@@ -181,18 +291,28 @@ function Factory.Create(options)
         end
         return result
     end
-    function L.HasStances() return maxStateIndex > 0 end
+    function L.HasStates() return maxStateValue > 0 end
     function L.HasBaseLayout() return layoutByKey[L.BASE_KEY] ~= nil end
     function L.IsKnownLayout(layoutKey) return layoutByKey[layoutKey] ~= nil end
-    function L.GetLayoutKeyForIndex(index)
-        return layoutKeyByIndex[tonumber(index) or defaultStateIndex]
-            or layoutKeyByIndex[defaultStateIndex] or L.BASE_KEY
+    function L.GetLayoutKeyForState(stateValue)
+        return layoutKeyByState[tonumber(stateValue) or defaultStateValue]
+            or layoutKeyByState[defaultStateValue] or L.BASE_KEY
     end
-    function L.GetActiveIndex()
-        local index = GetShapeshiftForm and GetShapeshiftForm() or 0
-        return layoutKeyByIndex[index] and index or defaultStateIndex
+    function L.GetActiveStateValue()
+        local activeForm = tonumber(GetShapeshiftForm and GetShapeshiftForm()) or 0
+        for _, definition in ipairs(layouts) do
+            if definition.composite and definition.matches(activeForm) then
+                return definition.runtimeState
+            end
+        end
+        for _, definition in ipairs(layouts) do
+            if not definition.composite and definition.matches(activeForm) then
+                return definition.runtimeState
+            end
+        end
+        return defaultStateValue
     end
-    function L.GetActiveKey() return L.GetLayoutKeyForIndex(L.GetActiveIndex()) end
+    function L.GetActiveKey() return L.GetLayoutKeyForState(L.GetActiveStateValue()) end
     function L.GetLayout(layoutKey)
         return activeProfile and activeProfile.layouts and activeProfile.layouts[layoutKey]
     end
@@ -212,13 +332,20 @@ function Factory.Create(options)
     end
     function L.GetStateDriver()
         local clauses = {}
-        for index = 1, maxStateIndex do
-            clauses[#clauses + 1] = "[stance:" .. index .. "] " .. index
+        for _, definition in ipairs(layouts) do
+            if definition.composite and definition.condition then
+                clauses[#clauses + 1] = definition.condition .. " " .. definition.runtimeState
+            end
         end
-        clauses[#clauses + 1] = tostring(defaultStateIndex)
+        for _, definition in ipairs(layouts) do
+            if not definition.composite and definition.condition then
+                clauses[#clauses + 1] = definition.condition .. " " .. definition.runtimeState
+            end
+        end
+        clauses[#clauses + 1] = tostring(defaultStateValue)
         return table.concat(clauses, "; ")
     end
-    function L.GetMaxStateIndex() return maxStateIndex end
+    function L.GetMaxStateValue() return maxStateValue end
 
     return L
 end

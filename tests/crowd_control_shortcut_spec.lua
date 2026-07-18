@@ -138,7 +138,8 @@ assert(visualButtons[2].points[1][4] == 0
     "target-lane Shortcuts were not capped at six columns")
 assert(secureButtons[1].attributes.unit == nil)
 assert(secureButtons[2].attributes.unit == nil and secureButtons[2].attributes.type == "macro"
-    and secureButtons[2].attributes.macrotext:find("/cast Localized Polymorph(Rank 1)", 1, true))
+    and secureButtons[2].attributes.macrotext:find(
+        "/cast [nochanneling:Localized Polymorph] Localized Polymorph(Rank 1)", 1, true))
 
 local function TrackCrowdControl(canonical)
     local localized = localizedByCanonical[canonical]

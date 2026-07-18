@@ -29,7 +29,7 @@ ApogeePartyHealthBars_WheelMacros = {
         return wheelLayoutsChanged
     end,
     ReconcileBindings = function() record("wheel-reconcile") end,
-    OnStanceChanged = function() record("wheel-stance") end,
+    OnStateChanged = function() record("wheel-state") end,
 }
 ApogeePartyHealthBars_KeyActions = {
     Refresh = function() record("keys-refresh") end,
@@ -40,7 +40,7 @@ ApogeePartyHealthBars_KeyActions = {
         return keyLayoutsChanged
     end,
     ReconcileBindings = function() record("keys-reconcile") end,
-    OnStanceChanged = function() record("keys-stance") end,
+    OnStateChanged = function() record("keys-state") end,
 }
 
 local ui = {
@@ -78,7 +78,7 @@ events.Register(router, deps)
 
 for _, event in ipairs({
     "SPELLS_CHANGED", "ACTIVE_TALENT_GROUP_CHANGED", "UPDATE_BINDINGS",
-    "UPDATE_SHAPESHIFT_FORM", "UPDATE_SHAPESHIFT_FORMS",
+    "UPDATE_SHAPESHIFT_FORM", "UPDATE_SHAPESHIFT_FORMS", "UPDATE_STEALTH",
 }) do
     assert(optional[event] and optional[event].owner == "Bootstrap",
         "action transition changed registration: " .. event)
@@ -147,13 +147,18 @@ expect({ "bindings-reconcile", "ui-keys", "ui-wheel" },
 
 reset()
 dispatch("UPDATE_SHAPESHIFT_FORM")
-expect({ "shortcut-refresh:false", "wheel-stance", "keys-stance", "layout" },
-    "stance transition order changed")
+expect({ "shortcut-refresh:false", "wheel-state", "keys-state", "layout" },
+    "form-state transition order changed")
+
+reset()
+dispatch("UPDATE_STEALTH")
+expect({ "shortcut-refresh:false", "wheel-state", "keys-state", "layout" },
+    "stealth-state transition order changed")
 
 reset()
 dispatch("UPDATE_SHAPESHIFT_FORMS")
 expect({ "wheel-layouts", "keys-layouts", "ui-keys", "ui-wheel", "layout" },
-    "stance registry refresh order changed")
+    "form-state registry refresh order changed")
 
 reset()
 local originalSpecChanged = ApogeePartyHealthBars_WheelMacros.OnActiveSpecChanged

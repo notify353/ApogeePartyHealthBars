@@ -6,5 +6,4 @@ ApogeePartyHealthBars_KeyLayouts = Factory.Create({
     slots = KD.SLOTS,
     schemaVersion = 2,
     acceptedSchemaVersions = { [1] = true, [2] = true },
-    newLayoutsStartEmpty = true,
 })

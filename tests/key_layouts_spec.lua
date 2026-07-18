@@ -35,7 +35,7 @@ assert(ApogeePartyHealthBars_S.charSv.keyActions.schemaVersion == 2
 local fireball = actions.CreateSpell(133, "Fireball")
 assert(layouts.SetSlot("base", "key1", fireball), "Keys base assignment failed")
 formCount = 2
-assert(layouts.RefreshActiveContext(), "Keys did not discover stance layouts")
+assert(layouts.RefreshActiveContext(), "Keys did not discover form-state layouts")
 assert(#layouts.GetLayouts() == 3 and layouts.GetSlot("spell:2457", "key1") == nil
     and layouts.GetSlot("spell:71", "key1") == nil,
     "newly discovered Keys forms copied assignments instead of starting empty")
@@ -43,7 +43,7 @@ layouts.SetSlot("spell:71", "key1", actions.CreateSpell(116, "Frostbolt"))
 activeForm = 2
 assert(layouts.GetActiveKey() == "spell:71"
     and layouts.GetSlot(layouts.GetActiveKey(), "key1").spellName == "Frostbolt",
-    "Keys stance selection did not preserve its independent action")
+    "Keys state selection did not preserve its independent action")
 
 activeSpec = 2
 assert(layouts.RefreshActiveContext(), "Keys talent profile did not change")
@@ -54,4 +54,4 @@ layouts.RefreshActiveContext()
 assert(layouts.GetSlot("spell:71", "key1").spellName == "Frostbolt",
     "Keys first talent profile did not persist")
 
-print("PASS per-spec and per-stance Keys layouts")
+print("PASS per-spec and per-state Keys layouts")

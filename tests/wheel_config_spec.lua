@@ -101,7 +101,7 @@ local layouts = {
 local wheel = {}
 function wheel.GetActiveLayoutKey() return currentLayout end
 function wheel.GetActiveSpecKey() return currentSpec end
-function wheel.HasStanceLayouts() return true end
+function wheel.HasStateLayouts() return true end
 function wheel.GetLayoutOptions() return { { key = "base", label = "Base" }, { key = "battle", label = "Battle" } } end
 function wheel.IsKnownLayout(key) return layouts[key] ~= nil end
 function wheel.GetDisplayOrder() return order end

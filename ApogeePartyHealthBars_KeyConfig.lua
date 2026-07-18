@@ -70,10 +70,10 @@ function KC.Refresh(assignedSlot)
         statusIsConflict = false
     end
 
-    local hasStances = K.HasStanceLayouts()
+    local hasStates = K.HasStateLayouts()
     layoutSelector:SetOptions(K.GetLayoutOptions())
     layoutSelector:SetSelectedKey(layoutKey)
-    layoutSelector:SetShown(hasStances)
+    layoutSelector:SetShown(hasStates)
 
     local rows = {}
     local order = K.GetDisplayOrder()
@@ -95,7 +95,7 @@ function KC.Refresh(assignedSlot)
         })
         rows[#rows + 1] = row
     end
-    AC.LayoutActionList(list, rows, hasStances and layoutSelector or nil)
+    AC.LayoutActionList(list, rows, hasStates and layoutSelector or nil)
 end
 
 function KC.Build(parent, deps)

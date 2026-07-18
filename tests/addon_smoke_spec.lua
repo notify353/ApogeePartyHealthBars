@@ -251,7 +251,7 @@ assert(tocLoadOrder["ApogeePartyHealthBars_ActionMacros.lua"]
     "Shortcut Bar runtime loaded before its shared action dependency")
 assert(tocLoadOrder["ApogeePartyHealthBars_WheelLayouts.lua"]
     < tocLoadOrder["ApogeePartyHealthBars_WheelMacros.lua"],
-    "wheel runtime loaded before its stance-layout dependency")
+    "wheel runtime loaded before its class-state layout dependency")
 assert(tocLoadOrder["ApogeePartyHealthBars_BoundActionLayouts.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_WheelLayouts.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_BoundActionBindings.lua"]
@@ -453,16 +453,26 @@ assert(keyFSecure:GetAttribute("macrotext"):find("/run ApogeeKeysFeedback(10)", 
 assert(keyGSecure:GetAttribute("macrotext"):find("/use Linen Bandage", 1, true),
     "Keys secure item macro was not configured")
 assert(keyGIcon.count:GetText() == "3", "Keys item HUD did not show its carried quantity")
-assert(keysRuntime.GetSecureButton("key2"):GetAttribute("type") == nil,
-    "an empty Keys slot was not a secure no-op")
+local emptyKeySecure = keysRuntime.GetSecureButton("key2")
+local emptyWheelSecure = wheelRuntime.GetSecureButton("ctrlUp")
+assert(emptyKeySecure:GetAttribute("type") == "macro"
+        and emptyKeySecure:GetAttribute("macrotext") == "/run ApogeeKeysFeedback(2)",
+    "an empty Keys slot did not receive feedback-only activation")
+assert(emptyWheelSecure:GetAttribute("type") == "macro"
+        and emptyWheelSecure:GetAttribute("macrotext") == "/run ApogeeWheelFeedback(5)",
+    "an empty Wheel slot did not receive feedback-only activation")
 assert(keysRuntime.GetHeight("player") == 136 and wheelRuntime.GetHeight("player") == 169
     and math.max(keysRuntime.GetHeight("player"), wheelRuntime.GetHeight("player")) == 169,
     "permanent action HUD height was summed instead of using the taller Wheel rail")
 ApogeeKeysFeedback(10)
 assert(feedbackText:GetText() == "F — Frostbolt", "Keys activation feedback text was incorrect")
+ApogeeKeysFeedback(2)
+assert(feedbackText:GetText() == "2 — Empty", "empty Keys feedback text was incorrect")
 ApogeeWheelFeedback(1)
 assert(feedbackText:GetText() == "Normal Up — Fireball",
     "Wheel did not share the fixed activation feedback line")
+ApogeeWheelFeedback(5)
+assert(feedbackText:GetText() == "Ctrl Up — Empty", "empty Wheel feedback text was incorrect")
 smokeSpellRange = 0
 router.Dispatch("PLAYER_TARGET_CHANGED")
 assert(keyFIcon.alpha == ApogeePartyHealthBars_C.OUT_OF_RANGE_ALPHA,
@@ -630,9 +640,9 @@ local existingShortcutButton = assert(shortcutButtons[1], "missing existing Shor
 local addedShortcutButton = assert(shortcutButtons[2], "missing newly assigned Shortcut secure button")
 local itemShortcutButton = assert(shortcutButtons[3], "missing item Shortcut secure button")
 assert(existingShortcutButton.attributes.type == "macro"
-    and existingShortcutButton.attributes.macrotext:find("/cast Fireball(Rank 1)", 1, true))
+    and existingShortcutButton.attributes.macrotext:find("/cast [nochanneling:Fireball] Fireball(Rank 1)", 1, true))
 assert(addedShortcutButton.attributes.type == "macro"
-    and addedShortcutButton.attributes.macrotext:find("/cast Frostbolt(Rank 1)", 1, true))
+    and addedShortcutButton.attributes.macrotext:find("/cast [nochanneling:Frostbolt] Frostbolt(Rank 1)", 1, true))
 assert(itemShortcutButton.attributes.type == "macro"
     and itemShortcutButton.attributes.macrotext == "/use Linen Bandage")
 smokeItemCount = 0
@@ -661,8 +671,8 @@ RunFrameUpdates()
 assert(existingShortcutButton.pointWrites > existingImmediatePoints
         and addedShortcutButton.pointWrites > addedImmediatePoints,
     "settings close did not reconcile Shortcut overlays on the next frame")
-assert(existingShortcutButton.attributes.macrotext:find("/cast Fireball(Rank 1)", 1, true)
-        and addedShortcutButton.attributes.macrotext:find("/cast Frostbolt(Rank 1)", 1, true),
+assert(existingShortcutButton.attributes.macrotext:find("/cast [nochanneling:Fireball] Fireball(Rank 1)", 1, true)
+        and addedShortcutButton.attributes.macrotext:find("/cast [nochanneling:Frostbolt] Frostbolt(Rank 1)", 1, true),
     "settings close changed Shortcut secure attributes")
 assert(existingShortcutButton.shown and existingShortcutButton.mouseEnabled
         and addedShortcutButton.shown and addedShortcutButton.mouseEnabled,

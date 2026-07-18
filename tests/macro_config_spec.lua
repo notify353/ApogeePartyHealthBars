@@ -5,7 +5,7 @@ ApogeePartyHealthBars_C = {
     CONFIG_TAB_H = 24,
 }
 
-local macroText, dropdown
+local dropdown, viewedMacro
 local buttons, fontStrings = {}, {}
 local function widget()
     local value = { scripts = {}, shown = true, enabled = true, text = "" }
@@ -41,9 +41,8 @@ local function widget()
     return value
 end
 
-function CreateFrame(frameType)
+function CreateFrame()
     local frame = widget()
-    if frameType == "EditBox" then macroText = frame end
     return frame
 end
 function UnitClass() return "Mage", "MAGE" end
@@ -79,27 +78,44 @@ function ApogeePartyHealthBars_UIHelpers.CreateFormRow(_, width, height)
 end
 function ApogeePartyHealthBars_UIHelpers.LayoutForm(form, entries) form.entries = entries end
 
-local safeAttack = {
-    id = "safe", category = "attack", title = "Safe Attack", explanation = "Starts attacking safely.",
-    requirements = "No class-specific requirements.", body = "/startattack",
+ApogeePartyHealthBars_ActionConfig = {}
+function ApogeePartyHealthBars_ActionConfig.OpenViewer(options)
+    viewedMacro = options
+    return true
+end
+
+local generated = {
+    id = "generated", category = "generated", kind = "template", title = "Standard Spell Template",
+    explanation = "Builds a safe spell macro.", applied = "New assignments and Reset.",
+    why = "Keeps generation consistent.", tradeoffs = "Combat-oriented targeting.",
+    lineDetails = "/startattack — starts attacking.", body = "/startattack", copyable = true,
+}
+local syntax = {
+    id = "syntax", category = "syntax", kind = "syntax", title = "Channel Guard",
+    explanation = "Explains nochanneling.", applied = "Generated spells.",
+    why = "Prevents clipping.", tradeoffs = "Protects only the named spell.",
+    lineDetails = "Reference syntax.", body = "/cast [nochanneling:Mind Flay] Mind Flay", copyable = false,
 }
 local counter = {
-    id = "counter", category = "interrupt", title = "Stopcast Counterspell", explanation = "Stops and counters.",
-    requirements = "Requires Counterspell.", body = "/stopcasting\n/cast Counterspell",
+    id = "counter", category = "recipes", kind = "recipe", title = "Stopcast Counterspell",
+    explanation = "Stops and counters.", applied = "Requires Counterspell.",
+    why = "Emergency interrupt.", tradeoffs = "Stops the current cast.",
+    lineDetails = "Two executable lines.", body = "/stopcasting\n/cast Counterspell", copyable = true,
 }
 ApogeePartyHealthBars_MacroLibrary = {
     Categories = {
-        { id = "all", label = "All Examples" },
-        { id = "attack", label = "Safe Attacks" },
-        { id = "interrupt", label = "Stopcasting" },
-        { id = "pet", label = "Pet Combat" },
+        { id = "all", label = "All Topics" },
+        { id = "generated", label = "Generated Templates" },
+        { id = "syntax", label = "Syntax Glossary" },
+        { id = "recipes", label = "Combat Recipes" },
     },
 }
 local library = ApogeePartyHealthBars_MacroLibrary
-function library.GetRecipesForClass(_, category)
-    if category == "all" then return { safeAttack, counter } end
-    if category == "attack" then return { safeAttack } end
-    if category == "interrupt" then return { counter } end
+function library.GetTopicsForClass(_, category)
+    if category == "all" then return { generated, syntax, counter } end
+    if category == "generated" then return { generated } end
+    if category == "syntax" then return { syntax } end
+    if category == "recipes" then return { counter } end
     return {}
 end
 function library.GetUnavailableReason() return nil end
@@ -109,13 +125,13 @@ local config = ApogeePartyHealthBars_MacroConfig
 config.Build(widget(), { ApplyBackdrop = function() end })
 
 assert(dropdown.selectedKey == "all", "category dropdown did not select All Examples")
-assert(#dropdown.options == 3, "empty class category was not hidden")
-assert(dropdown.options[1].label == "All Examples (2)" and dropdown.options[2].label == "Safe Attacks (1)",
-    "category dropdown did not show recipe counts")
-assert(macroText:GetText() == safeAttack.body, "first curated example was not loaded")
+assert(#dropdown.options == 4, "documentation category was hidden")
+assert(dropdown.options[1].label == "All Topics (3)"
+        and dropdown.options[2].label == "Generated Templates (1)",
+    "category dropdown did not show topic counts")
 assert(buttons["Reset Example"] == nil, "obsolete reset control still exists")
 assert(buttons["Prev"].requestedWidth + buttons["Next"].requestedWidth
-    + buttons["Select to Copy"].requestedWidth + 12 <= config.GetForm().rowWidth,
+    + buttons["Macro"].requestedWidth + 12 <= config.GetForm().rowWidth,
     "read-only controls overflow the content width")
 for label in pairs(buttons) do
     assert(not label:find("Create", 1, true) and not label:find("Pick Up", 1, true)
@@ -123,33 +139,42 @@ for label in pairs(buttons) do
         "copy-only library still exposes macro creation: " .. label)
 end
 
-local foundCopyOnlyLabel, foundByteFeedback, foundRecipeCount = false, false, false
+local foundInlineMacroLabel, foundByteFeedback, foundRecipeCount = false, false, false
 for _, fontString in ipairs(fontStrings) do
-    if fontString.text == "Copy-only macro" then foundCopyOnlyLabel = true end
+    if fontString.text == "Macro template or reference snippet" then foundInlineMacroLabel = true end
     if fontString.text and fontString.text:find("bytes", 1, true) then foundByteFeedback = true end
-    if fontString.text == "1 of 2" then foundRecipeCount = true end
+    if fontString.text == "1 of 3" then foundRecipeCount = true end
 end
-assert(foundCopyOnlyLabel, "macro text was not labeled copy-only")
+assert(not foundInlineMacroLabel, "macro body still expanded the documentation card")
 assert(not foundByteFeedback, "obsolete byte feedback still exists")
 assert(foundRecipeCount, "recipe position included obsolete managed-macro state")
+assert(config.GetForm().entries[2].height == 206,
+    "documentation topic card did not use the compact layout")
 
-macroText:UserSetText("/say user edit")
-assert(macroText:GetText() == safeAttack.body, "user typing changed the curated macro text")
-buttons["Select to Copy"].scripts.OnClick()
-assert(macroText.focused and macroText.highlighted, "read-only macro text could not be selected for copying")
+buttons["Macro"].scripts.OnClick()
+assert(viewedMacro.macroText == generated.body and viewedMacro.copyable
+        and viewedMacro.actionName == generated.title,
+    "Macro button did not open the generated template in the shared viewer")
 
 buttons["Next"].scripts.OnClick()
-assert(macroText:GetText() == counter.body, "next recipe did not load its curated body")
+buttons["Macro"].scripts.OnClick()
+assert(viewedMacro.macroText == syntax.body and not viewedMacro.copyable,
+    "reference topic did not open as reference-only syntax")
 config.Refresh(true)
-assert(dropdown.selectedKey == "all" and macroText:GetText() == counter.body,
-    "panel refresh reset the selected example")
+buttons["Macro"].scripts.OnClick()
+assert(dropdown.selectedKey == "all" and viewedMacro.macroText == syntax.body,
+    "panel refresh reset the selected topic")
 
-dropdown.onSelect("interrupt")
-assert(dropdown.selectedKey == "interrupt" and macroText:GetText() == counter.body,
-    "category selection did not refresh the curated recipe list")
+dropdown.onSelect("recipes")
+buttons["Macro"].scripts.OnClick()
+assert(dropdown.selectedKey == "recipes" and viewedMacro.macroText == counter.body
+        and viewedMacro.copyable,
+    "category selection did not refresh the combat recipe list")
 config.Refresh(true)
-assert(dropdown.selectedKey == "interrupt" and macroText:GetText() == counter.body,
+buttons["Macro"].scripts.OnClick()
+assert(dropdown.selectedKey == "recipes" and viewedMacro.macroText == counter.body,
     "panel refresh reset the selected category")
-assert(config.GetForm().hint:GetText() == "Browse and copy curated combat macros for Mage.",
-    "Macros did not use the shared muted instruction")
-print("PASS copy-only combat macro config UX")
+assert(config.GetForm().hint:GetText()
+    == "Browse generated templates, syntax, and Mage combat recipes.",
+    "Macros did not use the documentation instruction")
+print("PASS macro documentation config UX")

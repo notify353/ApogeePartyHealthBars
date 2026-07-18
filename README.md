@@ -38,10 +38,20 @@ Drag a Spellbook spell or an item from an open bag directly onto a Shortcuts, Ke
 Spell assignments in Shortcuts, Keys, and Wheel start with this generated macro:
 
 ```text
-/targetenemy [noexists][dead][help]
-/startattack
-/cast Spell Name(Rank N)
+/cast [nochanneling:Spell Name] Spell Name(Rank N)
 ```
+
+The spell-specific channel guard makes bindings such as Mind Flay and Arcane Missiles safe to spam without restarting their active channel. The neutral default deliberately does not retarget or start attacking, so friendly spells, utility, Stealth, and crowd control retain their normal behavior.
+
+Melee Attack uses conditional enemy targeting plus `/startattack`. Auto Shot and other client-confirmed ranged auto-attacks additionally use `!Spell Name` so repeated presses cannot toggle the repeating attack off, followed by `/startattack` as a close-range melee fallback. Wand Shoot uses a Classic-specific sequence instead:
+
+```text
+/targetenemy [noexists][dead][help]
+/castsequence [nochanneling:Shoot] reset=target/2 !Shoot, null
+/startattack
+```
+
+The intentionally invalid second step absorbs repeated presses after Shoot starts. Changing targets or releasing the key for two seconds resets the sequence. Existing macro text is preserved; assign the action again or use Reset in its macro editor to adopt the latest generated template.
 
 Item assignments in Shortcuts, Keys, and Wheel start with the localized item name:
 
@@ -62,15 +72,15 @@ Keys uses this fixed action order in settings and the same keyboard-shaped arran
 [Z] [X] [C] [V]
 ```
 
-Keys starts empty and is always active while the add-on is loaded. **Warning:** each add-on load replaces the current WoW bindings for all 15 physical keys, including common movement and UI bindings, even when their action slots are empty. Keys follows WoW's active account or character binding set and keeps an independent restoration snapshot for each set it claims. Before disabling the addon in WoW's AddOns manager, use **Prepare to Disable** under General > Danger; it restores each captured binding only while the addon still owns that key. A binding changed elsewhere after startup is left untouched and reported as a conflict. The Keys tab keeps all 15 destinations visible as scrollable rows with the same inline sound, macro, movement, and Clear controls used by Shortcuts and Wheel. Each talent spec and newly discovered stance or form starts with an independent empty Keys layout.
+Keys starts empty and is always active while the add-on is loaded. **Warning:** each add-on load replaces the current WoW bindings for all 15 physical keys, including common movement and UI bindings, even when their action slots are empty. Keys follows WoW's active account or character binding set and keeps an independent restoration snapshot for each set it claims. Before disabling the addon in WoW's AddOns manager, use **Prepare to Disable** under General > Danger; it restores each captured binding only while the addon still owns that key. A binding changed elsewhere after startup is left untouched and reported as a conflict. The Keys tab keeps all 15 destinations visible as scrollable rows with the same inline sound, macro, movement, and Clear controls used by Shortcuts and Wheel. Each talent spec and newly discovered class state starts with an independent empty Keys layout.
 
-The Wheel tab always exposes and reserves its six gestures in ladder order, from Ctrl Up through Ctrl Down, while the add-on is loaded. Empty gestures are intentional no-ops. Each talent spec has an independent Wheel profile that follows the equipped spec automatically; a newly activated second spec starts empty, while physical key ownership remains character-wide. Characters with stances or forms reported by the client receive a complete six-slot layout for each known state; classes with a valid no-form state also receive a Base layout, while Warriors see only Battle, Defensive, and Berserker Stance. The active layout switches automatically, including during combat. Wheel actions remain separate from Healing-tab health-bar clicks.
+The Wheel tab always exposes and reserves its six gestures in ladder order, from Ctrl Up through Ctrl Down, while the add-on is loaded. Empty gestures are intentional no-ops. Each talent spec has an independent Wheel profile that follows the equipped spec automatically; a newly activated second spec starts empty, while physical key ownership remains character-wide. Keys and Wheel both provide independent empty layouts for native class states: Warrior stances, Druid forms, Priest Shadowform, Rogue Stealth and Vanish, client-reported Shaman Ghost Wolf, and a separate Cat Form — Prowl state. Classes with a valid no-form state also receive Base, while Warriors see only their learned stances. Hunter Aspects, Paladin Auras, arbitrary buffs, and transient encounter overrides do not create layouts. The active layout switches automatically, including during combat. Wheel actions remain separate from Healing-tab health-bar clicks.
 
 Keys uses a four-row cluster at the left of the player HUD, while Wheel uses a vertical rail at the far right. Both share the fixed feedback line below the Keys cluster, and Shortcuts begin below the taller active feature rather than below the sum of both features.
 
 The General tab groups behavior, alerts, bar display, tracked HoTs, position resets, and destructive actions into compact scrollable setting rows. New profiles show all five slots while solo, auto-hide Blizzard UI in combat, and use Focus for the low-health alert by default; each choice can be changed without affecting existing profiles. Enabling and disabling the addon belongs to WoW's AddOns manager, so General has no redundant enable checkbox. Because Keys and Wheel own saved inputs, **Prepare to Disable** under Danger transactionally restores all 21 inputs before you disable the addon through WoW. Factory Reset performs the same restoration before clearing account and current-character settings. If restoration fails, either operation stops without discarding the ownership record.
 
-The Macros tab presents each curated example as a compact copy-only card with its description, requirements, position, text, and navigation controls. Browse by category, select the curated text, press Ctrl+C, and paste it into WoW's Macro window. The library never creates, updates, or tracks game macros. Examples include safe target acquisition, spam-safe wand or Auto Shot attacks, pet attacks, and stopcasting emergency abilities. Unlearned recipes remain visible with their requirements.
+The Macros tab is the in-addon reference for generated templates, macro syntax, and curated combat recipes. Each compact topic explains where Apogee applies the pattern, why it is useful, and when custom text may be preferable; its Macro button opens the exact body in a focused read-only viewer. Executable templates and current-class recipes remain selectable for copying into WoW's Macro window, while syntax-only examples are clearly marked as reference material. The library also covers mouseover and focus targeting, `/stopattack`, cursor casting, help/harm and modifier choices, stealth protection, queued next-swing attacks, and castsequence tradeoffs. It never creates, updates, or tracks game macros.
 
 ## Develop
 

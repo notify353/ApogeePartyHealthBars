@@ -54,10 +54,10 @@ function WC.Refresh(assignedSlot)
     end
     lastSpecKey, lastLayoutKey = specKey, layoutKey
 
-    local hasStances = W.HasStanceLayouts()
+    local hasStates = W.HasStateLayouts()
     layoutSelector:SetOptions(W.GetLayoutOptions())
     layoutSelector:SetSelectedKey(layoutKey)
-    layoutSelector:SetShown(hasStances)
+    layoutSelector:SetShown(hasStates)
 
     local rows = {}
     local order = W.GetDisplayOrder()
@@ -78,7 +78,7 @@ function WC.Refresh(assignedSlot)
         })
         rows[#rows + 1] = row
     end
-    AC.LayoutActionList(list, rows, hasStances and layoutSelector or nil)
+    AC.LayoutActionList(list, rows, hasStates and layoutSelector or nil)
 end
 
 function WC.Build(parent, deps)

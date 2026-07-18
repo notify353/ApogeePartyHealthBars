@@ -12,10 +12,10 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `Sounds`: shared sound catalog, saved-key normalization, and SFX playback
 - `ShortcutItems`: shared item-information, carried-count, usability, cooldown, and depletion evaluation
 - `ActionData`: macro-independent spell/item identity, legacy normalization, cloning, and display resolution shared by every configurable action feature
-- `ActionMacros`: generated `/cast` and `/use` defaults, sound/macro extensions, custom-text detection, and 255-byte validation for Shortcuts, Keys, and Wheel
+- `ActionMacros`: shared classification-aware smart-template rendering and documentation metadata, neutral spell-specific channel guards, dedicated melee/Auto Shot/wand Shoot families, sound/macro extensions, custom-text detection, and 255-byte validation for Shortcuts, Keys, and Wheel
 - `ActionConfig`: shared scrollable action-list scaffold and compact row state used by Healing, Shortcuts, Keys, and Wheel, plus the focused macro editor used by the macro-capable features
 - `UIHelpers`: common buttons, dropdowns, tabs, scrolling, and the shared non-action form scaffold used by Profiles, General, and Macros
-- `BoundActionLayouts`: shared per-spec/per-form typed-action layout engine with feature-specific new-layout policy
+- `BoundActionLayouts`: shared per-spec class-state catalog and typed-action layout engine for native forms, secure stealth fallbacks, and composite Cat/Prowl state
 - `BoundActionBindings`: permanent binding-set-specific transactional claiming, reconciliation, conflict detection, restoration, and cross-feature rollback
 - `BoundActionRuntime`: per-instance Keys/Wheel action evaluation, secure execution, HUD state, and feedback
 - `ActionHud`: the single activation-feedback line shared by Keys and Wheel
@@ -44,7 +44,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `ProfileStore`: account-wide class profiles, legacy SavedVariables migration, portable payload normalization, stable identity, and CRUD/copy/import mutations
 - `ProfileCodec`: native CBOR, Deflate, and URL-safe Base64 profile sharing with versioned metadata and bounded decoding
 - `ProfileConfig`: compact profile selection, management, and copy sections plus export/import preview and confirmation workflows
-- `MacroData`, `MacroLibrary`, `MacroConfig`: immutable universal/current-class combat recipe catalog, validation, filtering, and copy-only presentation
+- `MacroData`, `MacroLibrary`, `MacroConfig`: generated-template and syntax documentation, immutable current-class combat recipes, unified topic validation/filtering, and read-only copy support
 
 ## Invariants
 
@@ -52,12 +52,15 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - Never mutate secure attributes, position, visibility, or mouse state during combat.
 - Keep Keys and Wheel activation-feedback prefixes runtime-only; persisted and edited text is the user-controlled macro body.
 - Keep every `BoundActionRuntime` instance's mutable state inside its factory closure so Keys and Wheel cannot leak buttons, feedback, cooldown state, or binding ownership into each other.
+- Keep class-state saved keys stable and runtime state values ephemeral; preload every native and composite state's secure macro before combat, with composite conditions ordered before their parent form.
+- Limit class-state layouts to secure form or stealth conditions. Ordinary Hunter Aspects, Paladin Auras, arbitrary buffs, and temporary encounter states must not become action layouts.
 - Derive total row height and internal action positioning from `RowGeometry`; Shortcuts stack below the taller of Keys and Wheel, never the sum of both.
 - Keep the visual ticker's range accumulator private and refresh Wheel only once per active visual frame.
 - Keep resolved buff spells, aura matchers, family preferences, icon textures, and secure cast names behind `BuffReminders` APIs rather than session-state fields.
 - Keep shield ledger writes inside `ShieldTracker`; display reads may use aura or rank estimates but must never persist those fallbacks over tracked depletion.
 - Keep known and active HoT tracks inside `HotTracker`; aura scanning, layout, configuration, row display, and visual ticking consume only its explicit APIs.
 - Preserve custom macro text during normalization and migration; regenerate defaults only for new assignments, explicit resets, or legacy entries without macro text.
+- Keep generated-template documentation sourced from `ActionMacros` so the Macros glossary cannot drift from runtime output.
 - Keep Healing actions macro-independent; native secure spell/item actions must retain the clicked health-bar unit.
 - Never call Blizzard Spellbook toggles, replace Spellbook or bag-item scripts, or hook their click handlers; use the minimap action template and destination-based cursor drops.
 - Do not rename saved variables or named secure frames without migration.

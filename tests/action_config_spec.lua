@@ -27,6 +27,10 @@ local function widget()
         self.text = text or ""
         if self.scripts.OnTextChanged then self.scripts.OnTextChanged(self) end
     end
+    function value:UserSetText(text)
+        self.text = text or ""
+        if self.scripts.OnTextChanged then self.scripts.OnTextChanged(self, true) end
+    end
     function value:GetText() return self.text end
     function value:Show() self.shown = true end
     function value:Hide() self.shown = false end
@@ -37,6 +41,7 @@ local function widget()
     function value:IsEnabled() return self.enabled end
     function value:SetFocus() self.focused = true end
     function value:ClearFocus() self.focused = false end
+    function value:HighlightText() self.highlighted = true end
     return value
 end
 
@@ -153,5 +158,34 @@ assert(not overlay:IsShown() and editor:GetText() == "", "Escape did not discard
 config.OpenEditor({ macroText = "/cast Draft", resetText = "/cast Reset", onSave = function() return true end })
 buttons.Cancel.scripts.OnClick()
 assert(not overlay:IsShown() and editor:GetText() == "", "Cancel did not discard the macro draft")
+
+assert(config.OpenViewer({
+    title = "View macro", actionName = "Spam-Safe Wand Shoot",
+    macroText = "/cast !Shoot", copyable = true,
+}), "read-only macro viewer did not open")
+assert(overlay:IsShown() and not editor.focused and editor:GetText() == "/cast !Shoot"
+        and not buttons.Reset:IsShown() and buttons.Cancel.label:GetText() == "Close"
+        and buttons.Save.label:GetText() == "Select to Copy" and buttons.Save:IsEnabled(),
+    "read-only macro viewer did not use the compact viewer controls")
+editor:UserSetText("/say changed")
+assert(editor:GetText() == "/cast !Shoot", "read-only macro viewer accepted edits")
+buttons.Save.scripts.OnClick()
+assert(editor.focused and editor.highlighted and overlay:IsShown(),
+    "read-only macro viewer did not select executable text for copying")
+buttons.Cancel.scripts.OnClick()
+
+config.OpenViewer({
+    title = "View syntax reference", actionName = "Condition placeholders",
+    macroText = "[condition]", copyable = false,
+})
+assert(not buttons.Save:IsEnabled() and buttons.Save.label:GetText() == "Reference only",
+    "reference viewer allowed conceptual syntax to be copied")
+buttons.Cancel.scripts.OnClick()
+
+config.OpenEditor({ macroText = "/cast Renew", resetText = "/cast Renew", onSave = function() return true end })
+assert(buttons.Reset:IsShown() and buttons.Cancel.label:GetText() == "Cancel"
+        and buttons.Save.label:GetText() == "Save",
+    "opening an editor after the viewer did not restore editing controls")
+buttons.Cancel.scripts.OnClick()
 
 print("PASS focused action macro editor")

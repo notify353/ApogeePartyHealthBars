@@ -69,10 +69,11 @@ local function widget()
         GetChecked = function() return false end,
         SetText = function(self, value) self.text = value or "" end,
         GetText = function(self) return self.text or "" end,
+        SetTexture = function(self, value) self.texture = value end,
         SetJustifyH = function(self, value) self.justifyH = value end,
     }
     local noopMethods = {
-        "SetAllPoints", "SetTexture",
+        "SetAllPoints",
         "SetTexCoord", "SetDrawLayer", "SetHorizTile", "SetVertTile",
         "SetFrameStrata",
         "EnableMouseWheel", "SetMovable", "SetClampedToScreen",
@@ -858,6 +859,9 @@ assert(legacyEnabledPreferences.lowHealthSoundKey == "alarm_high",
 assert(ApogeePartyHealthBars_MinimapController.IsCreated(), "minimap controller did not create")
 local minimapButton = assert(_G.ApogeePartyHealthBarsMinimapButton,
     "minimap controller did not expose its button frame")
+assert(minimapButton.icon.texture
+        == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\ApogeePartyHealthBarsLogo.png",
+    "minimap button did not use the packaged Apogee logo")
 minimapButton.scripts.OnDragStart(minimapButton)
 cursorX, cursorY = 200, 100
 minimapButton.scripts.OnUpdate()

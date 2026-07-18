@@ -94,7 +94,7 @@ local function CreateMinimapButton()
 
     local icon = minimapBtn:CreateTexture(nil, "ARTWORK")
     icon:SetSize(20, 20)
-    icon:SetTexture("Interface\\Icons\\Spell_Holy_Heal")
+    icon:SetTexture("Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\ApogeePartyHealthBarsLogo.png")
     icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
     icon:SetPoint("TOPLEFT", minimapBtn, "TOPLEFT", 7, -5)
     minimapBtn.icon = icon

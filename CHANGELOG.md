@@ -20,6 +20,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Replaced the generic minimap healing icon with the Apogee Party Health Bars logo used on CurseForge.
 - Rebuilt player, party, target, and target-of-target displays around one adaptive unit-bar component and isolated client-facing unit APIs behind a compatibility adapter; player self-buffs and target crowd-control visuals now attach as independent utilities.
 - Moved player self-buff reminders into a dedicated utility lane above the health bar so additional independent reminders can be added without shrinking or covering health.
 - Restyled player self-buff and target crowd-control utilities as compact left-aligned accessories, with CC growing rightward and upward instead of floating at the top of the full row.

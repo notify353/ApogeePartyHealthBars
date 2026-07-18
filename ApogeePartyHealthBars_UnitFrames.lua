@@ -6,14 +6,15 @@ local K = ApogeePartyHealthBars_KeyActions
 local B = ApogeePartyHealthBars_MouseButtonActions
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
+local UnitBar = ApogeePartyHealthBars_UnitBar
+local Topology = ApogeePartyHealthBars_UnitTopology
 
 ApogeePartyHealthBars_UnitFrames = {}
 local F = ApogeePartyHealthBars_UnitFrames
 
 function F.Build(D)
     for _, key in ipairs({
-        "rows", "StyleReadableText", "ApplyFlatStatusBar", "ApplyFlatBg",
-        "GetRowTotalHeight", "SyncVisualTicker", "PositionSecureOverlay",
+        "rows", "StyleReadableText", "SyncVisualTicker", "PositionSecureOverlay",
         "ShowSecureFrame", "HideSecureFrame", "SetSecureMouseEnabled", "DeferSecureUpdate",
     }) do
         assert(D[key] ~= nil, "UnitFrames missing dependency: " .. key)
@@ -102,215 +103,30 @@ function F.Build(D)
     rowAnchor:SetPoint("TOPLEFT", panel, "TOPLEFT", C.PAD_H, 0)
     rowAnchor:Show()
     
-    local function CreateBuffIcon(btn, texture)
-        local icon = btn:CreateTexture(nil, "OVERLAY")
-        icon:SetSize(C.BUFF_ICON_SIZE, C.BUFF_ICON_SIZE)
-        icon:SetTexture(texture)
-        icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-        if icon.SetDrawLayer then
-            icon:SetDrawLayer("OVERLAY", 7)
-        end
-        icon:Hide()
-        return icon
-    end
-    
-    local function CreateSecureOverlayButton(namePrefix, frameLevel)
-        S.castBtnSerial = S.castBtnSerial + 1
-        local btn = CreateFrame(
-            "Button", namePrefix .. S.castBtnSerial, UIParent,
-            "SecureUnitButtonTemplate, SecureActionButtonTemplate")
-        btn:SetFrameStrata("TOOLTIP")
-        btn:SetFrameLevel(frameLevel)
-        btn:SetAttribute("useOnKeyDown", false)
-        btn:SetAttribute("checkselfcast", false)
-        btn:SetAttribute("checkfocuscast", false)
-        btn:SetAttribute("checkmouseovercast", false)
-        btn:RegisterForClicks("AnyUp", "AnyDown")
-        btn:Hide()
-        return btn
-    end
-    
-    local function CreateHealthRow(parent)
-        local btn = CreateFrame("Button", nil, parent)
-        btn:SetSize(C.ROW_CONTENT_W, D.GetRowTotalHeight())
-        btn:EnableMouse(false)
-    
-        local targetBtn = CreateFrame("Button", nil, btn)
-        targetBtn:SetSize(C.TARGET_BAR_W, C.TARGET_PANE_H)
-        targetBtn:SetPoint("TOPRIGHT", btn, "TOPRIGHT", 0, 0)
-        targetBtn:EnableMouse(false)
-        targetBtn:Hide()
-    
-        local targetBarBg = targetBtn:CreateTexture(nil, "BACKGROUND")
-        targetBarBg:SetAllPoints()
-        D.ApplyFlatBg(targetBarBg, C.BAR_BG_COLOR)
-    
-        local targetBar = CreateFrame("StatusBar", nil, targetBtn)
-        targetBar:SetAllPoints()
-        D.ApplyFlatStatusBar(targetBar)
-        targetBar:SetMinMaxValues(0, 1)
-        targetBar:SetValue(1)
-    
-        local targetHealPredBar = CreateFrame("StatusBar", nil, targetBar)
-        targetHealPredBar:SetAllPoints()
-        D.ApplyFlatStatusBar(targetHealPredBar)
-        targetHealPredBar:SetStatusBarColor(unpack(C.INCOMING_HEAL_COLOR))
-        targetHealPredBar:SetFrameLevel(targetBar:GetFrameLevel() - 1)
-        targetHealPredBar:Hide()
-    
-        local targetNameFS = targetBar:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-        targetNameFS:SetPoint("LEFT", targetBar, "LEFT", 3, 0)
-        targetNameFS:SetJustifyH("LEFT")
-        targetNameFS:SetWidth(C.TARGET_BAR_W - 12)
-        targetNameFS:SetWordWrap(false)
-        targetNameFS:SetMaxLines(1)
-        D.StyleReadableText(targetNameFS)
+    local function CreateHealthRow(parent, descriptor)
+        local primary = UnitBar.Create(parent)
+        local target = UnitBar.Create(primary.btn)
+        local targetOfTarget = UnitBar.Create(primary.btn)
+        primary:SetUnit(descriptor.tokens[1])
+        target:SetUnit(descriptor.tokens[2])
+        targetOfTarget:SetUnit(descriptor.tokens[3])
 
-        local targetPowerBg = targetBtn:CreateTexture(nil, "BACKGROUND")
-        D.ApplyFlatBg(targetPowerBg, C.BAR_BG_COLOR)
-        targetPowerBg:Hide()
-
-        local targetPowerBar = CreateFrame("StatusBar", nil, targetBtn)
-        D.ApplyFlatStatusBar(targetPowerBar)
-        targetPowerBar:SetMinMaxValues(0, 1)
-        targetPowerBar:SetValue(1)
-        targetPowerBar:Hide()
-    
-        local targetPartyBuffIcon = CreateBuffIcon(targetBtn, C.PARTY_BUFF_ICON_TEXTURE)
-
-        local targetOfTargetBtn = CreateFrame("Frame", nil, btn)
-        targetOfTargetBtn:SetSize(C.TARGET_BAR_W, C.TARGET_OF_TARGET_H)
-        targetOfTargetBtn:EnableMouse(false)
-        targetOfTargetBtn:Hide()
-
-        local targetOfTargetBg = targetOfTargetBtn:CreateTexture(nil, "BACKGROUND")
-        targetOfTargetBg:SetAllPoints()
-        D.ApplyFlatBg(targetOfTargetBg, C.BAR_BG_COLOR)
-
-        local targetOfTargetBar = CreateFrame("StatusBar", nil, targetOfTargetBtn)
-        targetOfTargetBar:SetAllPoints()
-        D.ApplyFlatStatusBar(targetOfTargetBar)
-        targetOfTargetBar:SetMinMaxValues(0, 1)
-        targetOfTargetBar:SetValue(1)
-
-        local targetOfTargetNameFS = targetOfTargetBar:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-        targetOfTargetNameFS:SetPoint("LEFT", targetOfTargetBar, "LEFT", 3, 0)
-        targetOfTargetNameFS:SetWidth(C.TARGET_BAR_W - 8)
-        targetOfTargetNameFS:SetJustifyH("LEFT")
-        targetOfTargetNameFS:SetWordWrap(false)
-        targetOfTargetNameFS:SetMaxLines(1)
-        D.StyleReadableText(targetOfTargetNameFS)
-    
-        local barBg = btn:CreateTexture(nil, "BACKGROUND")
-        barBg:SetPoint("TOPLEFT", btn, "TOPLEFT")
-        barBg:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT", 0, C.MANA_GAP + C.MANA_H)
-        D.ApplyFlatBg(barBg, C.BAR_BG_COLOR)
-    
-        local bar = CreateFrame("StatusBar", nil, btn)
-        bar:SetPoint("TOPLEFT", barBg, "TOPLEFT", 0, 0)
-        bar:SetPoint("BOTTOMRIGHT", barBg, "BOTTOMRIGHT", 0, 0)
-        D.ApplyFlatStatusBar(bar)
-        bar:SetMinMaxValues(0, 1)
-        bar:SetValue(1)
-    
-        local manaBg = btn:CreateTexture(nil, "BACKGROUND")
-        manaBg:SetPoint("BOTTOMLEFT", btn, "BOTTOMLEFT")
-        manaBg:SetPoint("TOPRIGHT", btn, "BOTTOMRIGHT", 0, C.MANA_H)
-        D.ApplyFlatBg(manaBg, C.BAR_BG_COLOR)
-        manaBg:Hide()
-    
-        local manaBar = CreateFrame("StatusBar", nil, btn)
-        manaBar:SetPoint("BOTTOMLEFT", manaBg, "BOTTOMLEFT", 0, 0)
-        manaBar:SetPoint("TOPRIGHT", manaBg, "TOPRIGHT", 0, 0)
-        D.ApplyFlatStatusBar(manaBar)
-        manaBar:SetStatusBarColor(unpack(C.MANA_BAR_COLOR))
-        manaBar:SetMinMaxValues(0, 1)
-        manaBar:SetValue(1)
-        manaBar:Hide()
-    
-        local activePowerBg = btn:CreateTexture(nil, "BACKGROUND")
-        D.ApplyFlatBg(activePowerBg, C.BAR_BG_COLOR)
-        activePowerBg:Hide()
-    
-        local activePowerBar = CreateFrame("StatusBar", nil, btn)
-        activePowerBar:SetPoint("BOTTOMLEFT", activePowerBg, "BOTTOMLEFT", 0, 0)
-        activePowerBar:SetPoint("TOPRIGHT", activePowerBg, "TOPRIGHT", 0, 0)
-        D.ApplyFlatStatusBar(activePowerBar)
-        activePowerBar:SetMinMaxValues(0, 1)
-        activePowerBar:SetValue(1)
-        activePowerBar:Hide()
-    
-        local shieldBar = CreateFrame("StatusBar", nil, bar)
-        shieldBar:SetAllPoints()
-        D.ApplyFlatStatusBar(shieldBar)
-        shieldBar:SetStatusBarColor(unpack(C.SHIELD_BAR_COLOR))
-        shieldBar:SetFrameLevel(bar:GetFrameLevel())
-        shieldBar:Hide()
-    
-        local healPredBar = CreateFrame("StatusBar", nil, bar)
-        healPredBar:SetAllPoints()
-        D.ApplyFlatStatusBar(healPredBar)
-        healPredBar:SetStatusBarColor(unpack(C.INCOMING_HEAL_COLOR))
-        healPredBar:SetFrameLevel(bar:GetFrameLevel() - 1)
-        healPredBar:Hide()
-    
-        local nameFS = bar:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-        nameFS:SetPoint("LEFT", bar, "LEFT", 5, 0)
-        nameFS:SetJustifyH("LEFT")
-        nameFS:SetWidth(C.ROW_CONTENT_W - 12)
-        D.StyleReadableText(nameFS)
-    
-        -- Positions assigned only by RefreshRowBuffs (never static anchors here).
-        local partyBuffIcon      = CreateBuffIcon(btn, C.PARTY_BUFF_ICON_TEXTURE)
-        local selfBuffIcon = CreateBuffIcon(btn, C.SELF_BUFF_ICON_TEXTURE)
-    
-        local hotBg = {}
-        local hotBars = {}
-        for hi = 1, C.MAX_HOT_SLOTS do
-            local bg = btn:CreateTexture(nil, "BACKGROUND")
-            D.ApplyFlatBg(bg, C.BAR_BG_COLOR)
-            bg:Hide()
-            hotBg[hi] = bg
-    
-            local hotBar = CreateFrame("StatusBar", nil, btn)
-            D.ApplyFlatStatusBar(hotBar)
-            hotBar:SetMinMaxValues(0, 1)
-            hotBar:SetValue(1)
-            hotBar:Hide()
-            hotBars[hi] = hotBar
-        end
-    
-        -- Cast overlay on UIParent; positioned via GetRect (never anchor to row.btn).
-        local castBtn = CreateSecureOverlayButton("ApogeePartyHealthBarsCast", 100)
-        local targetCastBtn = CreateSecureOverlayButton("ApogeePartyHealthBarsTargetCast", 100)
-        local partyBuffCastBtn = CreateSecureOverlayButton("ApogeePartyHealthBarsPartyBuff", 101)
-        local targetPartyBuffCastBtn = CreateSecureOverlayButton("ApogeePartyHealthBarsTargetPartyBuff", 101)
-        local selfBuffCastBtn = CreateSecureOverlayButton("ApogeePartyHealthBarsSelfBuff", 102)
-    
-        return {
-            btn = btn, barBg = barBg, bar = bar, shieldBar = shieldBar, healPredBar = healPredBar,
-            nameFS = nameFS, manaBg = manaBg, manaBar = manaBar,
-            activePowerBg = activePowerBg, activePowerBar = activePowerBar,
-            partyBuffIcon = partyBuffIcon, selfBuffIcon = selfBuffIcon,
-            targetBtn = targetBtn, targetBarBg = targetBarBg, targetBar = targetBar,
-            targetHealPredBar = targetHealPredBar,
-            targetNameFS = targetNameFS,
-            targetPowerBg = targetPowerBg, targetPowerBar = targetPowerBar,
-            targetPartyBuffIcon = targetPartyBuffIcon,
-            targetOfTargetBtn = targetOfTargetBtn, targetOfTargetBg = targetOfTargetBg,
-            targetOfTargetBar = targetOfTargetBar, targetOfTargetNameFS = targetOfTargetNameFS,
-            castBtn = castBtn, targetCastBtn = targetCastBtn, partyBuffCastBtn = partyBuffCastBtn,
-            targetPartyBuffCastBtn = targetPartyBuffCastBtn, selfBuffCastBtn = selfBuffCastBtn,
-            hotBg = hotBg, hotBars = hotBars,
-            showTargetPane = false,
+        local row = {
+            unitId = descriptor.owner,
+            primary = primary,
+            target = target,
+            targetOfTarget = targetOfTarget,
+            surfaces = { primary, target, targetOfTarget },
+            btn = primary.btn,
         }
+
+        return row
     end
-    
+
     for i = 1, C.MAX_ROWS do
-        rows[i] = CreateHealthRow(panel)
-        rows[i].unitId = C.SLOT_UNITS[i]
+        rows[i] = CreateHealthRow(panel, Topology.GetRow(i))
     end
-    T.Attach(rows[1], {
+    T.Attach({ player = rows[1].primary.btn, target = rows[1].target.btn }, {
         RequestLayout = S.RequestLayoutUpdate,
         SyncTicker = D.SyncVisualTicker,
         PositionSecureOverlay = D.PositionSecureOverlay,
@@ -320,11 +136,13 @@ function F.Build(D)
         DeferSecureUpdate = D.DeferSecureUpdate,
         AssignCursorDrop = D.AssignCursorDrop,
     })
-    W.Attach(rows[1])
-    K.Attach(rows[1])
-    B.Attach(rows[1])
-    M.Attach(rows[1])
-    H.Attach(rows, D.SyncVisualTicker)
+    W.Attach(rows[1].primary)
+    K.Attach(rows[1].primary)
+    B.Attach(rows[1].primary)
+    M.Attach(rows[1].target)
+    local primarySurfaces = {}
+    for index = 1, C.MAX_ROWS do primarySurfaces[index] = rows[index].primary end
+    H.Attach(primarySurfaces, D.SyncVisualTicker)
     
     
     -- =============================================================================

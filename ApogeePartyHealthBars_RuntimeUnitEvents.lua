@@ -25,7 +25,7 @@ function U.Register(eventRouter, deps)
                     if panelUnit ~= unit then
                         A.InvalidateUnitAuraCache(panelUnit)
                     end
-                    deps.ShieldTrackerSyncUnit(panelUnit)
+                    deps.ShieldTrackerSyncUnit(unit)
                     if deps.AuraEventNeedsLayout(panelUnit) then
                         S.RequestLayoutUpdate()
                     else
@@ -44,23 +44,19 @@ function U.Register(eventRouter, deps)
 
             elseif event == "UNIT_DISPLAYPOWER" then
                 if deps.IsPanelTrackedUnit(unit) then
-                    if unit == "player" then
-                        T.Refresh(false)
-                        S.RequestLayoutUpdate()
-                    else
-                        S.RequestValuesUpdate(deps.ResolvePanelUnit(unit))
-                    end
+                    if unit == "player" then T.Refresh(false) end
+                    S.RequestLayoutUpdate()
                 end
-
-            elseif event == "UNIT_MAXPOWER" and unit == "player" then
-                T.Refresh(false)
-                S.RequestLayoutUpdate()
 
             elseif event == "UNIT_POWER_UPDATE" or event == "UNIT_POWER_FREQUENT"
                 or event == "UNIT_MAXPOWER" then
                 if deps.IsPanelTrackedUnit(unit) then
                     if unit == "player" then T.Refresh(false) end
-                    S.RequestValuesUpdate(deps.ResolvePanelUnit(unit))
+                    if event == "UNIT_MAXPOWER" then
+                        S.RequestLayoutUpdate()
+                    else
+                        S.RequestValuesUpdate(deps.ResolvePanelUnit(unit))
+                    end
                 end
 
             elseif event == "UNIT_CONNECTION" then
@@ -69,7 +65,7 @@ function U.Register(eventRouter, deps)
                 end
 
             elseif event == "UNIT_TARGET" then
-                if unit == "player" or unit == "target" or (unit and unit:match("^party%d$")) then
+                if deps.IsPanelTrackedUnit(unit) then
                     S.RequestLayoutUpdate()
                 end
             end

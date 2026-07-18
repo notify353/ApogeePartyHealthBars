@@ -8,6 +8,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
+- Added aligned party target-of-target bars with the same healing, resource, shield, incoming-heal, HoT, range, buff-reminder, and secure click behavior as every other unit bar.
 - Added contextual Middle, Mouse Button 4, and Mouse Button 5 actions: unit-frame clicks retain native Healing targeting while nine Normal/Shift/Ctrl bindings provide Wheel-style combat actions elsewhere, with a 3×3 HUD to the right of Wheel and full profile support.
 
 - Added smart generated spell macros with self-channel protection, spam-safe Shoot and Auto Shot behavior, and an in-addon Macros glossary covering templates, syntax, application, and tradeoffs.
@@ -19,6 +20,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Rebuilt player, party, target, and target-of-target displays around one adaptive unit-bar component and isolated client-facing unit APIs behind a compatibility adapter; player self-buffs and target crowd-control visuals now attach as independent utilities.
 - Limited automatic enemy targeting and `/startattack` to confirmed attack families; ordinary spells now use a neutral self-channel-safe cast, while melee Attack, Auto Shot, and wand Shoot receive dedicated templates.
 - Expanded macro documentation with mouseover and focus targeting, `/stopattack`, cursor casting, help/harm and modifier choices, stealth protection, queued next-swing attacks, and castsequence limitations.
 - Compacted Macros documentation topics and moved exact macro and syntax bodies into a focused read-only Macro dialog.

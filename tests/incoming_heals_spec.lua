@@ -44,10 +44,15 @@ incomingHeals.Initialize({
         return featureEnabled
     end,
     IsConfigMode = function() return configMode end,
+    IsTrackedUnit = function(unitId)
+        return unitId ~= "focus"
+    end,
 })
 
 assert(incomingHeals.IsEnabled(), "incoming-heal feature state was not forwarded")
-for _, unitId in ipairs({ "player", "target", "party1", "party1target" }) do
+for _, unitId in ipairs({ "player", "target", "party1", "party1target", "targettarget",
+    "party1targettarget" }) do
+    existing[unitId] = true
     assert(incomingHeals.ShouldTrackUnit(unitId), unitId .. " was rejected")
 end
 assert(not incomingHeals.ShouldTrackUnit("focus"), "untracked unit was accepted")

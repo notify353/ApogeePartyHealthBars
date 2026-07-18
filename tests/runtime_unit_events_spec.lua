@@ -71,13 +71,13 @@ assert(optional.RAID_TARGET_UPDATE.owner == "RaidMarkers"
     "visual event owners changed")
 
 dispatch("UNIT_AURA", "party1")
-expect({ "invalidate:party1", "invalidate:target", "shield:target", "layout" },
+expect({ "invalidate:party1", "invalidate:target", "shield:party1", "layout" },
     "aura alias invalidation or layout request changed")
 
 reset()
 auraNeedsLayout = false
 dispatch("UNIT_ABSORB_AMOUNT_CHANGED", "party1")
-expect({ "invalidate:party1", "invalidate:target", "shield:target", "values:target" },
+expect({ "invalidate:party1", "invalidate:target", "shield:party1", "values:target" },
     "absorb alias invalidation or values request changed")
 
 reset()
@@ -91,7 +91,7 @@ dispatch("UNIT_DISPLAYPOWER", "player")
 expect({ "shortcut:false", "layout" }, "player display-power handling changed")
 reset()
 dispatch("UNIT_DISPLAYPOWER", "party1")
-expect({ "values:target" }, "party display-power alias handling changed")
+expect({ "layout" }, "adaptive party display-power handling changed")
 
 reset()
 dispatch("UNIT_MAXPOWER", "player")

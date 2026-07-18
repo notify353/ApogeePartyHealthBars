@@ -82,14 +82,15 @@ local function CreateMarkerButton(parent, definition)
     return button
 end
 
-function M.Attach(playerRow)
-    assert(playerRow and playerRow.btn and playerRow.targetBtn, "RaidMarkers requires the player row and target pane")
+function M.Attach(targetSurface)
+    assert(targetSurface and targetSurface.btn, "RaidMarkers requires the current-target surface")
+    local anchor = targetSurface.btn
     for position, definition in ipairs(MARKERS) do
-        local button = CreateMarkerButton(playerRow.btn, definition)
-        button:SetFrameLevel((playerRow.btn:GetFrameLevel() or 0) + 10)
+        local button = CreateMarkerButton(targetSurface.btn, definition)
+        button:SetFrameLevel((targetSurface.btn:GetFrameLevel() or 0) + 10)
         button:SetPoint(
             "BOTTOMRIGHT",
-            playerRow.targetBtn,
+            anchor,
             "TOPRIGHT",
             -((position - 1) * (ICON_SIZE + ICON_GAP)),
             3)

@@ -6,7 +6,7 @@ Compact five-player healing frames for World of Warcraft Anniversary and Burning
 
 - Player and party health, power, shields, incoming heals, HoTs, and threat
 - Selectable sound and threshold when the player or a party member drops low on health
-- Inline unit targets and target-of-target health
+- Uniform player, party, target, and target-of-target healing bars
 - Secure spell/item click-casting and clickable buff reminders
 - Player Shortcuts for spells, abilities, bandages, food, potions, and other usable items
 - A fixed 15-key action cluster for `1`–`5`, `Q/E/R/T`, `F/G`, and `Z/X/C/V`
@@ -29,6 +29,8 @@ Interface/AddOns/ApogeePartyHealthBars/ApogeePartyHealthBars.toc
 ## Use
 
 Left-click the minimap button to open settings; the Spellbook opens alongside it. The defaults place the Spellbook on the left, settings just left of center, and party bars at the upper-right so all three remain visible; moved positions are preserved per profile. In the Healing tab, drag a healing or cleansing spell or a usable item from an open bag onto the click you want to assign. Bag items also support WoW's native click-to-pick-up flow: click the item, then click its destination. Healing uses native secure spell and item actions so the action targets the party unit whose health bar you click. Use Up or Dn to swap an assignment with the adjacent fixed click gesture, and Clear to remove it; right-click clearing remains available as a shortcut.
+
+When Unit target bars are enabled, every player and party row reserves aligned columns for its immediate target and target-of-target. Existing units use the same health, adaptive power, shield, incoming-heal, HoT, range, offline, party-buff, and Healing-click behavior as the primary bars. Player-only action HUDs and the self-buff reminder remain attached to the player, while crowd-control Shortcuts and raid-marker controls remain attached to the current target.
 
 Settings open on General and proceed from the add-on's core behavior through Healing, Keys, Wheel, Buttons, Shortcuts, and Macros, with profile administration last. The Profiles tab groups the current profile, copy, and sharing workflows into compact sections. A profile contains all feature settings, action assignments, custom macros, sounds, and the positions of the bars, settings window, and minimap button. Use New for addon defaults, Duplicate to branch from an existing setup, or Copy to Active to replace the active profile while retaining its name. Profile changes are blocked in combat and reload the UI after safely restoring owned Keys, Wheel, and Buttons bindings.
 

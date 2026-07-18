@@ -21,8 +21,9 @@ local selfBuffPreferenceOptions = {}
 
 function B.Initialize(deps)
     for _, key in ipairs({
-        "Auras", "Effects", "rows", "IsSavedFeatureEnabled", "IsConfigMode",
+        "Auras", "Effects", "IsSavedFeatureEnabled", "IsConfigMode",
         "GetCharacterSavedVariables", "ApplyAllSelfBuffBindings", "RequestLayoutUpdate",
+        "GetSurfaces", "SetSelfBuffIconTexture",
     }) do
         assert(deps[key] ~= nil, "BuffReminders missing dependency: " .. key)
     end
@@ -31,10 +32,8 @@ end
 
 local function ApplyPartyBuffIconTexture(texture)
     if not texture then return end
-    for i = 1, C.MAX_ROWS do
-        local row = D.rows[i]
-        if row and row.partyBuffIcon then row.partyBuffIcon:SetTexture(texture) end
-        if row and row.targetPartyBuffIcon then row.targetPartyBuffIcon:SetTexture(texture) end
+    for _, surface in ipairs(D.GetSurfaces()) do
+        if surface.partyBuffIcon then surface.partyBuffIcon:SetTexture(texture) end
     end
 end
 
@@ -141,10 +140,7 @@ local function InitSelfBuffSpell()
         end)
     end
 
-    for i = 1, C.MAX_ROWS do
-        local row = D.rows[i]
-        if row and row.selfBuffIcon then row.selfBuffIcon:SetTexture(selfBuffIconTexture) end
-    end
+    D.SetSelfBuffIconTexture(selfBuffIconTexture)
 end
 
 local function ConfigureAuraMatchers()

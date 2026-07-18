@@ -83,7 +83,7 @@ assert(not valid and tostring(validationError):find("Auras", 1, true),
 tracker.Initialize({
     Auras = Auras,
     Effects = Effects,
-    rows = rows,
+    GetSurfaces = function() return rows end,
     SyncVisualTicker = function() syncCount = syncCount + 1 end,
     IsSavedFeatureEnabled = function(key) return featureEnabled[key] ~= false end,
     GetSavedVariables = function() return saved end,

@@ -48,10 +48,6 @@ end
 dofile("ApogeePartyHealthBars_BuffReminders.lua")
 local tracker = ApogeePartyHealthBars_BuffReminders
 local secureRefreshes = 0
-local rows = {}
-for i = 1, ApogeePartyHealthBars_C.MAX_ROWS do
-    rows[i] = { selfBuffIcon = widget() }
-end
 
 ApogeePartyHealthBars_S.RequestLayoutUpdate = function() end
 local accountSaved, characterSaved = {}, {}
@@ -62,12 +58,13 @@ ApogeePartyHealthBars_S.charSv = characterSaved
 tracker.Initialize({
     Auras = ApogeePartyHealthBars_Auras,
     Effects = ApogeePartyHealthBars_Effects,
-    rows = rows,
+    GetSurfaces = function() return {} end,
     IsSavedFeatureEnabled = function() return true end,
     IsConfigMode = function() return false end,
     GetCharacterSavedVariables = function() return characterSaved end,
     ApplyAllSelfBuffBindings = function() secureRefreshes = secureRefreshes + 1 end,
     RequestLayoutUpdate = function() end,
+    SetSelfBuffIconTexture = function() end,
 })
 
 local expectedFamilies = {

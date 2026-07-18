@@ -79,10 +79,11 @@ local function Icon()
     return icon
 end
 
-local rows = {
-    { partyBuffIcon = Icon(), targetPartyBuffIcon = Icon(), selfBuffIcon = Icon() },
-    { partyBuffIcon = Icon(), targetPartyBuffIcon = Icon(), selfBuffIcon = Icon() },
+local surfaces = {
+    { partyBuffIcon = Icon() }, { partyBuffIcon = Icon() },
+    { partyBuffIcon = Icon() }, { partyBuffIcon = Icon() },
 }
+local selfBuffTexture
 local characterSaved = { selfBuffSelections = {} }
 local secureRefreshes, layoutRequests = 0, 0
 
@@ -96,12 +97,13 @@ assert(not valid and tostring(validationError):find("Auras", 1, true),
 reminders.Initialize({
     Auras = Auras,
     Effects = Effects,
-    rows = rows,
+    GetSurfaces = function() return surfaces end,
     IsSavedFeatureEnabled = function(key) return featureEnabled[key] ~= false end,
     IsConfigMode = function() return configMode end,
     GetCharacterSavedVariables = function() return characterSaved end,
     ApplyAllSelfBuffBindings = function() secureRefreshes = secureRefreshes + 1 end,
     RequestLayoutUpdate = function() layoutRequests = layoutRequests + 1 end,
+    SetSelfBuffIconTexture = function(texture) selfBuffTexture = texture end,
 })
 reminders.RefreshKnownSpells()
 
@@ -110,12 +112,11 @@ assert(reminders.IsPartyKnown() and reminders.IsSelfKnown() and reminders.HasKno
 assert(reminders.GetPartyCastSpellName() == "Power Word: Fortitude"
         and reminders.GetSelfCastSpellName() == "Inner Fire",
     "secure cast names changed")
-for _, row in ipairs(rows) do
-    assert(row.partyBuffIcon.texture == "party-icon"
-            and row.targetPartyBuffIcon.texture == "party-icon"
-            and row.selfBuffIcon.texture == "self-icon",
-        "resolved reminder textures were not propagated")
+for _, surface in ipairs(surfaces) do
+    assert(surface.partyBuffIcon.texture == "party-icon",
+        "resolved party reminder texture was not propagated")
 end
+assert(selfBuffTexture == "self-icon", "resolved self reminder texture was not delegated")
 assert(configuredMatchers[1][100] and configuredMatchers[2]["Power Word: Fortitude"]
         and configuredMatchers[3][200] and configuredMatchers[4]["Inner Fire"],
     "resolved aura matchers were not forwarded")

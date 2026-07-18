@@ -48,8 +48,8 @@ function GameTooltip:SetOwner() end
 
 dofile("ApogeePartyHealthBars_RaidMarkers.lua")
 local markers = ApogeePartyHealthBars_RaidMarkers
-local rowBtn, targetBtn = widget(), widget()
-markers.Attach({ btn = rowBtn, targetBtn = targetBtn })
+local targetBtn = widget()
+markers.Attach({ btn = targetBtn })
 
 local skull, cross, moon = markers.GetButton(1), markers.GetButton(2), markers.GetButton(3)
 assert(skull and cross and moon and #created == 3, "expected skull, cross, and moon marker buttons")

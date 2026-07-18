@@ -104,7 +104,7 @@ dofile("ApogeePartyHealthBars_ShortcutBar.lua")
 local shortcuts = ApogeePartyHealthBars_ShortcutBar
 local playerBtn, targetBtn = widget(), widget()
 local deferred = 0
-shortcuts.Attach({ btn = playerBtn, targetBtn = targetBtn }, {
+shortcuts.Attach({ player = playerBtn, target = targetBtn }, {
     RequestLayout = function() end, SyncTicker = function() end,
     PositionSecureOverlay = function() return true end,
     ShowSecureFrame = function(frame) frame:Show() end,

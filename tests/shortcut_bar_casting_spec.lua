@@ -143,7 +143,7 @@ local deferred = 0
 local layoutRequests = 0
 local geometryNeedsLayout = false
 local droppedFeature, droppedSlot
-shortcuts.Attach({ btn = widget() }, {
+shortcuts.Attach({ player = widget(), target = widget() }, {
     RequestLayout = function()
         layoutRequests = layoutRequests + 1
         geometryNeedsLayout = false

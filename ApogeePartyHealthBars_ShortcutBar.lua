@@ -8,7 +8,7 @@ local Items = ApogeePartyHealthBars_ShortcutItems
 ApogeePartyHealthBars_ShortcutBar = {}
 local T = ApogeePartyHealthBars_ShortcutBar
 
-local row, requestLayout, syncTicker, handleCursorDrop
+local anchors, requestLayout, syncTicker, handleCursorDrop
 local positionSecureOverlay, showSecureFrame, hideSecureFrame, setSecureMouseEnabled, deferSecureUpdate
 local icons = {}
 local dropIcon
@@ -594,12 +594,22 @@ function T.GetHeight(unitId)
         + C.SHORTCUT_TOP_GAP
 end
 
+function T.GetLaneHeight(lane)
+    local showDrop = lane == "player" and S.configMode and T.FindFirstEmptySlot() ~= nil
+    local count = (visibleLaneCounts[lane] or 0) + (showDrop and 1 or 0)
+    if not IsEnabled() or count <= 0 then return 0 end
+    local rowCount = math.ceil(count / C.SHORTCUT_COLUMNS)
+    return rowCount * C.SHORTCUT_ICON_SIZE
+        + math.max(0, rowCount - 1) * C.SHORTCUT_ICON_GAP
+        + C.SHORTCUT_TOP_GAP
+end
+
 function T.IsActive()
     return IsEnabled() and visibleCount > 0
 end
 
 function T.Layout(topOffset)
-    if not row then return end
+    if not anchors then return end
     if topOffset == nil and ApogeePartyHealthBars_WheelMacros then
         topOffset = ApogeePartyHealthBars_WheelMacros.GetHeight("player")
     end
@@ -613,7 +623,7 @@ function T.Layout(topOffset)
         icon:ClearAllPoints()
         if IsEnabled() and info then
             local lane = info.lane or "player"
-            local anchor = lane == "target" and row.targetBtn or row.btn
+            local anchor = anchors[lane] or anchors.player
             local lanePosition = lanePositions[lane]
             local column = lanePosition % C.SHORTCUT_COLUMNS
             local gridRow = math.floor(lanePosition / C.SHORTCUT_COLUMNS)
@@ -634,7 +644,7 @@ function T.Layout(topOffset)
             local column = lanePosition % C.SHORTCUT_COLUMNS
             local gridRow = math.floor(lanePosition / C.SHORTCUT_COLUMNS)
             dropIcon:ClearAllPoints()
-            dropIcon:SetPoint("TOPLEFT", row.btn, "TOPLEFT", column * stride,
+            dropIcon:SetPoint("TOPLEFT", anchors.player, "TOPLEFT", column * stride,
                 -topOffset - gridRow * stride)
             dropIcon:Show()
         else
@@ -645,7 +655,7 @@ function T.Layout(topOffset)
 end
 
 function T.Refresh(suppressSound)
-    if not row then return end
+    if not anchors then return end
     local entries = GetEntries()
     local now = GetTime and GetTime() or 0
     local soundPlayed = false
@@ -733,8 +743,9 @@ function T.RefreshItemInfo()
     T.Refresh(false)
 end
 
-function T.Attach(playerRow, callbacks)
-    row = playerRow
+function T.Attach(playerAnchors, callbacks)
+    anchors = assert(playerAnchors)
+    assert(anchors.player and anchors.target, "ShortcutBar requires player and target anchors")
     requestLayout = callbacks and callbacks.RequestLayout
     syncTicker = callbacks and callbacks.SyncTicker
     positionSecureOverlay = assert(callbacks and callbacks.PositionSecureOverlay)
@@ -743,8 +754,8 @@ function T.Attach(playerRow, callbacks)
     setSecureMouseEnabled = assert(callbacks and callbacks.SetSecureMouseEnabled)
     deferSecureUpdate = assert(callbacks and callbacks.DeferSecureUpdate)
     handleCursorDrop = callbacks and callbacks.AssignCursorDrop
-    for i = 1, MAX_DISPLAY_ICONS do icons[i] = CreateIcon(row.btn) end
-    dropIcon = CreateDropIcon(row.btn)
+    for i = 1, MAX_DISPLAY_ICONS do icons[i] = CreateIcon(anchors.player) end
+    dropIcon = CreateDropIcon(anchors.player)
 end
 
 function T.Initialize()

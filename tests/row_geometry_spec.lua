@@ -15,6 +15,8 @@ function UnitPowerMax(_, requestedType)
     if requestedType == powerType then return activeMax end
     return 0
 end
+function UnitPower() return 0 end
+function UnitExists() return true end
 
 local hotHeight = 0
 local shortcutHeight, wheelHeight, keyHeight, mouseHeight = 0, 0, 0, 0
@@ -24,6 +26,7 @@ local function PlayerOnlyHeight(value)
     end
 end
 
+dofile("ApogeePartyHealthBars_UnitAPI.lua")
 dofile("ApogeePartyHealthBars_RowGeometry.lua")
 local geometry = ApogeePartyHealthBars_RowGeometry
 
@@ -78,12 +81,12 @@ assert(returnedType == 1 and returnedToken == "RAGE"
 hotHeight = 13
 assert(geometry.GetRowTotalHeight({ unitId = "player" }) == 264,
     "HoT strip or table-based player unit was omitted")
-assert(geometry.GetRowPowerChromeHeight("party1") == 7,
-    "non-player row inherited the player's extra power strip")
+assert(geometry.GetRowPowerChromeHeight("party1") == 14,
+    "non-player row did not use the shared adaptive resource rule")
 assert(geometry.GetActionAreaHeight("party1") == 0,
     "non-player row reserved player-only action height")
-assert(geometry.GetRowTotalHeight("party1") == 60,
-    "non-player row height did not include base, HoT, and one power strip")
+assert(geometry.GetRowTotalHeight("party1") == 67,
+    "non-player row height did not include adaptive power chrome")
 
 powerType, powerToken, activeMax = 0, "MANA", 100
 assert(geometry.GetRowPowerChromeHeight("player") == 7,

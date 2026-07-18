@@ -98,21 +98,13 @@ local function ApplyAllBindings()
 
     for i = 1, C.MAX_ROWS do
         local row = D.rows[i]
-        if row.btn:IsShown() and UnitExists(row.unitId)
-            and (not UnitIsConnected or UnitIsConnected(row.unitId))
-            and castingEnabled then
-            ApplyClickBindings(row.castBtn, row.unitId, true, row.btn)
-        else
-            ApplyClickBindings(row.castBtn, row.unitId, false, row.btn)
-        end
-
-        local targetUnitId = row.showTargetPane and D.GetUnitTargetToken(row.unitId) or nil
-        if row.btn:IsShown() and targetUnitId and UnitExists(targetUnitId)
-            and (not UnitIsConnected or UnitIsConnected(targetUnitId))
-            and castingEnabled then
-            ApplyClickBindings(row.targetCastBtn, targetUnitId, true, row.targetBtn)
-        else
-            ApplyClickBindings(row.targetCastBtn, nil, false, row.targetBtn)
+        for _, surface in ipairs(row.surfaces) do
+            local active = row.btn:IsShown() and surface.visible ~= false
+                and surface.unitId and UnitExists(surface.unitId)
+                and (not UnitIsConnected or UnitIsConnected(surface.unitId))
+                and castingEnabled
+            ApplyClickBindings(
+                surface.castBtn, surface.unitId, active, surface.btn)
         end
     end
 end

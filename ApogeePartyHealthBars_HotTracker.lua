@@ -51,9 +51,8 @@ local function RefreshKnownSpells()
     end)
 
     D.Auras.ConfigureHotMatchers(activeTracks)
-    for i = 1, C.MAX_ROWS do
-        local row = D.rows[i]
-        if row and row.hotMeta then wipe(row.hotMeta) end
+    for _, surface in ipairs(D.GetSurfaces()) do
+        if surface.hotMeta then wipe(surface.hotMeta) end
     end
     D.SyncVisualTicker()
 end
@@ -64,8 +63,7 @@ end
 
 local function HasActiveVisuals()
     if not IsEnabled() or not D.IsSavedFeatureEnabled("enabled") then return false end
-    for i = 1, C.MAX_ROWS do
-        local row = D.rows[i]
+    for _, row in ipairs(D.GetSurfaces()) do
         if row and row.btn and row.btn:IsShown() and row.hotMeta then
             for j = 1, C.MAX_HOT_SLOTS do
                 if row.hotMeta[j] then return true end
@@ -94,8 +92,7 @@ end
 local function TickVisuals()
     if not D.IsSavedFeatureEnabled("enabled") then return end
     if IsEnabled() then
-        for i = 1, C.MAX_ROWS do
-            local row = D.rows[i]
+        for _, row in ipairs(D.GetSurfaces()) do
             if row and row.btn:IsShown() then
                 TickRowVisuals(row)
             end
@@ -164,7 +161,7 @@ end
 
 function H.Initialize(deps)
     for _, key in ipairs({
-        "Auras", "Effects", "rows", "SyncVisualTicker",
+        "Auras", "Effects", "GetSurfaces", "SyncVisualTicker",
         "IsSavedFeatureEnabled", "GetSavedVariables",
     }) do
         assert(deps[key] ~= nil, "HotTracker missing dependency: " .. key)

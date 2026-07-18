@@ -254,8 +254,7 @@ ApogeePartyHealthBars_C = {
             },
         },
     },
-    TARGET_GAP           = 2,
-    TARGET_OF_TARGET_H   = 26, -- matches ROW_H; kept explicit for Lua table initialization
+    UNIT_COLUMN_GAP      = 2,
     SHIELD_BAR_COLOR     = { 0.15, 0.85, 1.00, 1 },
     INCOMING_HEAL_COLOR  = { 0.25, 0.78, 0.35, 0.65 },
     MANA_BAR_COLOR       = { 0.32, 0.52, 0.88, 1 },
@@ -400,8 +399,7 @@ for spellId in pairs(C.PW_SHIELD_RANKS) do
 end
 C.MAX_HOT_SLOTS  = #C.HOT_SPELL_DEFINITIONS
 C.ROW_CONTENT_W  = C.FRAME_W - C.PAD_H * 2
-C.TARGET_BAR_W   = C.ROW_CONTENT_W
-C.TARGET_PANE_H  = C.ROW_H + C.MANA_GAP + C.MANA_H
+C.UNIT_BAR_W     = C.ROW_CONTENT_W
 C.BUFF_SLOT_STEP = C.BUFF_ICON_SIZE + C.BUFF_SLOT_GAP
 
 for _, mod in ipairs(C.MODIFIERS) do

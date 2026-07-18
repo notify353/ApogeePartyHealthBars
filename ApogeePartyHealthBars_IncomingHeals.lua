@@ -5,7 +5,7 @@ local X = ApogeePartyHealthBars_IncomingHeals
 local D
 
 function X.Initialize(deps)
-    for _, key in ipairs({ "IsSavedFeatureEnabled", "IsConfigMode" }) do
+    for _, key in ipairs({ "IsSavedFeatureEnabled", "IsConfigMode", "IsTrackedUnit" }) do
         assert(deps[key] ~= nil, "IncomingHeals missing dependency: " .. key)
     end
     D = deps
@@ -19,9 +19,7 @@ function X.ShouldTrackUnit(unitId)
     if not unitId or not UnitExists(unitId) or UnitIsDeadOrGhost(unitId) then
         return false
     end
-    if unitId == "player" or unitId == "target" then return true end
-    if unitId:match("^party%d$") or unitId:match("^party%dtarget$") then return true end
-    return false
+    return D.IsTrackedUnit(unitId)
 end
 
 function X.GetAmount(unitId)

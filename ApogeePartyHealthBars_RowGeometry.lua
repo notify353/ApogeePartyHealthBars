@@ -1,4 +1,5 @@
 local C = ApogeePartyHealthBars_C
+local API = ApogeePartyHealthBars_UnitAPI
 
 ApogeePartyHealthBars_RowGeometry = {}
 local G = ApogeePartyHealthBars_RowGeometry
@@ -26,14 +27,9 @@ function G.GetPlayerPowerInfo()
     return powerType, powerToken, manaMax, activeMax
 end
 
-local function PlayerHasSeparateActivePower()
-    local powerType, _, manaMax, activeMax = G.GetPlayerPowerInfo()
-    return powerType ~= C.MANA_POWER and manaMax > 0 and activeMax > 0
-end
-
 function G.GetRowPowerChromeHeight(rowOrUnit)
     local unitId = ResolveUnitId(rowOrUnit)
-    local stripCount = unitId == "player" and PlayerHasSeparateActivePower() and 2 or 1
+    local stripCount = #API.GetPowerChannels(unitId)
     return stripCount * C.MANA_H + stripCount * C.MANA_GAP
 end
 
@@ -45,7 +41,15 @@ function G.GetActionAreaHeight(rowOrUnit)
 end
 
 function G.GetRowTotalHeight(rowOrUnit)
-    return C.ROW_H + D.GetHotStripHeight()
-        + G.GetRowPowerChromeHeight(rowOrUnit)
+    if type(rowOrUnit) == "table" and rowOrUnit.surfaces then
+        local surfaceHeight = C.ROW_H
+        for _, surface in ipairs(rowOrUnit.surfaces) do
+            if surface.visible or surface == rowOrUnit.primary then
+                surfaceHeight = math.max(surfaceHeight, surface:GetHeight())
+            end
+        end
+        return surfaceHeight + G.GetActionAreaHeight(rowOrUnit)
+    end
+    return C.ROW_H + D.GetHotStripHeight() + G.GetRowPowerChromeHeight(rowOrUnit)
         + G.GetActionAreaHeight(rowOrUnit)
 end

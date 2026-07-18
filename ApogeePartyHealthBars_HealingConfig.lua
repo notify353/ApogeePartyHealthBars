@@ -30,8 +30,8 @@ function H.Refresh()
         end
     end
     hintFS:SetText(S.selectedBindingKey
-        and "|cff00ff00Selected.|r Shift-click a Spellbook spell or usable bag item."
-        or  "Select a row, then Shift-click a Spellbook spell or usable bag item. Right-click to clear.")
+        and "|cff00ff00Selected.|r Drop a Spellbook spell or usable bag item onto this row."
+        or  "Drop a Spellbook spell or usable bag item onto a click row. Right-click to clear.")
 end
 
 function H.Build(parent, deps)
@@ -108,18 +108,26 @@ function H.Build(parent, deps)
 
         button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
         button:SetScript("OnClick", function(_, mouseButton)
+            local cursorType = GetCursorInfo and GetCursorInfo()
+            if mouseButton ~= "RightButton" and (cursorType == "spell" or cursorType == "item")
+                and D.AssignCursorDrop then
+                D.AssignCursorDrop("healing", slotKey)
+                return
+            end
             if mouseButton == "RightButton" then
                 D.ClearBinding(slotKey)
             else
                 S.selectedBindingKey = slotKey
                 S.selectedShortcutSlot = nil
                 S.focusedKeySlot = nil
-                S.selectedKeySlot = nil
                 S.selectedKeyLayout = nil
                 S.selectedWheelSlot = nil
                 S.selectedWheelLayout = nil
                 H.Refresh()
             end
+        end)
+        button:SetScript("OnReceiveDrag", function()
+            if D.AssignCursorDrop then D.AssignCursorDrop("healing", slotKey) end
         end)
 
         slotRows[i] = { btn = button, bg = bg, accent = accent, actionFS = actionFS }

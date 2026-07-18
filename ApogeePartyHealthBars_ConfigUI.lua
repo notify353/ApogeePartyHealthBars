@@ -87,7 +87,6 @@ local function SetConfigTab(tabName)
     if S.configTab ~= tabName then
         S.selectedBindingKey = nil
         S.selectedShortcutSlot = nil
-        S.selectedKeySlot = nil
         S.selectedWheelSlot = nil
     end
     S.configTab = tabName

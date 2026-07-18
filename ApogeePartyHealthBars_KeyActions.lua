@@ -32,5 +32,5 @@ ApogeePartyHealthBars_KeyActions = Factory.Create({
         claimedMessage = "Keys bindings claimed.",
         releasedMessage = "Keys bindings restored.",
     },
-    allSlotsMessage = "All 15 Keys are assigned. Select a key to replace or clear one.",
+    allSlotsMessage = "All 15 Keys are assigned. Drop onto a key to replace it or clear one.",
 })

@@ -450,6 +450,11 @@ function Factory.Create(options)
             local entry = W.GetSlot(W.GetActiveLayoutKey(), slot.id)
             if hasMacro(entry) then showActivationFeedback(slot) end
         end)
+        castButton:SetScript("OnReceiveDrag", function()
+            if D and D.AssignCursorDrop then
+                D.AssignCursorDrop(options.featureId, slot.id, W.GetActiveLayoutKey())
+            end
+        end)
         castButton:Hide()
         icon.castButton = castButton
         return castButton

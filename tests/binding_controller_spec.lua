@@ -1,20 +1,16 @@
 ApogeePartyHealthBars_C = {
     BINDING_SLOTS = {
         { key = "1", label = "Left Click" },
+        { key = "2", label = "Right Click" },
     },
 }
 ApogeePartyHealthBars_S = {
-    configMode = true,
     selectedBindingKey = "1",
     selectedShortcutSlot = nil,
     focusedKeySlot = nil,
-    selectedKeySlot = nil,
     selectedKeyLayout = nil,
     selectedWheelSlot = nil,
     selectedWheelLayout = nil,
-    configTab = "healing",
-    spellbookHooked = false,
-    containerItemsHooked = false,
 }
 
 local assignedShortcutSpell, assignedShortcutItem
@@ -58,36 +54,17 @@ ApogeePartyHealthBars_ShortcutItems = {
     GetInfo = function(itemId) if itemId == 1251 then return "Linen Bandage" end end,
 }
 
-local spellButton = { scripts = {} }
-function spellButton:GetName() return "SpellButton1" end
-function spellButton:GetParent() return nil end
-function spellButton:HookScript(script, callback) self.scripts[script] = callback end
-SpellButton1 = spellButton
-
 local inCombat = false
-local shiftDown = false
 function InCombatLockdown() return inCombat end
-function IsShiftKeyDown() return shiftDown end
-local containerHook
-function ContainerFrameItemButton_OnModifiedClick() end
-function hooksecurefunc(name, callback)
-    assert(name == "ContainerFrameItemButton_OnModifiedClick")
-    containerHook = callback
+local cursorInfo, clearedCursorCount = nil, 0
+function GetCursorInfo()
+    if not cursorInfo then return nil end
+    return cursorInfo[1], cursorInfo[2], cursorInfo[3], cursorInfo[4]
 end
-C_Container = { GetContainerItemID = function(bag, slot)
-    assert(bag == 0 and slot == 4)
-    return 1251
-end }
-local bagParent = { GetID = function() return 0 end }
-local itemButton = {
-    GetParent = function() return bagParent end,
-    GetID = function() return 4 end,
-}
-StackSplitFrame = {
-    shown = true,
-    IsShown = function(self) return self.shown end,
-    Hide = function(self) self.shown = false end,
-}
+function ClearCursor()
+    cursorInfo = nil
+    clearedCursorCount = clearedCursorCount + 1
+end
 
 dofile("ApogeePartyHealthBars_BindingController.lua")
 local controller = ApogeePartyHealthBars_BindingController
@@ -108,7 +85,10 @@ controller.Initialize({
     ForceRefresh = function() refreshes = refreshes + 1 end,
     Print = function() end,
     SyncVisualTicker = function() end,
-    GetSpellFromSpellButton = function() return 2061, "Flash Heal" end,
+    GetSpellFromCursor = function(slot, bookType, spellId)
+        assert(slot == 7 and bookType == "spell" and spellId == 133)
+        return 133, "Fireball(Rank 1)"
+    end,
     GetConfigUI = function()
         return {
             RefreshShortcutPanel = function(slot) refreshedShortcutSlot = slot end,
@@ -118,124 +98,78 @@ controller.Initialize({
     end,
 })
 
-assert(type(controller.HookSpellbook) == "function", "spellbook post-hook was not exposed")
-assert(type(controller.HookContainerItems) == "function", "bag-item post-hook was not exposed")
-assert(controller.OpenSpellbook == nil, "binding controller directly opens the Blizzard spellbook")
-assert(controller.HookSpellbook(), "spellbook button was not found")
-assert(type(spellButton.scripts.OnClick) == "function", "secure OnClick post-hook was not installed")
-assert(spellButton.scripts.PreClick == nil, "taint-prone PreClick hook was installed")
-assert(controller.HookContainerItems() and type(containerHook) == "function",
-    "container item modified-click post-hook was not installed")
+assert(controller.HookSpellbook == nil and controller.HookContainerItems == nil,
+    "binding controller still exposes modified-click hooks")
 
-spellButton.scripts.OnClick(spellButton)
-assert(bindings["1"] == nil, "ordinary spell click changed a binding")
-shiftDown = true
-spellButton.scripts.OnClick(spellButton)
-assert(bindings["1"] and bindings["1"].kind == "spell"
-    and bindings["1"].spellId == 2061 and bindings["1"].spellName == "Flash Heal",
-    "secure post-hook did not assign a click binding")
-assert(refreshes == 2, "binding assignment did not refresh its settings and frames")
+cursorInfo = { "spell", 7, "spell", 133 }
+assert(controller.AssignCursor("keys", "keyR", "base")
+    and assignedKeySpell.layout == "base" and assignedKeySpell.slot == "keyR"
+    and assignedKeySpell.spellId == 133 and assignedKeySpell.spellName == "Fireball(Rank 1)",
+    "spell cursor did not assign directly to a Keys destination")
+assert(ApogeePartyHealthBars_S.focusedKeySlot == "keyR" and refreshedKeySlot == "keyR",
+    "Keys spell drop did not focus and refresh its destination")
+assert(clearedCursorCount == 1 and cursorInfo == nil,
+    "successful spell drop did not clear the cursor")
 
-ApogeePartyHealthBars_S.selectedBindingKey = nil
-ApogeePartyHealthBars_S.selectedShortcutSlot = 3
-ApogeePartyHealthBars_S.configTab = "shortcuts"
-spellButton.scripts.OnClick(spellButton)
-assert(assignedShortcutSpell and assignedShortcutSpell.slot == 3
-    and assignedShortcutSpell.spellId == 2061 and assignedShortcutSpell.spellName == "Flash Heal",
-    "secure post-hook did not assign a Shortcut spell")
-assert(refreshedShortcutSlot == 3, "Shortcuts refresh did not receive the actual replacement slot")
-assignedShortcutSpell = nil
-spellButton.scripts.OnClick(spellButton)
-assert(assignedShortcutSpell and assignedShortcutSpell.slot == nil,
-    "Shortcuts tab did not allow smart assignment without an armed row")
-assert(refreshedShortcutSlot == 1, "Shortcuts refresh did not receive the actual appended slot")
+cursorInfo = { "item", 1251 }
+assert(controller.AssignCursor("keys", "keyG", "removed-layout")
+    and assignedKeyItem.layout == "base" and assignedKeyItem.slot == "keyG"
+    and assignedKeyItem.itemId == 1251 and refreshedKeySlot == "keyG",
+    "item cursor did not assign to Keys with an active-layout fallback")
 
-containerHook(itemButton)
-assert(assignedShortcutItem and assignedShortcutItem.slot == nil
-    and assignedShortcutItem.itemId == 1251 and assignedShortcutItem.itemName == "Linen Bandage",
-    "bag post-hook did not assign an item Shortcut")
-assert(refreshedShortcutSlot == 2, "Shortcuts refresh did not receive the item slot")
-assert(not StackSplitFrame.shown, "Shortcut item assignment left Blizzard's Shift-click split dialog open")
-
-ApogeePartyHealthBars_S.selectedShortcutSlot = nil
-ApogeePartyHealthBars_S.selectedWheelSlot = "shiftUp"
-ApogeePartyHealthBars_S.selectedWheelLayout = "removed-layout"
-ApogeePartyHealthBars_S.configTab = "wheel"
-spellButton.scripts.OnClick(spellButton)
-assert(assignedWheelSpell and assignedWheelSpell.layout == "base" and assignedWheelSpell.slot == "shiftUp"
-    and assignedWheelSpell.spellId == 2061 and assignedWheelSpell.spellName == "Flash Heal",
-    "secure post-hook did not assign a wheel spell")
-assert(refreshedWheelSlot == "shiftUp", "Wheel refresh did not receive the actual replacement gesture")
-assignedWheelSpell = nil
-spellButton.scripts.OnClick(spellButton)
-assert(assignedWheelSpell and assignedWheelSpell.layout == "base" and assignedWheelSpell.slot == nil,
-    "Wheel tab did not allow smart assignment without an armed row")
-assert(refreshedWheelSlot == "ctrlUp", "Wheel refresh did not receive the actual first-empty gesture")
-StackSplitFrame.shown = true
-containerHook(itemButton)
-assert(assignedWheelItem and assignedWheelItem.layout == "base" and assignedWheelItem.slot == nil
+cursorInfo = { "item", 1251 }
+assert(controller.AssignCursor("wheel", "ctrlDown", "base")
+    and assignedWheelItem.layout == "base" and assignedWheelItem.slot == "ctrlDown"
     and assignedWheelItem.itemId == 1251,
-    "bag post-hook did not assign a Wheel item")
-assert(refreshedWheelSlot == "normalDown", "Wheel refresh did not receive the item gesture")
-assert(not StackSplitFrame.shown, "Wheel item assignment left Blizzard's Shift-click split dialog open")
+    "item cursor did not assign directly to a Wheel destination")
+assert(refreshedWheelSlot == "ctrlDown", "Wheel item drop did not refresh its destination")
 
-ApogeePartyHealthBars_S.selectedWheelSlot = nil
-ApogeePartyHealthBars_S.selectedKeySlot = "keyF"
-ApogeePartyHealthBars_S.selectedKeyLayout = "removed-layout"
-ApogeePartyHealthBars_S.configTab = "keys"
-spellButton.scripts.OnClick(spellButton)
-assert(assignedKeySpell and assignedKeySpell.layout == "base" and assignedKeySpell.slot == "keyF"
-    and assignedKeySpell.spellId == 2061 and assignedKeySpell.spellName == "Flash Heal",
-    "secure post-hook did not assign a Keys spell")
-assert(ApogeePartyHealthBars_S.focusedKeySlot == "keyF"
-    and ApogeePartyHealthBars_S.selectedKeySlot == nil and refreshedKeySlot == "keyF",
-    "Keys assignment did not retain focus and clear its replacement arm")
-assignedKeySpell = nil
-spellButton.scripts.OnClick(spellButton)
-assert(assignedKeySpell and assignedKeySpell.layout == "base" and assignedKeySpell.slot == nil,
-    "Keys tab did not allow smart assignment without an armed tile")
-assert(ApogeePartyHealthBars_S.focusedKeySlot == "key1" and refreshedKeySlot == "key1",
-    "Keys smart assignment did not focus its actual first-empty key")
-StackSplitFrame.shown = true
-containerHook(itemButton)
-assert(assignedKeyItem and assignedKeyItem.layout == "base" and assignedKeyItem.slot == nil
-    and assignedKeyItem.itemId == 1251,
-    "bag post-hook did not assign a Keys item")
-assert(ApogeePartyHealthBars_S.focusedKeySlot == "keyG" and refreshedKeySlot == "keyG",
-    "Keys item assignment did not focus its actual key")
-assert(not StackSplitFrame.shown, "Keys item assignment left Blizzard's Shift-click split dialog open")
+cursorInfo = { "spell", 7, "spell", 133 }
+assert(controller.AssignCursor("shortcuts", nil)
+    and assignedShortcutSpell.slot == nil and assignedShortcutSpell.spellId == 133,
+    "spell cursor did not use the empty Shortcut destination")
+assert(refreshedShortcutSlot == 1, "Shortcut drop did not refresh its assigned slot")
 
-ApogeePartyHealthBars_S.configTab = "healing"
-ApogeePartyHealthBars_S.selectedBindingKey = "1"
-assignedShortcutItem, assignedKeyItem, assignedWheelItem = nil, nil, nil
-StackSplitFrame.shown = true
-containerHook(itemButton)
-assert(bindings["1"] and bindings["1"].kind == "item"
-    and bindings["1"].itemId == 1251 and bindings["1"].itemName == "Linen Bandage",
-    "Healing did not accept a usable bag item")
-assert(assignedShortcutItem == nil and assignedKeyItem == nil and assignedWheelItem == nil,
-    "Healing item assignment leaked into another action feature")
-assert(not StackSplitFrame.shown, "Healing item assignment left Blizzard's Shift-click split dialog open")
-assert(refreshes == 4, "Healing item assignment did not refresh its settings and secure frames")
+cursorInfo = { "item", 1251 }
+assert(controller.AssignCursor("shortcuts", 2)
+    and assignedShortcutItem.slot == 2 and assignedShortcutItem.itemId == 1251,
+    "item cursor did not replace a Shortcut destination")
 
-ApogeePartyHealthBars_S.selectedBindingKey = nil
-bindings["1"] = nil
-containerHook(itemButton)
-assert(bindings["1"] == nil, "Healing assigned an item without an armed click row")
+cursorInfo = { "spell", 7, "spell", 133 }
+assert(controller.AssignCursor("healing", "2")
+    and bindings["2"] and bindings["2"].kind == "spell" and bindings["2"].spellId == 133,
+    "spell cursor did not assign directly to a Healing click row")
+assert(ApogeePartyHealthBars_S.selectedBindingKey == "2",
+    "Healing spell drop left a different click row selected")
 
-ApogeePartyHealthBars_S.configTab = "general"
-ApogeePartyHealthBars_S.selectedBindingKey = "1"
-spellButton.scripts.OnClick(spellButton)
-containerHook(itemButton)
-assert(bindings["1"] == nil,
-    "a stale Healing selection assigned an action from a non-action settings tab")
+cursorInfo = { "item", 1251 }
+assert(controller.AssignCursor("healing", "1")
+    and bindings["1"] and bindings["1"].kind == "item" and bindings["1"].itemId == 1251,
+    "item cursor did not assign directly to a Healing click row")
+assert(ApogeePartyHealthBars_S.selectedBindingKey == "1",
+    "Healing item drop left a different click row selected")
+assert(refreshes == 4, "Healing cursor assignments did not refresh settings and secure frames")
+
+local beforeRejectedDrop = clearedCursorCount
+cursorInfo = { "macro", 3 }
+assert(not controller.AssignCursor("shortcuts", 1)
+    and clearedCursorCount == beforeRejectedDrop and cursorInfo ~= nil,
+    "unsupported cursor payload was consumed")
+
+local assignKeySpell = ApogeePartyHealthBars_KeyActions.AssignSpell
+ApogeePartyHealthBars_KeyActions.AssignSpell = function()
+    return false, "that key position is unavailable."
+end
+cursorInfo = { "spell", 7, "spell", 133 }
+assert(not controller.AssignCursor("keys", "keyQ", "base")
+    and clearedCursorCount == beforeRejectedDrop and cursorInfo ~= nil,
+    "destination-rejected cursor payload was consumed")
+ApogeePartyHealthBars_KeyActions.AssignSpell = assignKeySpell
 
 inCombat = true
-ApogeePartyHealthBars_S.configTab = "shortcuts"
-assignedShortcutSpell, assignedShortcutItem = nil, nil
-spellButton.scripts.OnClick(spellButton)
-containerHook(itemButton)
-assert(assignedShortcutSpell == nil and assignedShortcutItem == nil,
-    "Shortcut assignment ran in combat")
+cursorInfo = { "spell", 7, "spell", 133 }
+assert(not controller.AssignCursor("keys", "keyQ", "base")
+    and clearedCursorCount == beforeRejectedDrop and cursorInfo ~= nil,
+    "combat cursor drop changed an action or consumed the cursor")
 
-print("PASS shortcut Shift-click routing and taint guard")
+print("PASS cursor-drop action routing")

@@ -8,6 +8,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
+- Added native drag-and-drop assignment from the Spellbook and open bags onto Healing rows plus Shortcuts, Keys, and Wheel settings or HUD positions, including WoW-style click-pick/click-place for bag items in settings.
 - Added account-wide, class-specific named profiles with safe switching, New, Duplicate, Rename, Delete, Copy From, and complete portable settings including Healing, Shortcuts, Keys, Wheel, macros, sounds, and UI positions.
 - Added compressed, versioned profile share strings with author and addon metadata, import previews, class validation, and Create, Merge, or Replace workflows.
 

@@ -317,6 +317,7 @@ function F.Build(D)
         HideSecureFrame = D.HideSecureFrame,
         SetSecureMouseEnabled = D.SetSecureMouseEnabled,
         DeferSecureUpdate = D.DeferSecureUpdate,
+        AssignCursorDrop = D.AssignCursorDrop,
     })
     W.Attach(rows[1])
     K.Attach(rows[1])

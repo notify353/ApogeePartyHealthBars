@@ -51,6 +51,9 @@ function ApogeePartyHealthBars_UIHelpers.SetButtonEnabled(button, enabled)
 end
 
 local rows, editorOptions, closeCount = {}, nil, 0
+local droppedFeature, droppedSlot, droppedLayout
+local cursorType
+function GetCursorInfo() return cursorType end
 ApogeePartyHealthBars_ActionConfig = {}
 function ApogeePartyHealthBars_ActionConfig.CreateActionRow()
     local row = widget()
@@ -124,6 +127,10 @@ local config = ApogeePartyHealthBars_WheelConfig
 config.Build(widget(), {
     WheelMacros = wheel,
     Sounds = { GetOptions = function() return { { key = "none", label = "None" } } end },
+    AssignCursorDrop = function(feature, slot, layout)
+        droppedFeature, droppedSlot, droppedLayout = feature, slot, layout
+        return true
+    end,
 })
 
 assert(#rows == 6, "permanent Wheel did not keep all action rows visible")
@@ -133,9 +140,20 @@ assert(rows[1].secondary.text:find("Spell", 1, true)
     and rows[3].secondary.text:find("Item", 1, true),
     "Wheel rows did not identify Spell and Item records")
 
+rows[4].scripts.OnReceiveDrag()
+assert(droppedFeature == "wheel" and droppedSlot == "normalDown" and droppedLayout == "base",
+    "Wheel row did not route a cursor drop to its selected layout")
+
+cursorType = "item"
+droppedFeature, droppedSlot, droppedLayout = nil, nil, nil
+rows[4].scripts.OnClick()
+assert(droppedFeature == "wheel" and droppedSlot == "normalDown" and droppedLayout == "base",
+    "Wheel row did not accept a picked-up bag item")
+cursorType = nil
+
 rows[1].scripts.OnClick()
 assert(ApogeePartyHealthBars_S.selectedWheelSlot == "ctrlUp" and rows[1].selected,
-    "occupied Wheel row did not arm replacement")
+    "occupied Wheel row was not selected")
 rows[1].macro.scripts.OnClick()
 assert(editorOptions and editorOptions.macroText == "/cast Charge"
     and editorOptions.resetText == "/default Charge", "Wheel Macro button did not open the focused editor")
@@ -155,7 +173,7 @@ local layoutDropdown = dropdowns[1]
 layoutDropdown.onSelect("battle")
 assert(ApogeePartyHealthBars_S.selectedWheelLayout == "battle"
     and ApogeePartyHealthBars_S.selectedWheelSlot == nil and closeCount > 0,
-    "layout change did not cancel editing and replacement state")
+    "layout change did not cancel editing and row selection")
 
 rows[1].scripts.OnClick()
 rows[1].macro.scripts.OnClick()
@@ -164,6 +182,6 @@ currentSpec = "2"
 config.Refresh()
 assert(editorOptions == nil and closeCount > closesBeforeSpecChange
     and ApogeePartyHealthBars_S.selectedWheelSlot == nil,
-    "talent-spec change retained a stale Wheel draft or replacement selection")
+    "talent-spec change retained a stale Wheel draft or row selection")
 
 print("PASS compact wheel action configuration")

@@ -29,7 +29,7 @@ local function selectedLayout()
     return S.selectedWheelLayout
 end
 
-local function armReplacement(slotId)
+local function selectRow(slotId)
     if not W.GetSlot(selectedLayout(), slotId) then return end
     S.selectedWheelSlot = S.selectedWheelSlot == slotId and nil or slotId
     S.selectedBindingKey = nil
@@ -70,11 +70,11 @@ function WC.Refresh(assignedSlot)
 
     if S.selectedWheelSlot and not W.GetSlot(layoutKey, S.selectedWheelSlot) then S.selectedWheelSlot = nil end
     if S.selectedWheelSlot then
-        hint:SetText("|cff00ff00Selected for replacement.|r Shift-click a Spellbook spell or bag item.")
+        hint:SetText("|cff00ff00Selected.|r Drop a Spellbook spell or bag item onto this row, or edit its macro and sound.")
     elseif not W.FindFirstEmptySlot(layoutKey) then
-        hint:SetText("All six Wheel gestures are assigned. Select a row to replace it or Clear one.")
+        hint:SetText("All six Wheel gestures are assigned. Drop onto a row to replace it or Clear one.")
     else
-        hint:SetText("All six wheel gestures are reserved while the addon is enabled. Shift-click to fill the first empty gesture.")
+        hint:SetText("Drag a Spellbook spell or bag item directly onto a Wheel gesture.")
     end
 
     local order = W.GetDisplayOrder()
@@ -92,7 +92,7 @@ function WC.Refresh(assignedSlot)
             entry and 1 or 0.45)
         local kindLabel = entry and (entry.kind == "item" and "Item" or "Spell") or "Empty"
         row.secondary:SetText(S.selectedWheelSlot == slotId
-            and ((DISPLAY_LABELS[slotId] or slotId) .. " — " .. kindLabel .. " — Shift-click to replace")
+            and ((DISPLAY_LABELS[slotId] or slotId) .. " — " .. kindLabel .. " — Selected")
             or ((DISPLAY_LABELS[slotId] or slotId) .. " — " .. kindLabel))
         if entry then
             row.sound:SetSelectedKey(W.GetSlotSoundKey(layoutKey, slotId) or "none")
@@ -141,7 +141,19 @@ function WC.Build(parent, deps)
         local boundSlotId = slotId
         local row = AC.CreateActionRow(tab, C.CONFIG_CONTENT_W)
         row.sound:SetOptions(D.Sounds.GetOptions(true))
-        row:SetScript("OnClick", function() armReplacement(boundSlotId) end)
+        row:SetScript("OnClick", function()
+            local cursorType = GetCursorInfo and GetCursorInfo()
+            if (cursorType == "spell" or cursorType == "item") and D.AssignCursorDrop then
+                D.AssignCursorDrop("wheel", boundSlotId, selectedLayout())
+                return
+            end
+            selectRow(boundSlotId)
+        end)
+        row:SetScript("OnReceiveDrag", function()
+            if D.AssignCursorDrop then
+                D.AssignCursorDrop("wheel", boundSlotId, selectedLayout())
+            end
+        end)
         row.sound:SetSelectionCallback(function(soundKey)
             local layoutKey = selectedLayout()
             if not W.GetSlot(layoutKey, boundSlotId) then return end

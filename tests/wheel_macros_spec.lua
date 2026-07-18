@@ -178,6 +178,7 @@ assert(data.PRESETS == nil and data.GetPreset == nil and data.BuildMacro == nil,
     "wheel data still exposes class-preset behavior")
 
 local layouts = 0
+local droppedFeature, droppedSlot, droppedLayout
 wheel.Configure({
     Print = function() end,
     RequestLayout = function() layouts = layouts + 1 end,
@@ -185,6 +186,10 @@ wheel.Configure({
     ShowSecureFrame = function(frame) frame:Show() end,
     HideSecureFrame = function(frame) frame:Hide() end,
     SetSecureMouseEnabled = function(frame, enabled) frame:EnableMouse(enabled) end,
+    AssignCursorDrop = function(feature, slot, layout)
+        droppedFeature, droppedSlot, droppedLayout = feature, slot, layout
+        return true
+    end,
 })
 wheel.Attach({ btn = widget() })
 wheel.InitializeSaved()
@@ -246,7 +251,7 @@ for index, slot in ipairs(data.SLOTS) do
         "manual setup failed for " .. slot.id)
 end
 local wheelOverflow, wheelOverflowMessage = wheel.AssignSpell(PRIMARY, nil, nil, "Overflow Wheel Spell")
-assert(not wheelOverflow and wheelOverflowMessage:find("Select a row", 1, true),
+assert(not wheelOverflow and wheelOverflowMessage:find("Drop onto a gesture", 1, true),
     "full Wheel layout did not instruct the user to replace or clear a gesture")
 wheel.SetSlotSound(PRIMARY, "ctrlUp", "toast")
 assert(wheel.ApplyMacro(PRIMARY, "ctrlUp", "/cast Custom Ctrl Action"))
@@ -480,6 +485,10 @@ for _, slot in ipairs(data.SLOTS) do
         and castButton.attributes.macrotext == button.attributes.macrotext,
         "wheel HUD icon does not execute the same macro as its wheel binding")
 end
+
+wheel.GetHudCastButton("normalUp").scripts.OnReceiveDrag()
+assert(droppedFeature == "wheel" and droppedSlot == "normalUp" and droppedLayout == PRIMARY,
+    "Wheel HUD icon did not route a cursor drop to its active layout")
 
 normalUpIcon.castButton.scripts.OnMouseDown(normalUpIcon.castButton)
 local clickedSlot, clickedFeedbackEnd = wheel.GetLastActivation()

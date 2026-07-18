@@ -8,9 +8,10 @@ local Items = ApogeePartyHealthBars_ShortcutItems
 ApogeePartyHealthBars_ShortcutBar = {}
 local T = ApogeePartyHealthBars_ShortcutBar
 
-local row, requestLayout, syncTicker
+local row, requestLayout, syncTicker, handleCursorDrop
 local positionSecureOverlay, showSecureFrame, hideSecureFrame, setSecureMouseEnabled, deferSecureUpdate
 local icons = {}
+local dropIcon
 local resolved = {}
 local resolvedSlots = {}
 local previousStates = {}
@@ -339,6 +340,38 @@ local function CreateIcon(parent)
             button.shortcutReason, { { text = "Click to use", r = 0.3, g = 1, b = 0.3 } })
     end)
     castButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    castButton:SetScript("OnReceiveDrag", function()
+        local info = button.shortcutInfo
+        if info and info.slot and handleCursorDrop then
+            handleCursorDrop("shortcuts", info.slot)
+        end
+    end)
+    return button
+end
+
+local function CreateDropIcon(parent)
+    local button = CreateFrame("Button", nil, parent)
+    button:SetSize(C.SHORTCUT_ICON_SIZE, C.SHORTCUT_ICON_SIZE)
+    button:EnableMouse(true)
+    local texture = button:CreateTexture(nil, "ARTWORK")
+    texture:SetPoint("TOPLEFT", 2, -2)
+    texture:SetPoint("BOTTOMRIGHT", -2, 2)
+    texture:SetTexture(QUESTION_MARK_ICON)
+    texture:SetDesaturated(true)
+    texture:SetAlpha(0.55)
+    button.border = CreateBorder(button, 0)
+    for _, edge in ipairs(button.border) do edge:SetColorTexture(0.45, 0.45, 0.48, 1) end
+    button:SetScript("OnReceiveDrag", function()
+        if handleCursorDrop then handleCursorDrop("shortcuts", T.FindFirstEmptySlot()) end
+    end)
+    button:SetScript("OnEnter", function(self)
+        if not GameTooltip then return end
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText("Drop a Spellbook spell or usable bag item", 1, 0.82, 0)
+        GameTooltip:Show()
+    end)
+    button:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
+    button:Hide()
     return button
 end
 
@@ -551,8 +584,10 @@ local function PlayReadySound(key)
 end
 
 function T.GetHeight(unitId)
-    if unitId ~= "player" or not IsEnabled() or visibleCount <= 0 then return 0 end
-    local laneCount = math.max(visibleLaneCounts.player or 0, visibleLaneCounts.target or 0)
+    local showDrop = S.configMode and T.FindFirstEmptySlot() ~= nil
+    if unitId ~= "player" or not IsEnabled() or (visibleCount <= 0 and not showDrop) then return 0 end
+    local laneCount = math.max((visibleLaneCounts.player or 0) + (showDrop and 1 or 0),
+        visibleLaneCounts.target or 0)
     local rowCount = math.ceil(laneCount / C.SHORTCUT_COLUMNS)
     return rowCount * C.SHORTCUT_ICON_SIZE
         + math.max(0, rowCount - 1) * C.SHORTCUT_ICON_GAP
@@ -591,6 +626,19 @@ function T.Layout(topOffset)
             lanePositions[lane] = lanePosition + 1
         else
             icon:Hide()
+        end
+    end
+    if dropIcon then
+        if IsEnabled() and S.configMode and T.FindFirstEmptySlot() then
+            local lanePosition = lanePositions.player
+            local column = lanePosition % C.SHORTCUT_COLUMNS
+            local gridRow = math.floor(lanePosition / C.SHORTCUT_COLUMNS)
+            dropIcon:ClearAllPoints()
+            dropIcon:SetPoint("TOPLEFT", row.btn, "TOPLEFT", column * stride,
+                -topOffset - gridRow * stride)
+            dropIcon:Show()
+        else
+            dropIcon:Hide()
         end
     end
     T.RefreshSecureActions()
@@ -690,7 +738,9 @@ function T.Attach(playerRow, callbacks)
     hideSecureFrame = assert(callbacks and callbacks.HideSecureFrame)
     setSecureMouseEnabled = assert(callbacks and callbacks.SetSecureMouseEnabled)
     deferSecureUpdate = assert(callbacks and callbacks.DeferSecureUpdate)
+    handleCursorDrop = callbacks and callbacks.AssignCursorDrop
     for i = 1, MAX_DISPLAY_ICONS do icons[i] = CreateIcon(row.btn) end
+    dropIcon = CreateDropIcon(row.btn)
 end
 
 function T.Initialize()
@@ -732,7 +782,7 @@ function T.AssignSpell(slot, spellID, spellName)
     if not entries then return false, "Shortcuts are not initialized." end
     slot = slot or T.FindFirstEmptySlot()
     if not slot then
-        return false, "All Shortcut positions are assigned. Select a row to replace or clear one."
+        return false, "All Shortcut positions are assigned. Drop onto a row to replace it or clear one."
     end
     if type(slot) ~= "number" or slot ~= math.floor(slot)
         or slot < 1 or slot > C.SHORTCUT_MAX_SLOTS or slot > #entries + 1 then
@@ -760,7 +810,7 @@ function T.AssignItem(slot, itemID, itemName)
     if not entries then return false, "Shortcuts are not initialized." end
     slot = slot or T.FindFirstEmptySlot()
     if not slot then
-        return false, "All Shortcut positions are assigned. Select a row to replace or clear one."
+        return false, "All Shortcut positions are assigned. Drop onto a row to replace it or clear one."
     end
     if type(slot) ~= "number" or slot ~= math.floor(slot)
         or slot < 1 or slot > C.SHORTCUT_MAX_SLOTS or slot > #entries + 1 then

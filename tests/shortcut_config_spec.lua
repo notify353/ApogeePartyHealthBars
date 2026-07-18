@@ -84,6 +84,9 @@ ApogeePartyHealthBars_ActionMacros = {
     GetName = function(entry) return entry.kind == "item" and entry.itemName or entry.spellName end,
 }
 local previewed
+local droppedFeature, droppedSlot
+local cursorType
+function GetCursorInfo() return cursorType end
 local shortcuts = {}
 function shortcuts.GetSlots() return entries end
 function shortcuts.GetSlotDisplay(slot)
@@ -112,6 +115,10 @@ dofile("ApogeePartyHealthBars_ShortcutConfig.lua")
 ApogeePartyHealthBars_ShortcutConfig.Build(widget(), {
     ShortcutBar = shortcuts,
     Sounds = { GetOptions = function() return { { key = "none", label = "None" } } end },
+    AssignCursorDrop = function(feature, slot)
+        droppedFeature, droppedSlot = feature, slot
+        return true
+    end,
 })
 
 assert(#rows == 12 and rows[1]:IsShown() and rows[2]:IsShown() and not rows[3]:IsShown(),
@@ -123,12 +130,26 @@ assert(rows[1].macro.label.text == "Macro" and rows[2].macro.label.text == "Macr
 assert(rows[1].secondary.text == "Spell" and rows[2].secondary.text == "Item",
     "Shortcuts rows did not identify Spell and Item records")
 local addRow = buttons[#buttons]
-assert(addRow:IsShown() and not addRow:IsEnabled(), "Shortcuts tab did not show one passive Add row")
+assert(addRow:IsShown() and addRow:IsEnabled(), "Shortcuts tab did not expose an active drop row")
+
+rows[1].scripts.OnReceiveDrag()
+assert(droppedFeature == "shortcuts" and droppedSlot == 1,
+    "occupied Shortcut row did not route a cursor drop to its slot")
+addRow.scripts.OnReceiveDrag()
+assert(droppedFeature == "shortcuts" and droppedSlot == nil,
+    "Shortcut add row did not route a cursor drop to smart assignment")
+
+cursorType = "item"
+droppedFeature, droppedSlot = nil, false
+addRow.scripts.OnClick()
+assert(droppedFeature == "shortcuts" and droppedSlot == nil,
+    "Shortcut add row did not accept a picked-up bag item")
+cursorType = nil
 
 rows[1].scripts.OnClick()
 assert(ApogeePartyHealthBars_S.selectedShortcutSlot == 1 and rows[1].selected
     and ApogeePartyHealthBars_S.selectedBindingKey == nil and ApogeePartyHealthBars_S.selectedWheelSlot == nil,
-    "occupied Shortcut row did not exclusively arm replacement")
+    "occupied Shortcut row was not selected exclusively")
 rows[1].macro.scripts.OnClick()
 assert(editorOptions and editorOptions.macroText == "/cast Charge(Rank 1)"
     and editorOptions.resetText == "/default Charge(Rank 1)",

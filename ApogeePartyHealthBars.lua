@@ -85,8 +85,6 @@ local SetSavedFeature
 local RefreshConfigPanel
 local ApplyAllBindings
 local RefreshBindPanel
-local HookSpellbook
-local HookContainerItems
 local ApplyAllSecureBindings
 local ReconcileBoundActionBindings
 local EnsureMinimapButton
@@ -323,6 +321,12 @@ local GetBindingAction = bindingStore.GetAction
 local GetBindingDisplayName = bindingStore.GetDisplayName
 local GetBindingsTable = bindingStore.GetTable
 
+local function AssignCursorDrop(feature, slot, layoutKey)
+    local controller = ApogeePartyHealthBars_BindingController
+    return controller and controller.AssignCursor
+        and controller.AssignCursor(feature, slot, layoutKey) or false
+end
+
 W.Configure({
     Print = Print,
     RequestLayout = S.RequestLayoutUpdate,
@@ -331,6 +335,7 @@ W.Configure({
     ShowSecureFrame = ShowSecureFrame,
     HideSecureFrame = HideSecureFrame,
     SetSecureMouseEnabled = SetSecureMouseEnabled,
+    AssignCursorDrop = AssignCursorDrop,
 })
 K.Configure({
     Print = Print,
@@ -340,6 +345,7 @@ K.Configure({
     ShowSecureFrame = ShowSecureFrame,
     HideSecureFrame = HideSecureFrame,
     SetSecureMouseEnabled = SetSecureMouseEnabled,
+    AssignCursorDrop = AssignCursorDrop,
 })
 
 
@@ -355,6 +361,7 @@ local unitFrames = ApogeePartyHealthBars_UnitFrames.Build({
     HideSecureFrame = HideSecureFrame,
     SetSecureMouseEnabled = SetSecureMouseEnabled,
     DeferSecureUpdate = DeferSecureUpdate,
+    AssignCursorDrop = AssignCursorDrop,
 })
 panel = unitFrames.panel
 rows = unitFrames.rows
@@ -576,7 +583,7 @@ end
 secureFrames.InitializeReconciler(ReconcileAllSecureOverlays)
 
 local playerSpells = ApogeePartyHealthBars_PlayerSpells
-local GetSpellFromSpellButton = playerSpells.GetSpellFromButton
+local GetSpellFromCursor = playerSpells.GetSpellFromCursor
 
 
 local bindingController = ApogeePartyHealthBars_BindingController
@@ -588,12 +595,10 @@ bindingController.Initialize({
     ForceRefresh = ForceRefresh,
     Print = Print,
     SyncVisualTicker = SyncVisualTicker,
-    GetSpellFromSpellButton = GetSpellFromSpellButton,
+    GetSpellFromCursor = GetSpellFromCursor,
     GetConfigUI = function() return configUI end,
 })
 local ClearBinding = bindingController.ClearBinding
-HookSpellbook = bindingController.HookSpellbook
-HookContainerItems = bindingController.HookContainerItems
 
 -- Minimap controller
 minimapController = ApogeePartyHealthBars_MinimapController
@@ -662,8 +667,6 @@ configController.Initialize({
     SavePosition = SavePosition,
     UpdateHeader = function() UpdateHeader() end,
     UpdateMinimapButtonStyle = UpdateMinimapButtonStyle,
-    HookSpellbook = function() HookSpellbook() end,
-    HookContainerItems = function() HookContainerItems() end,
     ScheduleSecureReconcile = secureFrames.RequestReconcile,
     ClaimBoundActionBindings = ClaimBoundActionBindings,
     ReleaseBoundActionBindings = ReleaseBoundActionBindings,
@@ -686,6 +689,7 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
     GetBinding                  = S.GetBinding,
     ClearBinding                = ClearBinding,
     Sounds                     = ApogeePartyHealthBars_Sounds,
+    AssignCursorDrop           = AssignCursorDrop,
     ShortcutBar               = T,
     KeyActions                = K,
     WheelMacros                = W,
@@ -736,8 +740,6 @@ ApogeePartyHealthBars_RuntimeEvents.Register(ApogeePartyHealthBars_EventRouter, 
     InitPlayerSpells = InitPlayerSpells,
     RestorePosition = RestorePosition,
     UpdateHeader = UpdateHeader,
-    HookSpellbook = HookSpellbook,
-    HookContainerItems = HookContainerItems,
     EnsureMinimapButton = EnsureMinimapButton,
     SeedShieldTrackerFromAuras = SeedShieldTrackerFromAuras,
     ForceRefresh = ForceRefresh,

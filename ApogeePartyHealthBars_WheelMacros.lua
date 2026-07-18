@@ -38,5 +38,5 @@ ApogeePartyHealthBars_WheelMacros = Factory.Create({
         claimedMessage = "Wheel bindings claimed.",
         releasedMessage = "Wheel bindings restored.",
     },
-    allSlotsMessage = "All wheel gestures are assigned. Select a row to replace or clear one.",
+    allSlotsMessage = "All wheel gestures are assigned. Drop onto a gesture to replace it or clear one.",
 })

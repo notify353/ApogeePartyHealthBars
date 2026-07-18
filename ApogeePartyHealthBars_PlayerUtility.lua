@@ -1,5 +1,7 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
+local UIH = ApogeePartyHealthBars_UIHelpers
+local Accessory = ApogeePartyHealthBars_AccessoryLayout
 
 ApogeePartyHealthBars_PlayerUtility = {}
 local P = ApogeePartyHealthBars_PlayerUtility
@@ -25,33 +27,56 @@ end
 
 function P.Attach(playerSurface, deps)
     surface, D = assert(playerSurface), assert(deps)
-    icon = surface:GetAccessoryAnchor():CreateTexture(nil, "OVERLAY")
-    icon:SetSize(C.BUFF_ICON_SIZE, C.BUFF_ICON_SIZE)
-    icon:SetTexture(iconTexture)
-    icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-    if icon.SetDrawLayer then icon:SetDrawLayer("OVERLAY", 7) end
+    local anchor = surface:GetAccessoryAnchor()
+    icon = CreateFrame("Frame", nil, anchor)
+    Accessory.SetCompactSize(icon)
+    local texture = icon:CreateTexture(nil, "OVERLAY")
+    Accessory.InsetTexture(texture, 1)
+    texture:SetTexture(iconTexture)
+    texture:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    if texture.SetDrawLayer then texture:SetDrawLayer("OVERLAY", 7) end
+    icon.texture = texture
+    Accessory.Place(icon, anchor, "left", 1, 1)
     icon:Hide()
     castButton = CreateSecureButton()
+    castButton:SetScript("OnEnter", function()
+        if InCombatLockdown and InCombatLockdown() then
+            if GameTooltip then GameTooltip:Hide() end
+            return
+        end
+        local spellName = D.GetSelfBuffCastSpellName()
+        if not spellName then return end
+        UIH.ShowSpellTooltip(castButton, nil, spellName, "Missing self buff", nil, {
+            { text = "Click to cast", r = 0.3, g = 1, b = 0.3 },
+        })
+    end)
+    castButton:SetScript("OnLeave", function()
+        if GameTooltip then GameTooltip:Hide() end
+    end)
 end
 
 function P.SetIconTexture(texture)
     iconTexture = texture or C.SELF_BUFF_ICON_TEXTURE
-    if icon then icon:SetTexture(iconTexture) end
+    if icon and icon.texture then icon.texture:SetTexture(iconTexture) end
 end
 
 function P.Refresh()
     if not surface then return end
-    local visible = D.ShouldShowSelfBuffIcon("player") == true
-    local changed = surface:SetRightInset("selfBuff", visible and C.BUFF_SLOT_STEP or 0)
+    local requestedVisibility = D.ShouldShowSelfBuffIcon("player")
+    if requestedVisibility == nil then return end
+    local visible = requestedVisibility == true
     if visible then
-        icon:ClearAllPoints()
-        icon:SetPoint("LEFT", surface:GetHealthAnchor(), "RIGHT", C.BUFF_SLOT_GAP, 0)
         icon:Show()
     else
         icon:Hide()
         P.HideSecureOverlay()
     end
-    if changed then D.RequestLayoutUpdate() end
+end
+
+function P.GetHeight(unitId)
+    if unitId ~= "player" or not surface then return 0 end
+    if not D.IsSelfBuffKnown() or not D.IsSavedFeatureEnabled("selfBuffEnabled") then return 0 end
+    return Accessory.GetHeight(1, 1)
 end
 
 local function ClearAttributes()

@@ -104,7 +104,7 @@ function methods:GetHealthAnchor()
 end
 
 function methods:GetAccessoryAnchor()
-    return self.btn
+    return self.accessoryAnchor
 end
 
 function methods:GetInternalRightInset()
@@ -150,7 +150,7 @@ function methods:RefreshAlpha()
         self.btn:SetAlpha(C.OFFLINE_ALPHA)
         return
     end
-    local healable = D.CanPlayerHealUnit(self.unitId)
+    local healable = API.CanHeal(self.unitId)
     local inRange = D.IsUnitInPrimaryActionRange(self.unitId)
     self.btn:SetAlpha((healable and inRange) and 1 or C.OUT_OF_RANGE_ALPHA)
 end
@@ -168,6 +168,9 @@ function methods:RefreshLayout(topOffset, containerHeight)
     self.barBg:ClearAllPoints()
     self.barBg:SetPoint("TOPLEFT", self.btn, "TOPLEFT", 0, -topOffset)
     self.barBg:SetSize(math.max(20, C.UNIT_BAR_W - rightInset), C.ROW_H)
+    self.accessoryAnchor:ClearAllPoints()
+    self.accessoryAnchor:SetPoint("TOPLEFT", self.btn, "TOPLEFT", 0, -topOffset)
+    self.accessoryAnchor:SetSize(C.UNIT_BAR_W, C.ROW_H)
     self.bar:ClearAllPoints()
     self.bar:SetAllPoints(self.barBg)
     self.nameFS:SetWidth(math.max(20, C.UNIT_BAR_W - 12 - rightInset))
@@ -175,9 +178,8 @@ function methods:RefreshLayout(topOffset, containerHeight)
     if self.partyBuffVisible then
         self.partyBuffIcon:ClearAllPoints()
         self.partyBuffIcon:SetPoint(
-            "RIGHT", self.btn, "TOPLEFT",
-            C.UNIT_BAR_W - self:GetExternalRightInset() - C.BUFF_EDGE_INSET,
-            -topOffset - C.ROW_H / 2)
+            "RIGHT", self.accessoryAnchor, "RIGHT",
+            -self:GetExternalRightInset() - C.BUFF_EDGE_INSET, 0)
         self.partyBuffIcon:Show()
     else
         self.partyBuffIcon:Hide()
@@ -228,8 +230,8 @@ function methods:RefreshValues()
     local oldLayoutKey = self:GetLayoutKey()
     local connected = API.IsConnected(unitId)
     self.powerChannels = connected and API.GetPowerChannels(unitId) or {}
-    local showPartyBuff = D.ShouldShowPartyBuffIcon(unitId) == true
-    self.partyBuffVisible = showPartyBuff
+    local showPartyBuff = D.ShouldShowPartyBuffIcon(unitId)
+    if showPartyBuff ~= nil then self.partyBuffVisible = showPartyBuff == true end
 
     local identity = API.GetIdentity(unitId)
     local hostilePlayer = identity.oppositeFactionPlayer
@@ -249,6 +251,7 @@ function methods:RefreshValues()
         self.bar:SetMinMaxValues(0, 1)
         self.bar:SetValue(0)
         self.bar:SetStatusBarColor(unpack(C.OFFLINE_BAR_COLOR))
+        ApplyFlatBg(self.barBg, C.BAR_BG_COLOR)
         self.shieldBar:Hide()
         self.healPredBar:Hide()
         D.UpdateHotVisuals(self, nil)
@@ -313,6 +316,11 @@ function B.Create(parent)
     button:EnableMouse(false)
     self.btn = button
 
+    local accessoryAnchor = CreateFrame("Frame", nil, button)
+    accessoryAnchor:SetSize(C.UNIT_BAR_W, C.ROW_H)
+    accessoryAnchor:EnableMouse(false)
+    self.accessoryAnchor = accessoryAnchor
+
     local bg = button:CreateTexture(nil, "BACKGROUND")
     ApplyFlatBg(bg, C.BAR_BG_COLOR)
     self.barBg = bg
@@ -322,6 +330,7 @@ function B.Create(parent)
     bar:SetMinMaxValues(0, 1)
     bar:SetValue(1)
     self.bar = bar
+    accessoryAnchor:SetFrameLevel(bar:GetFrameLevel() + 1)
 
     local shield = CreateFrame("StatusBar", nil, bar)
     shield:SetAllPoints()
@@ -373,7 +382,7 @@ function B.Create(parent)
         self.hotBg[index], self.hotBars[index] = hotBg, hotBar
     end
 
-    self.partyBuffIcon = CreateBuffIcon(button)
+    self.partyBuffIcon = CreateBuffIcon(accessoryAnchor)
     self.castBtn = CreateSecureOverlay("ApogeePartyHealthBarsCast", 100)
     self.partyBuffCastBtn = CreateSecureOverlay("ApogeePartyHealthBarsPartyBuff", 101)
     button:Hide()
@@ -382,7 +391,7 @@ end
 
 function B.Initialize(deps)
     for _, key in ipairs({
-        "GetHotStripHeight", "GetActiveHotTrackCount", "CanPlayerHealUnit",
+        "GetHotStripHeight", "GetActiveHotTrackCount",
         "IsUnitInPrimaryActionRange", "ShouldShowPartyBuffIcon", "IsShieldEnabled",
         "ShouldTrackShieldUnit", "GetUnitShieldRemaining", "UpdateShieldVisual",
         "UpdateIncomingVisual", "UpdateHotVisuals", "RequestLayoutUpdate",

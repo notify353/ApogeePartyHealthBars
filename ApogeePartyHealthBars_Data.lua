@@ -84,6 +84,10 @@ ApogeePartyHealthBars_C = {
     BUFF_ICON_SIZE       = 16,
     BUFF_SLOT_GAP        = 2,
     BUFF_EDGE_INSET      = 2,
+    ACCESSORY_ICON_SIZE  = 16,
+    ACCESSORY_ICON_GAP   = 2,
+    ACCESSORY_EDGE_INSET = 2,
+    ACCESSORY_BOTTOM_GAP = 4,
     PARTY_BUFF_ICON_TEXTURE    = "Interface\\Icons\\Spell_Holy_WordFortitude",
     SELF_BUFF_ICON_TEXTURE      = "Interface\\Icons\\Spell_Holy_InnerFire",
     -- First entry the player knows in spellbook wins. Keep this list limited to

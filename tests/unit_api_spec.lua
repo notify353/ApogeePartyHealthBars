@@ -39,4 +39,9 @@ assert(not api.IsConnected("target") and not api.GetDefaultRange("player"))
 assert(api.GetGUID("player") == "Player-1" and api.GetGUID("focus") == nil)
 assert(not api.Exists("focus") and #api.GetPowerChannels("focus") == 0)
 
+local deadAPI, assistAPI, enemyAPI = UnitIsDeadOrGhost, UnitCanAssist, UnitIsEnemy
+UnitIsDeadOrGhost, UnitCanAssist, UnitIsEnemy = nil, nil, nil
+assert(api.CanHeal("player"), "missing optional healability APIs did not fail open")
+UnitIsDeadOrGhost, UnitCanAssist, UnitIsEnemy = deadAPI, assistAPI, enemyAPI
+
 print("PASS unit API adapter")

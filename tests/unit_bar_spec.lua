@@ -2,9 +2,17 @@ dofile("ApogeePartyHealthBars_Data.lua")
 unpack = unpack or table.unpack
 
 local function widget()
-    local value = { shown = true, points = {}, attributes = {} }
-    function value:CreateTexture() return widget() end
-    function value:CreateFontString() return widget() end
+    local value = { shown = true, points = {}, attributes = {}, frameLevel = 1 }
+    function value:CreateTexture()
+        local child = widget()
+        child.parent = self
+        return child
+    end
+    function value:CreateFontString()
+        local child = widget()
+        child.parent = self
+        return child
+    end
     function value:SetSize(width, height) self.width, self.height = width, height end
     function value:SetWidth(width) self.width = width end
     function value:SetHeight(height) self.height = height end
@@ -18,11 +26,13 @@ local function widget()
     function value:SetMinMaxValues(minimum, maximum) self.minimum, self.maximum = minimum, maximum end
     function value:SetValue(data) self.value = data end
     function value:SetStatusBarColor(...) self.color = { ... } end
+    function value:SetVertexColor(...) self.vertexColor = { ... } end
     function value:SetText(data) self.text = data end
     function value:SetTextColor(...) self.textColor = { ... } end
     function value:SetAlpha(alpha) self.alpha = alpha end
     function value:SetAttribute(key, data) self.attributes[key] = data end
-    function value:GetFrameLevel() return 1 end
+    function value:SetFrameLevel(level) self.frameLevel = level end
+    function value:GetFrameLevel() return self.frameLevel or 1 end
     function value:GetFont() return "font", 12 end
     return setmetatable(value, { __index = function() return function() end end })
 end
@@ -35,11 +45,13 @@ RAID_CLASS_COLORS = { PRIEST = { r = 1, g = 1, b = 1 } }
 PowerBarColor = { MANA = { r = 0, g = 0, b = 1 }, ENERGY = { r = 1, g = 1, b = 0 } }
 
 local snapshots = {
-    player = { name = "Same", health = 70, maximum = 100 },
-    targettarget = { name = "Same", health = 70, maximum = 100 },
+    player = { name = "Same", health = 70, maximum = 100,
+        connected = true, faction = "Alliance" },
+    targettarget = { name = "Same", health = 70, maximum = 100,
+        connected = true, faction = "Horde" },
 }
 function UnitExists(unit) return snapshots[unit] ~= nil end
-function UnitIsConnected() return true end
+function UnitIsConnected(unit) return snapshots[unit].connected end
 function UnitIsDeadOrGhost() return false end
 function UnitHealth(unit) return snapshots[unit].health end
 function UnitHealthMax(unit) return snapshots[unit].maximum end
@@ -49,19 +61,19 @@ function UnitPower(_, powerType) return powerType == 0 and 50 or 40 end
 function UnitName(unit) return snapshots[unit].name end
 function UnitIsPlayer() return true end
 function UnitClass() return "Priest", "PRIEST" end
-function UnitFactionGroup() return "Alliance" end
+function UnitFactionGroup(unit) return snapshots[unit] and snapshots[unit].faction or "Alliance" end
 function UnitCanAssist() return true end
 function UnitIsEnemy() return false end
 
 dofile("ApogeePartyHealthBars_UnitAPI.lua")
 dofile("ApogeePartyHealthBars_UnitBar.lua")
 local bars = ApogeePartyHealthBars_UnitBar
+local partyBuffState = false
 bars.Initialize({
     GetHotStripHeight = function() return 0 end,
     GetActiveHotTrackCount = function() return 0 end,
-    CanPlayerHealUnit = function() return true end,
     IsUnitInPrimaryActionRange = function() return true end,
-    ShouldShowPartyBuffIcon = function() return false end,
+    ShouldShowPartyBuffIcon = function() return partyBuffState end,
     IsShieldEnabled = function() return false end,
     ShouldTrackShieldUnit = function() return false end,
     GetUnitShieldRemaining = function() return 0 end,
@@ -87,5 +99,25 @@ assert(first.bar.value == second.bar.value and first.bar.maximum == second.bar.m
 assert(first.nameFS.text == second.nameFS.text and #first.powerChannels == 2
     and #second.powerChannels == 2, "unit role changed shared rendering behavior")
 assert(first:GetHealthAnchor() == first.barBg)
+assert(first:GetAccessoryAnchor() == first.accessoryAnchor
+        and first.accessoryAnchor.width == ApogeePartyHealthBars_C.UNIT_BAR_W
+        and first.accessoryAnchor.height == ApogeePartyHealthBars_C.ROW_H,
+    "shared accessory anchor did not preserve the full health-section geometry")
+assert(first.partyBuffIcon.parent == first.accessoryAnchor
+        and first.accessoryAnchor:GetFrameLevel() > first.bar:GetFrameLevel(),
+    "party-buff texture was not raised above the health StatusBar")
+
+partyBuffState = true
+first:RefreshValues()
+partyBuffState = nil
+first:RefreshValues()
+assert(first.partyBuffVisible == true,
+    "indeterminate combat reminder state cleared existing bar geometry")
+
+assert(second.barBg.vertexColor[1] == ApogeePartyHealthBars_C.ENEMY_TARGET_BG_COLOR[1])
+snapshots.targettarget.connected = false
+second:RefreshValues()
+assert(second.barBg.vertexColor[1] == ApogeePartyHealthBars_C.BAR_BG_COLOR[1],
+    "offline surface retained a stale hostile background")
 
 print("PASS shared unit bar")

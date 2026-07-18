@@ -112,7 +112,8 @@ local function RefreshRowSurfaces(row, slotIndex)
 end
 
 local function PositionRow(row, yOffset)
-    local actionHeight = D.GetActionAreaHeight(row)
+    local actionGeometry = D.GetActionHudGeometry(row)
+    local actionHeight = D.GetActionAreaHeight(row, actionGeometry)
     local surfaceHeight = row.primary:GetHeight()
     for _, surface in ipairs({ row.target, row.targetOfTarget }) do
         if surface.visible then surfaceHeight = math.max(surfaceHeight, surface:GetHeight()) end
@@ -134,7 +135,7 @@ local function PositionRow(row, yOffset)
         surface:RefreshLayout(0)
     end
 
-    if row.unitId == "player" then D.LayoutShortcuts() end
+    if row.unitId == "player" then D.LayoutPlayerActions(actionGeometry) end
     return totalHeight
 end
 
@@ -178,9 +179,15 @@ function L.LayoutRows()
         return false
     end
 
+    local shortcutFooterHeight = D.GetShortcutFooterHeight()
+    D.shortcutFooterAnchor:ClearAllPoints()
+    D.shortcutFooterAnchor:SetPoint("TOPLEFT", D.rowAnchor, "BOTTOMLEFT", 0, -yOffset)
+    D.shortcutFooterAnchor:SetSize(C.ROW_CONTENT_W, 1)
+    D.LayoutShortcutFooter()
+
     local topChrome = S.configMode and C.HEADER_H or 0
     local bottomPad = S.configMode and C.PAD_BOT or 0
-    D.panel:SetHeight(topChrome + yOffset + bottomPad)
+    D.panel:SetHeight(topChrome + yOffset + shortcutFooterHeight + bottomPad)
     D.panel:SetWidth(ComputePanelWidth())
     if S.configMode then D.sepTex:SetWidth(D.panel:GetWidth() - 20) end
     D.panel:Show()

@@ -87,6 +87,7 @@ local selfBuffTexture
 local characterSaved = { selfBuffSelections = {} }
 local secureRefreshes, layoutRequests = 0, 0
 
+dofile("ApogeePartyHealthBars_UnitAPI.lua")
 dofile("ApogeePartyHealthBars_BuffReminders.lua")
 local reminders = ApogeePartyHealthBars_BuffReminders
 
@@ -138,9 +139,9 @@ assert(not reminders.ShouldShowSelfIcon("party1"),
 inCombat = true
 snapshots.party1.auras = {}
 snapshots.player.auras = {}
-assert(not reminders.ShouldShowPartyIcon("party1")
-        and not reminders.ShouldShowSelfIcon("player"),
-    "buff reminders remained visible in combat")
+assert(reminders.ShouldShowPartyIcon("party1") == nil
+        and reminders.ShouldShowSelfIcon("player") == nil,
+    "combat did not freeze buff reminder visibility")
 inCombat = false
 configMode = true
 assert(not reminders.ShouldShowPartyIcon("party1")

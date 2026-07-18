@@ -21,6 +21,7 @@ ApogeePartyHealthBars_KeyActions = Factory.Create({
     hud = {
         panelHeight = PANEL_HEIGHT,
         totalHeight = PANEL_HEIGHT + 10,
+        iconHeight = GRID_HEIGHT,
         positionIcon = function(icon, container, slot)
             local stride = C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP
             icon:SetPoint("TOPLEFT", container, "TOPLEFT",

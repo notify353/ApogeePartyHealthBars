@@ -13,6 +13,7 @@ ApogeePartyHealthBars_MouseButtonData.lua
 ApogeePartyHealthBars_UnitTopology.lua
 ApogeePartyHealthBars_UnitAPI.lua
 ApogeePartyHealthBars_UIHelpers.lua
+ApogeePartyHealthBars_AccessoryLayout.lua
 ApogeePartyHealthBars_MacroData.lua
 ApogeePartyHealthBars_MacroLibrary.lua
 ApogeePartyHealthBars_EventRouter.lua

@@ -1,4 +1,5 @@
 local C = ApogeePartyHealthBars_C
+local API = ApogeePartyHealthBars_UnitAPI
 
 ApogeePartyHealthBars_BuffReminders = {}
 local B = ApogeePartyHealthBars_BuffReminders
@@ -205,33 +206,26 @@ local function HasPartyBuff(unitId)
 end
 
 function B.CanHealUnit(unitId)
-    if not UnitExists(unitId) or UnitIsDeadOrGhost(unitId) then return false end
-    if UnitIsConnected and not UnitIsConnected(unitId) then return false end
-    if UnitCanAssist and not UnitCanAssist("player", unitId) then return false end
-    if UnitIsEnemy and UnitIsEnemy("player", unitId) then return false end
-    return true
+    return API.CanHeal(unitId)
 end
 
 function B.IsOppositeFactionPlayer(unitId)
-    if not UnitExists(unitId) or not UnitIsPlayer(unitId) then return false end
-    local myFaction = UnitFactionGroup("player")
-    local theirFaction = UnitFactionGroup(unitId)
-    if not myFaction or not theirFaction then return false end
-    return myFaction ~= theirFaction
+    return API.IsOppositeFactionPlayer(unitId)
 end
 
 local function CanPartyBuffUnit(unitId)
-    if not UnitExists(unitId) or UnitIsDeadOrGhost(unitId) then return false end
-    if not UnitIsPlayer(unitId) then return false end
+    if not API.Exists(unitId) or API.IsDead(unitId) then return false end
+    if not UnitIsPlayer or not UnitIsPlayer(unitId) then return false end
     return B.CanHealUnit(unitId)
 end
 
 local function ShouldShowIcons()
-    return not InCombatLockdown()
+    if InCombatLockdown() then return nil end
+    return true
 end
 
 function B.ShouldShowPartyIcon(unitId)
-    if not ShouldShowIcons() then return false end
+    if ShouldShowIcons() == nil then return nil end
     if not IsPartyEnabled() or D.IsConfigMode() then return false end
     if not CanPartyBuffUnit(unitId) then return false end
     return not HasPartyBuff(unitId)
@@ -251,7 +245,7 @@ local function HasSelfBuff(unitId)
 end
 
 function B.ShouldShowSelfIcon(unitId)
-    if not ShouldShowIcons() then return false end
+    if ShouldShowIcons() == nil then return nil end
     if unitId ~= "player" then return false end
     if not IsSelfEnabled() or D.IsConfigMode() then return false end
     if not UnitExists(unitId) or UnitIsDeadOrGhost(unitId) then return false end

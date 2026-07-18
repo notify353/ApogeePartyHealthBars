@@ -67,6 +67,7 @@ function Factory.Create(options)
     local HUD_PANEL_W = options.hud.panelWidth or C.ROW_CONTENT_W
     local HUD_PANEL_H = options.hud.panelHeight
     local HUD_HEIGHT = options.hud.totalHeight
+    local HUD_ICON_HEIGHT = options.hud.iconHeight or HUD_PANEL_H
     local STATE_COLORS = {
         ready = { 0.45, 0.45, 0.48, 1 }, current = { 1.00, 0.82, 0.00, 1 }, cooldown = { 0.22, 0.22, 0.24, 1 },
         resource = { 0.45, 0.45, 0.48, 1 }, range = { 0.45, 0.45, 0.48, 1 },
@@ -842,8 +843,11 @@ function Factory.Create(options)
         updateActivationFeedback()
     end
 
-    function W.Layout()
+    function W.Layout(topOffset)
         if not container or not row then return end
+        topOffset = math.max(0, tonumber(topOffset) or 0)
+        container:ClearAllPoints()
+        container:SetPoint("TOPLEFT", row.btn, "TOPLEFT", 0, -topOffset)
         container:Show()
         W.Refresh()
         W.RefreshSecureActions()
@@ -851,6 +855,10 @@ function Factory.Create(options)
 
     function W.GetHeight(unitId)
         return unitId == "player" and HUD_HEIGHT or 0
+    end
+
+    function W.GetIconHeight(unitId)
+        return unitId == "player" and HUD_ICON_HEIGHT or 0
     end
 
     function W.GetWidth(unitId)
@@ -870,6 +878,7 @@ function Factory.Create(options)
     W.IsKnownLayout = function(layoutKey) return WL.IsKnownLayout(layoutKey) end
     W.GetSecureButton = function(slotId) return secureButtons[slotId] end
     W.GetHudIcon = function(slotId) return hudIcons[slotId] end
+    W.GetHudContainer = function() return container end
     W.GetHudCastButton = function(slotId) return hudIcons[slotId] and hudIcons[slotId].castButton end
     W.GetBindingManager = function() return bindingManager end
     W.GetLastActivation = function() return feedbackSlotId, feedbackUntil end

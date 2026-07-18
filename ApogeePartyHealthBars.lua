@@ -24,6 +24,7 @@ local hotTracker = ApogeePartyHealthBars_HotTracker
 local unitTopology = ApogeePartyHealthBars_UnitTopology
 local unitAPI = ApogeePartyHealthBars_UnitAPI
 local unitBar = ApogeePartyHealthBars_UnitBar
+local playerUtility = ApogeePartyHealthBars_PlayerUtility
 
 local panel, configUI, minimapController
 local rows = {}
@@ -168,7 +169,6 @@ buffReminders.Initialize({
         ApogeePartyHealthBars_PlayerUtility.SetIconTexture(texture)
     end,
 })
-local CanPlayerHealUnit = buffReminders.CanHealUnit
 local ShouldShowPartyBuffIcon = buffReminders.ShouldShowPartyIcon
 local ShouldShowSelfBuffIcon = buffReminders.ShouldShowSelfIcon
 local GetSelfBuffPreferenceOptions = buffReminders.GetSelfPreferenceOptions
@@ -221,7 +221,9 @@ end
 
 rowGeometry.Initialize({
     GetHotStripHeight = GetHotStripHeight,
+    PlayerUtility = playerUtility,
     ShortcutBar = T,
+    RaidMarkers = M,
     WheelMacros = W,
     KeyActions = K,
     MouseButtonActions = B,
@@ -231,7 +233,6 @@ local GetActionAreaHeight = rowGeometry.GetActionAreaHeight
 unitBar.Initialize({
     GetHotStripHeight = GetHotStripHeight,
     GetActiveHotTrackCount = GetActiveHotTrackCount,
-    CanPlayerHealUnit = CanPlayerHealUnit,
     IsUnitInPrimaryActionRange = IsUnitInPrimaryActionRange,
     ShouldShowPartyBuffIcon = ShouldShowPartyBuffIcon,
     IsShieldEnabled = IsShieldEnabled,
@@ -301,6 +302,7 @@ visualTicker.Initialize({
     IsConfigMode = function() return S.configMode end,
     HasActiveHotVisuals = HasActiveHotVisuals,
     TickHotVisuals = TickHotVisuals,
+    RefreshUnitChains = function() S.RefreshUnitChains() end,
     RefreshRangeAlpha = function() S.RefreshRangeAlpha() end,
     ShortcutBar = T,
     WheelMacros = W,
@@ -310,10 +312,11 @@ visualTicker.Initialize({
 })
 local targetChainGUIDs = {}
 
-function S.RefreshRangeAlpha()
+function S.RefreshUnitChains()
     if not IsEnabled() then return end
 
     local targetChainChanged = false
+    local visibleSurfaces = {}
     if IsSavedFeatureEnabled("showUnitTargets") then
         for _, row in ipairs(rows) do
             if row.btn:IsShown() then
@@ -323,6 +326,9 @@ function S.RefreshRangeAlpha()
                         targetChainGUIDs[surface.unitId] = guid
                         targetChainChanged = true
                     end
+                    if surface.visible then
+                        visibleSurfaces[#visibleSurfaces + 1] = surface
+                    end
                 end
             end
         end
@@ -330,11 +336,23 @@ function S.RefreshRangeAlpha()
         targetChainGUIDs = {}
     end
 
+    if targetChainChanged then
+        S.RequestLayoutUpdate()
+        return
+    end
+
+    if #visibleSurfaces > 0 then
+        A.BeginAuraCacheGeneration()
+        for _, surface in ipairs(visibleSurfaces) do surface:RefreshValues() end
+    end
+end
+
+function S.RefreshRangeAlpha()
+    if not IsEnabled() then return end
     for _, surface in ipairs(GetAllSurfaces()) do
         if surface.visible then surface:RefreshAlpha() end
     end
     if T.IsActive() then T.Refresh(false) end
-    if targetChainChanged then S.RequestLayoutUpdate() end
 end
 local StyleReadableText = unitBar.StyleReadableText
 
@@ -406,17 +424,17 @@ rows = unitFrames.rows
 local titleFS = unitFrames.titleFS
 local sepTex = unitFrames.sepTex
 local rowAnchor = unitFrames.rowAnchor
+local shortcutFooterAnchor = unitFrames.shortcutFooterAnchor
 local SavePosition = unitFrames.SavePosition
 local ApplyDefaultPosition = unitFrames.ApplyDefaultPosition
 local RestorePosition = unitFrames.RestorePosition
 local ApplyBackdrop = unitFrames.ApplyBackdrop
 local ApplyPanelChrome = unitFrames.ApplyPanelChrome
-local playerUtility = ApogeePartyHealthBars_PlayerUtility
 playerUtility.Attach(rows[1].primary, {
     ShouldShowSelfBuffIcon = ShouldShowSelfBuffIcon,
+    IsSelfBuffKnown = buffReminders.IsSelfKnown,
     GetSelfBuffCastSpellName = buffReminders.GetSelfCastSpellName,
     IsSavedFeatureEnabled = IsSavedFeatureEnabled,
-    RequestLayoutUpdate = S.RequestLayoutUpdate,
     DeferSecureUpdate = DeferSecureUpdate,
     PositionSecureOverlay = PositionSecureOverlay,
     ShowSecureFrame = ShowSecureFrame,
@@ -548,6 +566,7 @@ L.Register({
     titleFS = titleFS,
     sepTex = sepTex,
     rowAnchor = rowAnchor,
+    shortcutFooterAnchor = shortcutFooterAnchor,
     DeferSecureUpdate = DeferSecureUpdate,
     HideSecureFrame = HideSecureFrame,
     ShowSecureFrame = ShowSecureFrame,
@@ -557,13 +576,17 @@ L.Register({
     ShouldShowRow = ShouldShowRow,
     GetRowBtnWidth = GetRowBtnWidth,
     GetActionAreaHeight = GetActionAreaHeight,
+    GetActionHudGeometry = rowGeometry.GetActionHudGeometry,
     GetPlayerActionWidth = function()
         return math.max(C.ROW_CONTENT_W, B.GetWidth("player"))
     end,
-    LayoutShortcuts = function()
-        W.Layout(); K.Layout(); B.Layout()
-        T.Layout(math.max(W.GetHeight("player"), K.GetHeight("player"), B.GetHeight("player")))
+    LayoutPlayerActions = function(actionGeometry)
+        W.Layout(actionGeometry.offsets.wheel)
+        K.Layout(actionGeometry.offsets.keys)
+        B.Layout(actionGeometry.offsets.buttons)
     end,
+    GetShortcutFooterHeight = T.GetFooterHeight,
+    LayoutShortcutFooter = T.Layout,
     GetThreatGutterWidth = H.GetGutterWidth,
     RefreshThreat = H.Refresh,
     IsUnitTargetsEnabled = IsUnitTargetsEnabled,

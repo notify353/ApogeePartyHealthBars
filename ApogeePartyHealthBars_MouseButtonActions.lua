@@ -20,6 +20,7 @@ ApogeePartyHealthBars_MouseButtonActions = Factory.Create({
     hud = {
         panelHeight = GRID_HEIGHT,
         totalHeight = GRID_HEIGHT,
+        iconHeight = GRID_HEIGHT,
         panelWidth = GRID_X + C.SHORTCUT_ICON_SIZE * 3 + C.SHORTCUT_ICON_GAP * 2,
         positionIcon = function(icon, container, slot)
             local stride = C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP

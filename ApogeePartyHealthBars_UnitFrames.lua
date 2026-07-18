@@ -102,6 +102,11 @@ function F.Build(D)
     rowAnchor:SetSize(1, 1)
     rowAnchor:SetPoint("TOPLEFT", panel, "TOPLEFT", C.PAD_H, 0)
     rowAnchor:Show()
+
+    local shortcutFooterAnchor = CreateFrame("Frame", nil, panel)
+    shortcutFooterAnchor:SetSize(C.ROW_CONTENT_W, 1)
+    shortcutFooterAnchor:SetPoint("TOPLEFT", panel, "BOTTOMLEFT", C.PAD_H, 0)
+    shortcutFooterAnchor:Show()
     
     local function CreateHealthRow(parent, descriptor)
         local primary = UnitBar.Create(parent)
@@ -126,7 +131,10 @@ function F.Build(D)
     for i = 1, C.MAX_ROWS do
         rows[i] = CreateHealthRow(panel, Topology.GetRow(i))
     end
-    T.Attach({ player = rows[1].primary.btn, target = rows[1].target.btn }, {
+    T.Attach({
+        player = shortcutFooterAnchor,
+        target = rows[1].target:GetAccessoryAnchor(),
+    }, {
         RequestLayout = S.RequestLayoutUpdate,
         SyncTicker = D.SyncVisualTicker,
         PositionSecureOverlay = D.PositionSecureOverlay,
@@ -150,7 +158,8 @@ function F.Build(D)
     -- =============================================================================
 
     return {
-        panel = panel, rows = rows, titleFS = titleFS, sepTex = sepTex, rowAnchor = rowAnchor,
+        panel = panel, rows = rows, titleFS = titleFS, sepTex = sepTex,
+        rowAnchor = rowAnchor, shortcutFooterAnchor = shortcutFooterAnchor,
         SavePosition = SavePosition, ApplyDefaultPosition = ApplyDefaultPosition,
         RestorePosition = RestorePosition, ApplyBackdrop = ApplyBackdrop,
         ApplyPanelChrome = ApplyPanelChrome,

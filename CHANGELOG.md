@@ -14,6 +14,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Unified Healing settings with the shared scrollable action rows, fixed click-gesture labels, inline Up/Dn swapping, explicit Clear controls, and no persistent row selection.
 - Unified Shortcuts, Keys, and Wheel settings around the same compact scrollable action rows, inline controls, empty drop targets, and minimal drag guidance.
 - Made Keys and Wheel permanent while the add-on is enabled, automatically claiming all 15 keyboard inputs and six wheel gestures at startup and removing their separate activation controls and profile state.
 - Kept Keys and Wheel binding ownership character-local while allowing their assignments to travel with profiles; profile changes restore owned bindings transactionally before reloading the UI.

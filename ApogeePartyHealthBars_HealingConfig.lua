@@ -118,10 +118,7 @@ function H.Build(parent, deps)
                 D.ClearBinding(slotKey)
             else
                 S.selectedBindingKey = slotKey
-                S.selectedShortcutSlot = nil
-                S.focusedKeySlot = nil
                 S.selectedKeyLayout = nil
-                S.selectedWheelSlot = nil
                 S.selectedWheelLayout = nil
                 H.Refresh()
             end

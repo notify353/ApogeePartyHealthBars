@@ -9,13 +9,19 @@ local function widget()
         "SetFrameStrata", "SetFrameLevel", "EnableMouse", "SetColorTexture",
         "SetSize", "SetWidth", "SetJustifyH", "SetJustifyV", "SetWordWrap",
         "SetMultiLine", "SetAutoFocus", "SetFontObject", "SetTextColor", "SetTexCoord",
+        "SetTexture", "SetDesaturated",
     }
     for _, name in ipairs(noops) do value[name] = function() end end
     function value:SetAllPoints() self.allPoints = true end
+    function value:ClearAllPoints() self.points = {} end
     function value:SetPoint(...) self.points = self.points or {}; self.points[#self.points + 1] = { ... } end
     function value:CreateTexture() return widget() end
     function value:CreateFontString() return widget() end
     function value:SetScript(name, callback) self.scripts[name] = callback end
+    function value:HookScript(name, callback) self.scripts[name] = callback end
+    function value:SetHeight(height) self.height = height end
+    function value:SetScrollChild(child) self.scrollChild = child end
+    function value:GetVerticalScrollRange() return self.verticalRange or 0 end
     function value:SetText(text)
         self.text = text or ""
         if self.scripts.OnTextChanged then self.scripts.OnTextChanged(self) end
@@ -33,7 +39,12 @@ local function widget()
     return value
 end
 
-function CreateFrame() return widget() end
+function CreateFrame(_, _, _, template)
+    local frame = widget()
+    frame.template = template
+    if template == "UIPanelScrollFrameTemplate" then frame.ScrollBar = widget() end
+    return frame
+end
 
 local buttons = {}
 ApogeePartyHealthBars_UIHelpers = {}
@@ -46,6 +57,7 @@ end
 function ApogeePartyHealthBars_UIHelpers.CreateDropdown()
     local dropdown = widget()
     function dropdown:SetArrowShown() end
+    function dropdown:SetSelectedKey(key) self.selectedKey = key end
     return dropdown
 end
 function ApogeePartyHealthBars_UIHelpers.SetButtonEnabled(button, enabled)
@@ -55,6 +67,33 @@ end
 dofile("ApogeePartyHealthBars_ActionConfig.lua")
 local config = ApogeePartyHealthBars_ActionConfig
 config.Initialize(widget(), function() end)
+
+local list = config.CreateActionList(widget(), "TestActionList")
+assert(list.scroll.template == "UIPanelScrollFrameTemplate" and list.rowWidth == 372
+        and list.hint:GetText() == "Drag a spell or bag item onto a row."
+        and not list.scroll.ScrollBar:IsShown(),
+    "shared action list did not create the compact native-scroll scaffold")
+local actionRow = config.CreateActionRow(list.content, list.rowWidth)
+config.SetActionRowState(actionRow, { detail = "Key G — Empty" })
+assert(actionRow.primary:GetText() == "Empty" and actionRow.secondary:GetText() == "Key G — Empty"
+        and not actionRow.sound:IsEnabled() and not actionRow.macro:IsEnabled()
+        and not actionRow.clear:IsEnabled(),
+    "shared action row did not render a disabled empty drop target")
+config.SetActionRowState(actionRow, {
+    active = true, name = "Fireball", detail = "Key G — Spell", soundKey = "toast",
+    macroCustomized = true, canMoveUp = true, canMoveDown = false,
+})
+assert(actionRow.primary:GetText() == "Fireball" and actionRow.sound.selectedKey == "toast"
+        and actionRow.sound:IsEnabled() and actionRow.macro:IsEnabled()
+        and actionRow.macro.label:GetText() == "Macro*" and actionRow.up:IsEnabled()
+        and not actionRow.down:IsEnabled() and actionRow.clear:IsEnabled(),
+    "shared action row did not render consistent filled controls")
+config.LayoutActionList(list, { actionRow })
+assert(list.content.height == 86, "shared action list did not calculate compact row content height")
+list.scroll.scripts.OnScrollRangeChanged(list.scroll, 0, 120)
+assert(list.scroll.ScrollBar:IsShown(), "shared action list did not reveal its overflow scrollbar")
+list.scroll.scripts.OnScrollRangeChanged(list.scroll, 0, 0)
+assert(not list.scroll.ScrollBar:IsShown(), "shared action list did not hide its unused scrollbar")
 
 local overlay, editor = config.GetOverlay(), config.GetEditor()
 assert(not overlay.allPoints and overlay.points and #overlay.points == 2,

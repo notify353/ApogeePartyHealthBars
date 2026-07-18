@@ -7,17 +7,14 @@ local Actions = ApogeePartyHealthBars_ActionMacros
 ApogeePartyHealthBars_KeyConfig = {}
 local KC = ApogeePartyHealthBars_KeyConfig
 
-local tab, K, D, hint, layoutSelector, gridFrame, detailRow, statusText
+local tab, K, D, list, layoutSelector
 local lastSpecKey, lastLayoutKey
-local tiles, definitions = {}, {}
-local TILE_SIZE, TILE_GAP = 42, 5
-local GRID_HEIGHT = TILE_SIZE * 4 + TILE_GAP * 3
-local QUESTION_MARK = "Interface\\Icons\\INV_Misc_QuestionMark"
+local slotRows, definitions = {}, {}
 local statusIsConflict = false
 
 local function setStatus(message, good)
     statusIsConflict = false
-    statusText:SetText((good and "|cff00ff00" or "|cffffaa00") .. tostring(message or "") .. "|r")
+    AC.SetActionListStatus(list, message, good)
 end
 
 local function bindingConflictMessage(conflicts)
@@ -38,27 +35,13 @@ local function selectedLayout()
     return S.selectedKeyLayout
 end
 
-local function focusSlot(slotId)
-    if not definitions[slotId] then return end
-    S.focusedKeySlot = slotId
-    S.selectedBindingKey = nil
-    S.selectedShortcutSlot = nil
-    S.selectedWheelSlot = nil
-    AC.CloseEditor()
-    KC.Refresh()
-end
-
-local function focusedSlot()
-    return definitions[S.focusedKeySlot] and S.focusedKeySlot or nil
-end
-
-local function openMacroEditor()
-    local slotId = focusedSlot()
+local function openMacroEditor(slotId)
     local layoutKey = selectedLayout()
-    local entry = slotId and K.GetSlot(layoutKey, slotId)
-    if not entry then return end
+    local entry = K.GetSlot(layoutKey, slotId)
+    local definition = definitions[slotId]
+    if not entry or not definition then return end
     AC.OpenEditor({
-        title = "Edit " .. definitions[slotId].label .. " macro",
+        title = "Edit " .. definition.label .. " macro",
         actionName = Actions.GetName(entry),
         macroText = K.GetMacro(layoutKey, slotId),
         resetText = K.ResetMacro(layoutKey, slotId),
@@ -67,37 +50,23 @@ local function openMacroEditor()
     })
 end
 
-local function styleTile(tile, focused)
-    if focused then
-        tile.bg:SetColorTexture(0.24, 0.20, 0.06, 1)
-        tile.border:SetColorTexture(1.00, 0.82, 0.00, 1)
-    else
-        tile.bg:SetColorTexture(0.10, 0.10, 0.12, 1)
-        tile.border:SetColorTexture(0.36, 0.36, 0.40, 0.75)
-    end
-end
-
 function KC.Refresh(assignedSlot)
     if not tab then return end
-    if assignedSlot then
-        AC.CloseEditor()
-        S.focusedKeySlot = assignedSlot
-    end
+    if assignedSlot then AC.CloseEditor() end
     local specKey = K.GetActiveSpecKey()
     local layoutKey = selectedLayout()
     if (lastSpecKey and lastSpecKey ~= specKey)
         or (lastLayoutKey and lastLayoutKey ~= layoutKey) then
         AC.CloseEditor()
-        S.focusedKeySlot = nil
     end
     lastSpecKey, lastLayoutKey = specKey, layoutKey
 
     local bindingStatus, conflicts = K.GetBindingStatus()
     if bindingStatus == "conflict" then
-        statusText:SetText("|cffffaa00" .. bindingConflictMessage(conflicts) .. "|r")
+        AC.SetActionListStatus(list, bindingConflictMessage(conflicts), false)
         statusIsConflict = true
     elseif statusIsConflict then
-        statusText:SetText("")
+        AC.SetActionListStatus(list, "")
         statusIsConflict = false
     end
 
@@ -105,52 +74,28 @@ function KC.Refresh(assignedSlot)
     layoutSelector:SetOptions(K.GetLayoutOptions())
     layoutSelector:SetSelectedKey(layoutKey)
     layoutSelector:SetShown(hasStances)
-    local anchor = hasStances and layoutSelector or hint
-    gridFrame:ClearAllPoints()
-    gridFrame:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -8)
 
-    hint:SetText("Drag a Spellbook spell or bag item onto a key. Click a key to inspect its macro and sound.")
-
-    for slotId, tile in pairs(tiles) do
+    local rows = {}
+    local order = K.GetDisplayOrder()
+    for index, slotId in ipairs(order) do
+        local row = slotRows[slotId]
         local entry = K.GetSlot(layoutKey, slotId)
+        local definition = definitions[slotId]
         local name, icon = K.GetSlotDisplay(layoutKey, slotId)
-        tile.icon:SetTexture(icon or QUESTION_MARK)
-        tile.icon:SetDesaturated(not entry)
-        tile.tooltipName = name or "Empty"
-        styleTile(tile, S.focusedKeySlot == slotId)
+        local kindLabel = entry and (entry.kind == "item" and "Item" or "Spell") or "Empty"
+        AC.SetActionRowState(row, {
+            active = entry ~= nil,
+            icon = icon,
+            name = name or "Empty",
+            detail = (definition and definition.label or slotId) .. " — " .. kindLabel,
+            soundKey = entry and K.GetSlotSoundKey(layoutKey, slotId),
+            macroCustomized = entry and K.IsMacroCustomized(layoutKey, slotId),
+            canMoveUp = entry ~= nil and index > 1,
+            canMoveDown = entry ~= nil and index < #order,
+        })
+        rows[#rows + 1] = row
     end
-
-    local slotId = focusedSlot()
-    local entry = slotId and K.GetSlot(layoutKey, slotId)
-    local definition = slotId and definitions[slotId]
-    local name, icon
-    if slotId then name, icon = K.GetSlotDisplay(layoutKey, slotId) end
-    detailRow.icon:SetTexture(icon or QUESTION_MARK)
-    detailRow.icon:SetDesaturated(not entry)
-    detailRow.primary:SetText(name or (definition and definition.label) or "Select a key")
-    detailRow.primary:SetTextColor(entry and 0.86 or 0.55, entry and 0.86 or 0.55,
-        entry and 1 or 0.58)
-    local kindLabel = entry and (entry.kind == "item" and "Item" or "Spell") or "Empty"
-    detailRow.secondary:SetText(definition
-        and (definition.label .. " — " .. kindLabel)
-        or "Choose a tile in the key layout")
-    if entry then
-        detailRow.sound:SetSelectedKey(K.GetSlotSoundKey(layoutKey, slotId) or "none")
-        detailRow.sound:Enable(); detailRow.macro:Enable(); detailRow.clear:Enable()
-        detailRow.macro.label:SetText(K.IsMacroCustomized(layoutKey, slotId) and "Macro*" or "Macro")
-    else
-        detailRow.sound:SetSelectedKey("none")
-        detailRow.sound:Disable(); detailRow.macro:Disable(); detailRow.clear:Disable()
-        detailRow.macro.label:SetText("Macro")
-    end
-    local index
-    for candidateIndex, candidate in ipairs(K.GetDisplayOrder()) do
-        if candidate == slotId then index = candidateIndex; break end
-    end
-    UIH.SetButtonEnabled(detailRow.up, entry ~= nil and index and index > 1)
-    UIH.SetButtonEnabled(detailRow.down,
-        entry ~= nil and index and index < #K.GetDisplayOrder())
-    AC.SetRowSelected(detailRow, slotId ~= nil)
+    AC.LayoutActionList(list, rows, hasStances and layoutSelector or nil)
 end
 
 function KC.Build(parent, deps)
@@ -161,93 +106,59 @@ function KC.Build(parent, deps)
     tab:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -C.BIND_PAD, C.BIND_PAD)
     tab:Hide()
 
-    local heading = tab:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    heading:SetPoint("TOPLEFT"); heading:SetText("|cffFFD700Key actions|r")
-
-    hint = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    hint:SetPoint("TOPLEFT", heading, "BOTTOMLEFT", 0, -4)
-    hint:SetWidth(C.CONFIG_CONTENT_W); hint:SetJustifyH("LEFT")
-
-    layoutSelector = UIH.CreateDropdown(tab, C.CONFIG_CONTENT_W, 22, C.CONFIG_CONTENT_W)
-    layoutSelector:SetPoint("TOPLEFT", hint, "BOTTOMLEFT", 0, -8)
+    list = AC.CreateActionList(tab, "ApogeePartyHealthBarsKeyConfigScroll")
+    layoutSelector = UIH.CreateDropdown(list.content, list.rowWidth, 22, list.rowWidth)
     layoutSelector:SetSelectionCallback(function(layoutKey)
         if not K.IsKnownLayout(layoutKey) then return end
         S.selectedKeyLayout = layoutKey
-        S.focusedKeySlot = nil
-        AC.CloseEditor(); statusText:SetText("")
-        KC.Refresh()
+        AC.CloseEditor(); setStatus(""); KC.Refresh()
     end)
 
-    gridFrame = CreateFrame("Frame", nil, tab)
-    gridFrame:SetSize(TILE_SIZE * 5 + TILE_GAP * 4, GRID_HEIGHT)
     for _, definition in ipairs(K.GetDefinitions()) do
         definitions[definition.id] = definition
-        local slotId = definition.id
-        local tile = UIH.CreateButton(gridFrame, definition.displayKey, TILE_SIZE, TILE_SIZE)
-        local x = (definition.column - 1) * (TILE_SIZE + TILE_GAP)
-        local y = -(definition.row - 1) * (TILE_SIZE + TILE_GAP)
-        tile:SetPoint("TOPLEFT", gridFrame, "TOPLEFT", x, y)
-        tile.label:ClearAllPoints(); tile.label:SetPoint("TOPLEFT", tile, "TOPLEFT", 4, -3)
-        tile.label:SetTextColor(1, 0.82, 0.15)
-        local icon = tile:CreateTexture(nil, "ARTWORK")
-        icon:SetSize(28, 28); icon:SetPoint("BOTTOMRIGHT", tile, "BOTTOMRIGHT", -3, 3)
-        icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-        tile.icon = icon
-        tile:SetScript("OnClick", function()
+    end
+    for _, slotId in ipairs(K.GetDisplayOrder()) do
+        local boundSlotId = slotId
+        local row = AC.CreateActionRow(list.content, list.rowWidth)
+        row.sound:SetOptions(D.Sounds.GetOptions(true))
+        row:SetScript("OnClick", function()
             local cursorType = GetCursorInfo and GetCursorInfo()
             if (cursorType == "spell" or cursorType == "item") and D.AssignCursorDrop then
-                D.AssignCursorDrop("keys", slotId, selectedLayout())
-                return
+                D.AssignCursorDrop("keys", boundSlotId, selectedLayout())
             end
-            focusSlot(slotId)
         end)
-        tile:SetScript("OnReceiveDrag", function()
-            if D.AssignCursorDrop then D.AssignCursorDrop("keys", slotId, selectedLayout()) end
+        row:SetScript("OnReceiveDrag", function()
+            if D.AssignCursorDrop then
+                D.AssignCursorDrop("keys", boundSlotId, selectedLayout())
+            end
         end)
-        tiles[slotId] = tile
+        row.sound:SetSelectionCallback(function(soundKey)
+            local layoutKey = selectedLayout()
+            if not K.GetSlot(layoutKey, boundSlotId) then return end
+            K.SetSlotSound(layoutKey, boundSlotId, soundKey)
+            K.PreviewSound(layoutKey, boundSlotId)
+            KC.Refresh()
+        end)
+        row.macro:SetScript("OnClick", function() openMacroEditor(boundSlotId) end)
+        row.up:SetScript("OnClick", function()
+            local moved, message = K.MoveSlot(selectedLayout(), boundSlotId, -1)
+            if not moved and message then setStatus(message, false) end
+            KC.Refresh()
+        end)
+        row.down:SetScript("OnClick", function()
+            local moved, message = K.MoveSlot(selectedLayout(), boundSlotId, 1)
+            if not moved and message then setStatus(message, false) end
+            KC.Refresh()
+        end)
+        row.clear:SetScript("OnClick", function()
+            local ok, message = K.ClearSlot(selectedLayout(), boundSlotId)
+            AC.CloseEditor(); setStatus(message, ok); KC.Refresh()
+        end)
+        slotRows[slotId] = row
     end
-
-    detailRow = AC.CreateActionRow(tab, C.CONFIG_CONTENT_W)
-    detailRow:SetPoint("TOPLEFT", gridFrame, "BOTTOMLEFT", 0, -8)
-    detailRow.sound:SetOptions(D.Sounds.GetOptions(true))
-    detailRow.sound:SetSelectionCallback(function(soundKey)
-        local slotId = focusedSlot()
-        if not slotId or not K.GetSlot(selectedLayout(), slotId) then return end
-        K.SetSlotSound(selectedLayout(), slotId, soundKey)
-        K.PreviewSound(selectedLayout(), slotId)
-        KC.Refresh()
-    end)
-    detailRow.macro:SetScript("OnClick", openMacroEditor)
-    detailRow.up.label:SetText("Prev")
-    detailRow.up:SetScript("OnClick", function()
-        local slotId = focusedSlot()
-        if not slotId then return end
-        local moved, nextSlot = K.MoveSlot(selectedLayout(), slotId, -1)
-        if moved then S.focusedKeySlot = nextSlot end
-        KC.Refresh()
-    end)
-    detailRow.down.label:SetText("Next")
-    detailRow.down:SetScript("OnClick", function()
-        local slotId = focusedSlot()
-        if not slotId then return end
-        local moved, nextSlot = K.MoveSlot(selectedLayout(), slotId, 1)
-        if moved then S.focusedKeySlot = nextSlot end
-        KC.Refresh()
-    end)
-    detailRow.clear:SetScript("OnClick", function()
-        local slotId = focusedSlot()
-        if not slotId then return end
-        local ok, message = K.ClearSlot(selectedLayout(), slotId)
-        AC.CloseEditor(); setStatus(message, ok); KC.Refresh()
-    end)
-
-    statusText = tab:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    statusText:SetPoint("TOPLEFT", detailRow, "BOTTOMLEFT", 0, -7)
-    statusText:SetWidth(C.CONFIG_CONTENT_W); statusText:SetJustifyH("LEFT"); statusText:SetWordWrap(false)
     KC.Refresh()
     return tab
 end
 
-KC.GetTiles = function() return tiles end
-KC.GetDetailRow = function() return detailRow end
-KC.GetStatusText = function() return statusText end
+KC.GetRows = function() return slotRows end
+KC.GetList = function() return list end

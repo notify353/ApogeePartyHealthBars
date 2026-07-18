@@ -9,6 +9,15 @@ local overlay, dialog, title, actionName, editor, byteCount, statusText
 local resetButton, cancelButton, saveButton
 local current
 
+local LIST_SCROLLBAR_W = 24
+local LIST_HINT_H = 18
+local LIST_ROW_H = 36
+local LIST_ROW_GAP = 3
+local LIST_FIRST_ROW_GAP = 9
+local LIST_STATUS_GAP = 7
+local LIST_STATUS_H = 16
+local QUESTION_MARK_ICON = "Interface\\Icons\\INV_Misc_QuestionMark"
+
 local function setStatus(message, good)
     if not statusText then return end
     statusText:SetText((good and "|cff00ff00" or "|cffffaa00") .. tostring(message or "") .. "|r")
@@ -50,10 +59,6 @@ function AC.CreateActionRow(parent, width)
     bg:SetAllPoints(); bg:SetColorTexture(0.075, 0.075, 0.09, 1)
     local highlight = row:CreateTexture(nil, "HIGHLIGHT")
     highlight:SetAllPoints(); highlight:SetColorTexture(1, 1, 1, 0.05)
-    local accent = row:CreateTexture(nil, "OVERLAY")
-    accent:SetWidth(3); accent:SetPoint("TOPLEFT"); accent:SetPoint("BOTTOMLEFT")
-    accent:SetColorTexture(1, 0.82, 0, 1); accent:Hide()
-
     local icon = row:CreateTexture(nil, "ARTWORK")
     icon:SetSize(24, 24); icon:SetPoint("LEFT", row, "LEFT", 7, 0)
     icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
@@ -79,17 +84,117 @@ function AC.CreateActionRow(parent, width)
     secondary:SetPoint("RIGHT", primary, "RIGHT", 0, -12)
     secondary:SetJustifyH("LEFT"); secondary:SetWordWrap(false)
 
-    row.bg, row.accent, row.icon = bg, accent, icon
+    row.bg, row.icon = bg, icon
     row.primary, row.secondary = primary, secondary
     row.sound, row.macro, row.up, row.down, row.clear = sound, macro, up, down, clear
     return row
 end
 
-function AC.SetRowSelected(row, selected)
+function AC.SetActionRowState(row, options)
     if not row then return end
-    row.accent:SetShown(selected == true)
-    row.bg:SetColorTexture(selected and 0.15 or 0.075,
-        selected and 0.15 or 0.075, selected and 0.18 or 0.09, 1)
+    options = options or {}
+    local active = options.active == true
+    local available = options.available ~= false
+    row.icon:SetTexture(options.icon or QUESTION_MARK_ICON)
+    row.icon:SetDesaturated(not active or not available)
+    row.primary:SetText(options.name or "Empty")
+    if active and available then
+        row.primary:SetTextColor(0.86, 0.86, 1)
+    elseif active then
+        row.primary:SetTextColor(0.48, 0.48, 0.50)
+    else
+        row.primary:SetTextColor(0.43, 0.43, 0.45)
+    end
+    row.secondary:SetText(options.detail or "Empty")
+    row.sound:SetSelectedKey(active and (options.soundKey or "none") or "none")
+    if active then row.sound:Enable() else row.sound:Disable() end
+    UIH.SetButtonEnabled(row.macro, active)
+    UIH.SetButtonEnabled(row.clear, active)
+    UIH.SetButtonEnabled(row.up, active and options.canMoveUp == true)
+    UIH.SetButtonEnabled(row.down, active and options.canMoveDown == true)
+    row.macro.label:SetText(active and options.macroCustomized and "Macro*" or "Macro")
+end
+
+function AC.CreateActionList(parent, frameName)
+    local scroll = CreateFrame("ScrollFrame", frameName, parent, "UIPanelScrollFrameTemplate")
+    scroll:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 0)
+    scroll:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -LIST_SCROLLBAR_W, 0)
+
+    local content = CreateFrame("Frame", nil, scroll)
+    local rowWidth = C.CONFIG_CONTENT_W - LIST_SCROLLBAR_W
+    content:SetWidth(rowWidth)
+    scroll:SetScrollChild(content)
+
+    local hint = content:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    hint:SetPoint("TOPLEFT", content, "TOPLEFT", 0, 0)
+    hint:SetWidth(rowWidth); hint:SetHeight(LIST_HINT_H)
+    hint:SetJustifyH("LEFT"); hint:SetJustifyV("TOP"); hint:SetWordWrap(false)
+    hint:SetText("Drag a spell or bag item onto a row.")
+
+    local status = content:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    status:SetWidth(rowWidth); status:SetJustifyH("LEFT"); status:SetWordWrap(false)
+
+    local list = {
+        scroll = scroll,
+        content = content,
+        hint = hint,
+        status = status,
+        rowWidth = rowWidth,
+    }
+
+    local scrollBar = scroll.ScrollBar
+    if scrollBar then
+        scrollBar:Hide()
+        scroll:HookScript("OnScrollRangeChanged", function(_, _, verticalRange)
+            scrollBar:SetShown((verticalRange or 0) > 0)
+        end)
+    end
+    return list
+end
+
+function AC.SetActionListStatus(list, message, good)
+    if not list or not list.status then return end
+    if not message or message == "" then
+        list.status:SetText("")
+        return
+    end
+    list.status:SetText((good and "|cff00ff00" or "|cffffaa00")
+        .. tostring(message) .. "|r")
+end
+
+function AC.LayoutActionList(list, rows, layoutControl)
+    if not list then return end
+    rows = rows or {}
+    local anchor = list.hint
+    local contentHeight = LIST_HINT_H
+
+    if layoutControl then
+        layoutControl:ClearAllPoints()
+        layoutControl:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -8)
+        anchor = layoutControl
+        contentHeight = contentHeight + 8 + 22
+    end
+
+    for index, row in ipairs(rows) do
+        row:ClearAllPoints()
+        row:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0,
+            index == 1 and -LIST_FIRST_ROW_GAP or -LIST_ROW_GAP)
+        anchor = row
+    end
+    if #rows > 0 then
+        contentHeight = contentHeight + LIST_FIRST_ROW_GAP
+            + #rows * LIST_ROW_H + (#rows - 1) * LIST_ROW_GAP
+    end
+
+    list.status:ClearAllPoints()
+    list.status:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -LIST_STATUS_GAP)
+    contentHeight = contentHeight + LIST_STATUS_GAP + LIST_STATUS_H
+    list.content:SetHeight(contentHeight)
+
+    local scrollBar = list.scroll.ScrollBar
+    if scrollBar and list.scroll.GetVerticalScrollRange then
+        scrollBar:SetShown((list.scroll:GetVerticalScrollRange() or 0) > 0)
+    end
 end
 
 function AC.Initialize(parent, applyBackdrop)

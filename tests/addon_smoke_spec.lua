@@ -548,8 +548,10 @@ ApogeePartyHealthBars_ConfigUI.RefreshBindPanel = function(...)
 end
 router.Dispatch("GET_ITEM_INFO_RECEIVED", 1251, true)
 assert(keysRuntime.GetSlot(keysLayout, "keyG").itemName == "Heavy Linen Bandage"
-        and keysRuntime.GetMacro(keysLayout, "keyG") == "/use Heavy Linen Bandage",
-    "Keys did not refresh a localized generated item action")
+        and keysRuntime.GetMacro(keysLayout, "keyG") == "/use Linen Bandage"
+        and keyGSecure:GetAttribute("macrotext"):find("/use Linen Bandage", 1, true)
+        and not keyGSecure:GetAttribute("macrotext"):find("/use Heavy Linen Bandage", 1, true),
+    "Keys item metadata refresh rewrote a saved macro without Reset")
 assert(healingItemInfoRefreshes == 1,
     "item information did not refresh the open Healing assignment labels")
 smokeItemName = "Linen Bandage"
@@ -696,9 +698,9 @@ local existingShortcutButton = assert(shortcutButtons[1], "missing existing Shor
 local addedShortcutButton = assert(shortcutButtons[2], "missing newly assigned Shortcut secure button")
 local itemShortcutButton = assert(shortcutButtons[3], "missing item Shortcut secure button")
 assert(existingShortcutButton.attributes.type == "macro"
-    and existingShortcutButton.attributes.macrotext:find("/cast [nochanneling:Fireball] Fireball(Rank 1)", 1, true))
+    and existingShortcutButton.attributes.macrotext:find("/cast Fireball(Rank 1)", 1, true))
 assert(addedShortcutButton.attributes.type == "macro"
-    and addedShortcutButton.attributes.macrotext:find("/cast [nochanneling:Frostbolt] Frostbolt(Rank 1)", 1, true))
+    and addedShortcutButton.attributes.macrotext:find("/cast Frostbolt(Rank 1)", 1, true))
 assert(itemShortcutButton.attributes.type == "macro"
     and itemShortcutButton.attributes.macrotext == "/use Linen Bandage")
 smokeItemCount = 0
@@ -727,8 +729,8 @@ RunFrameUpdates()
 assert(existingShortcutButton.pointWrites > existingImmediatePoints
         and addedShortcutButton.pointWrites > addedImmediatePoints,
     "settings close did not reconcile Shortcut overlays on the next frame")
-assert(existingShortcutButton.attributes.macrotext:find("/cast [nochanneling:Fireball] Fireball(Rank 1)", 1, true)
-        and addedShortcutButton.attributes.macrotext:find("/cast [nochanneling:Frostbolt] Frostbolt(Rank 1)", 1, true),
+assert(existingShortcutButton.attributes.macrotext:find("/cast Fireball(Rank 1)", 1, true)
+        and addedShortcutButton.attributes.macrotext:find("/cast Frostbolt(Rank 1)", 1, true),
     "settings close changed Shortcut secure attributes")
 assert(existingShortcutButton.shown and existingShortcutButton.mouseEnabled
         and addedShortcutButton.shown and addedShortcutButton.mouseEnabled,
@@ -834,6 +836,7 @@ local legacyCharacter = {
 }
 ApogeePartyHealthBars_Effects.InitializeSavedVariables({}, legacyCharacter)
 assert(legacyCharacter.shortcuts and legacyCharacter.shortcuts[1].spellName == "Fireball"
+    and legacyCharacter.shortcuts[1].macroText == "/cast Custom Fireball"
     and legacyCharacter.trackedSpells == nil and legacyCharacter.trackedSpellsSchemaVersion == nil
     and legacyCharacter.trackerDefaultsVersion == nil and legacyCharacter.shortcutDefaultsVersion == 1,
     "legacy tracked spells were not moved once into clean Shortcut saved data")

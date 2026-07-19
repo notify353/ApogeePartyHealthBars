@@ -8,44 +8,77 @@ A.MAX_BODY_BYTES = 255
 
 local TARGET_ENEMY = "/targetenemy [noexists][dead][help]"
 local MELEE_AUTO_ATTACK_IDS = { [6603] = true }
-local AUTO_SHOT_IDS = { [75] = true }
-local WAND_SHOOT_IDS = { [5019] = true }
+local RANGED_AUTO_ATTACK_IDS = { [75] = true, [5019] = true }
 
-local function fallbackBaseName(spellName)
-    if type(spellName) ~= "string" then return nil end
-    return spellName:match("^(.-)%s*%([^()]+%)$") or spellName
-end
+-- Canonical rank-one or talent spell IDs are used only to resolve the client's
+-- localized family name. Assigned ranks are matched by that localized name so
+-- the policy does not depend on English text or on enumerating every rank.
+local MELEE_ATTACK_FAMILY_IDS = {
+    -- Warrior
+    78, 845, 772, 1715, 7386, 7384, 6572, 5308, 1464, 1680,
+    12294, 23881, 23922, 20243,
+    -- Hunter
+    2973, 1495, 19306, 2974,
+    -- Paladin and Shaman
+    35395, 20271, 17364,
+}
 
-local function resolveBaseName(spellId, spellName)
-    local identifier = spellId or spellName
-    if identifier and C_Spell and C_Spell.GetSpellInfo then
-        local info = C_Spell.GetSpellInfo(identifier)
-        if info and type(info.name) == "string" and info.name:find("%S") then return info.name end
+local STEALTH_SAFE_MELEE_ATTACK_FAMILY_IDS = {
+    -- Rogue
+    1752, 53, 2098, 1943, 16511, 14278, 5938, 1329, 32645, 8647,
+    -- Druid
+    1082, 1822, 5221, 33876, 33878, 1079, 22568, 6807, 33745, 779,
+}
+
+local function getSpellInfo(identifier)
+    if identifier == nil then return nil, nil end
+    if C_Spell and type(C_Spell.GetSpellInfo) == "function" then
+        local ok, info = pcall(C_Spell.GetSpellInfo, identifier)
+        if ok and info and type(info.name) == "string" and info.name:find("%S") then
+            return info.name, info.spellID
+        end
     end
-    return fallbackBaseName(spellName)
+    if type(GetSpellInfo) == "function" then
+        local ok, name, _, _, _, _, _, spellID = pcall(GetSpellInfo, identifier)
+        if ok and type(name) == "string" and name:find("%S") then return name, spellID end
+    end
+    return nil, nil
 end
 
 local function resolveSpellId(spellId, spellName)
     if spellId then return spellId end
-    if spellName and C_Spell and C_Spell.GetSpellInfo then
-        local info = C_Spell.GetSpellInfo(spellName)
-        return info and info.spellID
-    end
+    local _, resolvedId = getSpellInfo(spellName)
+    return resolvedId
 end
 
 local function spellPredicate(name, identifier)
-    return identifier ~= nil and C_Spell and type(C_Spell[name]) == "function"
-        and C_Spell[name](identifier) == true
+    if identifier == nil or not C_Spell or type(C_Spell[name]) ~= "function" then return false end
+    local ok, result = pcall(C_Spell[name], identifier)
+    return ok and result == true
+end
+
+local function matchesFamily(assignedName, canonicalIds)
+    if not assignedName then return false end
+    for _, canonicalId in ipairs(canonicalIds) do
+        local canonicalName = getSpellInfo(canonicalId)
+        if canonicalName and canonicalName == assignedName then return true end
+    end
+    return false
 end
 
 local function classifySpell(spellId, spellName)
     local identifier = spellId or spellName
+    local assignedName = getSpellInfo(spellName)
+    local idName = spellId and getSpellInfo(spellId) or nil
+    -- Saved or imported actions can contain stale or mismatched identity fields.
+    -- Never let one spell's ID add attack behavior to a different cast name.
+    if not assignedName or (spellId and (not idName or idName ~= assignedName)) then
+        return "standard-spell"
+    end
     local resolvedId = resolveSpellId(spellId, spellName)
-    -- The client predicate is equipment-sensitive and returns false for Shoot
-    -- when a wand is not currently equipped, even though the assignment must
-    -- remain spam-safe after the player equips one.
-    if WAND_SHOOT_IDS[resolvedId] then return "wand-shoot" end
-    if AUTO_SHOT_IDS[resolvedId] then return "ranged-auto" end
+    -- The client predicates are equipment-sensitive, so retain stable IDs for
+    -- Auto Shot and wand Shoot after the relevant weapon is unequipped.
+    if RANGED_AUTO_ATTACK_IDS[resolvedId] then return "ranged-auto" end
     if MELEE_AUTO_ATTACK_IDS[resolvedId] or spellPredicate("IsAutoAttackSpell", identifier) then
         return "melee-auto"
     end
@@ -53,26 +86,29 @@ local function classifySpell(spellId, spellName)
             or spellPredicate("IsAutoRepeatSpell", identifier) then
         return "ranged-auto"
     end
+    if matchesFamily(assignedName, STEALTH_SAFE_MELEE_ATTACK_FAMILY_IDS) then
+        return "stealth-safe-melee-attack"
+    end
+    if matchesFamily(assignedName, MELEE_ATTACK_FAMILY_IDS) then return "melee-attack" end
     return "standard-spell"
 end
 
-local function renderSpellTemplate(spellName, baseName, templateId)
+local function renderSpellTemplate(spellName, templateId)
     if type(spellName) ~= "string" or not spellName:find("%S") then return nil end
-    baseName = type(baseName) == "string" and baseName:find("%S") and baseName or fallbackBaseName(spellName)
     if templateId == "melee-auto" then return TARGET_ENEMY .. "\n/startattack" end
-    if templateId == "wand-shoot" then
-        return TARGET_ENEMY .. "\n/castsequence [nochanneling:" .. baseName
-            .. "] reset=target/2 !" .. spellName .. ", null\n/startattack"
-    end
-    local castLine = "/cast [nochanneling:" .. baseName .. "] "
-        .. (templateId == "ranged-auto" and "!" or "") .. spellName
+    local castLine = "/cast " .. (templateId == "ranged-auto" and "!" or "") .. spellName
     if templateId == "ranged-auto" then return TARGET_ENEMY .. "\n" .. castLine .. "\n/startattack" end
+    if templateId == "melee-attack" then
+        return TARGET_ENEMY .. "\n/startattack\n" .. castLine
+    end
+    if templateId == "stealth-safe-melee-attack" then
+        return TARGET_ENEMY .. "\n/startattack [nostealth]\n" .. castLine
+    end
     return castLine
 end
 
 function A.BuildDefaultSpellMacro(spellName, spellId)
-    return renderSpellTemplate(spellName, resolveBaseName(spellId, spellName),
-        classifySpell(spellId, spellName))
+    return renderSpellTemplate(spellName, classifySpell(spellId, spellName))
 end
 
 function A.GetSpellTemplateId(spellName, spellId)
@@ -98,16 +134,6 @@ end
 function A.ResolveDisplay(entry)
     local normalized = Data.Normalize(entry)
     if not normalized then return nil, nil, nil, false end
-    if normalized.kind == "item" then
-        local priorDefault = A.BuildDefaultMacro(normalized)
-        local priorName = entry.itemName
-        local name, icon, itemId, available = Data.ResolveDisplay(entry)
-        if name and priorName ~= name then
-            local generated = entry.macroText == priorDefault
-            if generated then entry.macroText = A.BuildDefaultMacro(entry) end
-        end
-        return name, icon, itemId, available
-    end
     return Data.ResolveDisplay(entry)
 end
 
@@ -174,20 +200,29 @@ function A.GetTemplateTopics()
         {
             id = "generated-standard-spell", category = "generated", kind = "template",
             title = "Standard Spell Template",
-            explanation = "Casts the assigned spell without clipping another cast of that same spell while it is channeling.",
-            applied = "New spell assignments in Shortcuts, Keys, and Wheel, plus Reset in their macro editors.",
+            explanation = "Casts the exact assigned spell and rank with no added targeting or combat behavior.",
+            applied = "New spell assignments in Shortcuts, Keys, Wheel, and Buttons, plus Reset in their macro editors.",
             why = "The neutral default does not retarget, begin combat, break crowd control, or interfere with friendly and utility spells.",
-            tradeoffs = "Add explicit target, mouseover, focus, or attack behavior in a custom macro when the spell needs it.",
-            body = renderSpellTemplate("Fireball(Rank 1)", "Fireball", "standard-spell"), copyable = true,
+            tradeoffs = "Add channel protection, unit targeting, modifiers, or attack behavior only when the assigned spell benefits from it.",
+            body = renderSpellTemplate("Fireball(Rank 1)", "standard-spell"), copyable = true,
         },
         {
-            id = "generated-channel-spell", category = "generated", kind = "template",
-            title = "Channel-Safe Spell Example",
-            explanation = "Shows the standard template applied to Mind Flay. Spamming the same binding cannot restart Mind Flay before its current channel finishes.",
-            applied = "Automatically through the standard spell template; no channel-spell catalog or manual option is required.",
-            why = "The spell-specific nochanneling condition protects the active channel while allowing a different ability to interrupt it normally.",
-            tradeoffs = "This protects only Mind Flay from itself and prevents queuing another Mind Flay during the active channel.",
-            body = renderSpellTemplate("Mind Flay(Rank 7)", "Mind Flay", "standard-spell"), copyable = true,
+            id = "generated-melee-attack", category = "generated", kind = "template",
+            title = "Melee Combat Ability",
+            explanation = "Acquires an enemy only when necessary, keeps auto-attack running, and casts the exact assigned ability and rank.",
+            applied = "New assignments and Reset for explicitly reviewed Warrior, Hunter-melee, Paladin, and Shaman combat families.",
+            why = "The weapon swing continues even when the ability cannot fire because of resources, stance, range, or cooldown.",
+            tradeoffs = "Only curated weapon abilities receive this behavior; uncertain, control, movement, and utility actions remain direct casts.",
+            body = renderSpellTemplate("Heroic Strike(Rank 1)", "melee-attack"), copyable = true,
+        },
+        {
+            id = "generated-stealth-safe-melee", category = "generated", kind = "template",
+            title = "Stealth-Safe Melee Ability",
+            explanation = "Uses the melee combat template but starts auto-attack only while the player is not stealthed.",
+            applied = "New assignments and Reset for explicitly reviewed Rogue and Feral Druid combat families.",
+            why = "A failed ability press cannot waste Stealth or Prowl; a successful ability breaks stealth through its normal game behavior.",
+            tradeoffs = "Stealth openers and control abilities remain direct casts and are not included in this family.",
+            body = renderSpellTemplate("Sinister Strike(Rank 1)", "stealth-safe-melee-attack"), copyable = true,
         },
         {
             id = "generated-melee-auto", category = "generated", kind = "template",
@@ -196,31 +231,22 @@ function A.GetTemplateTopics()
             applied = "New assignments of WoW's melee Attack action, plus Reset.",
             why = "Attack is the one spell family where target acquisition and /startattack are always the requested behavior.",
             tradeoffs = "It intentionally engages a target and contains no cast command.",
-            body = renderSpellTemplate("Attack", "Attack", "melee-auto"), copyable = true,
+            body = renderSpellTemplate("Attack", "melee-auto"), copyable = true,
         },
         {
             id = "generated-ranged-auto", category = "generated", kind = "template",
-            title = "Spam-Safe Auto Shot",
-            explanation = "Uses ! to start Auto Shot and other client-confirmed ranged auto-attacks without toggling them off when the binding is spammed.",
-            applied = "New Auto Shot or client-confirmed ranged auto-attack assignments, plus Reset.",
+            title = "Spam-Safe Ranged Auto-Attack",
+            explanation = "Uses ! to start Auto Shot, wand Shoot, and other client-confirmed repeating attacks without toggling them off when the binding is spammed.",
+            applied = "New Auto Shot, Shoot, or client-confirmed ranged auto-attack assignments, plus Reset.",
             why = "The exclamation prefix preserves the repeating attack, while /startattack provides a melee fallback at close range.",
             tradeoffs = "The melee fallback can engage a nearby target when the ranged attack cannot fire; remove /startattack in a custom macro if that is unwanted.",
-            body = renderSpellTemplate("Auto Shot", "Auto Shot", "ranged-auto"), copyable = true,
-        },
-        {
-            id = "generated-wand-shoot", category = "generated", kind = "template",
-            title = "Spam-Safe Wand Shoot",
-            explanation = "Starts Shoot once, then holds the sequence on an intentionally invalid step while the key is spammed so another press cannot toggle wand fire off.",
-            applied = "New assignments of the wand Shoot spell, plus Reset.",
-            why = "Classic clients have handled !Shoot inconsistently; the short target-or-time reset is the established wand-specific safeguard.",
-            tradeoffs = "After Shoot starts, release the key for two seconds or change targets before starting it again. Use a custom !Shoot macro if the current client proves reliable with it.",
-            body = renderSpellTemplate("Shoot", "Shoot", "wand-shoot"), copyable = true,
+            body = renderSpellTemplate("Auto Shot", "ranged-auto"), copyable = true,
         },
         {
             id = "generated-item", category = "generated", kind = "template",
             title = "Item Template",
             explanation = "Uses the localized item name through WoW's /use command.",
-            applied = "New bag-item assignments in Shortcuts, Keys, and Wheel, plus Reset.",
+            applied = "New bag-item assignments in Shortcuts, Keys, Wheel, and Buttons, plus Reset.",
             why = "A direct /use line preserves normal item targeting, cooldown, and inventory behavior.",
             tradeoffs = "Items that need a unit, cursor, modifier, or equipment slot require a custom macro.",
             body = A.BuildDefaultItemMacro("Linen Bandage"), copyable = true,

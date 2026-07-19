@@ -24,13 +24,15 @@ end
 assert(#L.GetRecipesForClass("MAGE", "pet") == 0, "mage unexpectedly received a pet recipe")
 assert(#L.GetRecipesForClass("HUNTER", "pet") == 1, "hunter pet recipe missing")
 assert(L.GetRecipe("wand-safe-shoot").body
-    == "/targetenemy [noexists][dead][help]\n/castsequence reset=target/2 !Shoot, null\n/startattack")
+    == "/targetenemy [noexists][dead][help]\n/cast !Shoot\n/startattack")
 assert(L.GetRecipe("hunter-safe-auto-shot").body
     == "/targetenemy [noexists][dead][help]\n/cast !Auto Shot\n/startattack")
+assert(L.GetRecipe("hunter-force-auto-shot").body
+    == "/cast !Auto Shot\n/cast Arcane Shot")
 local mageTopics = L.GetTopicsForClass("MAGE", "all")
 assert(#L.GetTopicsForClass("MAGE", "generated") == 6, "generated macro glossary is incomplete")
-assert(#L.GetTopicsForClass("MAGE", "syntax") == 18, "macro syntax glossary is incomplete")
-assert(#mageTopics == 6 + 18 + #L.GetRecipesForClass("MAGE", "all"),
+assert(#L.GetTopicsForClass("MAGE", "syntax") == 17, "macro syntax glossary is incomplete")
+assert(#mageTopics == 6 + 17 + #L.GetRecipesForClass("MAGE", "all"),
     "combined macro documentation lost generated, syntax, or class recipe topics")
 for _, topic in ipairs(mageTopics) do
     assert(topic.lineDetails and topic.lineDetails ~= "", topic.id .. " lacks line-by-line documentation")

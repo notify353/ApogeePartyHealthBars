@@ -40,23 +40,33 @@ Export creates a compressed `APHB1:` share string and selects it automatically; 
 
 Drag a Spellbook spell or an item from an open bag directly onto a Shortcuts, Keys, Wheel, or Buttons HUD position, or onto its row in settings. For bag items, clicking the item and then its settings destination works too. Shortcuts, Keys, Wheel, and Buttons use the same compact action rows; settings exposes one extra empty Shortcut row for adding the next action. Drop directly onto an occupied row to replace it. Shortcuts supports up to 12 assignments and displays them six per row in a footer beneath the complete party-health frame. Shortcuts rejects duplicate spell and item IDs; Keys, Wheel, and Buttons permit the same spell or item in multiple positions and across features. Action changes are blocked in combat.
 
-Spell assignments in Shortcuts, Keys, Wheel, and Buttons start with this generated macro:
+Ordinary spell assignments in Shortcuts, Keys, Wheel, and Buttons start with this generated macro:
 
 ```text
-/cast [nochanneling:Spell Name] Spell Name(Rank N)
+/cast Spell Name(Rank N)
 ```
 
-The spell-specific channel guard makes bindings such as Mind Flay and Arcane Missiles safe to spam without restarting their active channel. The neutral default deliberately does not retarget or start attacking, so friendly spells, utility, Stealth, and crowd control retain their normal behavior.
+The direct default deliberately does not add conditions, retarget, or start attacking, so heals, utility, Stealth, crowd control, and ordinary damage spells retain their normal behavior. Actual channeled spells can use an optional spell-specific `[nochanneling:Spell Name]` condition through the macro editor when preventing self-restarts is worth giving up normal spell queuing.
 
-Melee Attack uses conditional enemy targeting plus `/startattack`. Auto Shot and other client-confirmed ranged auto-attacks additionally use `!Spell Name` so repeated presses cannot toggle the repeating attack off, followed by `/startattack` as a close-range melee fallback. Wand Shoot uses a Classic-specific sequence instead:
+Reviewed melee combat families instead keep weapon swings active when the assigned ability cannot fire because of resources, stance, range, or cooldown:
 
 ```text
 /targetenemy [noexists][dead][help]
-/castsequence [nochanneling:Shoot] reset=target/2 !Shoot, null
+/startattack
+/cast Heroic Strike(Rank N)
+```
+
+This policy covers the add-on's curated Warrior, Hunter-melee, Paladin, and Shaman weapon abilities. Reviewed Rogue and Feral Druid abilities use `/startattack [nostealth]` so a failed press cannot waste Stealth or Prowl. Stealth openers, control, interrupts, movement, forms, buffs, heals, dispels, taunts, pet commands, caster damage, targetless utility, and ordinary Hunter shots remain direct casts. Queued next-swing abilities use normal `/cast`, preserving deliberate queue cancellation; the toggle-locked `!` form remains an optional Macros-library recipe.
+
+Melee Attack uses conditional enemy targeting plus `/startattack`. Auto Shot, wand Shoot, and other client-confirmed ranged auto-attacks additionally use `!Spell Name` so repeated presses cannot toggle the repeating attack off, followed by `/startattack` as a close-range melee fallback:
+
+```text
+/targetenemy [noexists][dead][help]
+/cast !Shoot
 /startattack
 ```
 
-The intentionally invalid second step absorbs repeated presses after Shoot starts. Changing targets or releasing the key for two seconds resets the sequence. Existing macro text is preserved; assign the action again or use Reset in its macro editor to adopt the latest generated template.
+Existing macro text is preserved; assign the action again or use Reset in its macro editor to adopt the latest generated template.
 
 Item assignments in Shortcuts, Keys, Wheel, and Buttons start with the localized item name:
 
@@ -87,7 +97,7 @@ Keys uses a four-row cluster at the left of the player HUD, while Wheel uses a v
 
 The General tab groups behavior, alerts, bar display, tracked HoTs, position resets, and destructive actions into compact scrollable setting rows. New profiles show all five slots while solo, auto-hide Blizzard UI in combat, and use Focus for the low-health alert by default; each choice can be changed without affecting existing profiles. Enabling and disabling the addon belongs to WoW's AddOns manager, so General has no redundant enable checkbox. Because Keys, Wheel, and Buttons own saved inputs, **Prepare to Disable** under Danger transactionally restores all 30 inputs before you disable the addon through WoW. Factory Reset performs the same restoration before clearing account and current-character settings. If restoration fails, either operation stops without discarding the ownership record.
 
-The Macros tab is the in-addon reference for generated templates, macro syntax, and curated combat recipes. Each compact topic explains where Apogee applies the pattern, why it is useful, and when custom text may be preferable; its Macro button opens the exact body in a focused read-only viewer. Executable templates and current-class recipes remain selectable for copying into WoW's Macro window, while syntax-only examples are clearly marked as reference material. The library also covers mouseover and focus targeting, `/stopattack`, cursor casting, help/harm and modifier choices, stealth protection, queued next-swing attacks, and castsequence tradeoffs. It never creates, updates, or tracks game macros.
+The Macros tab is the in-addon reference for generated templates, macro syntax, and curated combat recipes. Each compact topic explains where Apogee applies the pattern, why it is useful, and when custom text may be preferable; its Macro button opens the exact body in a focused read-only viewer. Executable templates and current-class recipes remain selectable for copying into WoW's Macro window, while syntax-only examples are clearly marked as reference material. The library also covers optional channel guards, forced Hunter Auto Shot, mouseover and focus targeting, `/stopattack`, cursor casting, help/harm and modifier choices, stealth protection, and queued next-swing attacks. It never creates, updates, or tracks game macros.
 
 ## Develop
 

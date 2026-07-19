@@ -15,12 +15,17 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 - Preserved saved feature preferences while disabling unsupported optional features independently, including aura overlays, range, prediction, threat, raid markers, bound actions, and profile sharing.
 - Consolidated Spellbook discovery and lookup behind one adapter and isolated optional login and combat-log initialization so one feature failure does not stop the rest of the add-on.
+- Simplified generated action macros to direct `/cast` and `/use` defaults, retaining automatic targeting and spam protection only for melee and repeating ranged attacks.
+- Added conservative, rank- and locale-aware melee templates that keep auto-attack running for reviewed weapon abilities, with stealth-safe handling for Rogue and Feral Druid actions.
 
 ### Fixed
 
 - Prevented failed profile storage from letting startup mutate invalid saved-variable roots, made modern Spellbook fallback nil-safe, enforced Base layouts when specialization or form APIs are unavailable, and made optional aura/combat-log events safe to omit.
 - Tightened binding, profile-sharing, and metadata compatibility checks so incomplete client API families fail closed and binding reconciliation errors remain visible without stopping later lifecycle work.
 - Fixed opening General settings attempting to enable the low-health threshold's display text as though it were an interactive control.
+- Removed meaningless spell-specific channel conditions from ordinary spells and replaced wand Shoot's stateful cast sequence with the same predictable `!` toggle protection used by Auto Shot.
+- Kept control, movement, utility, caster, pet, and ordinary Hunter-shot assignments free of automatic attack behavior, while retaining every nonblank saved macro exactly until explicit Reset.
+- Corrected Ghostly Strike's canonical family ID so it receives the stealth-safe policy without misclassifying higher-rank Mongoose Bite.
 
 ## [0.40.0] - 2026-07-18
 

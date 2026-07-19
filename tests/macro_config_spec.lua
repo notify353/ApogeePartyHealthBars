@@ -92,7 +92,7 @@ local generated = {
 }
 local syntax = {
     id = "syntax", category = "syntax", kind = "syntax", title = "Channel Guard",
-    explanation = "Explains nochanneling.", applied = "Generated spells.",
+    explanation = "Explains nochanneling.", applied = "Optional custom channel macros.",
     why = "Prevents clipping.", tradeoffs = "Protects only the named spell.",
     lineDetails = "Reference syntax.", body = "/cast [nochanneling:Mind Flay] Mind Flay", copyable = false,
 }

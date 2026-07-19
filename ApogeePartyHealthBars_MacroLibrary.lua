@@ -23,10 +23,6 @@ local function explainLine(line)
     if line:find("^/stopcasting") then return line .. " — cancels the current cast or channel before the next command." end
     if line:find("^/stopattack") then return line .. " — stops active weapon attacks before control or utility is attempted." end
     if line:find("^/petattack") then return line .. " — sends the active pet to the valid hostile target." end
-    if line:find("^/castsequence") then return line .. " — advances after a successful step and waits for its declared reset condition." end
-    if line:find("^/cast %[nochanneling:") and line:find("!") then
-        return line .. " — avoids restarting the named channel, while ! prevents the repeating action from turning off."
-    end
     if line:find("^/cast .*!") then return line .. " — the ! prefix prevents a repeating or toggle action from turning off." end
     if line:find("^/cast %[nochanneling:") then
         return line .. " — casts only when that same spell is not already channeling."

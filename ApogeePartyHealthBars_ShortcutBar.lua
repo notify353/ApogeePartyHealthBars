@@ -82,6 +82,7 @@ local READY_TRANSITION_STATES = {
 }
 
 local SHORTCUTS_SCHEMA_VERSION = 1
+local ResolveKnownSpellName
 
 local function GetEntries()
     if not S.charSv then return nil end
@@ -113,7 +114,9 @@ local function SeedClassDefaults()
     if entries and next(entries) == nil and defaults then
         for slot, spellName in ipairs(defaults) do
             if slot > C.SHORTCUT_MAX_SLOTS then break end
-            entries[slot] = Actions.CreateSpell(nil, spellName, "none")
+            local castName = ResolveKnownSpellName and ResolveKnownSpellName(nil, spellName)
+                or spellName
+            entries[slot] = Actions.CreateSpell(nil, castName, "none")
         end
     end
 
@@ -144,6 +147,12 @@ local function BuildKnownSpellMap()
     local playerSpells = ApogeePartyHealthBars_PlayerSpells
     if not playerSpells or not playerSpells.BuildKnownSpellMap then return {}, {}, {} end
     return playerSpells.BuildKnownSpellMap()
+end
+
+ResolveKnownSpellName = function(spellId, spellName)
+    local byId, byName = BuildKnownSpellMap()
+    local known = (spellId and byId[spellId]) or (spellName and byName[spellName])
+    return known and known.name or spellName
 end
 
 local function BuildResolvedInfo(known, entry, slot)
@@ -217,11 +226,8 @@ local function ResolveEntries()
                 }
             end
             if known then
-                local priorDefault = Actions.BuildDefaultMacro(entry)
                 if known.name and entry.spellName ~= known.name then
-                    local generated = entry.macroText == priorDefault
                     entry.spellName = known.name
-                    if generated then entry.macroText = Actions.BuildDefaultMacro(entry) end
                 end
                 if known.id then entry.spellId = known.id end
                 local info = BuildResolvedInfo(known, entry, i)
@@ -841,7 +847,8 @@ function T.AssignSpell(slot, spellID, spellName)
         end
     end
     local previous = entries[slot]
-    local entry = Actions.CreateSpell(spellID, spellName, previous and previous.soundKey)
+    local castName = ResolveKnownSpellName(spellID, spellName)
+    local entry = Actions.CreateSpell(spellID, castName, previous and previous.soundKey)
     if not entry then return false, "could not store that spell." end
     entries[slot] = entry
     T.ResolveAndRefresh()
@@ -897,7 +904,7 @@ function T.ResetDefaults()
     local defaults = C.SHORTCUT_CLASS_DEFAULTS[classToken]
     for slot, spellName in ipairs(defaults or {}) do
         if slot > C.SHORTCUT_MAX_SLOTS then break end
-        entries[slot] = Actions.CreateSpell(nil, spellName, "none")
+        entries[slot] = Actions.CreateSpell(nil, ResolveKnownSpellName(nil, spellName), "none")
     end
     S.charSv.shortcutDefaultsVersion = C.SHORTCUT_DEFAULTS_VERSION
     T.ResolveAndRefresh()

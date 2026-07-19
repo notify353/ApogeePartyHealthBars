@@ -93,8 +93,16 @@ function GetSpellInfo(identifier)
     for _, form in ipairs(forms) do
         if identifier == form.spellId then return form.name, nil, form.texture, nil, nil, nil, form.spellId end
     end
-    local name = type(identifier) == "string" and identifier or "Heroic Strike"
-    return name, nil, 135274, nil, nil, nil, type(identifier) == "number" and identifier or nil
+    local spellNamesById = {
+        [78] = "Heroic Strike", [7386] = "Sunder Armor", [1715] = "Hamstring",
+        [2061] = "Flash Heal",
+    }
+    local name = type(identifier) == "string"
+        and identifier:gsub("%s*%(Rank %d+%)$", "") or spellNamesById[identifier]
+    if name then
+        return name, nil, 135274, nil, nil, nil,
+            type(identifier) == "number" and identifier or nil
+    end
 end
 local cooldownStart, cooldownDuration, currentCharges, maximumCharges = 0, 0, nil, nil
 local usable, noResource = true, false
@@ -218,7 +226,7 @@ assert(bindings.MOUSEWHEELUP == "SOMEOTHERADDONACTION",
     "editing a Wheel action silently reclaimed its physical binding")
 bindings.MOUSEWHEELUP = "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton"
 assert(wheel.GetSlot(PRIMARY, "normalUp").macroText
-    == "/cast [nochanneling:Flash Heal] Flash Heal",
+    == "/cast Flash Heal",
     "Spellbook assignment seeded unexpected wheel macro text")
 assert(not wheel.GetSlot(PRIMARY, "normalUp").macroText:find("#showtooltip", 1, true),
     "Spellbook assignment still seeded #showtooltip")
@@ -251,6 +259,15 @@ for index, slot in ipairs(data.SLOTS) do
     assert(wheel.AssignSpell(PRIMARY, slot.id, nil, warriorSpells[index]),
         "manual setup failed for " .. slot.id)
 end
+local attackPrefix = "/targetenemy [noexists][dead][help]\n/startattack\n/cast "
+assert(wheel.GetSlot(PRIMARY, data.SLOTS[1].id).macroText == attackPrefix .. "Heroic Strike"
+    and wheel.GetSlot(PRIMARY, data.SLOTS[2].id).macroText == attackPrefix .. "Sunder Armor"
+    and wheel.GetSlot(PRIMARY, data.SLOTS[4].id).macroText == attackPrefix .. "Hamstring",
+    "curated Warrior abilities did not receive the shared melee macro policy")
+assert(wheel.GetSlot(PRIMARY, data.SLOTS[3].id).macroText == "/cast Battle Shout"
+    and wheel.GetSlot(PRIMARY, data.SLOTS[5].id).macroText == "/cast Charge"
+    and wheel.GetSlot(PRIMARY, data.SLOTS[6].id).macroText == "/cast Pummel",
+    "excluded Warrior utility, movement, or interrupt abilities gained attack behavior")
 local wheelOverflow, wheelOverflowMessage = wheel.AssignSpell(PRIMARY, nil, nil, "Overflow Wheel Spell")
 assert(not wheelOverflow and wheelOverflowMessage:find("Drop onto a gesture", 1, true),
     "full Wheel layout did not instruct the user to replace or clear a gesture")
@@ -443,11 +460,12 @@ wheel.InitializeSaved()
 local localizedWheelItem = wheel.GetSlot(PRIMARY, "normalUp")
 assert(localizedWheelItem.kind == "item"
     and localizedWheelItem.itemName == "Linen Bandage"
-    and localizedWheelItem.macroText == "/use Linen Bandage",
-    "Wheel item did not persist and refresh its localized generated macro")
+    and localizedWheelItem.macroText == "/use Old Bandage Name",
+    "Wheel item metadata refresh rewrote a saved generated macro")
 local itemSecure = wheel.GetSecureButton("normalUp")
-assert(itemSecure.attributes.macrotext:find("/use Linen Bandage", 1, true),
-    "Wheel secure action initialized with a stale localized item macro")
+assert(itemSecure.attributes.macrotext:find("/use Old Bandage Name", 1, true)
+        and not itemSecure.attributes.macrotext:find("/use Linen Bandage", 1, true),
+    "Wheel secure action did not preserve saved macro text exactly")
 ApogeePartyHealthBars_S.charSv.wheelMacros.profiles.corrupt = {
     layouts = { missingSlots = {}, invalidSlots = { slots = "not a table" } },
 }

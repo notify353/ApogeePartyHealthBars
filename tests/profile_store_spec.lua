@@ -39,7 +39,10 @@ local store = ApogeePartyHealthBars_ProfileStore
 local account = { schemaVersion = 5, enabled = false, x = 42, minimapAngle = 133 }
 local character = {
     bindings = { ["1"] = { kind = "spell", spellName = "Flash Heal" } },
-    shortcuts = { { kind = "spell", spellName = "Renew" } },
+    shortcuts = { {
+        kind = "spell", spellName = "Renew",
+        macroText = "/cast [@mouseover,help,nodead] Renew",
+    } },
     keyActions = {
         enabled = true,
         ownership = { ["2"] = { keyQ = { previousAction = "MOVEFORWARD" } } },
@@ -62,7 +65,9 @@ assert(active.payload.settings.enabled == false and active.payload.settings.x ==
     and active.payload.settings.minimapAngle == 133,
     "legacy account settings were not migrated into the profile")
 assert(active.payload.actions.bindings["1"].spellName == "Flash Heal"
-    and active.payload.actions.shortcuts[1].spellName == "Renew",
+    and active.payload.actions.shortcuts[1].spellName == "Renew"
+    and active.payload.actions.shortcuts[1].macroText
+        == "/cast [@mouseover,help,nodead] Renew",
     "legacy character actions were not migrated")
 assert(active.payload.actions.keyActions.enabled == nil
     and active.payload.actions.keyActions.ownership == nil
@@ -85,7 +90,14 @@ assert(created.payload.settings.enabled and #created.payload.actions.shortcuts =
     "new profile did not start from defaults")
 local duplicate = assert(store.Duplicate(active.id, "Copy"))
 duplicate.payload.settings.x = 999
-assert(active.payload.settings.x == 42, "duplicated profile retained aliased settings")
+assert(duplicate.payload.actions.shortcuts[1].macroText
+        == "/cast [@mouseover,help,nodead] Renew",
+    "profile duplication changed custom macro text")
+duplicate.payload.actions.shortcuts[1].macroText = "/cast Duplicate Renew"
+assert(active.payload.settings.x == 42
+        and active.payload.actions.shortcuts[1].macroText
+            == "/cast [@mouseover,help,nodead] Renew",
+    "duplicated profile retained aliased settings or macro data")
 assert(not store.Create(" copy "), "profile names were not unique case-insensitively")
 assert(not store.Create(string.rep("x", 41)), "oversized profile name was accepted")
 assert(store.Rename(duplicate.id, "Raid"), "profile rename failed")
@@ -98,20 +110,29 @@ local imported = {
     classToken = "PRIEST",
     author = "Author - Realm",
     payload = { settings = { showAllSlots = true }, actions = { shortcuts = {
-        { kind = "spell", spellName = "Prayer of Healing" },
+        {
+            kind = "spell", spellName = "Prayer of Healing",
+            macroText = "/cast [mod:shift] Prayer of Healing",
+        },
     } } },
 }
 local shared = assert(store.AddImported(imported))
-assert(shared.author == "Author - Realm" and shared.payload.settings.showAllSlots,
+assert(shared.author == "Author - Realm" and shared.payload.settings.showAllSlots
+        and shared.payload.actions.shortcuts[1].macroText
+            == "/cast [mod:shift] Prayer of Healing",
     "imported metadata or payload was not preserved")
 assert(not store.AddImported({ profileName = "Wrong", classToken = "MAGE", payload = {} }),
     "wrong-class profile was imported")
 assert(store.MergeImported(active.id, imported), "profile merge failed")
 assert(active.payload.settings.x == 42 and active.payload.settings.showAllSlots
-    and active.payload.actions.shortcuts[1].spellName == "Prayer of Healing",
+    and active.payload.actions.shortcuts[1].spellName == "Prayer of Healing"
+    and active.payload.actions.shortcuts[1].macroText
+        == "/cast [mod:shift] Prayer of Healing",
     "profile merge did not preserve absent values or replace ordered actions")
 assert(store.ReplaceImported(active.id, imported), "profile replace failed")
-assert(active.author == "Author - Realm" and active.payload.settings.x == nil,
+assert(active.author == "Author - Realm" and active.payload.settings.x == nil
+        and active.payload.actions.shortcuts[1].macroText
+            == "/cast [mod:shift] Prayer of Healing",
     "profile replace retained old portable values or lost imported author")
 
 active.payload.actions.keyActions.ownership = { bad = true }
@@ -125,6 +146,9 @@ assert(exported.payload.actions.keyActions.ownership == nil
 assert(exported.payload.actions.mouseActions.ownership == nil
         and exported.payload.actions.mouseActions.bindingVersion == nil,
     "exportable profile leaked Buttons binding ownership")
+assert(exported.payload.actions.shortcuts[1].macroText
+        == "/cast [mod:shift] Prayer of Healing",
+    "profile export changed custom macro text")
 
 local secondCharacter = { shortcuts = { { kind = "spell", spellName = "Smite" } } }
 local second = store.Initialize(account, secondCharacter, "PRIEST", "Alt - Realm")

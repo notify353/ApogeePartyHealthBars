@@ -28,14 +28,23 @@ local codec = ApogeePartyHealthBars_ProfileCodec
 local profile = {
     name = "Raid",
     classToken = "PRIEST",
-    payload = { schemaVersion = 2, settings = { enabled = true }, actions = {} },
+    payload = {
+        schemaVersion = 2,
+        settings = { enabled = true },
+        actions = { shortcuts = { {
+            kind = "spell", spellName = "Flash Heal(Rank 7)",
+            macroText = "/cast [@mouseover,help,nodead] Flash Heal(Rank 7)",
+        } } },
+    },
 }
 local text = assert(codec.Encode(profile, "0.38.0", "Healer - Realm", 12345))
 assert(text == "APHB1:encoded", "share string prefix or encoding changed")
 local envelope = assert(codec.Decode(text))
 assert(envelope.profileName == "Raid" and envelope.classToken == "PRIEST"
     and envelope.author == "Healer - Realm" and envelope.addonVersion == "0.38.0"
-    and envelope.exportedAt == 12345,
+    and envelope.exportedAt == 12345
+    and envelope.payload.actions.shortcuts[1].macroText
+        == "/cast [@mouseover,help,nodead] Flash Heal(Rank 7)",
     "share metadata did not round-trip")
 assert(not codec.Decode("not-a-profile"), "invalid prefix was accepted")
 assert(not codec.Decode("APHB1:" .. string.rep("x", codec.MAX_ENCODED_BYTES)),

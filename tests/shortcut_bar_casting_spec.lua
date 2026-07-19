@@ -175,6 +175,15 @@ local seeded = shortcuts.GetSlots()
 assert(seeded[1].spellName == "Fireball(Rank 1)")
 assert(seeded[2].spellName == "Frostbolt(Rank 1)")
 assert(seeded[3].spellName == "Fire Blast(Rank 1)")
+seeded[1].spellName = "Old Fireball Name"
+seeded[1].macroText = "/cast Old Fireball Name"
+shortcuts.ResolveAndRefresh()
+assert(seeded[1].spellName == "Fireball(Rank 1)"
+        and seeded[1].macroText == "/cast Old Fireball Name"
+        and secureButtons[1].attributes.macrotext == "/cast Old Fireball Name",
+    "Shortcut metadata refresh rewrote a saved macro without Reset")
+seeded[1].macroText = "/cast Fireball(Rank 1)"
+shortcuts.ResolveAndRefresh()
 assert(ApogeePartyHealthBars_S.charSv.shortcutDefaultsVersion == 1)
 assert(shortcuts.SetSlotSound(1, "toast") == "toast",
     "Shortcut dropdown sound selection did not persist")
@@ -192,7 +201,7 @@ assert(shortcuts.SetSlotSound(99, "alarm_soft") == nil,
 local castButton = assert(secureButtons[1], "Shortcut Bar did not create a secure cast button")
 assert(castButton.attributes.type == "macro")
 assert(castButton.attributes.macrotext
-    == "/cast [nochanneling:Fireball] Fireball(Rank 1)")
+    == "/cast Fireball(Rank 1)")
 assert(castButton.attributes.type1 == "macro")
 assert(castButton.attributes.macrotext1 == castButton.attributes.macrotext)
 assert(castButton.shown and castButton.mouseEnabled, "Shortcut cast button is not clickable")
@@ -212,7 +221,7 @@ assert(shortcuts.ApplyMacro(4, "/cast Custom Arcane Action"), "custom Shortcut m
 assert(not shortcuts.ApplyMacro(4, "  \n\t"), "blank Shortcut macro was accepted")
 assert(shortcuts.AssignSpell(4, 5143, "Arcane Missiles"), "Shortcut replacement failed")
 assert(shortcuts.GetSlots()[4].soundKey == "toast"
-    and shortcuts.GetSlots()[4].macroText:find("/cast [nochanneling:Arcane Missiles] Arcane Missiles", 1, true),
+    and shortcuts.GetSlots()[4].macroText:find("/cast Arcane Missiles", 1, true),
     "Shortcut replacement did not preserve sound and regenerate its macro")
 local moved, movedTo = shortcuts.MoveSlot(4, -1)
 assert(moved and movedTo == 3 and shortcuts.GetSlots()[3].spellName == "Arcane Missiles(Rank 1)"
@@ -291,10 +300,10 @@ assert(visualButtons[7].points[1][4] == 0
     "Shortcuts 7 through 12 did not continue on the second row")
 assert(secureButtons[7].shown and secureButtons[7].mouseEnabled
     and secureButtons[7].attributes.macrotext:find(
-        "/cast [nochanneling:Test Spell 7] Test Spell 7(Rank 1)", 1, true)
+        "/cast Test Spell 7(Rank 1)", 1, true)
     and secureButtons[12].shown and secureButtons[12].mouseEnabled
     and secureButtons[12].attributes.macrotext:find(
-        "/cast [nochanneling:Test Spell 12] Test Spell 12(Rank 1)", 1, true),
+        "/cast Test Spell 12(Rank 1)", 1, true),
     "second-row Shortcuts did not receive clickable secure actions")
 local overflowAssigned, overflowMessage = shortcuts.AssignSpell(nil, 7000, "Overflow Spell")
 assert(not overflowAssigned and overflowMessage:find("Drop onto a row", 1, true),
@@ -326,10 +335,9 @@ local expectedCastNames = {
 }
 for index, expectedCastName in ipairs(expectedCastNames) do
     local assignedButton = assert(secureButtons[index], "missing secure Shortcut button " .. index)
-    local baseName = expectedCastName:match("^(.-)%(") or expectedCastName
     assert(assignedButton.attributes.type == "macro"
         and assignedButton.attributes.macrotext:find(
-            "/cast [nochanneling:" .. baseName .. "] " .. expectedCastName, 1, true),
+            "/cast " .. expectedCastName, 1, true),
         "secure Shortcut button " .. index .. " lost its macro after assignment")
     assert(assignedButton.shown and assignedButton.mouseEnabled,
         "secure Shortcut button " .. index .. " stopped receiving clicks after assignment")
@@ -372,7 +380,7 @@ inCombat = false
 assert(shortcuts.ClearSlot(1), "Shortcut did not clear after leaving combat")
 assert(castButton.attributes.type == "macro"
     and castButton.attributes.macrotext:find(
-        "/cast [nochanneling:Frostbolt] Frostbolt(Rank 1)", 1, true),
+        "/cast Frostbolt(Rank 1)", 1, true),
     "remaining Shortcuts did not compact after clearing the first slot")
 assert(castButton.shown and castButton.mouseEnabled, "compacted Shortcut was not clickable")
 local trailingCastButton = secureButtons[4]

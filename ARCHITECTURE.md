@@ -10,6 +10,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `RuntimeActionEvents`: spell/spec/form transitions, binding reconciliation, action-state refreshes, item updates, and macro requirements
 - `RuntimeEvents`: thin subscriber registration coordinator
 - `Sounds`: shared sound catalog, saved-key normalization, and SFX playback
+- `CrowdControl`: class-owned active-control catalog, control categories, activation modes, automatic-display policy, and per-class allocation bounds
 - `ShortcutItems`: shared item-information, carried-count, usability, cooldown, and depletion evaluation
 - `ActionData`: macro-independent spell/item identity, legacy normalization, cloning, and display resolution shared by every configurable action feature
 - `ActionMacros`: shared classification-aware smart-template rendering and documentation metadata, neutral spell-specific channel guards, dedicated melee/Auto Shot/wand Shoot families, sound/macro extensions, custom-text detection, and 255-byte validation for Shortcuts, Keys, Wheel, and Buttons
@@ -35,7 +36,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `ShieldTracker`: private absorb ledger, aura/combat-log reconciliation, estimation fallbacks, and shield-segment rendering
 - `IncomingHeals`: alias-aware Blizzard heal prediction and overlay rendering for rows and inline targets
 - `HotTracker`: private known-spell and active-track state, player-cast aura matching, strip geometry inputs, and duration visuals
-- `ShortcutBar`, `ShortcutConfig`: 12-slot typed shortcut storage, a full-size configured Shortcut footer beneath the party frame, compact left-aligned target crowd-control grids, independent footer/lane-height reporting, spell/item state icons, sound feedback, secure macros, smart Spellbook/bag assignment, and scrollable compact configuration
+- `ShortcutBar`, `ShortcutConfig`: 12-slot typed shortcut storage, a full-size configured Shortcut footer beneath the party frame, compact left-aligned target crowd-control grids, player and pet spellbook discovery, targeting-mode-aware state prediction, independent footer/lane-height reporting, spell/item state icons, sound feedback, secure macros, smart Spellbook/bag assignment, and scrollable compact configuration
 - `WheelData`, `WheelLayouts`, `WheelMacros`, `WheelConfig`: fixed gesture definitions, Wheel-specific shared-runtime policy, active talent-spec profiles, per-form typed shortcut layouts, right-side HUD geometry, and compact configuration
 - `KeyData`, `KeyLayouts`, `KeyActions`, `KeyConfig`: fixed keyboard definitions, Keys-specific shared-runtime policy, independent empty per-spec/per-form profiles, bottom-aligned left-side HUD geometry, and uniform row-based configuration
 - `MouseButtonData`, `MouseButtonLayouts`, `MouseButtonActions`, `MouseButtonConfig`: fixed Button 3–5 combat definitions, independent per-spec/per-form profiles, right-of-Wheel 3×3 HUD geometry, and uniform configuration
@@ -58,6 +59,8 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - Keep every displayed unit inside `UnitTopology`; event routing, trackers, and layout must not grow independent token-pattern rules.
 - Poll target-chain identity and values at the normal visual cadence because Anniversary's Blizzard raid frames document unreliable second-depth target events.
 - Keep health rendering role-neutral inside `UnitBar`; player self-buffs, target crowd control, action HUDs, raid markers, and primary threat attach through explicit anchors.
+- Keep crowd-control identity, class ownership, activation mode, primary category, secondary capabilities, creature restrictions, pet source, labels, and automatic-display policy inside `CrowdControl`; `ShortcutBar` owns discovery, rendering, and secure execution only.
+- Predict target eligibility and range only for default current-target actions. Self-AoE, trap, totem, ground, and custom-macro controls must not be judged against the current target.
 - Pre-create all unit surfaces and secure Healing overlays before combat; missing chained units hide their surfaces without collapsing the reserved target columns.
 - Keep Keys, Wheel, and Buttons activation-feedback prefixes runtime-only; persisted and edited text is the user-controlled macro body.
 - Keep every `BoundActionRuntime` instance's mutable state inside its factory closure so Keys, Wheel, and Buttons cannot leak buttons, feedback, cooldown state, or binding ownership into each other.

@@ -175,6 +175,6 @@ buttons["Macro"].scripts.OnClick()
 assert(dropdown.selectedKey == "recipes" and viewedMacro.macroText == counter.body,
     "panel refresh reset the selected category")
 assert(config.GetForm().hint:GetText()
-    == "Browse generated templates, syntax, and Mage combat recipes.",
+    == "Browse shared templates and syntax, plus universal and Mage combat recipes.",
     "Macros did not use the documentation instruction")
 print("PASS macro documentation config UX")

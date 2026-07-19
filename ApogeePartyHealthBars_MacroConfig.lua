@@ -89,7 +89,7 @@ function M.Build(parent, deps)
 
     local _, className = playerClass()
     form = UIH.CreateFormScaffold(tab, "ApogeePartyHealthBarsMacroConfigScroll",
-        "Browse generated templates, syntax, and " .. className .. " combat recipes.")
+        "Browse shared templates and syntax, plus universal and " .. className .. " combat recipes.")
     statusText = form.status
 
     local categoryRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)

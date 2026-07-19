@@ -6,6 +6,23 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Added
+
+- Added a structured crowd-control catalog covering active control options for every TBC class, including strategic stuns, roots, traps, totems, ground effects, interrupts, movement control, and disarms.
+- Added automatic pet-spell discovery for crowd control such as Warlock Seduction, Felguard Intercept, and Water Elemental Freeze, with refreshes when the active pet or pet action bar changes.
+
+### Changed
+
+- Expanded the compact target crowd-control lane beyond its original 14 long-duration spells, automatically surfaced learned interrupts and silences, and kept movement control and disarms opt-in through configured Shortcuts.
+- Marked interrupt-capable actions with an accessible corner `I` badge and explicit tooltip category without repurposing readiness-state borders.
+- Made crowd-control state prediction aware of current-target, self-AoE, trap, totem, ground, and pet activation modes.
+
+### Fixed
+
+- Prevented custom focus and mouseover crowd-control macros from being shown as invalid or out of range based on the unrelated current target.
+- Added the missing Earth Shock interrupt and refreshed pet crowd-control state from the client's pet cooldown and usability events.
+- Deferred spellbook-driven Shortcut changes during combat so visible pet crowd-control icons cannot diverge from their protected click actions.
+
 ## [0.38.0] - 2026-07-18
 
 ### Added

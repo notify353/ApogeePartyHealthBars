@@ -27,7 +27,12 @@ local function Widget()
     function widget:SetHeight(height) self.height = height end
     function widget:SetPoint(...) self.point = { ... } end
     function widget:ClearAllPoints() self.point = nil end
-    function widget:CreateFontString() return Widget() end
+    function widget:CreateFontString()
+        local fontString = Widget()
+        fontString.Enable = nil
+        fontString.Disable = nil
+        return fontString
+    end
     function widget:CreateTexture() return Widget() end
     function widget:Show() self.shown = true end
     function widget:Hide() self.shown = false end
@@ -83,6 +88,7 @@ function UIH.LayoutForm(form, entries)
     form.entries = entries
     for _, entry in ipairs(entries) do entry.frame:SetShown(entry.visible ~= false) end
 end
+function UIH.SetUnavailableTooltip(frame, reason) frame.unavailableReason = reason end
 
 local saved = {
     enabled = true,
@@ -107,6 +113,19 @@ local calls = {
 }
 local timerCallback
 C_Timer = { After = function(_, callback) timerCallback = callback end }
+local unsupportedFeatures = {}
+local clientCapabilities = {
+    IsFeatureAvailable = function(featureKey) return unsupportedFeatures[featureKey] ~= true end,
+    GetFeatureReason = function(featureKey) return featureKey .. " unavailable" end,
+    ListUnavailableFeatures = function()
+        local result = {}
+        for key in pairs(unsupportedFeatures) do
+            result[#result + 1] = { key = key, label = key, reason = key .. " unavailable" }
+        end
+        return result
+    end,
+    ListRuntimeFailures = function() return {} end,
+}
 
 local deps = {
     ApplyAllSecureBindings = function() calls.secure = calls.secure + 1 end,
@@ -158,6 +177,7 @@ local deps = {
     },
     SyncVisualTicker = function() calls.ticker = calls.ticker + 1 end,
     Threat = { Refresh = function() calls.threat = calls.threat + 1 end },
+    ClientCapabilities = clientCapabilities,
 }
 
 dofile("ApogeePartyHealthBars_GeneralConfig.lua")
@@ -283,6 +303,16 @@ assert(resets.factory.label:GetText() == "Factory Reset",
 Click(resets.factory); Click(resets.factory)
 assert(calls.factoryReset == 1 and resets.factory.label:GetText() == "Factory Reset",
     "confirmed factory reset did not execute and disarm")
+
+saved.threatEnabled = true
+unsupportedFeatures.threat = true
+config.Refresh()
+assert(config.GetRow("threatEnabled").check:GetChecked()
+        and not config.GetRow("threatEnabled").check:IsEnabled()
+        and config.GetRow("threatEnabled").unavailableReason == "threat unavailable"
+        and saved.threatEnabled == true,
+    "unsupported feature did not preserve and visibly disable its saved preference")
+unsupportedFeatures.threat = nil
 
 known.party, known.self, known.reminder = false, true, false
 selfOptions = { selfOptions[1], selfOptions[2] }

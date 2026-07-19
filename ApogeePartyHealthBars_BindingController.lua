@@ -173,6 +173,11 @@ function B.AssignCursor(feature, slot, layoutKey)
     local cursorType, cursorValue, bookType, cursorSpellID = GetCursorInfo()
     local ok = false
     if cursorType == "spell" then
+        if D.ClientCapabilities
+            and not D.ClientCapabilities.IsFeatureAvailable("spellAssignment") then
+            D.Print(D.ClientCapabilities.GetFeatureReason("spellAssignment"))
+            return false
+        end
         local spellID, spellName = D.GetSpellFromCursor(cursorValue, bookType, cursorSpellID)
         if not spellID and not spellName then
             D.Print("could not read that spell — try dragging it again.")
@@ -180,6 +185,11 @@ function B.AssignCursor(feature, slot, layoutKey)
         end
         ok = AssignActionSpell(feature, slot, layoutKey, spellID, spellName)
     elseif cursorType == "item" then
+        if D.ClientCapabilities
+            and not D.ClientCapabilities.IsFeatureAvailable("itemAssignment") then
+            D.Print(D.ClientCapabilities.GetFeatureReason("itemAssignment"))
+            return false
+        end
         local itemId = tonumber(cursorValue)
         local itemName = itemId and Items and Items.GetInfo and Items.GetInfo(itemId)
         if not itemId or not itemName then

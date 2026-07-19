@@ -6,6 +6,7 @@ local Actions = ApogeePartyHealthBars_ActionMacros
 local Items = ApogeePartyHealthBars_ShortcutItems
 local BoundBindings = ApogeePartyHealthBars_BoundActionBindings
 local ActionHud = ApogeePartyHealthBars_ActionHud
+local ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities
 
 ApogeePartyHealthBars_BoundActionRuntime = {}
 local Factory = ApogeePartyHealthBars_BoundActionRuntime
@@ -68,6 +69,11 @@ function Factory.Create(options)
     local HUD_PANEL_H = options.hud.panelHeight
     local HUD_HEIGHT = options.hud.totalHeight
     local HUD_ICON_HEIGHT = options.hud.iconHeight or HUD_PANEL_H
+
+    local function isSupported()
+        return not ClientCapabilities
+            or ClientCapabilities.IsFeatureAvailable("boundActions")
+    end
     local STATE_COLORS = {
         ready = { 0.45, 0.45, 0.48, 1 }, current = { 1.00, 0.82, 0.00, 1 }, cooldown = { 0.22, 0.22, 0.24, 1 },
         resource = { 0.45, 0.45, 0.48, 1 }, range = { 0.45, 0.45, 0.48, 1 },
@@ -251,15 +257,20 @@ function Factory.Create(options)
 
     local function knownSpellNames()
         local known = {}
-        if not GetNumSpellTabs or not GetSpellTabInfo or not GetSpellBookItemName then return known end
-        for tabIndex = 1, GetNumSpellTabs() do
-            local _, _, offset, count = GetSpellTabInfo(tabIndex)
-            for spellIndex = (offset or 0) + 1, (offset or 0) + (count or 0) do
-                local name = GetSpellBookItemName(spellIndex, BOOKTYPE_SPELL)
-                if name then known[name] = true end
-            end
+        local spells = ApogeePartyHealthBars_PlayerSpells
+        if not spells or not spells.BuildKnownSpellMap then return known end
+        local _, byName = spells.BuildKnownSpellMap()
+        for name in pairs(byName) do
+            known[name] = true
         end
         return known
+    end
+
+    local function isKnownSpell(entry, resolvedName, known)
+        if known[resolvedName] == true or known[entry.spellName] == true then return true end
+        local spells = ApogeePartyHealthBars_PlayerSpells
+        return spells and spells.IsKnownSpell
+            and spells.IsKnownSpell(entry.spellId, entry.spellName) == true
     end
 
     local function spellInfo(entry)
@@ -342,7 +353,7 @@ function Factory.Create(options)
         if entry and entry.kind == "item" then return Items.Evaluate(entry) end
         local name, icon, spellId = spellInfo(entry)
         if not name then return "invalid", nil, 0, 0, nil, false end
-        local available = known[name] == true or known[entry.spellName] == true
+        local available = isKnownSpell(entry, name, known)
         if not available then return "unavailable", icon, 0, 0, nil, false end
         local identifier = spellId or entry.spellId or name
         if isCurrent(identifier) then return "current", icon, 0, 0, nil, true end
@@ -467,6 +478,7 @@ function Factory.Create(options)
 
     function W.Configure(deps)
         D = deps
+        if not isSupported() then return end
         local bindingOptions = {}
         for key, value in pairs(options.bindings) do bindingOptions[key] = value end
         bindingOptions.slots = WD.SLOTS
@@ -478,6 +490,7 @@ function Factory.Create(options)
 
     function W.Attach(playerRow)
         row = playerRow
+        if not isSupported() then return end
         if container or not row then return end
         ActionHud.Attach(playerRow)
         container = CreateFrame("Frame", nil, row.btn)
@@ -501,6 +514,7 @@ function Factory.Create(options)
     function W.InitializeSaved()
         if not S.charSv then return end
         WL.Initialize()
+        if not isSupported() then requestLayout(); return end
         refreshSavedItemInfo()
         local valid, errors = WD.ValidateAll()
         if not valid then
@@ -731,6 +745,7 @@ function Factory.Create(options)
     end
 
     function W.RefreshSecureActions()
+        if not isSupported() then return false end
         ensureSecureButtons()
         if InCombatLockdown and InCombatLockdown() then pendingSecure = true; return false end
         pendingSecure = false
@@ -844,6 +859,10 @@ function Factory.Create(options)
     end
 
     function W.Layout(topOffset)
+        if not isSupported() then
+            if container then container:Hide() end
+            return
+        end
         if not container or not row then return end
         topOffset = math.max(0, tonumber(topOffset) or 0)
         container:ClearAllPoints()
@@ -854,15 +873,15 @@ function Factory.Create(options)
     end
 
     function W.GetHeight(unitId)
-        return unitId == "player" and HUD_HEIGHT or 0
+        return isSupported() and unitId == "player" and HUD_HEIGHT or 0
     end
 
     function W.GetIconHeight(unitId)
-        return unitId == "player" and HUD_ICON_HEIGHT or 0
+        return isSupported() and unitId == "player" and HUD_ICON_HEIGHT or 0
     end
 
     function W.GetWidth(unitId)
-        return unitId == "player" and HUD_PANEL_W or 0
+        return isSupported() and unitId == "player" and HUD_PANEL_W or 0
     end
 
     function W.GetBindingStatus()
@@ -882,6 +901,7 @@ function Factory.Create(options)
     W.GetHudCastButton = function(slotId) return hudIcons[slotId] and hudIcons[slotId].castButton end
     W.GetBindingManager = function() return bindingManager end
     W.GetLastActivation = function() return feedbackSlotId, feedbackUntil end
+    W.IsSupported = isSupported
 
     return W
 end

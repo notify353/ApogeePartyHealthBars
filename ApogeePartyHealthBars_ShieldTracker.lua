@@ -2,6 +2,7 @@ local C = ApogeePartyHealthBars_C
 
 ApogeePartyHealthBars_ShieldTracker = {}
 local X = ApogeePartyHealthBars_ShieldTracker
+local UnitAPI = ApogeePartyHealthBars_UnitAPI
 local D
 local remainingByGuid = {}
 
@@ -67,7 +68,7 @@ local function EstimatePWShieldAmount(spellId, sourceGUID)
     local base, coeff = rank[1], rank[2]
     local sp = 0
     if sourceGUID and sourceGUID == UnitGUID("player") then
-        sp = GetSpellBonusHealing() or 0
+        sp = GetSpellBonusHealing and GetSpellBonusHealing() or 0
     end
     return math.floor(base + sp * coeff + 0.5)
 end
@@ -91,6 +92,7 @@ local function ParseSpellAbsorbedEvent(info)
 end
 
 function X.OnCombatLog()
+    if not CombatLogGetCurrentEventInfo then return end
     local subevent = select(2, CombatLogGetCurrentEventInfo())
     if subevent ~= "SPELL_AURA_APPLIED" and subevent ~= "SPELL_AURA_REFRESH"
         and subevent ~= "SPELL_AURA_REMOVED" and subevent ~= "SPELL_ABSORBED" then
@@ -174,8 +176,7 @@ function X.UpdateRowVisual(row, unitId, shield)
         return
     end
 
-    local hp = UnitHealth(unitId) or 0
-    local hpMax = UnitHealthMax(unitId) or 1
+    local hp, hpMax = UnitAPI.GetHealth(unitId)
     if hpMax <= 0 then hpMax = 1 end
 
     local barMax = hpMax + shield

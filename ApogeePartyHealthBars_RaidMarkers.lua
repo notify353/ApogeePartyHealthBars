@@ -1,4 +1,5 @@
 local Accessory = ApogeePartyHealthBars_AccessoryLayout
+local ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities
 
 ApogeePartyHealthBars_RaidMarkers = {}
 local M = ApogeePartyHealthBars_RaidMarkers
@@ -15,6 +16,10 @@ local MARKERS = {
 local buttons = {}
 local assignedGuids = {}
 local supportedMarkers = { [5] = true, [7] = true, [8] = true }
+
+local function IsSupported()
+    return not ClientCapabilities or ClientCapabilities.IsFeatureAvailable("raidMarkers")
+end
 
 local function SetMarkerState(button, assigned, targetMarked, currentTargetMarker)
     button.markerAssigned = assigned and true or false
@@ -100,6 +105,7 @@ end
 function M.Attach(targetSurface)
     assert(targetSurface and targetSurface.GetAccessoryAnchor,
         "RaidMarkers requires the current-target accessory anchor")
+    if not IsSupported() then return end
     local anchor = targetSurface:GetAccessoryAnchor()
     for position, definition in ipairs(MARKERS) do
         local button = CreateMarkerButton(anchor, definition)
@@ -111,11 +117,12 @@ function M.Attach(targetSurface)
 end
 
 function M.GetHeight(unitId)
-    if unitId ~= "player" then return 0 end
+    if not IsSupported() or unitId ~= "player" then return 0 end
     return Accessory.GetHeight(1, 1)
 end
 
 local function RefreshInternal(ignoredGuid)
+    if not IsSupported() then return end
     local targetExists = UnitExists and UnitExists("target")
     local guid = targetExists and UnitGUID and UnitGUID("target")
     local currentMarker = targetExists and GetRaidTargetIndex and GetRaidTargetIndex("target")
@@ -158,7 +165,7 @@ function M.ReleaseGuid(guid)
 end
 
 function M.OnCombatLogEvent()
-    if not CombatLogGetCurrentEventInfo then return end
+    if not IsSupported() or not CombatLogGetCurrentEventInfo then return end
     local _, subevent, _, _, _, _, _, destGuid = CombatLogGetCurrentEventInfo()
     if subevent == "UNIT_DIED" or subevent == "UNIT_DESTROYED" or subevent == "PARTY_KILL" then
         M.ReleaseGuid(destGuid)
@@ -168,3 +175,4 @@ end
 -- Read-only diagnostics used by regression tests.
 function M.GetButton(position) return buttons[position] end
 function M.GetAssignedGuid(index) return assignedGuids[index] end
+M.IsSupported = IsSupported

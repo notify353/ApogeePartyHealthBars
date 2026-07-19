@@ -3,7 +3,6 @@ function wipe(value) for key in pairs(value or {}) do value[key] = nil end retur
 
 dofile("ApogeePartyHealthBars_Data.lua")
 dofile("ApogeePartyHealthBars_ActionData.lua")
-dofile("ApogeePartyHealthBars_Effects.lua")
 
 local currentClass = "MAGE"
 local spellbook = { "Mage Armor", "Frost Armor" }
@@ -24,6 +23,9 @@ function InCombatLockdown() return false end
 function UnitPowerMax() return 0 end
 function UnitPowerType() return 0, "MANA" end
 BOOKTYPE_SPELL = "spell"
+
+dofile("ApogeePartyHealthBars_PlayerSpells.lua")
+dofile("ApogeePartyHealthBars_Effects.lua")
 
 local function snapshotHasAura(_, _, auraNames)
     for name in pairs(activeAuraNames) do

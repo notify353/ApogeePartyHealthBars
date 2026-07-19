@@ -50,6 +50,7 @@ local function Dispatch(event, unitId)
 end
 
 dofile("ApogeePartyHealthBars_Sounds.lua")
+dofile("ApogeePartyHealthBars_UnitAPI.lua")
 dofile("ApogeePartyHealthBars_HealthAlerts.lua")
 local H = ApogeePartyHealthBars_HealthAlerts
 H.Register(router)

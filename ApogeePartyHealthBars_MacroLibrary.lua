@@ -154,28 +154,16 @@ function L.ValidateRecipe(recipe)
     return L.ValidateBody(recipe.body)
 end
 
-local function spellBookContains(wanted, bookType, count)
-    if not wanted or not GetSpellBookItemName then return true end
-    for slot = 1, count or 0 do
-        if GetSpellBookItemName(slot, bookType) == wanted then return true end
-    end
-    return false
-end
-
 function L.IsSpellKnownByName(wanted)
-    if not wanted or not GetNumSpellTabs or not GetSpellTabInfo or not GetSpellBookItemName then return true end
-    for tab = 1, GetNumSpellTabs() or 0 do
-        local _, _, offset, count = GetSpellTabInfo(tab)
-        local first = (offset or 0) + 1
-        local last = (offset or 0) + (count or 0)
-        for slot = first, last do if GetSpellBookItemName(slot, BOOKTYPE_SPELL or "spell") == wanted then return true end end
-    end
-    return false
+    local spells = ApogeePartyHealthBars_PlayerSpells
+    if not spells or not spells.IsKnownSpellName then return true end
+    return spells.IsKnownSpellName(wanted, BOOKTYPE_SPELL or "spell")
 end
 
 function L.IsPetSpellKnownByName(wanted)
-    if not wanted or not HasPetSpells or not GetSpellBookItemName then return true end
-    return spellBookContains(wanted, BOOKTYPE_PET or "pet", HasPetSpells() or 0)
+    local spells = ApogeePartyHealthBars_PlayerSpells
+    if not spells or not spells.IsKnownSpellName then return true end
+    return spells.IsKnownSpellName(wanted, BOOKTYPE_PET or "pet")
 end
 
 function L.GetUnavailableReason(recipe)

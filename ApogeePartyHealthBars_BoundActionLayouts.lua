@@ -1,5 +1,6 @@
 local S = ApogeePartyHealthBars_S
 local Actions = ApogeePartyHealthBars_ActionMacros
+local ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities
 
 ApogeePartyHealthBars_BoundActionLayouts = {}
 local Factory = ApogeePartyHealthBars_BoundActionLayouts
@@ -22,6 +23,11 @@ local function acceptedVersion(accepted, version)
     return accepted[version] == true
 end
 
+local function isFeatureAvailable(featureKey)
+    return not ClientCapabilities
+        or ClientCapabilities.IsFeatureAvailable(featureKey)
+end
+
 function Factory.Create(options)
     assert(type(options) == "table", "bound action layouts require options")
     assert(type(options.stateKey) == "string", "bound action layouts require a state key")
@@ -42,8 +48,13 @@ function Factory.Create(options)
 
     local function resolveActiveSpecKey()
         local groupIndex = 1
-        if C_SpecializationInfo and C_SpecializationInfo.GetActiveSpecGroup then
-            local current = C_SpecializationInfo.GetActiveSpecGroup(false, false)
+        local current
+        if isFeatureAvailable("multiSpecLayouts") then
+            if C_SpecializationInfo and C_SpecializationInfo.GetActiveSpecGroup then
+                current = C_SpecializationInfo.GetActiveSpecGroup(false, false)
+            elseif GetActiveTalentGroup then
+                current = GetActiveTalentGroup()
+            end
             if type(current) == "number" and current >= 1 then groupIndex = math.floor(current) end
         end
         return tostring(groupIndex)
@@ -173,7 +184,8 @@ function Factory.Create(options)
         local nextSpecKey = resolveActiveSpecKey()
         local profile = ensureProfile(saved, nextSpecKey)
         local class = playerClass()
-        local count = CLASS_WITH_NATIVE_STATES[class]
+        local supportsForms = isFeatureAvailable("formLayouts")
+        local count = supportsForms and CLASS_WITH_NATIVE_STATES[class]
             and tonumber(GetNumShapeshiftForms and GetNumShapeshiftForms()) or 0
         count = math.max(0, math.floor(count))
         local exposeBase = shouldExposeBase(class, count)
@@ -229,7 +241,8 @@ function Factory.Create(options)
             })
         end
 
-        if count == 0 and class == "PRIEST" and isSpellKnown(PRIEST_SHADOWFORM_SPELL_ID) then
+        if supportsForms and count == 0 and class == "PRIEST"
+            and isSpellKnown(PRIEST_SHADOWFORM_SPELL_ID) then
             nextMaxState = 1
             addDefinition({
                 key = formKey(PRIEST_SHADOWFORM_SPELL_ID, 1),
@@ -239,7 +252,8 @@ function Factory.Create(options)
                 matches = function(activeForm) return activeForm == 1 end,
                 spellId = PRIEST_SHADOWFORM_SPELL_ID,
             })
-        elseif count == 0 and class == "ROGUE" and isSpellKnown(ROGUE_STEALTH_SPELL_ID) then
+        elseif supportsForms and count == 0 and class == "ROGUE"
+            and isSpellKnown(ROGUE_STEALTH_SPELL_ID) then
             nextMaxState = 1
             addDefinition({
                 key = formKey(ROGUE_STEALTH_SPELL_ID, 1),
@@ -254,7 +268,8 @@ function Factory.Create(options)
 
         local catFormKey = formKeyBySpellId[DRUID_CAT_FORM_SPELL_ID]
         local catFormIndex = formIndexBySpellId[DRUID_CAT_FORM_SPELL_ID]
-        if class == "DRUID" and catFormKey and isSpellKnown(DRUID_PROWL_SPELL_ID) then
+        if supportsForms and class == "DRUID" and catFormKey
+            and isSpellKnown(DRUID_PROWL_SPELL_ID) then
             local prowlState = nextMaxState + 1
             addDefinition({
                 key = DRUID_PROWL_LAYOUT_KEY,

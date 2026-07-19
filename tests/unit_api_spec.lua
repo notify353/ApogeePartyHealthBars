@@ -35,6 +35,8 @@ assert(#channels == 2 and channels[1].powerType == 0 and channels[2].powerType =
 assert(channels[1].value == 75 and channels[2].value == 60)
 local health, maximum = api.GetHealth("target")
 assert(health == 0 and maximum == 1, "invalid maximum health did not fail closed")
+local _, _, validMaximum = api.GetHealth("target")
+assert(not validMaximum, "invalid maximum health was not reported to strict consumers")
 assert(not api.IsConnected("target") and not api.GetDefaultRange("player"))
 assert(api.GetGUID("player") == "Player-1" and api.GetGUID("focus") == nil)
 assert(not api.Exists("focus") and #api.GetPowerChannels("focus") == 0)

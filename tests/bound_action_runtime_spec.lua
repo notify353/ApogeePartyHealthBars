@@ -21,6 +21,12 @@ ApogeePartyHealthBars_ActionMacros = {
     GetName = function(entry) return entry and entry.name end,
 }
 ApogeePartyHealthBars_ShortcutItems = {}
+local boundActionsSupported = true
+ApogeePartyHealthBars_ClientCapabilities = {
+    IsFeatureAvailable = function(featureKey)
+        return featureKey ~= "boundActions" or boundActionsSupported
+    end,
+}
 
 local feedback = {}
 ApogeePartyHealthBars_ActionHud = {
@@ -220,5 +226,15 @@ assert(feedback[2][1] == "Second" and feedback[2][2] == "secondSlot label"
 assert(feedback[3][1] == "Empty" and feedback[3][2] == "emptySlot label"
     and feedback[3][3] == "Empty",
     "empty feedback bridge did not identify the unassigned slot")
+
+boundActionsSupported = false
+local unsupported = createRuntime("Unsupported", "unsupportedState", "unsupportedSlot",
+    "Unsupported Action", "unsupported-macro-", "ApogeeUnsupportedFeedback")
+unsupported.Configure({})
+unsupported.Attach({ btn = CreateFrame("Frame") })
+unsupported.InitializeSaved()
+assert(unsupported.GetBindingManager() == nil and unsupported.GetHudContainer() == nil
+        and unsupported.GetHeight("player") == 0 and unsupported.GetWidth("player") == 0,
+    "unsupported bound actions still claimed bindings or occupied HUD geometry")
 
 print("PASS shared bound-action runtime")

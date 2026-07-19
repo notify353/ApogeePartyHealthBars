@@ -32,6 +32,7 @@ local function AuraFromIndex(unitId, index)
     if C_UnitAuras and C_UnitAuras.GetAuraDataByIndex then
         return C_UnitAuras.GetAuraDataByIndex(unitId, index, "HELPFUL")
     end
+    if not UnitBuff then return nil end
     local name, _, _, _, duration, expirationTime, unitCaster, _, _, spellId =
         UnitBuff(unitId, index)
     if not name then return nil end
@@ -111,7 +112,7 @@ local function BuildEmptySnapshot()
 end
 
 function A.ScanUnitHelpfulAuras(unitId)
-    if not unitId or not UnitExists(unitId) then
+    if not unitId or not UnitExists or not UnitExists(unitId) then
         return BuildEmptySnapshot()
     end
 

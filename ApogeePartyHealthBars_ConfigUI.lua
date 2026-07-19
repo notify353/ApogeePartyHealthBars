@@ -14,7 +14,6 @@ local UIH = ApogeePartyHealthBars_UIHelpers
 ApogeePartyHealthBars_ConfigUI = {}
 
 local UI = ApogeePartyHealthBars_ConfigUI
-local ADDON_NAME = "ApogeePartyHealthBars"
 local built = false
 local D
 
@@ -74,8 +73,13 @@ local function AttachConfigDragHandle(frame)
     end)
 end
 
-local function StyleTabButton(btn, active)
-    UIH.StyleTabButton(btn, active)
+local function IsFeatureSupported(featureKey)
+    return not featureKey or not D or not D.ClientCapabilities
+        or D.ClientCapabilities.IsFeatureAvailable(featureKey)
+end
+
+local function StyleTabButton(btn, active, supported)
+    UIH.StyleTabButton(btn, active, supported)
 end
 
 local function CreateTabButton(parent, text, xOffset, width)
@@ -84,14 +88,16 @@ end
 
 local function SetConfigTab(tabName)
     UIH.CloseActiveDropdown()
-    if not tabs[tabName] then tabName = "general" end
+    if not tabs[tabName] or not IsFeatureSupported(tabs[tabName].featureKey) then
+        tabName = "general"
+    end
     AC.CloseEditor()
     S.configTab = tabName
     for _, key in ipairs(tabOrder) do
         local spec = tabs[key]
         local active = key == tabName
         spec.frame:SetShown(active)
-        StyleTabButton(spec.button, active)
+        StyleTabButton(spec.button, active, IsFeatureSupported(spec.featureKey))
     end
 end
 
@@ -178,7 +184,7 @@ function UI.Build(deps)
 
     local versionLabel = header:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     versionLabel:SetPoint("BOTTOMRIGHT", header, "BOTTOMRIGHT", -2, 3)
-    versionLabel:SetText("Version " .. C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version"))
+    versionLabel:SetText("Version " .. tostring(D.AddonVersion or "unknown"))
 
     local closeButton = CreateFrame("Button", nil, header, "UIPanelCloseButton")
     closeButton:SetSize(24, 24)
@@ -205,9 +211,12 @@ function UI.Build(deps)
 
     RegisterTab({ key = "general", label = "General", frame = generalTab, refresh = RefreshConfigPanel })
     RegisterTab({ key = "healing", label = "Healing", frame = healingTab, refresh = HC.Refresh })
-    RegisterTab({ key = "keys", label = "Keys", frame = keysTab, refresh = KC.Refresh })
-    RegisterTab({ key = "wheel", label = "Wheel", frame = wheelTab, refresh = WC.Refresh })
-    RegisterTab({ key = "buttons", label = "Buttons", frame = buttonsTab, refresh = BC.Refresh })
+    RegisterTab({ key = "keys", label = "Keys", frame = keysTab, refresh = KC.Refresh,
+        featureKey = "boundActions" })
+    RegisterTab({ key = "wheel", label = "Wheel", frame = wheelTab, refresh = WC.Refresh,
+        featureKey = "boundActions" })
+    RegisterTab({ key = "buttons", label = "Buttons", frame = buttonsTab, refresh = BC.Refresh,
+        featureKey = "boundActions" })
     RegisterTab({ key = "shortcuts", label = "Shortcuts", frame = shortcutsTab, refresh = SC.Refresh })
     RegisterTab({ key = "macros", label = "Macros", frame = macrosTab, refresh = MC.Refresh })
     RegisterTab({ key = "profiles", label = "Profiles", frame = profilesTab, refresh = PC.Refresh })
@@ -218,7 +227,11 @@ function UI.Build(deps)
         spec.button = CreateTabButton(configPanel, spec.label,
             C.BIND_PAD + (index - 1) * (tabWidth + 4), tabWidth)
         AttachConfigDragHandle(spec.button)
+        local supported = IsFeatureSupported(spec.featureKey)
+        local reason = not supported and D.ClientCapabilities.GetFeatureReason(spec.featureKey) or nil
+        if UIH.SetUnavailableTooltip then UIH.SetUnavailableTooltip(spec.button, reason) end
         spec.button:SetScript("OnClick", function()
+            if not IsFeatureSupported(spec.featureKey) then return end
             SetConfigTab(key)
             RefreshTab(key)
         end)

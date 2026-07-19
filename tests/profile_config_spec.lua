@@ -69,12 +69,14 @@ function UIH.LayoutForm(target, entries) target.entries = entries end
 function UIH.SetFormStatus(target, message, good)
     target.status:SetText(message and ((good and "success:" or "warning:") .. message) or "")
 end
+function UIH.SetUnavailableTooltip(control, reason) control.unavailableReason = reason end
 
 local profiles = {
     { id = "default", name = "Default" },
     { id = "raid", name = "Raid" },
 }
 local activeId = "default"
+local sharingSupported = true
 local store = {}
 function store.List() return profiles end
 function store.GetActiveId() return activeId end
@@ -92,6 +94,12 @@ local deps = {
     MutateActiveProfile = function(callback) return callback() end,
     RefreshProfileLabel = function() end,
     AddonVersion = "0.37.0",
+    ClientCapabilities = {
+        IsFeatureAvailable = function(featureKey)
+            return featureKey ~= "profileSharing" or sharingSupported
+        end,
+        GetFeatureReason = function() return "profile sharing unavailable" end,
+    },
 }
 
 dofile("ApogeePartyHealthBars_ProfileConfig.lua")
@@ -116,5 +124,11 @@ assert(dropdowns[1].selectedKey == "default" and not buttons["Use"]:IsEnabled(),
 dropdowns[1].onSelect("raid")
 assert(buttons["Use"]:IsEnabled(),
     "selecting an inactive profile did not enable Use")
+
+sharingSupported = false
+config.Refresh()
+assert(not buttons["Export"]:IsEnabled() and not buttons["Import"]:IsEnabled()
+        and buttons["Export"].unavailableReason == "profile sharing unavailable",
+    "unsupported profile sharing controls were not disabled with a reason")
 
 print("PASS compact profile configuration")

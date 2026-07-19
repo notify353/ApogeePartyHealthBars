@@ -6,6 +6,7 @@ local P = ApogeePartyHealthBars_ProfileConfig
 
 local tab, D, form, profileDropdown, copyDropdown, statusText
 local useButton, newButton, duplicateButton, renameButton, deleteButton, copyButton
+local exportButton, importButton
 local currentSection, profileRow, actionsRow, copySection, copyRow, shareSection, shareRow
 local shareFrame, shareTitle, shareTextFrame, shareText, shareStatusFrame, shareStatus
 local sharePrimary, shareMerge, shareReplace
@@ -66,6 +67,16 @@ local function updateControls()
     UIH.SetButtonEnabled(deleteButton, selected ~= nil and selectedProfileId ~= activeId
         and #D.ProfileStore.List() > 1)
     UIH.SetButtonEnabled(copyButton, copySourceId ~= nil and copySourceId ~= activeId)
+    local sharingSupported = not D.ClientCapabilities
+        or D.ClientCapabilities.IsFeatureAvailable("profileSharing")
+    UIH.SetButtonEnabled(exportButton, sharingSupported)
+    UIH.SetButtonEnabled(importButton, sharingSupported)
+    local reason = not sharingSupported
+        and D.ClientCapabilities.GetFeatureReason("profileSharing") or nil
+    if UIH.SetUnavailableTooltip then
+        UIH.SetUnavailableTooltip(exportButton, reason)
+        UIH.SetUnavailableTooltip(importButton, reason)
+    end
 end
 
 function P.Refresh()
@@ -244,9 +255,9 @@ function P.Build(parent, deps)
     shareSection = UIH.CreateFormSection(form.content, form.rowWidth, "Share")
     shareRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local shareWidth = (form.rowWidth - 16) / 2
-    local exportButton = UIH.CreateButton(shareRow, "Export", shareWidth, 22)
+    exportButton = UIH.CreateButton(shareRow, "Export", shareWidth, 22)
     exportButton:SetPoint("LEFT", shareRow, "LEFT", 5, 0)
-    local importButton = UIH.CreateButton(shareRow, "Import", shareWidth, 22)
+    importButton = UIH.CreateButton(shareRow, "Import", shareWidth, 22)
     importButton:SetPoint("LEFT", exportButton, "RIGHT", 6, 0)
 
     UIH.LayoutForm(form, {
@@ -320,6 +331,10 @@ function P.Build(parent, deps)
     shareReplace:SetScript("OnClick", function() commitImport("replace") end)
 
     exportButton:SetScript("OnClick", function()
+        if D.ClientCapabilities
+            and not D.ClientCapabilities.IsFeatureAvailable("profileSharing") then
+            setStatus(D.ClientCapabilities.GetFeatureReason("profileSharing")); return
+        end
         local profile = D.ProfileStore.Exportable(selectedProfileId)
         local text, message = D.ProfileCodec.Encode(profile, D.AddonVersion,
             profile and profile.author or D.ProfileStore.GetAuthor(), time and time() or 0)
@@ -331,6 +346,10 @@ function P.Build(parent, deps)
         shareStatus:SetText("Profile string selected. Press Ctrl+C to copy it.")
     end)
     importButton:SetScript("OnClick", function()
+        if D.ClientCapabilities
+            and not D.ClientCapabilities.IsFeatureAvailable("profileSharing") then
+            setStatus(D.ClientCapabilities.GetFeatureReason("profileSharing")); return
+        end
         decodedImport = nil; sharePrimary.mode = "review"; sharePrimary.label:SetText("Review Import")
         shareMerge:Hide(); shareReplace:Hide(); shareTitle:SetText("Import profile")
         shareText:SetText(""); shareStatus:SetText("Paste an APHB profile string, then review it before importing.")
@@ -352,3 +371,4 @@ P.GetShareTextFrame = function() return shareTextFrame end
 P.GetShareText = function() return shareText end
 P.GetShareStatusFrame = function() return shareStatusFrame end
 P.GetForm = function() return form end
+P.GetShareButtons = function() return exportButton, importButton end

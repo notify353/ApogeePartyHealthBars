@@ -6,6 +6,22 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Added
+
+- Added a client-capability registry, compatibility diagnostics, and a documented porting workflow for future WoW branches.
+- Added regression coverage for missing and legacy API families, isolated startup failures, and volatile API boundaries.
+
+### Changed
+
+- Preserved saved feature preferences while disabling unsupported optional features independently, including aura overlays, range, prediction, threat, raid markers, bound actions, and profile sharing.
+- Consolidated Spellbook discovery and lookup behind one adapter and isolated optional login and combat-log initialization so one feature failure does not stop the rest of the add-on.
+
+### Fixed
+
+- Prevented failed profile storage from letting startup mutate invalid saved-variable roots, made modern Spellbook fallback nil-safe, enforced Base layouts when specialization or form APIs are unavailable, and made optional aura/combat-log events safe to omit.
+- Tightened binding, profile-sharing, and metadata compatibility checks so incomplete client API families fail closed and binding reconciliation errors remain visible without stopping later lifecycle work.
+- Fixed opening General settings attempting to enable the low-health threshold's display text as though it were an interactive control.
+
 ## [0.40.0] - 2026-07-18
 
 ### Changed

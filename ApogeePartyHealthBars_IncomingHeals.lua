@@ -2,6 +2,7 @@ local C = ApogeePartyHealthBars_C
 
 ApogeePartyHealthBars_IncomingHeals = {}
 local X = ApogeePartyHealthBars_IncomingHeals
+local UnitAPI = ApogeePartyHealthBars_UnitAPI
 local D
 
 function X.Initialize(deps)
@@ -54,8 +55,7 @@ function X.UpdateBarVisual(healPredBar, unitId, visualMax)
         return
     end
 
-    local hp = UnitHealth(unitId) or 0
-    local hpMax = UnitHealthMax(unitId) or 1
+    local hp, hpMax = UnitAPI.GetHealth(unitId)
     if hpMax <= 0 then hpMax = 1 end
     visualMax = math.max(visualMax or hpMax, 1)
 

@@ -6,6 +6,10 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Changed
+
+- Removed the black backing from action-feedback text and added a General setting to hide that text entirely.
+
 ## [0.39.0] - 2026-07-18
 
 ### Added

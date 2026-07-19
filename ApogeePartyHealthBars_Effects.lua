@@ -11,6 +11,7 @@ local FEATURE_DEFAULTS = {
     enabled = true,
     combatUIAutoHide = true,
     showAllSlots = true,
+    actionFeedbackEnabled = true,
     partyBuffEnabled = true,
     selfBuffEnabled = true,
     clickableBuffIcons = true,

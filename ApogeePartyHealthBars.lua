@@ -755,6 +755,7 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
         Print                       = Print,
         FactoryReset                = FactoryReset,
         SetSavedFeature             = SetSavedFeature,
+        ActionHud                   = ApogeePartyHealthBars_ActionHud,
         ApplyAllSecureBindings      = ApplyAllSecureBindings,
         GetSelfBuffPreferenceOptions = GetSelfBuffPreferenceOptions,
         GetSelfBuffPreferenceKey    = GetSelfBuffPreferenceKey,

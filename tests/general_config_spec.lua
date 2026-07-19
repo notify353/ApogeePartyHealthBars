@@ -103,13 +103,14 @@ local calls = {
     refresh = 0, secure = 0, threat = 0, ticker = 0, hotInit = 0,
     hotTrack = 0, barReset = 0, force = 0, settingsReset = 0,
     minimapReset = 0, factoryReset = 0, soundPreview = 0,
-    messages = {},
+    messages = {}, feedbackClear = 0,
 }
 local timerCallback
 C_Timer = { After = function(_, callback) timerCallback = callback end }
 
 local deps = {
     ApplyAllSecureBindings = function() calls.secure = calls.secure + 1 end,
+    ActionHud = { Clear = function() calls.feedbackClear = calls.feedbackClear + 1 end },
     ApplyDefaultConfigPosition = function() calls.settingsReset = calls.settingsReset + 1 end,
     ApplyDefaultMinimapPosition = function() calls.minimapReset = calls.minimapReset + 1 end,
     ApplyDefaultPosition = function() calls.barReset = calls.barReset + 1 end,
@@ -209,6 +210,12 @@ combatFade:SetChecked(false)
 Click(combatFade)
 assert(calls.fadeState == false,
     "combat UI setting did not apply its immediate side effect")
+
+local actionFeedback = config.GetRow("actionFeedbackEnabled").check
+actionFeedback:SetChecked(false)
+Click(actionFeedback)
+assert(saved.actionFeedbackEnabled == false and calls.feedbackClear == 1,
+    "action feedback setting did not persist and clear the visible text")
 
 local clickable = config.GetRow("clickableBuffIcons").check
 clickable:SetChecked(false)

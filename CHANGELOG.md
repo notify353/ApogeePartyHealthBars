@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.39.0] - 2026-07-18
+
 ### Added
 
 - Added a structured crowd-control catalog covering active control options for every TBC class, including strategic stuns, roots, traps, totems, ground effects, interrupts, movement control, and disarms.

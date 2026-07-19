@@ -387,8 +387,8 @@ assert(middleIcon.point[4] == 214 and middleIcon.point[5] == 0
     "Buttons HUD did not use the three-by-three grid to the right of Wheel")
 local feedbackText = assert(ApogeePartyHealthBars_ActionHud.GetFeedbackText(),
     "shared action feedback line was not attached")
-assert(feedbackText.point[4] == 4 and feedbackText.point[5] == -117,
-    "action feedback line lost its fixed padded position below the Keys grid")
+assert(feedbackText.point[4] == 302 and feedbackText.point[5] == -117,
+    "action feedback line did not sit just beyond the Buttons grid")
 
 RunFrameUpdates()
 local geometry = ApogeePartyHealthBars_RowGeometry
@@ -800,6 +800,7 @@ RunFrameUpdates()
 assert(type(ApogeePartyHealthBars_S.sv) == "table", "saved variables did not initialize")
 assert(ApogeePartyHealthBars_S.sv.combatUIAutoHide == true, "combat UI fade should default on")
 assert(ApogeePartyHealthBars_S.sv.showAllSlots == true, "all solo slots should default visible")
+assert(ApogeePartyHealthBars_S.sv.actionFeedbackEnabled == true, "action feedback should default on")
 assert(ApogeePartyHealthBars_S.sv.clickableBuffIcons == true, "clickable buff icons should default on")
 assert(ApogeePartyHealthBars_S.sv.spellTrackerEnabled == nil, "retired tracker checkbox state persisted")
 assert(ApogeePartyHealthBars_S.sv.spellTrackerSoundsEnabled == nil, "retired tracker sounds checkbox state persisted")

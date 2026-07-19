@@ -113,6 +113,7 @@ local function Layout()
 
     addSetting("showAllSlots")
     addSetting("combatUIAutoHide")
+    addSetting("actionFeedbackEnabled")
 
     entries[#entries + 1] = { frame = alertsSection, height = 16, gap = 10 }
     addSetting("lowHealthThreshold")
@@ -270,7 +271,7 @@ function G.Build(parent, deps)
     if tab then return tab end
     assert(type(deps) == "table", "GeneralConfig requires dependencies")
     for _, key in ipairs({
-        "ApplyAllSecureBindings", "ApplyDefaultConfigPosition",
+        "ApplyAllSecureBindings", "ActionHud", "ApplyDefaultConfigPosition",
         "ApplyDefaultMinimapPosition", "ApplyDefaultPosition", "CombatUIFader",
         "FactoryReset", "ForceRefresh", "GetSavedVariables",
         "GetSelfBuffPreferenceKey", "GetSelfBuffPreferenceOptions",
@@ -303,6 +304,9 @@ function G.Build(parent, deps)
     AddCheckbox("Auto-hide Blizzard UI in combat", "combatUIAutoHide", function()
         local saved = D.GetSavedVariables()
         D.CombatUIFader.ApplyEnabledState(saved and saved.combatUIAutoHide)
+    end)
+    AddCheckbox("Show action feedback text", "actionFeedbackEnabled", function()
+        D.ActionHud.Clear()
     end)
     AddLowHealthThresholdPreference()
     AddLowHealthSoundPreference()

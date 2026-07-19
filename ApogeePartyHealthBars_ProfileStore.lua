@@ -5,7 +5,7 @@ ApogeePartyHealthBars_ProfileStore = {}
 local Store = ApogeePartyHealthBars_ProfileStore
 
 local SETTINGS_KEYS = {
-    "schemaVersion", "enabled", "combatUIAutoHide", "showAllSlots",
+    "schemaVersion", "enabled", "combatUIAutoHide", "showAllSlots", "actionFeedbackEnabled",
     "partyBuffEnabled", "selfBuffEnabled", "clickableBuffIcons", "shieldEnabled",
     "incomingHealEnabled", "rangeCheckEnabled", "showUnitTargets", "hotEnabled",
     "lowHealthSoundKey", "lowHealthThreshold", "threatEnabled", "threatPercentEnabled",
@@ -18,7 +18,7 @@ local ACTION_KEYS = {
     "selfBuffSelections", "wheelMacros", "keyActions", "mouseActions",
 }
 local LEGACY_SETTINGS_KEYS = {
-    "schemaVersion", "enabled", "combatUIAutoHide", "showAllSlots",
+    "schemaVersion", "enabled", "combatUIAutoHide", "showAllSlots", "actionFeedbackEnabled",
     "partyBuffEnabled", "selfBuffEnabled", "clickableBuffIcons", "shieldEnabled",
     "incomingHealEnabled", "rangeCheckEnabled", "showUnitTargets", "hotEnabled",
     "lowHealthSoundKey", "lowHealthThreshold", "threatEnabled", "threatPercentEnabled",
@@ -29,7 +29,7 @@ local LEGACY_SETTINGS_KEYS = {
 local ORDERED_COLLECTIONS = { bindings = true, shortcuts = true, slots = true }
 local SETTINGS_TYPES = {
     schemaVersion = "number", enabled = "boolean", combatUIAutoHide = "boolean",
-    showAllSlots = "boolean", partyBuffEnabled = "boolean", selfBuffEnabled = "boolean",
+    showAllSlots = "boolean", actionFeedbackEnabled = "boolean", partyBuffEnabled = "boolean", selfBuffEnabled = "boolean",
     clickableBuffIcons = "boolean", shieldEnabled = "boolean", incomingHealEnabled = "boolean",
     rangeCheckEnabled = "boolean", showUnitTargets = "boolean", hotEnabled = "boolean",
     lowHealthSoundKey = "string", lowHealthThreshold = "number", threatEnabled = "boolean",

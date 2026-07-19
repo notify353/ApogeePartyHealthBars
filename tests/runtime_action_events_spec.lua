@@ -98,7 +98,10 @@ assert(optional.SPELL_UPDATE_COOLDOWN.owner == "ShortcutBar"
         and optional.UNIT_FLAGS.owner == "ShortcutBarTarget"
         and optional.BAG_UPDATE_DELAYED.owner == "ShortcutItems"
         and optional.GET_ITEM_INFO_RECEIVED.owner == "ShortcutItemInfo"
-        and optional.UNIT_PET.owner == "MacroLibraryPet",
+        and optional.UNIT_PET.owner == "PlayerPetActions"
+        and optional.PET_BAR_UPDATE.owner == "PlayerPetActions"
+        and optional.PET_BAR_UPDATE_COOLDOWN.owner == "PlayerPetActionState"
+        and optional.PET_BAR_UPDATE_USABLE.owner == "PlayerPetActionState",
     "action refresh owner labels changed")
 
 dispatch("SPELL_UPDATE_COOLDOWN")
@@ -128,7 +131,14 @@ reset()
 dispatch("UNIT_PET", "party1")
 dispatch("UNIT_PET", "player")
 dispatch("PET_BAR_UPDATE")
-expect({ "ui-macros", "ui-macros" }, "pet requirement filtering changed")
+expect({ "shortcut-resolve", "ui-macros", "shortcut-resolve", "ui-macros" },
+    "pet action refresh filtering changed")
+
+reset()
+dispatch("PET_BAR_UPDATE_COOLDOWN")
+dispatch("PET_BAR_UPDATE_USABLE")
+expect({ "shortcut-refresh:false", "shortcut-refresh:false" },
+    "pet action state refresh changed")
 
 reset()
 dispatch("ACTIVE_TALENT_GROUP_CHANGED", 2, 1)

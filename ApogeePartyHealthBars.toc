@@ -7,6 +7,7 @@
 ## SavedVariablesPerCharacter: ApogeePartyHealthCharSV
 
 ApogeePartyHealthBars_Data.lua
+ApogeePartyHealthBars_CrowdControl.lua
 ApogeePartyHealthBars_WheelData.lua
 ApogeePartyHealthBars_KeyData.lua
 ApogeePartyHealthBars_MouseButtonData.lua

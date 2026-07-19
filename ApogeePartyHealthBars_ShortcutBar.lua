@@ -5,6 +5,7 @@ local UIH = ApogeePartyHealthBars_UIHelpers
 local Accessory = ApogeePartyHealthBars_AccessoryLayout
 local Actions = ApogeePartyHealthBars_ActionMacros
 local Items = ApogeePartyHealthBars_ShortcutItems
+local CrowdControl = ApogeePartyHealthBars_CrowdControl
 
 ApogeePartyHealthBars_ShortcutBar = {}
 local T = ApogeePartyHealthBars_ShortcutBar
@@ -18,9 +19,10 @@ local resolvedSlots = {}
 local previousStates = {}
 local lastSoundAt = {}
 local initialized = false
+local resolutionPending = false
 local visibleCount = 0
 local visibleLaneCounts = { player = 0, target = 0 }
-local MAX_DISPLAY_ICONS = C.SHORTCUT_MAX_SLOTS + #(C.CROWD_CONTROL_DEFINITIONS or {})
+local MAX_DISPLAY_ICONS = C.SHORTCUT_MAX_SLOTS + CrowdControl.GetMaxAutomaticCount()
 
 local function GetRawSpellName(identifier)
     if C_Spell and C_Spell.GetSpellInfo then
@@ -31,16 +33,20 @@ local function GetRawSpellName(identifier)
     return nil
 end
 
-local function GetCrowdControlDefinition(spellName)
+local function GetCrowdControlDefinition(spellName, sourceBook)
     if not spellName then return nil end
     local baseName = spellName:match("^%s*([^%(]+)") or spellName
     baseName = baseName:gsub("%s+$", "")
-    for _, definition in ipairs(C.CROWD_CONTROL_DEFINITIONS or {}) do
-        for _, identitySpellId in ipairs(definition.identitySpellIds or {}) do
-            local localizedName = GetRawSpellName(identitySpellId)
-            if localizedName and baseName == localizedName then return definition end
+    for _, definition in ipairs(CrowdControl.GetDefinitions()) do
+        local sourceMatches = not sourceBook
+            or (definition.sourceBook or "spell") == sourceBook
+        if sourceMatches then
+            for _, identitySpellId in ipairs(definition.identitySpellIds or {}) do
+                local localizedName = GetRawSpellName(identitySpellId)
+                if localizedName and baseName == localizedName then return definition end
+            end
+            if baseName:match(definition.pattern) then return definition end
         end
-        if baseName:match(definition.pattern) then return definition end
     end
     return nil
 end
@@ -136,31 +142,42 @@ end
 
 local function BuildKnownSpellMap()
     local byId, byName, knownList = {}, {}, {}
-    if not GetNumSpellTabs or not GetSpellTabInfo then return byId, byName, knownList end
-    for tab = 1, GetNumSpellTabs() do
-        local _, _, offset, count = GetSpellTabInfo(tab)
-        if offset and count then
-            for slot = offset + 1, offset + count do
-                local name, subName = GetSpellBookItemName(slot, BOOKTYPE_SPELL)
-                if name then
-                    local castName = subName and subName ~= "" and (name .. "(" .. subName .. ")") or name
-                    local known = { name = castName, baseName = name }
-                    byName[name] = known
-                    byName[castName] = byName[name]
-                    if GetSpellBookItemInfo then
-                        local r1, r2, r3 = GetSpellBookItemInfo(slot, BOOKTYPE_SPELL)
-                        local id = type(r1) == "string" and r2 or ((r3 and r3 > 0) and r3 or r2)
-                        if type(id) == "number" and id > 0 then
-                            byId[id] = { id = id, name = castName, baseName = name }
-                            byName[name] = byId[id]
-                            byName[castName] = byId[id]
-                            known = byId[id]
-                        end
-                    end
-                    knownList[#knownList + 1] = known
+    if not GetSpellBookItemName then return byId, byName, knownList end
+
+    local function AddSlot(slot, bookType)
+        local name, subName = GetSpellBookItemName(slot, bookType)
+        if not name then return end
+        local castName = subName and subName ~= "" and (name .. "(" .. subName .. ")") or name
+        local known = { name = castName, baseName = name, sourceBook = bookType }
+        byName[name] = known
+        byName[castName] = known
+        if GetSpellBookItemInfo then
+            local r1, r2, r3 = GetSpellBookItemInfo(slot, bookType)
+            local id = type(r1) == "string" and r2 or ((r3 and r3 > 0) and r3 or r2)
+            if type(id) == "number" and id > 0 then
+                known = { id = id, name = castName, baseName = name, sourceBook = bookType }
+                byId[id] = known
+                byName[name] = known
+                byName[castName] = known
+            end
+        end
+        knownList[#knownList + 1] = known
+    end
+
+    if GetNumSpellTabs and GetSpellTabInfo then
+        for tab = 1, GetNumSpellTabs() do
+            local _, _, offset, count = GetSpellTabInfo(tab)
+            if offset and count then
+                for slot = offset + 1, offset + count do
+                    AddSlot(slot, BOOKTYPE_SPELL)
                 end
             end
         end
+    end
+
+    local petSpellCount = HasPetSpells and HasPetSpells() or 0
+    if petSpellCount > 0 and BOOKTYPE_PET then
+        for slot = 1, petSpellCount do AddSlot(slot, BOOKTYPE_PET) end
     end
     return byId, byName, knownList
 end
@@ -169,7 +186,7 @@ local function BuildResolvedInfo(known, entry, slot)
     local identifier = known.id or (entry and entry.spellId) or known.name
     local name, icon, spellID = GetSpellNameAndIcon(identifier)
     local resolvedName = name or known.baseName or known.name or (entry and entry.spellName)
-    local crowdControl = GetCrowdControlDefinition(resolvedName)
+    local crowdControl = GetCrowdControlDefinition(resolvedName, known.sourceBook)
     return {
         kind = "spell",
         id = spellID or known.id or (entry and entry.spellId),
@@ -179,6 +196,7 @@ local function BuildResolvedInfo(known, entry, slot)
         icon = icon,
         lane = crowdControl and "target" or "player",
         crowdControl = crowdControl,
+        sourceBook = known.sourceBook,
         slot = slot,
         entry = entry,
     }
@@ -243,12 +261,12 @@ local function ResolveEntries()
 
     local automaticByDefinition = {}
     for _, known in ipairs(knownList) do
-        local crowdControl = GetCrowdControlDefinition(known.baseName or known.name)
+        local crowdControl = GetCrowdControlDefinition(known.baseName or known.name, known.sourceBook)
         if crowdControl then automaticByDefinition[crowdControl] = known end
     end
-    for _, definition in ipairs(C.CROWD_CONTROL_DEFINITIONS or {}) do
+    for _, definition in ipairs(CrowdControl.GetDefinitions()) do
         local known = automaticByDefinition[definition]
-        if known and not configuredCrowdControl[definition] then
+        if known and CrowdControl.IsAutomatic(definition) and not configuredCrowdControl[definition] then
             resolved[#resolved + 1] = BuildResolvedInfo(known, nil, nil)
         end
     end
@@ -294,9 +312,25 @@ local function CreateIcon(parent)
     local count = button:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
     count:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -2, 2)
 
+    local interruptBadge = CreateFrame("Frame", nil, button)
+    interruptBadge:SetSize(9, 9)
+    interruptBadge:SetPoint("TOPRIGHT", button, "TOPRIGHT", -1, -1)
+    interruptBadge:SetFrameLevel(button:GetFrameLevel() + 2)
+    local interruptBackground = interruptBadge:CreateTexture(nil, "OVERLAY")
+    interruptBackground:SetAllPoints()
+    interruptBackground:SetColorTexture(0.04, 0.16, 0.28, 0.94)
+    local interruptLabel = interruptBadge:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
+    interruptLabel:SetPoint("CENTER", interruptBadge, "CENTER", 0, 0)
+    interruptLabel:SetText("I")
+    interruptLabel:SetTextColor(1, 1, 1, 1)
+    interruptBadge.background = interruptBackground
+    interruptBadge.label = interruptLabel
+    interruptBadge:Hide()
+
     button.texture = texture
     button.cooldown = cooldown
     button.count = count
+    button.interruptBadge = interruptBadge
     button.border = Accessory.CreateBorder(button, 0)
     button.pulseBorder = Accessory.CreateBorder(button, 1)
     button.castButton = castButton
@@ -314,8 +348,17 @@ local function CreateIcon(parent)
         local info = button.shortcutInfo
         if not info then return end
         local showTooltip = info.kind == "item" and UIH.ShowItemTooltip or UIH.ShowSpellTooltip
+        local contextLines = {}
+        local controlLabel = CrowdControl.GetControlLabel(info.crowdControl)
+        if controlLabel then
+            contextLines[#contextLines + 1] = {
+                text = "Control: " .. controlLabel,
+                r = 0.45, g = 0.78, b = 1,
+            }
+        end
+        contextLines[#contextLines + 1] = { text = "Click to use", r = 0.3, g = 1, b = 0.3 }
         showTooltip(castButton, info.id, info.name or "Shortcut", STATE_LABELS[button.shortcutState],
-            button.shortcutReason, { { text = "Click to use", r = 0.3, g = 1, b = 0.3 } })
+            button.shortcutReason, contextLines)
     end)
     castButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
     castButton:SetScript("OnReceiveDrag", function()
@@ -392,9 +435,18 @@ local function SyncSecureAction(icon, info)
 end
 
 function T.RefreshSecureActions()
+    if InCombatLockdown and InCombatLockdown() then
+        if deferSecureUpdate then deferSecureUpdate() end
+        return false
+    end
+    if resolutionPending then
+        T.ResolveAndRefresh()
+        return true
+    end
     for i = 1, MAX_DISPLAY_ICONS do
         SyncSecureAction(icons[i], resolved[i])
     end
+    return true
 end
 
 local function GetCooldown(identifier)
@@ -471,6 +523,7 @@ end
 local function EvaluateCrowdControlTarget(info)
     local definition = info.crowdControl
     if not definition then return true end
+    if not CrowdControl.UsesCurrentTarget(definition) then return true end
     if not UnitExists("target") then return false, "Select a hostile target" end
     if UnitIsDeadOrGhost("target") then return false, "Target is dead" end
     if not UnitCanAttack("player", "target") then return false, "Target must be hostile and attackable" end
@@ -502,8 +555,11 @@ local function Evaluate(info)
         return state, start, duration, gcdOnly, count, reason
     end
     local identifier = info.id or info.castName or info.name
-    local eligible, reason = EvaluateCrowdControlTarget(info)
-    if not eligible then return "invalid", 0, 0, false, nil, reason end
+    local customMacro = info.entry and Actions.IsCustomized(info.entry)
+    if not customMacro then
+        local eligible, reason = EvaluateCrowdControlTarget(info)
+        if not eligible then return "invalid", 0, 0, false, nil, reason end
+    end
     if IsCurrent(identifier) then return "current", 0, 0, false, nil end
 
     local start, duration, enabled = GetCooldown(identifier)
@@ -519,17 +575,22 @@ local function Evaluate(info)
     local usable, noResource = IsUsable(identifier)
     if noResource then return "resource", start, duration, gcdOnly, chargeText end
 
-    local inRange = GetRange(info.castName or info.name or identifier)
-    if inRange ~= nil or HasRange(identifier) then
-        local validTarget = UnitExists("target") and not UnitIsDeadOrGhost("target")
-        if validTarget and IsHarmful(identifier) then validTarget = UnitCanAttack("player", "target") end
-        if validTarget and IsHelpful(identifier) then validTarget = UnitCanAssist("player", "target") end
-        if not validTarget then return "invalid", start, duration, gcdOnly, chargeText end
-        if inRange == false or inRange == 0 then return "range", start, duration, gcdOnly, chargeText end
+    local predictsCurrentTarget = not info.crowdControl
+        or CrowdControl.UsesCurrentTarget(info.crowdControl)
+    if not customMacro and predictsCurrentTarget then
+        local inRange = GetRange(info.castName or info.name or identifier)
+        if inRange ~= nil or HasRange(identifier) then
+            local validTarget = UnitExists("target") and not UnitIsDeadOrGhost("target")
+            if validTarget and IsHarmful(identifier) then validTarget = UnitCanAttack("player", "target") end
+            if validTarget and IsHelpful(identifier) then validTarget = UnitCanAssist("player", "target") end
+            if not validTarget then return "invalid", start, duration, gcdOnly, chargeText end
+            if inRange == false or inRange == 0 then return "range", start, duration, gcdOnly, chargeText end
+        end
     end
 
     if not usable then return "unusable", start, duration, gcdOnly, chargeText end
-    return "ready", start, duration, gcdOnly, chargeText
+    local predictionNote = customMacro and "Custom macro targeting is evaluated when used" or nil
+    return "ready", start, duration, gcdOnly, chargeText, predictionNote
 end
 
 local function ApplyState(icon, state, start, duration, charges)
@@ -649,6 +710,10 @@ function T.Refresh(suppressSound)
             local previous = previousStates[i]
             local becameReady = initialized and READY_TRANSITION_STATES[previous] and state == "ready"
             ApplyState(icon, state, start, duration, charges)
+            local isInterrupt = info.crowdControl
+                and CrowdControl.HasCapability(info.crowdControl, CrowdControl.CONTROL.INTERRUPT)
+                or false
+            icon.interruptBadge:SetShown(isInterrupt)
             icon.shortcutInfo = info
             icon.shortcutReason = reason
             if becameReady then
@@ -666,6 +731,7 @@ function T.Refresh(suppressSound)
         else
             icon:Hide()
             icon.texture:SetTexture(nil)
+            icon.interruptBadge:Hide()
             icon.shortcutInfo = nil
             icon.shortcutReason = nil
             previousStates[i] = nil
@@ -701,6 +767,12 @@ function T.Rebaseline()
 end
 
 function T.ResolveAndRefresh()
+    if InCombatLockdown and InCombatLockdown() then
+        resolutionPending = true
+        if deferSecureUpdate then deferSecureUpdate() end
+        return false
+    end
+    resolutionPending = false
     ResolveEntries()
     wipe(previousStates)
     initialized = false
@@ -710,6 +782,7 @@ function T.ResolveAndRefresh()
     if syncTicker then syncTicker() end
     T.Layout()
     T.Refresh(true)
+    return true
 end
 
 function T.RefreshItemInfo()

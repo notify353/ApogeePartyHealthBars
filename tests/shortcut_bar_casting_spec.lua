@@ -145,6 +145,7 @@ dofile("ApogeePartyHealthBars_AccessoryLayout.lua")
 dofile("ApogeePartyHealthBars_ShortcutItems.lua")
 dofile("ApogeePartyHealthBars_ActionData.lua")
 dofile("ApogeePartyHealthBars_ActionMacros.lua")
+dofile("ApogeePartyHealthBars_CrowdControl.lua")
 dofile("ApogeePartyHealthBars_ShortcutBar.lua")
 local shortcuts = ApogeePartyHealthBars_ShortcutBar
 local deferred = 0
@@ -303,7 +304,7 @@ assert(shortcuts.GetFooterHeight() == ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
     "Shortcut Bar did not collapse to one row after removing slots 5 through 12")
 ApogeePartyHealthBars_S.configMode = true
 shortcuts.Layout(0)
-local dropButton = visualButtons[13]
+local dropButton = visualButtons[#visualButtons]
 assert(dropButton and dropButton.shown
         and dropButton.points[1][4] == shortcutStride * 4
         and dropButton.points[1][5] == -ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP,

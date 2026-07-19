@@ -126,8 +126,19 @@ function A.Register(eventRouter, deps)
         if ui.RefreshBindPanel then ui.RefreshBindPanel() end
     end)
 
-    eventRouter.RegisterOptional("UNIT_PET", "MacroLibraryPet", function(_, unit)
-        if unit == "player" then RefreshMacroRequirements() end
+    eventRouter.RegisterOptional("UNIT_PET", "PlayerPetActions", function(_, unit)
+        if unit == "player" then
+            T.ResolveAndRefresh()
+            RefreshMacroRequirements()
+        end
     end)
-    eventRouter.RegisterOptional("PET_BAR_UPDATE", "MacroLibraryPetBar", RefreshMacroRequirements)
+    eventRouter.RegisterOptional("PET_BAR_UPDATE", "PlayerPetActions", function()
+        T.ResolveAndRefresh()
+        RefreshMacroRequirements()
+    end)
+    for _, event in ipairs({ "PET_BAR_UPDATE_COOLDOWN", "PET_BAR_UPDATE_USABLE" }) do
+        eventRouter.RegisterOptional(event, "PlayerPetActionState", function()
+            T.Refresh(false)
+        end)
+    end
 end

@@ -2,19 +2,28 @@ unpack = unpack or table.unpack
 function wipe(value) for key in pairs(value or {}) do value[key] = nil end return value end
 
 dofile("ApogeePartyHealthBars_Data.lua")
+dofile("ApogeePartyHealthBars_CrowdControl.lua")
 dofile("ApogeePartyHealthBars_AccessoryLayout.lua")
-local definitions = ApogeePartyHealthBars_C.CROWD_CONTROL_DEFINITIONS
+local crowdControl = ApogeePartyHealthBars_CrowdControl
+local definitions = crowdControl.GetDefinitions("MAGE")
+local automaticDefinitions = {}
+for _, definition in ipairs(definitions) do
+    if definition.automatic then automaticDefinitions[#automaticDefinitions + 1] = definition end
+end
 ApogeePartyHealthBars_C.SHORTCUT_CLASS_DEFAULTS = {}
 
-local spellNames = { "Fireball" }
+local playerSpellNames = { "Fireball" }
+local petSpellNames = {}
 local localizedByCanonical = {}
 for _, definition in ipairs(definitions) do
     local localized = "Localized " .. definition.canonical
     localizedByCanonical[definition.canonical] = localized
-    spellNames[#spellNames + 1] = localized
+    local spellBook = definition.sourceBook == "pet" and petSpellNames or playerSpellNames
+    spellBook[#spellBook + 1] = localized
 end
 local spellById = {}
-for index, name in ipairs(spellNames) do spellById[1000 + index] = name end
+for index, name in ipairs(playerSpellNames) do spellById[1000 + index] = name end
+for index, name in ipairs(petSpellNames) do spellById[2000 + index] = name end
 for _, definition in ipairs(definitions) do
     for _, identitySpellId in ipairs(definition.identitySpellIds) do
         spellById[identitySpellId] = localizedByCanonical[definition.canonical]
@@ -34,6 +43,7 @@ local function widget(shown)
     local value = { shown = shown ~= false, attributes = {}, scripts = {}, points = {}, mutations = 0 }
     local noops = { "EnableMouse", "SetTexCoord", "SetAllPoints", "SetDrawEdge", "SetText", "SetTextColor", "SetWidth", "SetHeight", "SetColorTexture", "SetAlpha", "SetTexture", "SetDesaturated", "SetCooldown", "Clear", "SetFrameStrata", "SetFrameLevel", "RegisterForClicks" }
     for _, name in ipairs(noops) do value[name] = function() end end
+    function value:SetText(nextText) self.text = nextText end
     function value:SetSize(width, height) self.width, self.height = width, height end
     function value:CreateTexture() return widget() end
     function value:CreateFontString() return widget() end
@@ -63,9 +73,15 @@ local inCombat, usable, noResource, inRange, cooldownDuration, currentSpell = fa
 function InCombatLockdown() return inCombat end
 function UnitClass() return "Mage", "MAGE" end
 function GetNumSpellTabs() return 1 end
-function GetSpellTabInfo() return nil, nil, 0, #spellNames end
-function GetSpellBookItemName(slot) return spellNames[slot], "Rank 1" end
-function GetSpellBookItemInfo(slot) return "SPELL", 1000 + slot end
+function GetSpellTabInfo() return nil, nil, 0, #playerSpellNames end
+function GetSpellBookItemName(slot, bookType)
+    local names = bookType == BOOKTYPE_PET and petSpellNames or playerSpellNames
+    return names[slot], "Rank 1"
+end
+function GetSpellBookItemInfo(slot, bookType)
+    return "SPELL", (bookType == BOOKTYPE_PET and 2000 or 1000) + slot
+end
+function HasPetSpells() return #petSpellNames end
 function GetSpellInfo(identifier)
     local name = spellById[identifier] or tostring(identifier):match("^([^%(]+)")
     return name, nil, 135812, nil, nil, nil, type(identifier) == "number" and identifier or nil
@@ -91,11 +107,14 @@ function UnitAffectingCombat() return target.combat end
 function UnitPowerType() return 0, "MANA" end
 function GetTime() return 1 end
 BOOKTYPE_SPELL = "spell"
+BOOKTYPE_PET = "pet"
 PowerBarColor = { MANA = { r = 0, g = 0, b = 1 } }
 GameTooltip = widget()
+GameTooltip.lines = {}
 GameTooltip.SetOwner = function() end
 GameTooltip.SetSpellByID = function() end
-GameTooltip.AddLine = function() end
+GameTooltip.ClearLines = function(self) self.lines = {} end
+GameTooltip.AddLine = function(self, line) self.lines[#self.lines + 1] = line end
 
 dofile("ApogeePartyHealthBars_Sounds.lua")
 dofile("ApogeePartyHealthBars_UIHelpers.lua")
@@ -118,11 +137,12 @@ shortcuts.Initialize()
 
 assert(shortcuts.GetSlotLane(1) == "player")
 assert(shortcuts.GetSlotLane(2) == nil, "automatic CC occupied a configured Shortcut slot")
-assert(shortcuts.GetDisplayCount() == 1 + #definitions, "not every known CC spell was displayed automatically")
+assert(shortcuts.GetDisplayCount() == 1 + #automaticDefinitions,
+    "not every known automatic Mage CC spell was displayed")
 for displayIndex = 2, shortcuts.GetDisplayCount() do
     assert(shortcuts.GetDisplayLane(displayIndex) == "target", "automatic CC used the wrong lane")
 end
-local targetRows = math.ceil(#definitions / ApogeePartyHealthBars_C.SHORTCUT_COLUMNS)
+local targetRows = math.ceil(#automaticDefinitions / ApogeePartyHealthBars_C.SHORTCUT_COLUMNS)
 local expectedTargetHeight = targetRows * ApogeePartyHealthBars_C.ACCESSORY_ICON_SIZE
     + (targetRows - 1) * ApogeePartyHealthBars_C.ACCESSORY_ICON_GAP
     + ApogeePartyHealthBars_C.ACCESSORY_BOTTOM_GAP
@@ -142,14 +162,38 @@ assert(visualButtons[1].width == ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE
 assert(visualButtons[2].points[1][1] == "BOTTOMLEFT"
     and visualButtons[2].points[1][4] == ApogeePartyHealthBars_C.ACCESSORY_EDGE_INSET
     and visualButtons[2].points[1][5] == ApogeePartyHealthBars_C.ACCESSORY_BOTTOM_GAP
-    and visualButtons[7].points[1][4] == ApogeePartyHealthBars_C.ACCESSORY_EDGE_INSET + 5 * targetStride
-    and visualButtons[8].points[1][4] == ApogeePartyHealthBars_C.ACCESSORY_EDGE_INSET
-    and visualButtons[8].points[1][5] == ApogeePartyHealthBars_C.ACCESSORY_BOTTOM_GAP + targetStride,
+    and visualButtons[1 + #automaticDefinitions].points[1][4]
+        == ApogeePartyHealthBars_C.ACCESSORY_EDGE_INSET
+            + (#automaticDefinitions - 1) * targetStride,
     "target-lane CC utilities were not bottom-left aligned in compact rows")
 assert(secureButtons[1].attributes.unit == nil)
 assert(secureButtons[2].attributes.unit == nil and secureButtons[2].attributes.type == "macro"
     and secureButtons[2].attributes.macrotext:find(
         "/cast [nochanneling:Localized Polymorph] Localized Polymorph(Rank 1)", 1, true))
+local function FindDisplay(canonical)
+    for index, button in ipairs(visualButtons) do
+        local definition = button.shortcutInfo and button.shortcutInfo.crowdControl
+        if definition and definition.canonical == canonical then return index, button end
+    end
+end
+
+local polymorphIndex, polymorphButton = FindDisplay("Polymorph")
+local counterspellIndex, counterspellButton = FindDisplay("Counterspell")
+local freezeIndex = FindDisplay("Freeze")
+assert(freezeIndex and secureButtons[freezeIndex].attributes.macrotext:find(
+        "Localized Freeze", 1, true),
+    "pet spellbook crowd control was not discovered")
+assert(polymorphIndex and not polymorphButton.interruptBadge.shown,
+    "ordinary hard control received an interrupt badge")
+assert(counterspellIndex and counterspellButton.interruptBadge.shown
+        and counterspellButton.interruptBadge.label.text == "I",
+    "automatic interrupt did not receive its accessible corner badge")
+secureButtons[counterspellIndex].scripts.OnEnter()
+local foundInterruptTooltip
+for _, line in ipairs(GameTooltip.lines) do
+    if line == "Control: Interrupt" then foundInterruptTooltip = true break end
+end
+assert(foundInterruptTooltip, "interrupt tooltip omitted its control category")
 
 local function TrackCrowdControl(canonical)
     local localized = localizedByCanonical[canonical]
@@ -171,11 +215,6 @@ for _, definition in ipairs(definitions) do TrackCrowdControl(definition.canonic
 local typedCases = {
     { "Polymorph", "Beast", "ready" }, { "Polymorph", "Critter", "ready" },
     { "Polymorph", "Demon", "invalid" },
-    { "Shackle Undead", "Undead", "ready" }, { "Shackle Undead", "Humanoid", "invalid" },
-    { "Mind Control", "Humanoid", "ready" }, { "Hibernate", "Dragonkin", "ready" },
-    { "Banish", "Elemental", "ready" }, { "Scare Beast", "Beast", "ready" },
-    { "Sap", "Humanoid", "ready" }, { "Repentance", "Humanoid", "ready" },
-    { "Turn Evil", "Demon", "ready" },
 }
 for _, case in ipairs(typedCases) do
     TrackCrowdControl(case[1])
@@ -184,15 +223,9 @@ for _, case in ipairs(typedCases) do
     assert(state == case[3], case[1] .. " eligibility failed for " .. case[2])
 end
 
-TrackCrowdControl("Sap")
-target.creatureType = "Humanoid"
-target.combat = true
-local state, reason = shortcuts.GetSlotState(2)
-assert(state == "invalid" and reason == "Target is in combat")
-target.combat = false
 TrackCrowdControl("Polymorph")
 target.exists = false
-state, reason = shortcuts.GetSlotState(2)
+local state, reason = shortcuts.GetSlotState(2)
 assert(state == "invalid" and reason == "Select a hostile target")
 target.exists, target.dead = true, true
 assert(shortcuts.GetSlotState(2) == "invalid")
@@ -202,6 +235,24 @@ target.attackable, target.classification = true, "worldboss"
 state, reason = shortcuts.GetSlotState(2)
 assert(state == "invalid" and reason == "World bosses cannot be crowd controlled")
 target.classification, target.creatureType = "normal", "Humanoid"
+
+TrackCrowdControl("Frost Nova")
+target.exists, target.attackable = false, false
+state, reason = shortcuts.GetSlotState(2)
+assert(state == "ready", "self-AoE crowd control incorrectly required a hostile target")
+target.exists, target.attackable = true, true
+
+TrackCrowdControl("Polymorph")
+ApogeePartyHealthBars_S.charSv.shortcuts[2].macroText = "/cast [@focus] Localized Polymorph"
+target.creatureType, inRange = "Demon", 0
+shortcuts.ResolveAndRefresh()
+state, reason = shortcuts.GetSlotState(2)
+assert(state == "ready" and reason == "Custom macro targeting is evaluated when used",
+    "custom CC macro was incorrectly evaluated against the current target")
+target.creatureType, inRange = "Humanoid", 1
+ApogeePartyHealthBars_S.charSv.shortcuts[2].macroText =
+    ApogeePartyHealthBars_ActionMacros.BuildDefaultMacro(ApogeePartyHealthBars_S.charSv.shortcuts[2])
+shortcuts.ResolveAndRefresh()
 
 currentSpell = true
 target.creatureType = "Demon"
@@ -221,12 +272,24 @@ assert(shortcuts.GetSlotState(2) == "cooldown")
 cooldownDuration = 0
 
 local beforeCombat = secureButtons[2].mutations
+local beforePetDismiss = shortcuts.GetDisplayCount()
+petSpellNames[1] = nil
 inCombat = true
-shortcuts.RefreshSecureActions()
+assert(not shortcuts.ResolveAndRefresh(), "combat-time pet resolution was not deferred")
 assert(secureButtons[2].mutations == beforeCombat and deferred > 0)
+assert(shortcuts.GetDisplayCount() == beforePetDismiss,
+    "combat-time pet change desynchronized visible and secure actions")
 inCombat = false
 shortcuts.RefreshSecureActions()
 assert(secureButtons[2].attributes.unit == nil and secureButtons[2].attributes.type == "macro"
     and secureButtons[2].shown and secureButtons[2].mouseEnabled)
+assert(shortcuts.GetDisplayCount() == beforePetDismiss - 1,
+    "deferred pet action resolution was not applied after combat")
+for _, button in ipairs(secureButtons) do
+    local macroText = button.attributes.macrotext
+    assert(not (button.shown and button.mouseEnabled and macroText
+            and macroText:find("Localized Freeze", 1, true)),
+        "dismissed pet crowd control retained a secure click overlay")
+end
 
 print("PASS crowd-control Shortcuts")

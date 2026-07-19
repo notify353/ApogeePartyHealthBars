@@ -4,6 +4,11 @@ ApogeePartyHealthBars_Sounds = {
 }
 ApogeePartyHealthBars_ShortcutItems = {}
 
+local featureSupport = { multiSpecLayouts = true, formLayouts = true }
+ApogeePartyHealthBars_ClientCapabilities = {
+    IsFeatureAvailable = function(featureKey) return featureSupport[featureKey] ~= false end,
+}
+
 local activeSpec, formCount = 1, 0
 local activeForm = 0
 C_SpecializationInfo = {
@@ -53,5 +58,18 @@ activeSpec = 1
 layouts.RefreshActiveContext()
 assert(layouts.GetSlot("spell:71", "key1").spellName == "Frostbolt",
     "Keys first talent profile did not persist")
+
+C_SpecializationInfo = nil
+GetActiveTalentGroup = function() return 2 end
+assert(layouts.RefreshActiveContext() and layouts.GetActiveSpecKey() == "2",
+    "legacy talent-group API did not select its independent Keys profile")
+
+featureSupport.multiSpecLayouts = false
+featureSupport.formLayouts = false
+formCount = 2
+GetShapeshiftFormInfo = function() error("unsupported form API was called") end
+assert(layouts.RefreshActiveContext() and layouts.GetActiveSpecKey() == "1"
+        and layouts.GetActiveKey() == "base" and #layouts.GetLayouts() == 1,
+    "unsupported specialization and form APIs did not fall back to Base")
 
 print("PASS per-spec and per-state Keys layouts")

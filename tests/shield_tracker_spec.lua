@@ -67,6 +67,7 @@ local function ShieldBar()
     return bar
 end
 
+dofile("ApogeePartyHealthBars_UnitAPI.lua")
 dofile("ApogeePartyHealthBars_ShieldTracker.lua")
 local tracker = ApogeePartyHealthBars_ShieldTracker
 

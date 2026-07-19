@@ -16,6 +16,8 @@ These instructions apply to every file in this repository.
 - Before API-dependent implementation, review, or troubleshooting, run `pwsh ./scripts/check-wow-api-export.ps1` and search the relevant files under `Blizzard_APIDocumentationGenerated`.
 - When generated documentation does not establish practical usage, search the matching exported Blizzard Lua and XML source, especially for secure actions, combat lockdown, and frame templates.
 - Never substitute Retail, another Classic branch, remembered behavior, or unverified online documentation for the export from the client targeted by `ApogeePartyHealthBars.toc`.
+- Keep volatile unit, aura, Spellbook, item, binding, optional-overlay, profile-codec, and client-metadata APIs behind the compatibility boundaries documented in `docs/PORTING.md`; do not introduce a universal wrapper for ordinary frame/widget calls.
+- Preserve saved feature preferences when a client lacks an optional capability. Gate the effective runtime feature and expose the unsupported reason instead of mutating portable profile intent.
 - If the checker reports that the export is missing or stale, stop API-dependent work and ask the owner to follow `docs/WOW_INTERFACE_EXPORT.md`; do not guess. If the environment cannot access the local WoW installation, disclose that the authoritative export could not be checked.
 - After a client update or fresh export, run `pwsh ./scripts/record-wow-api-export.ps1` and commit the resulting `docs/wow-api-export.json` update with any compatibility changes.
 

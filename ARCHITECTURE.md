@@ -5,6 +5,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 ## Ownership
 
 - `EventRouter`: event frame and isolated subscribers
+- `ClientCapabilities`: session-only client identity, volatile API-family detection, feature support, metadata fallbacks, and isolated startup diagnostics
 - `RuntimeLifecycleEvents`: login/bootstrap, world and roster changes, combat transitions, and combat-log fan-out
 - `RuntimeUnitEvents`: tracked-unit aura invalidation, shield synchronization, health/power update policy, targets, threat, and raid-marker refreshes
 - `RuntimeActionEvents`: spell/spec/form transitions, binding reconciliation, action-state refreshes, item updates, and macro requirements
@@ -55,6 +56,9 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 ## Invariants
 
 - Preserve TOC dependency order and Lua 5.1 compatibility.
+- Keep saved feature preferences separate from client support; unsupported features compute an effective disabled state without rewriting portable profile intent.
+- Keep volatile client APIs inside their domain adapters and capability detection; ordinary frame construction and widget methods remain direct.
+- Treat basic unit health and frame construction as the required baseline while aura, range, prediction, threat, markers, assignment, bindings, state layouts, and profile sharing degrade independently.
 - Never mutate secure attributes, position, visibility, or mouse state during combat.
 - Keep every displayed unit inside `UnitTopology`; event routing, trackers, and layout must not grow independent token-pattern rules.
 - Poll target-chain identity and values at the normal visual cadence because Anniversary's Blizzard raid frames document unreliable second-depth target events.
@@ -88,3 +92,5 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 ## Validation
 
 Run `pwsh ./scripts/test-local.ps1` for Lua parsing, all specs, package and workflow validation, a verified local ZIP, and `git diff --check`. In-game testing remains mandatory for combat, secure actions, and taint.
+
+See `docs/PORTING.md` for the compatibility contract and target-client workflow.

@@ -12,11 +12,50 @@ local generalRowsByKey = {}
 local hotRows = {}
 local hotRowsByKey = {}
 local resetBarBtn, resetSettingsBtn, resetMinimapBtn, prepareDisableBtn, factoryResetBtn
-local behaviorSection, alertsSection, displaySection, hotSection, positionsSection, dangerSection
-local resetRow, prepareDisableRow, factoryRow
+local behaviorSection, alertsSection, displaySection, hotSection, compatibilitySection
+local positionsSection, dangerSection
+local resetRow, compatibilityRow, compatibilityLabel, prepareDisableRow, factoryRow
 local prepareDisableArmed, prepareDisableToken = false, 0
 local factoryResetArmed, factoryResetToken = false, 0
 local refreshing = false
+
+local SUPPORT_FEATURE_BY_SETTING = {
+    partyBuffEnabled = "auraReminders",
+    selfBuffEnabled = "auraReminders",
+    selfBuffPreference = "auraReminders",
+    clickableBuffIcons = "auraReminders",
+    shieldEnabled = "shieldOverlay",
+    incomingHealEnabled = "incomingHeals",
+    rangeCheckEnabled = "rangeFade",
+    threatEnabled = "threat",
+    threatPercentEnabled = "threat",
+    hotEnabled = "hotTracking",
+}
+
+local function GetSettingSupport(svKey)
+    local featureKey = SUPPORT_FEATURE_BY_SETTING[svKey]
+    if not featureKey or not D or not D.ClientCapabilities then return true, nil end
+    return D.ClientCapabilities.IsFeatureAvailable(featureKey),
+        D.ClientCapabilities.GetFeatureReason(featureKey)
+end
+
+local function ApplySettingSupport(entry)
+    if not SUPPORT_FEATURE_BY_SETTING[entry.svKey] then return true end
+    local supported, reason = GetSettingSupport(entry.svKey)
+    local frame = entry.frame
+    local control = frame.check or frame.value
+    if control then
+        if supported then control:Enable() else control:Disable() end
+    end
+    if frame.label then
+        local color = supported and 0.9 or 0.45
+        frame.label:SetTextColor(color, color, color)
+    end
+    if UIH.SetUnavailableTooltip then
+        UIH.SetUnavailableTooltip(frame, supported and nil or reason)
+    end
+    return supported
+end
 
 local function SetCheckboxChecked(check, checked)
     local onClick = check:GetScript("OnClick")
@@ -45,6 +84,8 @@ local function CreateCheckboxRow(parent, labelText, indent)
 end
 
 local function IsRowVisible(svKey)
+    local supported = GetSettingSupport(svKey)
+    if supported == false then return true end
     if svKey == "partyBuffEnabled" then return D.IsPartyBuffKnown() end
     if svKey == "selfBuffEnabled" then return D.IsSelfBuffKnown() end
     if svKey == "clickableBuffIcons" then return D.HasKnownBuffReminder() end
@@ -108,6 +149,7 @@ local function Layout()
             else
                 SetCheckboxChecked(row.frame.check, D.IsSavedFeatureEnabled(row.svKey))
             end
+            ApplySettingSupport(row)
         end
     end
 
@@ -146,13 +188,49 @@ local function Layout()
         }
         if visible then
             SetCheckboxChecked(entry.row.check, not disabled[entry.def.key])
-            if hotGlobal then
+            local supported, reason = GetSettingSupport("hotEnabled")
+            if hotGlobal and supported then
                 entry.row.check:Enable()
                 entry.row.label:SetTextColor(0.9, 0.9, 0.9)
             else
                 entry.row.check:Disable()
                 entry.row.label:SetTextColor(0.45, 0.45, 0.45)
             end
+            if UIH.SetUnavailableTooltip then
+                UIH.SetUnavailableTooltip(entry.row, supported and nil or reason)
+            end
+        end
+    end
+
+    local unavailable = D.ClientCapabilities and D.ClientCapabilities.ListUnavailableFeatures() or {}
+    local failures = D.ClientCapabilities and D.ClientCapabilities.ListRuntimeFailures() or {}
+    local compatibilityVisible = #unavailable > 0 or #failures > 0
+    entries[#entries + 1] = {
+        frame = compatibilitySection, height = 16, gap = 10, visible = compatibilityVisible,
+    }
+    entries[#entries + 1] = {
+        frame = compatibilityRow, height = 42, visible = compatibilityVisible,
+    }
+    if compatibilityVisible then
+        local summary = {}
+        if #unavailable > 0 then
+            summary[#summary + 1] = tostring(#unavailable) .. " optional feature"
+                .. (#unavailable == 1 and " is" or "s are") .. " unavailable on this client."
+        end
+        if #failures > 0 then
+            summary[#summary + 1] = tostring(#failures) .. " feature initialization failure"
+                .. (#failures == 1 and " was" or "s were") .. " isolated."
+        end
+        compatibilityLabel:SetText(table.concat(summary, " "))
+        local details = {}
+        for _, entry in ipairs(unavailable) do
+            details[#details + 1] = entry.label .. ": " .. entry.reason
+        end
+        for _, failure in ipairs(failures) do
+            details[#details + 1] = failure.owner .. ": " .. failure.reason
+        end
+        if UIH.SetUnavailableTooltip then
+            UIH.SetUnavailableTooltip(compatibilityRow, table.concat(details, "\n"))
         end
     end
 
@@ -206,6 +284,7 @@ local function AddSelfBuffPreference()
         D.RequestConfigRefresh()
     end)
     frame.value = value
+    frame.label = label
     AddGeneralRow(frame, "selfBuffPreference")
 end
 
@@ -297,6 +376,8 @@ function G.Build(parent, deps)
     alertsSection = UIH.CreateFormSection(form.content, form.rowWidth, "Alerts and reminders")
     displaySection = UIH.CreateFormSection(form.content, form.rowWidth, "Bar display")
     hotSection = UIH.CreateFormSection(form.content, form.rowWidth, "Tracked HoTs")
+    compatibilitySection = UIH.CreateFormSection(form.content, form.rowWidth,
+        "Client compatibility")
     positionsSection = UIH.CreateFormSection(form.content, form.rowWidth, "Positions")
     dangerSection = UIH.CreateFormSection(form.content, form.rowWidth, "Danger")
 
@@ -339,6 +420,15 @@ function G.Build(parent, deps)
             D.RequestConfigRefresh()
         end)
     end
+
+    compatibilityRow = UIH.CreateFormRow(form.content, form.rowWidth, 42)
+    compatibilityLabel = compatibilityRow:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    compatibilityLabel:SetPoint("TOPLEFT", compatibilityRow, "TOPLEFT", 8, -7)
+    compatibilityLabel:SetPoint("BOTTOMRIGHT", compatibilityRow, "BOTTOMRIGHT", -8, 7)
+    compatibilityLabel:SetJustifyH("LEFT")
+    compatibilityLabel:SetJustifyV("MIDDLE")
+    compatibilityLabel:SetWordWrap(true)
+    compatibilityLabel:SetTextColor(1, 0.65, 0.2)
 
     resetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local resetWidth = (form.rowWidth - 22) / 3

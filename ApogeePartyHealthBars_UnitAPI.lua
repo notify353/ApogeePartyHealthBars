@@ -27,8 +27,9 @@ function U.GetHealth(unitId)
     local value = UnitHealth and UnitHealth(unitId) or 0
     local maximum = UnitHealthMax and UnitHealthMax(unitId) or 1
     if type(value) ~= "number" then value = 0 end
-    if type(maximum) ~= "number" or maximum <= 0 then maximum = 1 end
-    return value, maximum
+    local validMaximum = type(maximum) == "number" and maximum > 0
+    if not validMaximum then maximum = 1 end
+    return value, maximum, validMaximum
 end
 
 function U.GetIdentity(unitId)

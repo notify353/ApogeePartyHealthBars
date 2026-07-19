@@ -144,6 +144,8 @@ The runner rejects other Lua versions, parses every add-on source file, runs eve
 
 The matching local Blizzard interface export is the primary development reference for WoW APIs and interface behavior. Read [docs/WOW_INTERFACE_EXPORT.md](docs/WOW_INTERFACE_EXPORT.md) before API-dependent work. The validation suite fails when the installed Anniversary client is newer than the recorded export and explains how to refresh it.
 
+For work targeting another WoW branch, read [docs/PORTING.md](docs/PORTING.md). The add-on uses capability-driven, domain-owned compatibility boundaries so optional features can degrade independently without overwriting shared profile preferences.
+
 ## Compatibility
 
 Current target: Anniversary/Burning Crusade Classic 2.5.6, TOC interface `20506`. Retail and other Classic clients are unsupported.

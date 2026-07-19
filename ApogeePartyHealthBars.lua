@@ -109,6 +109,25 @@ local function IsSavedFeatureEnabled(svKey)
     return S.sv and S.sv[svKey] ~= false
 end
 
+local SUPPORT_FEATURE_BY_SETTING = {
+    partyBuffEnabled = "auraReminders",
+    selfBuffEnabled = "auraReminders",
+    clickableBuffIcons = "auraReminders",
+    shieldEnabled = "shieldOverlay",
+    incomingHealEnabled = "incomingHeals",
+    rangeCheckEnabled = "rangeFade",
+    threatEnabled = "threat",
+    threatPercentEnabled = "threat",
+    hotEnabled = "hotTracking",
+}
+
+local function IsEffectiveFeatureEnabled(svKey)
+    if not IsSavedFeatureEnabled(svKey) then return false end
+    local featureKey = SUPPORT_FEATURE_BY_SETTING[svKey]
+    return not featureKey
+        or ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable(featureKey)
+end
+
 local function IsUnitTargetsEnabled()
     return IsSavedFeatureEnabled("showUnitTargets")
 end
@@ -145,7 +164,7 @@ hotTracker.Initialize({
     Effects = E,
     GetSurfaces = GetAllSurfaces,
     SyncVisualTicker = SyncVisualTicker,
-    IsSavedFeatureEnabled = IsSavedFeatureEnabled,
+    IsSavedFeatureEnabled = IsEffectiveFeatureEnabled,
     GetSavedVariables = function() return S.sv end,
 })
 local IsHotEnabled = hotTracker.IsEnabled
@@ -160,7 +179,7 @@ buffReminders.Initialize({
     Auras = A,
     Effects = E,
     GetSurfaces = GetAllSurfaces,
-    IsSavedFeatureEnabled = IsSavedFeatureEnabled,
+    IsSavedFeatureEnabled = IsEffectiveFeatureEnabled,
     IsConfigMode = function() return S.configMode end,
     GetCharacterSavedVariables = function() return S.charSv end,
     ApplyAllSelfBuffBindings = function() ApplyAllSelfBuffBindings() end,
@@ -183,7 +202,7 @@ end
 
 shieldTracker.Initialize({
     Auras = A,
-    IsSavedFeatureEnabled = IsSavedFeatureEnabled,
+    IsSavedFeatureEnabled = IsEffectiveFeatureEnabled,
     IsConfigMode = function() return S.configMode end,
     RequestUpdate = S.RequestUpdate,
     IsTrackedUnit = IsPanelTrackedUnit,
@@ -198,7 +217,7 @@ local GetUnitShieldRemaining = shieldTracker.GetRemaining
 local UpdateRowShieldVisual = shieldTracker.UpdateRowVisual
 
 incomingHeals.Initialize({
-    IsSavedFeatureEnabled = IsSavedFeatureEnabled,
+    IsSavedFeatureEnabled = IsEffectiveFeatureEnabled,
     IsConfigMode = function() return S.configMode end,
     IsTrackedUnit = IsPanelTrackedUnit,
 })
@@ -206,7 +225,7 @@ local UpdateIncomingHealBarVisual = incomingHeals.UpdateBarVisual
 local UpdateRowIncomingHealVisual = incomingHeals.UpdateRowVisual
 
 local function IsUnitInPrimaryActionRange(unitId)
-    if not IsSavedFeatureEnabled("rangeCheckEnabled") or S.configMode then return true end
+    if not IsEffectiveFeatureEnabled("rangeCheckEnabled") or S.configMode then return true end
     if not unitAPI.Exists(unitId) or unitAPI.IsDead(unitId) then return true end
     local action = ApogeePartyHealthBars_ActionData.Normalize(S.GetBinding("1"))
     if not action or action.kind ~= "spell" or not IsSpellInRange then
@@ -298,7 +317,7 @@ end
 
 visualTicker.Initialize({
     IsAddonEnabled = IsEnabled,
-    IsRangeCheckEnabled = function() return IsSavedFeatureEnabled("rangeCheckEnabled") end,
+    IsRangeCheckEnabled = function() return IsEffectiveFeatureEnabled("rangeCheckEnabled") end,
     IsConfigMode = function() return S.configMode end,
     HasActiveHotVisuals = HasActiveHotVisuals,
     TickHotVisuals = TickHotVisuals,
@@ -434,7 +453,7 @@ playerUtility.Attach(rows[1].primary, {
     ShouldShowSelfBuffIcon = ShouldShowSelfBuffIcon,
     IsSelfBuffKnown = buffReminders.IsSelfKnown,
     GetSelfBuffCastSpellName = buffReminders.GetSelfCastSpellName,
-    IsSavedFeatureEnabled = IsSavedFeatureEnabled,
+    IsSavedFeatureEnabled = IsEffectiveFeatureEnabled,
     DeferSecureUpdate = DeferSecureUpdate,
     PositionSecureOverlay = PositionSecureOverlay,
     ShowSecureFrame = ShowSecureFrame,
@@ -591,7 +610,7 @@ L.Register({
     RefreshThreat = H.Refresh,
     IsUnitTargetsEnabled = IsUnitTargetsEnabled,
     GetPartyBuffCastSpellName = buffReminders.GetPartyCastSpellName,
-    IsSavedFeatureEnabled = IsSavedFeatureEnabled,
+    IsSavedFeatureEnabled = IsEffectiveFeatureEnabled,
     ApplyAllBindings = ApplyAllBindings,
     IsEnabled = IsEnabled,
     RebuildUnitToRow = RebuildUnitToRow,
@@ -642,6 +661,7 @@ bindingController.Initialize({
     SyncVisualTicker = SyncVisualTicker,
     GetSpellFromCursor = GetSpellFromCursor,
     GetConfigUI = function() return configUI end,
+    ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities,
 })
 local ClearBinding = bindingController.ClearBinding
 local MoveBinding = bindingController.MoveBinding
@@ -690,15 +710,26 @@ local function GetBoundActionManagers()
 end
 
 local function ClaimBoundActionBindings()
+    if not ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable("boundActions") then
+        return true, "unsupported",
+            ApogeePartyHealthBars_ClientCapabilities.GetFeatureReason("boundActions")
+    end
     return ApogeePartyHealthBars_BoundActionBindings.ClaimAll(GetBoundActionManagers())
 end
 
 local function ReleaseBoundActionBindings()
+    if not ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable("boundActions") then
+        return true, "unsupported",
+            ApogeePartyHealthBars_ClientCapabilities.GetFeatureReason("boundActions")
+    end
     return ApogeePartyHealthBars_BoundActionBindings.ReleaseAll(GetBoundActionManagers())
 end
 
 ReconcileBoundActionBindings = function()
     if not S.sv or S.sv.enabled ~= true then return true, "disabled" end
+    if not ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable("boundActions") then
+        return true, "unsupported"
+    end
     return ApogeePartyHealthBars_BoundActionBindings.ReconcileAll(GetBoundActionManagers())
 end
 
@@ -747,8 +778,10 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
     ActivateProfile           = ActivateProfile,
     MutateActiveProfile       = MutateActiveProfile,
     CreateAndActivateProfile = CreateAndActivateProfile,
-    AddonVersion              = C_AddOns.GetAddOnMetadata("ApogeePartyHealthBars", "Version"),
-    GeneralConfig = {
+    AddonVersion              = ApogeePartyHealthBars_ClientCapabilities.GetAddonVersion(
+        "ApogeePartyHealthBars"),
+    ClientCapabilities       = ApogeePartyHealthBars_ClientCapabilities,
+        GeneralConfig = {
         ForceRefresh                = ForceRefresh,
         InitHotSpells               = InitHotSpells,
         SetAddonEnabled             = SetAddonEnabled,
@@ -775,6 +808,7 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
         Threat                      = H,
         CombatUIFader               = ApogeePartyHealthBars_CombatUIFader,
         SyncVisualTicker            = SyncVisualTicker,
+        ClientCapabilities          = ApogeePartyHealthBars_ClientCapabilities,
     },
 })
 

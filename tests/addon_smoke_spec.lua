@@ -221,6 +221,7 @@ function GetBindingAction(key) return smokeBindings[key] or "" end
 function GetBindingName(action) return action end
 function SetBinding(key, action) smokeBindings[key] = action or ""; return true end
 function SaveBindings(set) assert(set == 2); savedBindingCount = savedBindingCount + 1 end
+function LoadBindings(set) assert(set == 2) end
 local spellbookOpenCount = 0
 local directSpellbookToggleCount = 0
 SpellbookMicroButton = widget()

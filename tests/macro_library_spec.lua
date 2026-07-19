@@ -56,6 +56,7 @@ BOOKTYPE_PET = "pet"
 local petSpells = {}
 function HasPetSpells() return #petSpells end
 function GetSpellBookItemName(slot, bookType) if bookType == BOOKTYPE_PET then return petSpells[slot] end end
+dofile("ApogeePartyHealthBars_PlayerSpells.lua")
 local spellLock = L.GetRecipe("warlock-stop-spell-lock")
 assert(L.GetUnavailableReason(spellLock):find("Summon a pet", 1, true), "missing pet spell was not reported")
 petSpells[1] = "Spell Lock"

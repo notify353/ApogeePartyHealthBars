@@ -18,10 +18,17 @@ function H.CloseActiveDropdown()
     if activeDropdown then activeDropdown:Close() end
 end
 
-function H.StyleTabButton(button, active)
+function H.StyleTabButton(button, active, supported)
+    supported = supported ~= false
     button.bg:SetColorTexture(active and 0.22 or 0.10, active and 0.22 or 0.10, active and 0.26 or 0.12, 1)
-    if active then button.label:SetTextColor(1, 0.82, 0) else button.label:SetTextColor(0.75, 0.75, 0.75) end
-    button.accent:SetShown(active)
+    if not supported then
+        button.label:SetTextColor(0.38, 0.38, 0.38)
+    elseif active then
+        button.label:SetTextColor(1, 0.82, 0)
+    else
+        button.label:SetTextColor(0.75, 0.75, 0.75)
+    end
+    button.accent:SetShown(active and supported)
 end
 
 function H.CreateButton(parent, labelText, width, height)
@@ -46,6 +53,30 @@ function H.SetButtonEnabled(button, enabled)
         local color = enabled and 0.85 or 0.45
         button.label:SetTextColor(color, color, color)
     end
+end
+
+function H.SetUnavailableTooltip(frame, reason)
+    if not frame then return end
+    frame.apogeeUnavailableReason = reason
+    if not reason or reason == "" then
+        frame:SetScript("OnEnter", nil)
+        frame:SetScript("OnLeave", nil)
+        return
+    end
+    if frame.EnableMouse then frame:EnableMouse(true) end
+    frame:SetScript("OnEnter", function(self)
+        if not GameTooltip or not GameTooltip.SetOwner then return end
+        if GameTooltip.ClearLines then GameTooltip:ClearLines() end
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        if GameTooltip.SetText then
+            GameTooltip:SetText("Unavailable on this client", 1, 0.82, 0.15)
+        end
+        if GameTooltip.AddLine then GameTooltip:AddLine(reason, 1, 0.45, 0.35, true) end
+        if GameTooltip.Show then GameTooltip:Show() end
+    end)
+    frame:SetScript("OnLeave", function()
+        if GameTooltip and GameTooltip.Hide then GameTooltip:Hide() end
+    end)
 end
 
 -- Keep spell-icon tooltips compact and consistent without modifying Blizzard's

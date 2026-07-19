@@ -2,6 +2,7 @@
 -- slot reordering cannot transfer an armed or low state to another character.
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
+local UnitAPI = ApogeePartyHealthBars_UnitAPI
 local Sounds = ApogeePartyHealthBars_Sounds
 
 ApogeePartyHealthBars_HealthAlerts = {}
@@ -58,9 +59,9 @@ end
 local function GetHealthFraction(unitId)
     if not UnitExists(unitId) then return nil end
     if UnitIsConnected and not UnitIsConnected(unitId) then return nil end
-    local maximum = UnitHealthMax(unitId) or 0
-    if maximum <= 0 then return nil end
-    return (UnitHealth(unitId) or 0) / maximum
+    local health, maximum, validMaximum = UnitAPI.GetHealth(unitId)
+    if not validMaximum then return nil end
+    return health / maximum
 end
 
 local function PlayLowHealthSound()

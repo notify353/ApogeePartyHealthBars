@@ -7,6 +7,7 @@
 ## SavedVariablesPerCharacter: ApogeePartyHealthCharSV
 
 ApogeePartyHealthBars_Data.lua
+ApogeePartyHealthBars_ClientCapabilities.lua
 ApogeePartyHealthBars_CrowdControl.lua
 ApogeePartyHealthBars_WheelData.lua
 ApogeePartyHealthBars_KeyData.lua
@@ -41,6 +42,7 @@ ApogeePartyHealthBars_ProfileCodec.lua
 ApogeePartyHealthBars_ProfileStore.lua
 ApogeePartyHealthBars_HealthAlerts.lua
 ApogeePartyHealthBars_Auras.lua
+ApogeePartyHealthBars_PlayerSpells.lua
 ApogeePartyHealthBars_BuffReminders.lua
 ApogeePartyHealthBars_PlayerUtility.lua
 ApogeePartyHealthBars_ShieldTracker.lua
@@ -53,7 +55,6 @@ ApogeePartyHealthBars_RowGeometry.lua
 ApogeePartyHealthBars_VisualTicker.lua
 ApogeePartyHealthBars_MinimapController.lua
 ApogeePartyHealthBars_ConfigController.lua
-ApogeePartyHealthBars_PlayerSpells.lua
 ApogeePartyHealthBars_BindingStore.lua
 ApogeePartyHealthBars_BindingController.lua
 ApogeePartyHealthBars_ClickBindings.lua

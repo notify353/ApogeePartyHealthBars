@@ -141,45 +141,9 @@ local function GetSpellNameAndIcon(identifier)
 end
 
 local function BuildKnownSpellMap()
-    local byId, byName, knownList = {}, {}, {}
-    if not GetSpellBookItemName then return byId, byName, knownList end
-
-    local function AddSlot(slot, bookType)
-        local name, subName = GetSpellBookItemName(slot, bookType)
-        if not name then return end
-        local castName = subName and subName ~= "" and (name .. "(" .. subName .. ")") or name
-        local known = { name = castName, baseName = name, sourceBook = bookType }
-        byName[name] = known
-        byName[castName] = known
-        if GetSpellBookItemInfo then
-            local r1, r2, r3 = GetSpellBookItemInfo(slot, bookType)
-            local id = type(r1) == "string" and r2 or ((r3 and r3 > 0) and r3 or r2)
-            if type(id) == "number" and id > 0 then
-                known = { id = id, name = castName, baseName = name, sourceBook = bookType }
-                byId[id] = known
-                byName[name] = known
-                byName[castName] = known
-            end
-        end
-        knownList[#knownList + 1] = known
-    end
-
-    if GetNumSpellTabs and GetSpellTabInfo then
-        for tab = 1, GetNumSpellTabs() do
-            local _, _, offset, count = GetSpellTabInfo(tab)
-            if offset and count then
-                for slot = offset + 1, offset + count do
-                    AddSlot(slot, BOOKTYPE_SPELL)
-                end
-            end
-        end
-    end
-
-    local petSpellCount = HasPetSpells and HasPetSpells() or 0
-    if petSpellCount > 0 and BOOKTYPE_PET then
-        for slot = 1, petSpellCount do AddSlot(slot, BOOKTYPE_PET) end
-    end
-    return byId, byName, knownList
+    local playerSpells = ApogeePartyHealthBars_PlayerSpells
+    if not playerSpells or not playerSpells.BuildKnownSpellMap then return {}, {}, {} end
+    return playerSpells.BuildKnownSpellMap()
 end
 
 local function BuildResolvedInfo(known, entry, slot)
@@ -241,6 +205,16 @@ local function ResolveEntries()
                     baseName = baseName:gsub("%s+$", "")
                     known = byName[baseName]
                 end
+            end
+            if not known and ApogeePartyHealthBars_PlayerSpells.IsKnownSpell(
+                entry.spellId, entry.spellName) then
+                local baseName = entry.spellName and entry.spellName:match("^%s*([^%(]+)")
+                known = {
+                    id = entry.spellId,
+                    name = entry.spellName,
+                    baseName = baseName and baseName:gsub("%s+$", "") or entry.spellName,
+                    sourceBook = BOOKTYPE_SPELL or "spell",
+                }
             end
             if known then
                 local priorDefault = Actions.BuildDefaultMacro(entry)

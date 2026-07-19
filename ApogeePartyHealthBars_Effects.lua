@@ -102,20 +102,10 @@ function E.InitializeSavedVariables(saved, characterSaved)
 end
 
 function E.ResolveKnownSpell(canonicalName, namePattern)
-    if not GetNumSpellTabs then return false, nil end
-
-    for tab = 1, GetNumSpellTabs() do
-        local _, _, offset, numSpells = GetSpellTabInfo(tab)
-        if offset and numSpells then
-            for slot = offset + 1, offset + numSpells do
-                local name = GetSpellBookItemName(slot, BOOKTYPE_SPELL)
-                if name and name:find(namePattern) then
-                    return true, name
-                end
-            end
-        end
+    local spells = ApogeePartyHealthBars_PlayerSpells
+    if spells and spells.ResolveKnownSpell then
+        return spells.ResolveKnownSpell(canonicalName, namePattern)
     end
-
     return false, nil
 end
 

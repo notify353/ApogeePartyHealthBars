@@ -53,12 +53,12 @@ assert(not valid and tostring(validationError):find("Print", 1, true),
     "unit subscriber accepted incomplete dependencies")
 events.Register(router, deps)
 
-for _, event in ipairs({ "UNIT_HEALTH", "UNIT_MAXHEALTH", "UNIT_AURA" }) do
+for _, event in ipairs({ "UNIT_HEALTH", "UNIT_MAXHEALTH" }) do
     assert(required[event] and required[event].owner == "Bootstrap",
         "required unit event changed registration: " .. event)
 end
 for _, event in ipairs({
-    "UNIT_ABSORB_AMOUNT_CHANGED", "UNIT_HEAL_PREDICTION", "UNIT_POWER_UPDATE",
+    "UNIT_AURA", "UNIT_ABSORB_AMOUNT_CHANGED", "UNIT_HEAL_PREDICTION", "UNIT_POWER_UPDATE",
     "UNIT_POWER_FREQUENT", "UNIT_MAXPOWER", "UNIT_DISPLAYPOWER", "UNIT_TARGET",
     "UNIT_CONNECTION",
 }) do

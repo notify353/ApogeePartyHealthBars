@@ -63,6 +63,20 @@ ApogeePartyHealthBars_MacroLibrary = {
         return false, { "broken recipe" }
     end,
 }
+local runtimeFailures = {}
+ApogeePartyHealthBars_ClientCapabilities = {
+    RecordRuntimeFailure = function(owner, reason)
+        runtimeFailures[owner] = tostring(reason)
+    end,
+    ListUnavailableFeatures = function() return {} end,
+    ListRuntimeFailures = function()
+        local result = {}
+        for owner, reason in pairs(runtimeFailures) do
+            result[#result + 1] = { owner = owner, reason = reason }
+        end
+        return result
+    end,
+}
 
 local required, optional = {}, {}
 local router = {}
@@ -105,11 +119,13 @@ events.Register(router, deps)
 for _, event in ipairs({
     "PLAYER_LOGIN", "PLAYER_ENTERING_WORLD", "GROUP_ROSTER_UPDATE",
     "PLAYER_TARGET_CHANGED", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",
-    "COMBAT_LOG_EVENT_UNFILTERED",
 }) do
     assert(required[event] and required[event].owner == "Bootstrap",
         "required lifecycle event changed registration: " .. event)
 end
+assert(optional.COMBAT_LOG_EVENT_UNFILTERED
+        and optional.COMBAT_LOG_EVENT_UNFILTERED.owner == "Bootstrap",
+    "combat-log lifecycle event was not optional")
 assert(optional.ADDON_LOADED == nil,
     "lifecycle still subscribes to ADDON_LOADED for modified-click hooks")
 
@@ -149,6 +165,20 @@ expect({
 }, "world-entry order changed")
 
 reset()
+runtimeFailures = {}
+local originalReconcile = deps.ReconcileBoundActionBindings
+deps.ReconcileBoundActionBindings = function()
+    record("bindings-reconcile")
+    return false, "binding_failed", "expected reconciliation failure"
+end
+dispatch("PLAYER_ENTERING_WORLD")
+assert(runtimeFailures["Physical bindings"]
+        and runtimeFailures["Physical bindings"]:find("expected reconciliation failure", 1, true)
+        and calls[#calls] == "request-update",
+    "returned binding reconciliation failure was swallowed or blocked later work")
+deps.ReconcileBoundActionBindings = originalReconcile
+
+reset()
 dispatch("GROUP_ROSTER_UPDATE")
 expect({ "player-spells", "minimap", "shield-seed", "threat", "request-update" },
     "roster-update order changed")
@@ -166,8 +196,47 @@ reset()
 local originalInitPlayerSpells = deps.InitPlayerSpells
 deps.InitPlayerSpells = function() error("expected lifecycle failure") end
 dispatch("GROUP_ROSTER_UPDATE")
-assert(calls[#calls]:find("print:event error (GROUP_ROSTER_UPDATE):", 1, true),
-    "lifecycle subscriber lost its event error bridge")
+assert(runtimeFailures["Spell discovery"]
+        and calls[#calls] == "request-update",
+    "lifecycle feature failure was not isolated from the rest of its event")
 deps.InitPlayerSpells = originalInitPlayerSpells
+runtimeFailures = {}
+
+reset()
+local originalWheelInitialize = ApogeePartyHealthBars_WheelMacros.InitializeSaved
+ApogeePartyHealthBars_WheelMacros.InitializeSaved = function()
+    error("expected optional startup failure")
+end
+dispatch("PLAYER_LOGIN")
+local sawKeys, sawMinimap, sawCompatibility = false, false, false
+for _, value in ipairs(calls) do
+    if value == "keys-init" then sawKeys = true end
+    if value == "minimap" then sawMinimap = true end
+    if value:find("print:Compatibility:", 1, true) then sawCompatibility = true end
+end
+assert(sawKeys and sawMinimap and sawCompatibility and runtimeFailures.Wheel,
+    "optional startup failure blocked later features or was not reported")
+ApogeePartyHealthBars_WheelMacros.InitializeSaved = originalWheelInitialize
+
+reset()
+runtimeFailures = {}
+local originalProfileStore = ApogeePartyHealthBars_ProfileStore
+ApogeePartyHealthBars_ProfileStore = {
+    Initialize = function() error("expected profile storage failure") end,
+}
+dispatch("PLAYER_LOGIN")
+local continuedAfterStorageFailure, reportedStorageEventError = false, false
+for _, value in ipairs(calls) do
+    if value == "fader-init:true" or value == "wheel-init" or value == "force-refresh" then
+        continuedAfterStorageFailure = true
+    end
+    if value:find("print:event error (PLAYER_LOGIN):", 1, true) then
+        reportedStorageEventError = true
+    end
+end
+assert(runtimeFailures["Profile storage"] and not continuedAfterStorageFailure
+        and reportedStorageEventError,
+    "profile storage failure did not stop startup before consumers used invalid roots")
+ApogeePartyHealthBars_ProfileStore = originalProfileStore
 
 print("PASS runtime lifecycle events")

@@ -166,6 +166,7 @@ dofile("ApogeePartyHealthBars_BoundActionLayouts.lua")
 dofile("ApogeePartyHealthBars_WheelLayouts.lua")
 dofile("ApogeePartyHealthBars_BoundActionBindings.lua")
 dofile("ApogeePartyHealthBars_ActionHud.lua")
+dofile("ApogeePartyHealthBars_PlayerSpells.lua")
 dofile("ApogeePartyHealthBars_BoundActionRuntime.lua")
 dofile("ApogeePartyHealthBars_WheelMacros.lua")
 local data, wheel = ApogeePartyHealthBars_WheelData, ApogeePartyHealthBars_WheelMacros

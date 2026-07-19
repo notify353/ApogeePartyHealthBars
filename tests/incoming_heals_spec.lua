@@ -31,6 +31,7 @@ local function PredictionBar()
     return bar
 end
 
+dofile("ApogeePartyHealthBars_UnitAPI.lua")
 dofile("ApogeePartyHealthBars_IncomingHeals.lua")
 local incomingHeals = ApogeePartyHealthBars_IncomingHeals
 

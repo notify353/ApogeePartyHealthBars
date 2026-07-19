@@ -1,5 +1,6 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
+local ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities
 
 ApogeePartyHealthBars_Threat = {}
 local H = ApogeePartyHealthBars_Threat
@@ -19,6 +20,7 @@ local FALLBACK_COLORS = {
 
 local function IsEnabled()
     return S.sv and S.sv.threatEnabled == true
+        and (not ClientCapabilities or ClientCapabilities.IsFeatureAvailable("threat"))
 end
 
 local function IsMarginEnabled()

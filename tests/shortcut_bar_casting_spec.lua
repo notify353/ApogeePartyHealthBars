@@ -146,6 +146,7 @@ dofile("ApogeePartyHealthBars_ShortcutItems.lua")
 dofile("ApogeePartyHealthBars_ActionData.lua")
 dofile("ApogeePartyHealthBars_ActionMacros.lua")
 dofile("ApogeePartyHealthBars_CrowdControl.lua")
+dofile("ApogeePartyHealthBars_PlayerSpells.lua")
 dofile("ApogeePartyHealthBars_ShortcutBar.lua")
 local shortcuts = ApogeePartyHealthBars_ShortcutBar
 local deferred = 0
@@ -401,5 +402,16 @@ assert(shortcuts.GetSlots()[1].spellName == "Fireball(Rank 1)")
 assert(shortcuts.GetSlots()[2].spellName == "Frostbolt(Rank 1)")
 assert(shortcuts.GetSlots()[3].spellName == "Fire Blast(Rank 1)")
 assert(shortcuts.GetSlots()[4] == nil)
+
+GetNumSpellTabs, GetSpellTabInfo = nil, nil
+GetSpellBookItemName, GetSpellBookItemInfo = nil, nil
+C_SpellBook = {
+    IsSpellKnown = function(spellId)
+        return spellId == 133 or spellId == 116 or spellId == 2136
+    end,
+}
+shortcuts.Refresh()
+assert(shortcuts.GetDisplayCount() == 3 and shortcuts.GetSlotState(1) ~= nil,
+    "modern known-spell checks did not preserve configured Shortcuts without legacy enumeration")
 
 print("PASS Shortcut Bar casting and item state")

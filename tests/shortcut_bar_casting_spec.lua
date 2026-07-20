@@ -308,13 +308,19 @@ assert(secureButtons[7].shown and secureButtons[7].mouseEnabled
 local overflowAssigned, overflowMessage = shortcuts.AssignSpell(nil, 7000, "Overflow Spell")
 assert(not overflowAssigned and overflowMessage:find("Drop onto a row", 1, true),
     "full Shortcut Bar did not instruct the user to replace or clear an action")
+local dropButton = visualButtons[#visualButtons]
+assert(shortcuts.SetSpellbookOpen(true),
+    "Spellbook visibility did not activate the Shortcut drop source")
+shortcuts.Layout()
+assert(dropButton and not dropButton.shown,
+    "full Shortcut Bar showed an add target for a missing slot")
+shortcuts.SetSpellbookOpen(false)
 for slot = 12, 5, -1 do shortcuts.ClearSlot(slot) end
 assert(shortcuts.GetFooterHeight() == ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
         + ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE,
     "Shortcut Bar did not collapse to one row after removing slots 5 through 12")
 ApogeePartyHealthBars_S.configMode = true
 shortcuts.Layout(0)
-local dropButton = visualButtons[#visualButtons]
 assert(dropButton and dropButton.shown
         and dropButton.points[1][4] == shortcutStride * 4
         and dropButton.points[1][5] == -ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP,
@@ -327,8 +333,26 @@ assert(shortcuts.GetFooterHeight() == ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
         + ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE,
     "Shortcut HUD add target unnecessarily expanded a partially filled row")
 ApogeePartyHealthBars_S.configMode = false
-shortcuts.HideDropTarget()
-assert(not dropButton.shown, "Shortcut HUD add target remained visible outside config mode")
+shortcuts.Layout()
+assert(not dropButton.shown, "Shortcut HUD add target remained visible without an assignment source")
+local layoutRequestsBeforeSource = layoutRequests
+assert(shortcuts.SetSpellbookOpen(true)
+        and layoutRequests == layoutRequestsBeforeSource + 1,
+    "opening the Spellbook did not request a Shortcut footer layout")
+shortcuts.Layout()
+assert(dropButton.shown, "open Spellbook did not show the Shortcut HUD add target")
+shortcuts.SetSpellbookOpen(false)
+shortcuts.Layout()
+assert(not dropButton.shown, "closing the Spellbook did not hide the add target")
+shortcuts.SetSpellbookOpen(true)
+inCombat = true
+shortcuts.Layout()
+assert(not dropButton.shown, "Shortcut HUD add target remained visible in combat")
+inCombat = false
+shortcuts.Layout()
+assert(dropButton.shown, "Shortcut HUD add target did not return after combat")
+shortcuts.SetSpellbookOpen(false)
+shortcuts.Layout()
 local expectedCastNames = {
     "Fireball(Rank 1)", "Frostbolt(Rank 1)",
     "Fire Blast(Rank 1)", "Arcane Missiles(Rank 1)",

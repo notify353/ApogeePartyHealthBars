@@ -18,6 +18,7 @@ local resolved = {}
 local resolvedSlots = {}
 local previousStates = {}
 local lastSoundAt = {}
+local spellbookOpen = false
 local initialized = false
 local resolutionPending = false
 local visibleCount = 0
@@ -603,6 +604,12 @@ local function GetPlayerLaneMetrics()
     return C.SHORTCUT_ICON_SIZE, C.SHORTCUT_ICON_GAP, C.SHORTCUT_TOP_GAP
 end
 
+local function ShouldShowDropTarget()
+    local inCombat = InCombatLockdown and InCombatLockdown()
+    return IsEnabled() and (S.configMode or spellbookOpen)
+        and not inCombat and T.FindFirstEmptySlot() ~= nil
+end
+
 local function ApplyLaneStyle(icon, lane)
     if lane == "target" then
         Accessory.SetCompactSize(icon)
@@ -618,7 +625,7 @@ function T.GetFooterHeight()
 end
 
 function T.GetLaneHeight(lane)
-    local showDrop = lane == "player" and S.configMode and T.FindFirstEmptySlot() ~= nil
+    local showDrop = lane == "player" and ShouldShowDropTarget()
     local count = (visibleLaneCounts[lane] or 0) + (showDrop and 1 or 0)
     if not IsEnabled() or count <= 0 then return 0 end
     if lane == "target" then return Accessory.GetHeight(count, C.SHORTCUT_COLUMNS) end
@@ -661,7 +668,7 @@ function T.Layout()
         end
     end
     if dropIcon then
-        if IsEnabled() and S.configMode and T.FindFirstEmptySlot() then
+        if ShouldShowDropTarget() then
             local lanePosition = lanePositions.player
             local stride = C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP
             local column = lanePosition % C.SHORTCUT_COLUMNS
@@ -736,8 +743,12 @@ function T.Tick()
     end
 end
 
-function T.HideDropTarget()
-    if dropIcon then dropIcon:Hide() end
+function T.SetSpellbookOpen(active)
+    active = active == true
+    if spellbookOpen == active then return false end
+    spellbookOpen = active
+    if requestLayout then requestLayout() end
+    return true
 end
 
 function T.Rebaseline()

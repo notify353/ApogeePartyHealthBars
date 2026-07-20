@@ -13,6 +13,7 @@ if ($PSBoundParameters.ContainsKey('LuacPath')) { $luaArguments.LuacPath = $Luac
 
 Push-Location $repoRoot
 try {
+    & (Join-Path $PSScriptRoot 'test-dev-links.ps1')
     & (Join-Path $PSScriptRoot 'test-wow-api-export.ps1')
     & (Join-Path $PSScriptRoot 'check-wow-api-export.ps1')
     & (Join-Path $PSScriptRoot 'test-lua.ps1') @luaArguments

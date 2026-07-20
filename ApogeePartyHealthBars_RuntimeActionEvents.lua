@@ -19,6 +19,17 @@ function A.Register(eventRouter, deps)
         if ui.RefreshMacroPanel then ui.RefreshMacroPanel() end
     end
 
+    local spellbook = _G.SpellBookFrame
+    if spellbook and spellbook.HookScript then
+        spellbook:HookScript("OnShow", function()
+            T.SetSpellbookOpen(true)
+        end)
+        spellbook:HookScript("OnHide", function()
+            T.SetSpellbookOpen(false)
+        end)
+        T.SetSpellbookOpen(spellbook:IsShown())
+    end
+
     local function HandleEvent(event)
         local ok, err = pcall(function()
             if event == "ACTIVE_TALENT_GROUP_CHANGED" then

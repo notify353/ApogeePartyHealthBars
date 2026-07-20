@@ -19,6 +19,9 @@ ApogeePartyHealthBars_ShortcutBar = {
     Refresh = function(full) record("shortcut-refresh:" .. tostring(full)) end,
     ResolveAndRefresh = function() record("shortcut-resolve") end,
     RefreshItemInfo = function() record("shortcut-item-info") end,
+    SetSpellbookOpen = function(active)
+        record("spellbook-open:" .. tostring(active))
+    end,
 }
 ApogeePartyHealthBars_WheelMacros = {
     Refresh = function() record("wheel-refresh") end,
@@ -63,6 +66,12 @@ local ui = {
 }
 
 local optional = {}
+SpellBookFrame = {
+    shown = false,
+    scripts = {},
+    HookScript = function(self, script, callback) self.scripts[script] = callback end,
+    IsShown = function(self) return self.shown end,
+}
 local router = {}
 function router.RegisterOptional(event, owner, callback)
     optional[event] = { owner = owner, callback = callback }
@@ -86,6 +95,7 @@ local valid, validationError = pcall(events.Register, router, {})
 assert(not valid and tostring(validationError):find("Print", 1, true),
     "action subscriber accepted incomplete dependencies")
 events.Register(router, deps)
+reset()
 
 for _, event in ipairs({
     "SPELLS_CHANGED", "ACTIVE_TALENT_GROUP_CHANGED", "UPDATE_BINDINGS",
@@ -103,7 +113,18 @@ assert(optional.SPELL_UPDATE_COOLDOWN.owner == "ShortcutBar"
         and optional.PET_BAR_UPDATE_COOLDOWN.owner == "PlayerPetActionState"
         and optional.PET_BAR_UPDATE_USABLE.owner == "PlayerPetActionState",
     "action refresh owner labels changed")
+assert(SpellBookFrame.scripts.OnShow and SpellBookFrame.scripts.OnHide,
+    "Spellbook visibility hooks were not installed")
 
+SpellBookFrame.scripts.OnShow()
+expect({ "spellbook-open:true" },
+    "opening the Spellbook did not activate the Shortcut drop target")
+reset()
+SpellBookFrame.scripts.OnHide()
+expect({ "spellbook-open:false" },
+    "closing the Spellbook did not deactivate its Shortcut drop source")
+
+reset()
 dispatch("SPELL_UPDATE_COOLDOWN")
 expect({ "shortcut-refresh:false", "wheel-refresh", "keys-refresh", "buttons-refresh" },
     "cooldown refresh fan-out changed")

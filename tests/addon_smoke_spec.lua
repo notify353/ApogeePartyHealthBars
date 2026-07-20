@@ -713,16 +713,7 @@ router.Dispatch("BAG_UPDATE_COOLDOWN")
 router.Dispatch("GET_ITEM_INFO_RECEIVED", 1251, true)
 assert(ApogeePartyHealthBars_ShortcutBar.GetSlotState(3) == "ready",
     "item events did not restore a restocked Shortcut")
-local originalHideShortcutDropTarget = ApogeePartyHealthBars_ShortcutBar.HideDropTarget
-local shortcutDropTargetHideCount = 0
-ApogeePartyHealthBars_ShortcutBar.HideDropTarget = function(...)
-    shortcutDropTargetHideCount = shortcutDropTargetHideCount + 1
-    return originalHideShortcutDropTarget(...)
-end
 ApogeePartyHealthBars_ConfigController.SetMode(false)
-ApogeePartyHealthBars_ShortcutBar.HideDropTarget = originalHideShortcutDropTarget
-assert(shortcutDropTargetHideCount == 1,
-    "settings close did not immediately hide the Shortcut HUD add target")
 local existingImmediatePoints = existingShortcutButton.pointWrites
 local addedImmediatePoints = addedShortcutButton.pointWrites
 RunFrameUpdates()

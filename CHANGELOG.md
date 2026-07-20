@@ -6,8 +6,13 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Added
+
+- Show the next empty Shortcut drop target whenever the Spellbook is open, without requiring add-on settings to remain open.
+
 ### Changed
 
+- Added guarded development-link scripts that keep Classic Era and TBC Anniversary on the same active workspace by default and report mismatched client junctions before testing.
 - Added a repeatable onboarding runbook for WoW client patches and new flavors, including every export, runtime, packaging, testing, acceptance, and release touchpoint.
 
 ## [0.42.0] - 2026-07-19

@@ -21,6 +21,7 @@ jobs:
       - name: Test and validate WoW API export baseline
         shell: pwsh
         run: |
+          ./scripts/test-dev-links.ps1
           ./scripts/test-wow-api-export.ps1
           ./scripts/check-wow-api-export.ps1
       - name: Parse add-on files and run Lua test suite

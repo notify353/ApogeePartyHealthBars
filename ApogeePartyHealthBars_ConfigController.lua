@@ -63,12 +63,13 @@ function C.FactoryReset()
         return false
     end
 
-    ApogeePartyHealthSV = nil
-    ApogeePartyHealthCharSV = nil
-    S.accountRoot = nil
-    S.characterRoot = nil
-    S.sv = nil
-    S.charSv = nil
+    local freshRoot, resetError = D.ProfileStore.ResetCharacter()
+    if not freshRoot then
+        D.Print(resetError or "could not reset this character's profiles.")
+        ReloadUI()
+        return false
+    end
+    ApogeePartyHealthCharSV = freshRoot
 
     ReloadUI()
     return true

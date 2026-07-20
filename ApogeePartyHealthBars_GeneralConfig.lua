@@ -98,7 +98,7 @@ end
 local function DisarmFactoryReset()
     factoryResetArmed = false
     factoryResetToken = factoryResetToken + 1
-    if factoryResetBtn then factoryResetBtn.label:SetText("Factory Reset") end
+    if factoryResetBtn then factoryResetBtn.label:SetText("Reset Character") end
 end
 
 local function DisarmPrepareDisable()
@@ -479,8 +479,8 @@ function G.Build(parent, deps)
     factoryRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local factoryLabel = factoryRow:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     factoryLabel:SetPoint("LEFT", factoryRow, "LEFT", 8, 0)
-    factoryLabel:SetText("Erase all profiles and settings")
-    factoryResetBtn = UIH.CreateButton(factoryRow, "Factory Reset", 126, 22)
+    factoryLabel:SetText("Erase this character's profiles and settings")
+    factoryResetBtn = UIH.CreateButton(factoryRow, "Reset Character", 126, 22)
     factoryResetBtn:SetPoint("RIGHT", factoryRow, "RIGHT", -5, 0)
     factoryResetBtn:SetScript("OnClick", function()
         if not factoryResetArmed then

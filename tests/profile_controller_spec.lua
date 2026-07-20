@@ -26,6 +26,9 @@ controller.Initialize({
             if not setActiveOk then return false, "commit failed" end
             activeId = id; return true
         end,
+        ResetCharacter = function()
+            return { profileStore = { schemaVersion = 2 }, bindingRuntime = {} }
+        end,
     },
     Print = function() end,
 })
@@ -54,5 +57,15 @@ profiles.p3 = { id = "p3", classToken = "PRIEST" }
 assert(controller.CreateAndActivateProfile(function() return profiles.p3 end)
     and activeId == "p3" and reloads == 5,
     "import creation was not committed after safe binding release")
+
+local accountRoot = { legacy = true }
+ApogeePartyHealthSV = accountRoot
+ApogeePartyHealthCharSV = { old = true }
+assert(controller.FactoryReset() and reloads == 6 and releases == 7,
+    "character reset did not restore bindings and reload")
+assert(ApogeePartyHealthSV == accountRoot and ApogeePartyHealthSV.legacy
+        and ApogeePartyHealthCharSV.profileStore.schemaVersion == 2
+        and ApogeePartyHealthCharSV.old == nil,
+    "character reset changed account data or retained the old character root")
 
 print("PASS binding-safe profile controller")

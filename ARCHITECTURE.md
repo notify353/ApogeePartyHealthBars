@@ -48,7 +48,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `HealingConfig`: fixed-gesture Healing action rows, inline movement and clearing, display refresh, and right-click clearing compatibility
 - `ConfigUI`: settings-window shell, tab registry, activation, and cross-tab refresh routing
 - `ConfigController`, `MinimapController`: settings-mode and minimap lifecycle
-- `ProfileStore`: account-wide class profiles, legacy SavedVariables migration, portable payload normalization, stable identity, and CRUD/copy/import mutations
+- `ProfileStore`: character-owned named profiles, read-only account-profile migration, portable payload normalization, stable identity, and CRUD/copy/import mutations
 - `ProfileCodec`: native CBOR, Deflate, and URL-safe Base64 profile sharing with versioned metadata and bounded decoding
 - `ProfileConfig`: compact profile selection, management, and copy sections plus export/import preview and confirmation workflows
 - `MacroData`, `MacroLibrary`, `MacroConfig`: generated-template and syntax documentation, immutable current-class combat recipes, unified topic validation/filtering, and read-only copy support
@@ -85,7 +85,8 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - Keep tab-specific controls and mutable refresh state in their configuration modules; `ConfigUI` owns only the shared window and tab lifecycle.
 - Keep runtime event policy in its domain subscriber; `RuntimeEvents` initializes the router and registers subscribers without handling events itself.
 - Keep feature data out of the main orchestration file.
-- Keep portable settings and action intent in the active account profile while binding ownership, pending claims, and recovery state remain character-local and are never copied or exported.
+- Keep every named profile and its portable settings and action intent character-local. Keep binding ownership, pending claims, and recovery state outside profiles, character-local, and never copied or exported.
+- Treat the account SavedVariable as a read-only legacy migration source; cross-character profile transfer occurs only through explicit export and import.
 - Never persist Keys, Wheel, or Buttons activation intent: all three runtimes are permanent whenever the global add-on setting is enabled.
 - Claim all 30 Keys, Wheel, and Buttons inputs atomically after startup; release them transactionally before switching profiles, disabling the whole add-on, or clearing saved state.
 - Treat profile IDs as stable identity, names as class-local labels, and imported data as untrusted until size, format, class, schema, allowlist, and type validation succeeds.

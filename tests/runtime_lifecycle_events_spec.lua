@@ -77,6 +77,16 @@ ApogeePartyHealthBars_ClientCapabilities = {
         return result
     end,
 }
+local initializedProfileClass
+ApogeePartyHealthBars_ProfileStore = {
+    Initialize = function(account, character, currentClass)
+        initializedProfileClass = currentClass
+        ApogeePartyHealthBars_S.sv = account
+        ApogeePartyHealthBars_S.charSv = character
+    end,
+}
+function UnitClass() return "Warrior", "WARRIOR" end
+function UnitFullName() return "Bold", "Dreamscythe" end
 
 local required, optional = {}, {}
 local router = {}
@@ -141,6 +151,8 @@ expect({
 assert(ApogeePartyHealthBars_S.sv == ApogeePartyHealthSV
         and ApogeePartyHealthBars_S.charSv == ApogeePartyHealthCharSV,
     "PLAYER_LOGIN did not attach saved-variable roots")
+assert(initializedProfileClass == "WARRIOR",
+    "PLAYER_LOGIN discarded UnitClass's class token")
 
 reset()
 ApogeePartyHealthBars_S.configMode = true

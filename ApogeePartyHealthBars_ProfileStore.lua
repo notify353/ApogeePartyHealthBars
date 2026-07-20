@@ -17,6 +17,16 @@ local ACTION_KEYS = {
     "shortcuts", "shortcutSchemaVersion", "shortcutDefaultsVersion",
     "selfBuffSelections", "wheelMacros", "keyActions", "mouseActions",
 }
+local LEGACY_ACTION_KEYS = {
+    "bindings", "bindingSchemaVersion", "bindingDefaultsInitialized",
+    "shortcuts", "shortcutSchemaVersion", "shortcutDefaultsVersion",
+    "selfBuffSelections", "wheelMacros", "keyActions", "mouseActions",
+    "trackedSpells", "trackedSpellsSchemaVersion", "trackerDefaultsVersion",
+}
+local LEGACY_ACTION_CONTENT_KEYS = {
+    "bindings", "shortcuts", "selfBuffSelections", "wheelMacros", "keyActions",
+    "mouseActions", "trackedSpells",
+}
 local LEGACY_SETTINGS_KEYS = {
     "schemaVersion", "enabled", "combatUIAutoHide", "showAllSlots", "actionFeedbackEnabled",
     "partyBuffEnabled", "selfBuffEnabled", "clickableBuffIcons", "shieldEnabled",
@@ -51,6 +61,7 @@ LEGACY_SETTINGS_TYPES.spellTrackerEnabled = "boolean"
 LEGACY_SETTINGS_TYPES.spellTrackerSoundsEnabled = "boolean"
 LEGACY_SETTINGS_TYPES.bindings = "table"
 local accountRoot, characterRoot, store, classToken, author
+local LEGACY_ACCOUNT_STORE_VERSION = 1
 
 local function isFiniteNumber(value)
     return type(value) == "number" and value == value
@@ -143,12 +154,6 @@ local function truncateCharacters(value, maximum)
     return value:sub(1, last)
 end
 
-local function profileCount()
-    local count = 0
-    for _ in pairs(store.profiles) do count = count + 1 end
-    return count
-end
-
 local function nameExists(name, exceptId, forClass)
     local lowered = name:lower()
     for id, profile in pairs(store.profiles) do
@@ -212,6 +217,18 @@ local function nextId()
     return id
 end
 
+local hasLegacyActions
+
+local function hasMeaningfulLegacySettings(root)
+    root = type(root) == "table" and root or {}
+    for _, key in ipairs(LEGACY_SETTINGS_KEYS) do
+        if key ~= "schemaVersion" and key ~= "bindings" and root[key] ~= nil then
+            return true
+        end
+    end
+    return false
+end
+
 local function addProfile(name, profileClass, payload, profileAuthor)
     local normalized, message = tryNormalizePayload(payload)
     if not normalized then return nil, message end
@@ -229,22 +246,196 @@ local function addProfile(name, profileClass, payload, profileAuthor)
     return store.profiles[id]
 end
 
-local function hasLegacyActions(root)
-    for _, key in ipairs(ACTION_KEYS) do
-        if root[key] ~= nil then return true end
+local function newStore()
+    return {
+        schemaVersion = C.PROFILE_STORE_VERSION,
+        nextId = 1,
+        profiles = {},
+        order = {},
+        activeProfileId = nil,
+    }
+end
+
+local function copyProfile(target, id, source, targetClass, settingsOnly)
+    if type(id) ~= "string" or not id:match("^p%d+$") or type(source) ~= "table" then
+        return nil, "Profile identity is malformed."
+    end
+    if target.profiles[id] then return nil, "Profile identity is duplicated." end
+    local payloadSource = source.payload
+    if settingsOnly then
+        local safeSettings = deepCopy(
+            type(source.payload) == "table" and source.payload.settings or {})
+        safeSettings.hotDisabled = nil
+        payloadSource = {
+            settings = safeSettings,
+            actions = {},
+        }
+    end
+    local normalized, message = tryNormalizePayload(payloadSource)
+    if not normalized then return nil, message end
+    local profileName = settingsOnly and "Default"
+        or truncateCharacters(trimmedName(source.name), 40)
+    if profileName == "" then profileName = "Default" end
+    local baseName, suffix = profileName, 2
+    local duplicate = true
+    while duplicate do
+        duplicate = false
+        for _, existing in pairs(target.profiles) do
+            if existing.name:lower() == profileName:lower() then duplicate = true; break end
+        end
+        if duplicate then
+            local tail = " (" .. suffix .. ")"
+            profileName = truncateCharacters(baseName, 40 - characterCount(tail)) .. tail
+            suffix = suffix + 1
+        end
+    end
+    local profile = {
+        id = id,
+        name = profileName,
+        classToken = targetClass,
+        author = settingsOnly and author or safeAuthor(source.author),
+        createdAt = isFiniteNumber(source.createdAt) and source.createdAt or 0,
+        modifiedAt = isFiniteNumber(source.modifiedAt) and source.modifiedAt or 0,
+        payload = normalized,
+    }
+    target.profiles[id] = profile
+    target.order[#target.order + 1] = id
+    return profile
+end
+
+local function finishStore(candidate)
+    local maximum = 0
+    for id in pairs(candidate.profiles) do
+        local numeric = tonumber(id:match("^p(%d+)$"))
+        if numeric and numeric > maximum then maximum = numeric end
+    end
+    local requested = isFiniteNumber(candidate.nextId) and math.floor(candidate.nextId) or 1
+    candidate.nextId = math.max(1, requested, maximum + 1)
+    candidate.schemaVersion = C.PROFILE_STORE_VERSION
+    return candidate
+end
+
+local function normalizeCharacterStore(source)
+    local version = tonumber(source and source.schemaVersion) or 0
+    if version > C.PROFILE_STORE_VERSION then
+        error("Character profile storage was created by a newer addon version.")
+    end
+    if version ~= C.PROFILE_STORE_VERSION then return nil end
+    if type(source.profiles) ~= "table" or type(source.order) ~= "table" then
+        error("Character profile storage is malformed.")
+    end
+
+    local candidate = newStore()
+    candidate.nextId = source.nextId
+    local seen = {}
+    for _, id in ipairs(source.order) do
+        local profile = source.profiles[id]
+        if seen[id] or not profile or profile.id ~= id then
+            error("Character profile storage order is malformed.")
+        end
+        if profile.classToken ~= classToken then
+            error("Character profile storage contains a profile for another class.")
+        end
+        local copied, message = copyProfile(candidate, id, profile, classToken, false)
+        if not copied then error(message or "Character profile storage is malformed.") end
+        seen[id] = true
+    end
+    for id in pairs(source.profiles) do
+        if not seen[id] then error("Character profile storage contains an unordered profile.") end
+    end
+    candidate.activeProfileId = source.activeProfileId
+    if candidate.activeProfileId and not candidate.profiles[candidate.activeProfileId] then
+        error("Character profile storage has an invalid active profile.")
+    end
+    return finishStore(candidate)
+end
+
+local function migrateLegacyStore(savedAccountRoot, savedCharacterRoot)
+    local candidate = newStore()
+    local legacyStore = type(savedAccountRoot) == "table" and savedAccountRoot.profileStore or nil
+    local legacyVersion = tonumber(legacyStore and legacyStore.schemaVersion) or 0
+    if legacyVersion > LEGACY_ACCOUNT_STORE_VERSION then
+        error("Legacy account profile storage was created by a newer addon version.")
+    end
+
+    local selectedId = savedCharacterRoot.activeProfileId
+    local selectedSource
+    if type(legacyStore) == "table" then
+        if type(legacyStore.profiles) ~= "table" or type(legacyStore.order) ~= "table" then
+            error("Legacy account profile storage is malformed.")
+        end
+        selectedSource = legacyStore.profiles[selectedId]
+        candidate.nextId = legacyStore.nextId
+        local seen = {}
+        for _, id in ipairs(legacyStore.order) do
+            local profile = legacyStore.profiles[id]
+            if seen[id] or type(profile) ~= "table" or profile.id ~= id then
+                error("Legacy account profile storage order is malformed.")
+            end
+            seen[id] = true
+            local ownedUnknown = author ~= "Unknown" and profile.classToken == "UNKNOWN"
+                and safeAuthor(profile.author) == author
+            if profile.classToken == classToken or ownedUnknown then
+                local copied, message = copyProfile(candidate, id, profile, classToken, false)
+                if not copied then error(message or "Legacy profile could not be migrated.") end
+            end
+        end
+        for id in pairs(legacyStore.profiles) do
+            if not seen[id] then error("Legacy account profile storage contains an unordered profile.") end
+        end
+        if candidate.profiles[selectedId] then
+            candidate.activeProfileId = selectedId
+        elseif type(selectedSource) == "table" then
+            local copied, message = copyProfile(candidate, selectedId, selectedSource, classToken, true)
+            if not copied then error(message or "Legacy profile settings could not be migrated.") end
+            candidate.activeProfileId = copied.id
+        end
+    end
+
+    if #candidate.order == 0 then
+        local settingsSource = type(legacyStore) == "table"
+            and legacyStore.legacySettingsTemplate or savedAccountRoot
+        local legacySettings = copyKeys(settingsSource, LEGACY_SETTINGS_KEYS, LEGACY_SETTINGS_TYPES)
+        legacySettings.bindings = nil
+        legacySettings.hotDisabled = nil
+        local legacyActions = deepCopy(savedCharacterRoot)
+        local migratedActions = hasLegacyActions(savedCharacterRoot)
+        local migratedSettings = type(legacyStore) ~= "table"
+            and hasMeaningfulLegacySettings(legacySettings)
+        ApogeePartyHealthBars_Effects.InitializeSavedVariables(legacySettings, legacyActions)
+        local id = "p1"
+        local profile, message = copyProfile(candidate, id, {
+            id = id,
+            name = (migratedActions or migratedSettings) and author or "Default",
+            classToken = classToken,
+            author = author,
+            payload = { settings = legacySettings, actions = legacyActions },
+        }, classToken, false)
+        if not profile then error(message or "Legacy character data could not be migrated.") end
+        candidate.activeProfileId = id
+    elseif not candidate.activeProfileId then
+        candidate.activeProfileId = candidate.order[1]
+    end
+
+    return finishStore(candidate)
+end
+
+local function hasNestedActionContent(value)
+    if type(value) ~= "table" then return value ~= nil end
+    for key, nested in pairs(value) do
+        if key ~= "schemaVersion" and key ~= "defaultsVersion"
+            and hasNestedActionContent(nested) then
+            return true
+        end
     end
     return false
 end
 
-local function mergeLegacyActions(template, character)
-    local result = copyKeys(template, ACTION_KEYS, ACTION_TYPES)
-    local saved = copyKeys(character, ACTION_KEYS, ACTION_TYPES)
-    for key, value in pairs(saved) do
-        local keepTemplateBindings = key == "bindings" and next(value) == nil
-            and type(result.bindings) == "table" and next(result.bindings) ~= nil
-        if not keepTemplateBindings then result[key] = value end
+hasLegacyActions = function(root)
+    for _, key in ipairs(LEGACY_ACTION_CONTENT_KEYS) do
+        if hasNestedActionContent(root[key]) then return true end
     end
-    return result
+    return false
 end
 
 local function clearLegacy(root, keys)
@@ -271,15 +462,12 @@ local function captureBindingRuntime(source, target)
 end
 
 local function bindActiveProfile()
-    local profile = store.profiles[characterRoot.activeProfileId]
-    if not profile or profile.classToken ~= classToken then
-        for _, id in ipairs(store.order) do
-            local candidate = store.profiles[id]
-            if candidate and candidate.classToken == classToken then profile = candidate; break end
-        end
-    end
+    local profile = store.profiles[store.activeProfileId]
     if not profile then profile = addProfile("Default", classToken, {}, author) end
-    characterRoot.activeProfileId = profile.id
+    if profile.classToken ~= classToken then
+        error("Active profile belongs to another class.")
+    end
+    store.activeProfileId = profile.id
     profile.payload = normalizePayload(profile.payload)
     S.sv = profile.payload.settings
     S.charSv = profile.payload.actions
@@ -303,82 +491,29 @@ end
 function Store.Initialize(savedAccountRoot, savedCharacterRoot, currentClass, currentAuthor)
     accountRoot = type(savedAccountRoot) == "table" and savedAccountRoot or {}
     characterRoot = type(savedCharacterRoot) == "table" and savedCharacterRoot or {}
-    classToken = currentClass or "UNKNOWN"
-    author = currentAuthor or "Unknown"
+    if type(currentClass) ~= "string" or not currentClass:match("^[A-Z]+$")
+        or currentClass == "UNKNOWN" then
+        error("Player class is unavailable; profile storage was not initialized.")
+    end
+    classToken = currentClass
+    author = safeAuthor(currentAuthor)
+
+    local candidate = normalizeCharacterStore(characterRoot.profileStore)
+        or migrateLegacyStore(accountRoot, characterRoot)
+    local bindingRuntime = captureBindingRuntime(characterRoot, characterRoot.bindingRuntime)
+
+    characterRoot.profileStore = candidate
+    characterRoot.bindingRuntime = bindingRuntime
+    characterRoot.profileStateVersion = nil
+    characterRoot.activeProfileId = nil
+    clearLegacy(characterRoot, LEGACY_ACTION_KEYS)
+    store = candidate
     S.accountRoot, S.characterRoot = accountRoot, characterRoot
-
-    local characterVersion = tonumber(characterRoot.profileStateVersion) or 0
-    if characterVersion > C.PROFILE_STORE_VERSION then
-        error("Character profile state was created by a newer addon version.")
-    end
-
-    if type(accountRoot.profileStore) ~= "table" then
-        local legacyDataPresent = false
-        for _, key in ipairs(LEGACY_SETTINGS_KEYS) do
-            if accountRoot[key] ~= nil then legacyDataPresent = true; break end
-        end
-        local legacySettings = copyKeys(accountRoot, LEGACY_SETTINGS_KEYS, LEGACY_SETTINGS_TYPES)
-        local legacyActionTemplate = {}
-        ApogeePartyHealthBars_Effects.InitializeSavedVariables(legacySettings, legacyActionTemplate)
-        accountRoot.profileStore = {
-            schemaVersion = C.PROFILE_STORE_VERSION,
-            nextId = 1,
-            profiles = {},
-            order = {},
-            legacyDataPresent = legacyDataPresent,
-            legacySettingsTemplate = copyKeys(legacySettings, SETTINGS_KEYS, SETTINGS_TYPES),
-            legacyActionTemplate = copyKeys(legacyActionTemplate, ACTION_KEYS, ACTION_TYPES),
-        }
-    end
-    store = accountRoot.profileStore
-    local storedVersion = tonumber(store.schemaVersion) or 0
-    if storedVersion > C.PROFILE_STORE_VERSION then
-        error("Profile storage was created by a newer addon version.")
-    end
-    store.schemaVersion = C.PROFILE_STORE_VERSION
-    if type(store.profiles) ~= "table" then store.profiles = {} end
-    if type(store.order) ~= "table" then store.order = {} end
-    if not isFiniteNumber(store.nextId) or store.nextId < 1 then
-        store.nextId = 1
-    else
-        store.nextId = math.floor(store.nextId)
-    end
-    if type(store.legacySettingsTemplate) ~= "table" then
-        store.legacySettingsTemplate = copyKeys(accountRoot, SETTINGS_KEYS, SETTINGS_TYPES)
-    end
-    if type(store.legacyActionTemplate) ~= "table" then store.legacyActionTemplate = {} end
-    if store.legacyDataPresent == nil then
-        store.legacyDataPresent = next(store.legacySettingsTemplate) ~= nil
-    end
-
-    for _, profile in pairs(store.profiles) do
-        if type(profile) == "table" then
-            local normalized = tryNormalizePayload(profile.payload)
-            if normalized then profile.payload = normalized end
-        end
-    end
-
-    characterRoot.bindingRuntime = captureBindingRuntime(characterRoot, characterRoot.bindingRuntime)
-    if characterVersion ~= C.PROFILE_STORE_VERSION then
-        local legacyActions = mergeLegacyActions(store.legacyActionTemplate, characterRoot)
-        local migrated = hasLegacyActions(characterRoot) or store.legacyDataPresent == true
-        local name = migrated and author or "Default"
-        local profile = addProfile(name, classToken, {
-            settings = store.legacySettingsTemplate,
-            actions = legacyActions,
-        }, author)
-        characterRoot.activeProfileId = profile.id
-        characterRoot.profileStateVersion = C.PROFILE_STORE_VERSION
-        clearLegacy(characterRoot, ACTION_KEYS)
-    end
-    if type(characterRoot.bindingRuntime) ~= "table" then characterRoot.bindingRuntime = {} end
-    clearLegacy(accountRoot, SETTINGS_KEYS)
-    accountRoot.schemaVersion = C.PROFILE_STORE_VERSION
     return bindActiveProfile()
 end
 
-function Store.GetActiveProfile() return store and store.profiles[characterRoot.activeProfileId] end
-function Store.GetActiveId() return characterRoot and characterRoot.activeProfileId end
+function Store.GetActiveProfile() return store and store.profiles[store.activeProfileId] end
+function Store.GetActiveId() return store and store.activeProfileId end
 function Store.GetAuthor() return author end
 function Store.GetClassToken() return classToken end
 
@@ -432,7 +567,7 @@ end
 function Store.Delete(id)
     local profile = store.profiles[id]
     if not profile or profile.classToken ~= classToken then return false, "Profile not found." end
-    if id == characterRoot.activeProfileId then return false, "Switch profiles before deleting the active profile." end
+    if id == store.activeProfileId then return false, "Switch profiles before deleting the active profile." end
     if #Store.List() <= 1 then return false, "The last profile cannot be deleted." end
     store.profiles[id] = nil
     for index, orderedId in ipairs(store.order) do
@@ -447,7 +582,7 @@ function Store.SetActive(id)
     local normalized, message = tryNormalizePayload(profile.payload)
     if not normalized then return false, message end
     profile.payload = normalized
-    characterRoot.activeProfileId = id
+    store.activeProfileId = id
     bindActiveProfile()
     return true
 end
@@ -470,7 +605,7 @@ function Store.CopyFrom(sourceId, targetId)
     if not normalized then return false, message end
     target.payload = normalized
     target.author, target.modifiedAt = author, time and time() or 0
-    if targetId == characterRoot.activeProfileId then bindActiveProfile() end
+    if targetId == store.activeProfileId then bindActiveProfile() end
     return true
 end
 
@@ -490,7 +625,7 @@ function Store.ReplaceImported(targetId, envelope)
     target.payload = normalized
     target.author = safeAuthor(envelope.author)
     target.modifiedAt = time and time() or 0
-    if targetId == characterRoot.activeProfileId then bindActiveProfile() end
+    if targetId == store.activeProfileId then bindActiveProfile() end
     return true
 end
 
@@ -502,7 +637,7 @@ function Store.MergeImported(targetId, envelope)
     if not normalized then return false, message end
     target.payload = normalized
     target.author, target.modifiedAt = author, time and time() or 0
-    if targetId == characterRoot.activeProfileId then bindActiveProfile() end
+    if targetId == store.activeProfileId then bindActiveProfile() end
     return true
 end
 
@@ -514,4 +649,22 @@ function Store.Exportable(id)
     if not normalized then return nil end
     copy.payload = normalized
     return copy
+end
+
+function Store.ResetCharacter()
+    if not characterRoot or not classToken then return nil, "Profile storage is not ready." end
+    local freshStore = newStore()
+    local previousStore = store
+    store = freshStore
+    local profile, message = addProfile("Default", classToken, {}, author)
+    if not profile then store = previousStore; return nil, message end
+    freshStore.activeProfileId = profile.id
+    local freshRoot = {
+        profileStore = finishStore(freshStore),
+        bindingRuntime = {},
+    }
+    characterRoot, store = freshRoot, freshStore
+    S.characterRoot = freshRoot
+    bindActiveProfile()
+    return freshRoot
 end

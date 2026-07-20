@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.41.1] - 2026-07-19
+
 ### Fixed
 
 - Made stable publication recover from a missing GitHub package upload, retry transient asset operations, and verify the public ZIP matches the validated packager output before attaching its checksum.

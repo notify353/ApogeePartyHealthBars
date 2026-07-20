@@ -1,5 +1,9 @@
 # Export and Use the WoW Interface Code
 
+When updating a supported client patch or onboarding a new WoW flavor, use this
+export procedure as part of the complete checklist in
+`ADDING_WOW_CLIENT.md`.
+
 ## Purpose
 
 The matching local Blizzard interface export is this repository's primary authority for WoW APIs, events, arguments, return values, enums, structures, frame templates, and secure UI behavior. The export also contains Blizzard's Lua and XML, which shows how the client uses those interfaces in practice.

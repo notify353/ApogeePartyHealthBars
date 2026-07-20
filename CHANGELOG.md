@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.41.0] - 2026-07-19
+
 ### Added
 
 - Added a client-capability registry, compatibility diagnostics, and a documented porting workflow for future WoW branches.

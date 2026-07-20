@@ -36,6 +36,11 @@ archives unless a future client difference makes the shared package impossible.
 client identity, API-family detection, feature support, and isolated runtime
 failures. It must not write SavedVariables.
 
+`GetClientInfo().flavor` is `classicEra`, `tbcAnniversary`, or `unsupported`,
+resolved from the active build's exact interface number. `WOW_PROJECT_ID` is
+retained only as diagnostic metadata because several Classic products can share
+or change project identifiers independently of this repository's release target.
+
 The required baseline is frame creation, combat-lockdown detection, and basic
 unit existence and health. Without that baseline the add-on cannot provide its
 core purpose. The following families are optional and degrade independently:
@@ -74,6 +79,18 @@ Add a new adapter only when a client difference needs normalized inputs,
 outputs, or failure behavior. Extend
 `tests/compatibility_boundaries_spec.lua` when a newly isolated volatile family
 needs protection from future leakage.
+
+## Content Availability
+
+Class, spell, buff, HoT, control, and macro catalogs remain shared. Known
+player and pet Spellbook discovery is the primary availability test, including
+for expansion-specific entries such as Lifebloom, Water Shield, Cyclone, or
+Spell Lock. This keeps standard Classic Era free of TBC-only claims while still
+allowing a future Classic variant to expose an ability without a duplicated
+catalog. Use an explicit flavor restriction only when the difference cannot be
+discovered from learned spells—for example a formula, macro mechanic, label, or
+documentation claim. Never delete or rewrite a saved assignment merely because
+it is unavailable on the active client.
 
 ## Port Workflow
 

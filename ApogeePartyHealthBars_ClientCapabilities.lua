@@ -3,6 +3,11 @@ local C = ApogeePartyHealthBars_ClientCapabilities
 
 local runtimeFailures = {}
 
+local CLIENTS_BY_INTERFACE = {
+    [11508] = { flavor = "classicEra", product = "wow_classic_era" },
+    [20506] = { flavor = "tbcAnniversary", product = "wow_anniversary" },
+}
+
 local function isFunction(value)
     return type(value) == "function"
 end
@@ -212,14 +217,19 @@ function C.GetClientInfo()
     if isFunction(GetBuildInfo) then
         version, build, buildDate, interface = GetBuildInfo()
     end
+    interface = tonumber(interface)
+    local supportedClient = interface and CLIENTS_BY_INTERFACE[interface]
     return {
+        flavor = supportedClient and supportedClient.flavor or "unsupported",
+        product = supportedClient and supportedClient.product or nil,
         projectId = WOW_PROJECT_ID,
         version = version,
         build = build,
         buildDate = buildDate,
-        interface = tonumber(interface),
+        interface = interface,
     }
 end
 
 C.CAPABILITIES = CAPABILITIES
 C.FEATURES = FEATURES
+C.CLIENTS_BY_INTERFACE = CLIENTS_BY_INTERFACE

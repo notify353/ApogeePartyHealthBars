@@ -31,6 +31,7 @@ local function widget()
     function value:SetTextColor(...) self.textColor = { ... } end
     function value:SetAlpha(alpha) self.alpha = alpha end
     function value:SetAttribute(key, data) self.attributes[key] = data end
+    function value:RegisterForClicks(...) self.registeredClicks = { ... } end
     function value:SetFrameLevel(level) self.frameLevel = level end
     function value:GetFrameLevel() return self.frameLevel or 1 end
     function value:GetFont() return "font", 12 end
@@ -84,6 +85,10 @@ bars.Initialize({
 })
 
 local first, second = bars.Create(widget()), bars.Create(widget())
+for _, overlay in ipairs({ first.castBtn, first.partyBuffCastBtn, second.castBtn, second.partyBuffCastBtn }) do
+    assert(#overlay.registeredClicks == 1 and overlay.registeredClicks[1] == "AnyUp",
+        "unit-bar secure overlay was not restricted to one release phase")
+end
 first:SetUnit("player")
 second:SetUnit("targettarget")
 first:SetShown(true)

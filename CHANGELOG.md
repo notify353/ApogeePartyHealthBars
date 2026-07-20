@@ -6,12 +6,19 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Fixed
+
+- Preserved Buttons spell and item assignments across `/reload` and relogging.
+- Prevented Healing, buff reminder, Shortcut, Keys, Wheel, and Buttons actions from executing twice per click on Classic Era while preserving WoW's physical input timing preference.
+
 ### Added
 
+- Added an optional 2×6 Automatic Consumables HUD to the right of Buttons, populated from carried bags without blank slots or changes to manual Shortcuts.
 - Show the next empty Shortcut drop target whenever the Spellbook is open, without requiring add-on settings to remain open.
 
 ### Changed
 
+- Group Automatic Consumables by their use-effect family, keep items such as mana potions together, order stronger versions first, and fill the grid left to right so groups remain visually adjacent.
 - Added guarded development-link scripts that keep Classic Era and TBC Anniversary on the same active workspace by default and report mismatched client junctions before testing.
 - Added a repeatable onboarding runbook for WoW client patches and new flavors, including every export, runtime, packaging, testing, acceptance, and release touchpoint.
 

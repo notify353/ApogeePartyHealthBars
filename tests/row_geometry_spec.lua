@@ -21,6 +21,7 @@ function UnitExists() return true end
 local hotHeight = 0
 local playerUtilityHeight, playerShortcutHeight, targetShortcutHeight = 0, 0, 0
 local raidMarkerHeight, wheelHeight, keyHeight, mouseHeight = 0, 0, 0, 0
+local consumableHeight = 0
 local wheelIconHeight, keyIconHeight, mouseIconHeight
 local function PlayerOnlyHeight(value)
     return function(unitId)
@@ -40,6 +41,10 @@ local mouseFeature = {
     GetHeight = PlayerOnlyHeight(function() return mouseHeight end),
     GetIconHeight = PlayerOnlyHeight(function() return mouseIconHeight or mouseHeight end),
 }
+local consumableFeature = {
+    GetHeight = PlayerOnlyHeight(function() return consumableHeight end),
+    GetIconHeight = PlayerOnlyHeight(function() return consumableHeight end),
+}
 
 dofile("ApogeePartyHealthBars_UnitAPI.lua")
 dofile("ApogeePartyHealthBars_RowGeometry.lua")
@@ -57,6 +62,7 @@ local invalidAction, invalidActionError = pcall(geometry.Initialize, {
     WheelMacros = { GetHeight = function() return 0 end },
     KeyActions = keyFeature,
     MouseButtonActions = mouseFeature,
+    ConsumableBar = consumableFeature,
 })
 assert(not invalidAction and tostring(invalidActionError):find("WheelMacros.GetIconHeight", 1, true),
     "RowGeometry accepted an action dependency without its geometry contract")
@@ -75,6 +81,7 @@ geometry.Initialize({
     WheelMacros = wheelFeature,
     KeyActions = keyFeature,
     MouseButtonActions = mouseFeature,
+    ConsumableBar = consumableFeature,
 })
 
 assert(geometry.GetActionAreaHeight("player") == 0, "empty actions reserved height")
@@ -109,14 +116,17 @@ assert(geometry.GetRowTotalHeight("player") == 216, "Wheel-only row height chang
 wheelHeight, wheelIconHeight = 169, 159
 keyHeight, keyIconHeight = 136, 105
 mouseHeight, mouseIconHeight = 78, 78
+consumableHeight = 51
 local actionGeometry = geometry.GetActionHudGeometry("player")
 assert(actionGeometry.offsets.wheel == 0
         and actionGeometry.offsets.keys == 54
         and actionGeometry.offsets.buttons == 81
+        and actionGeometry.offsets.consumables == 108
         and actionGeometry.height == 190
         and geometry.GetActionAreaHeight("player", actionGeometry) == 190,
     "Keys and Buttons icon grids were not bottom-aligned with Wheel")
 wheelIconHeight, keyIconHeight, mouseIconHeight = nil, nil, nil
+consumableHeight = 0
 
 playerShortcutHeight, keyHeight, wheelHeight = 28, 136, 169
 assert(geometry.GetActionAreaHeight("player") == 169,

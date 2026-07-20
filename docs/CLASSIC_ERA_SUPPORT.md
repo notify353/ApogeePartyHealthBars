@@ -133,6 +133,8 @@ taint error:
 - Healing spell/item clicks before and during combat.
 - Shortcuts, Keys, Wheel, and Buttons, including forms, stances, stealth, and
   the single-spec Base fallback.
+- Automatic Consumables discovery, 2×6 layout, item use, depletion, restocking,
+  and deferred bag membership changes during combat.
 - Binding backup before testing, ownership/conflict behavior, Prepare to
   Disable, and successful restoration afterward.
 - Settings, minimap position, SavedVariables, profile duplication, and explicit

@@ -13,6 +13,7 @@ local T = ApogeePartyHealthBars_ShortcutBar
 local W = ApogeePartyHealthBars_WheelMacros
 local K = ApogeePartyHealthBars_KeyActions
 local B = ApogeePartyHealthBars_MouseButtonActions
+local CB = ApogeePartyHealthBars_ConsumableBar
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 local rowGeometry = ApogeePartyHealthBars_RowGeometry
@@ -246,6 +247,7 @@ rowGeometry.Initialize({
     WheelMacros = W,
     KeyActions = K,
     MouseButtonActions = B,
+    ConsumableBar = CB,
 })
 local GetActionAreaHeight = rowGeometry.GetActionAreaHeight
 
@@ -327,6 +329,7 @@ visualTicker.Initialize({
     WheelMacros = W,
     KeyActions = K,
     MouseButtonActions = B,
+    ConsumableBar = CB,
     Threat = H,
 })
 local targetChainGUIDs = {}
@@ -424,6 +427,20 @@ B.Configure({
     HideSecureFrame = HideSecureFrame,
     SetSecureMouseEnabled = SetSecureMouseEnabled,
     AssignCursorDrop = AssignCursorDrop,
+})
+CB.Configure({
+    RequestLayout = S.RequestLayoutUpdate,
+    SyncTicker = SyncVisualTicker,
+    GetLeftOffset = function()
+        return math.max(C.ROW_CONTENT_W, B.GetWidth("player"))
+            + C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP
+    end,
+    IsAddonEnabled = IsEnabled,
+    PositionSecureOverlay = PositionSecureOverlay,
+    ShowSecureFrame = ShowSecureFrame,
+    HideSecureFrame = HideSecureFrame,
+    SetSecureMouseEnabled = SetSecureMouseEnabled,
+    DeferSecureUpdate = DeferSecureUpdate,
 })
 
 
@@ -597,12 +614,13 @@ L.Register({
     GetActionAreaHeight = GetActionAreaHeight,
     GetActionHudGeometry = rowGeometry.GetActionHudGeometry,
     GetPlayerActionWidth = function()
-        return math.max(C.ROW_CONTENT_W, B.GetWidth("player"))
+        return math.max(C.ROW_CONTENT_W, B.GetWidth("player"), CB.GetWidth("player"))
     end,
     LayoutPlayerActions = function(actionGeometry)
         W.Layout(actionGeometry.offsets.wheel)
         K.Layout(actionGeometry.offsets.keys)
         B.Layout(actionGeometry.offsets.buttons)
+        CB.Layout(actionGeometry.offsets.consumables)
     end,
     GetShortcutFooterHeight = T.GetFooterHeight,
     LayoutShortcutFooter = T.Layout,
@@ -640,6 +658,7 @@ local function ReconcileAllSecureOverlays()
     W.RefreshSecureActions()
     K.RefreshSecureActions()
     B.RefreshSecureActions()
+    CB.RefreshSecureActions()
     ReconcileBoundActionBindings()
 end
 
@@ -788,6 +807,7 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
         FactoryReset                = FactoryReset,
         SetSavedFeature             = SetSavedFeature,
         ActionHud                   = ApogeePartyHealthBars_ActionHud,
+        ConsumableBar               = CB,
         ApplyAllSecureBindings      = ApplyAllSecureBindings,
         GetSelfBuffPreferenceOptions = GetSelfBuffPreferenceOptions,
         GetSelfBuffPreferenceKey    = GetSelfBuffPreferenceKey,

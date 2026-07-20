@@ -65,11 +65,21 @@ local manager = assert(keysRuntime.GetBindingManager(), "Keys binding manager wa
 local claimed, code = manager.ClaimCurrentSet()
 assert(claimed and code == "claimed", "Keys were not claimed transactionally")
 for _, slot in ipairs(data.SLOTS) do
-    assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. "Hud:LeftButton",
+    assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. ":LeftButton",
         "Keys did not claim " .. slot.key)
     assert(ApogeePartyHealthBars_S.charSv.keyActions.ownership["2"][slot.id].previousAction
         == expectedPrevious[slot.key], "Keys did not snapshot " .. slot.key)
 end
+
+local legacySlot = data.SLOTS[1]
+local originalSnapshot = ApogeePartyHealthBars_S.charSv.keyActions.ownership["2"]
+    [legacySlot.id].previousAction
+bindings[legacySlot.key] = "CLICK " .. legacySlot.buttonName .. "Hud:LeftButton"
+assert(manager.Reconcile()
+        and bindings[legacySlot.key] == "CLICK " .. legacySlot.buttonName .. ":LeftButton"
+        and ApogeePartyHealthBars_S.charSv.keyActions.ownership["2"]
+            [legacySlot.id].previousAction == originalSnapshot,
+    "legacy HUD binding migration lost its original restoration snapshot")
 
 bindings.Q = ""
 local unboundReconciled, unboundConflicts = manager.Reconcile()
@@ -84,6 +94,8 @@ local reconciled, conflicts = manager.Reconcile()
 assert(not reconciled and #conflicts == 1 and conflicts[1].slot.key == "Q"
     and bindings.Q == "STRAFELEFT", "Keys overwrote or failed to report a foreign binding")
 
+local legacyReleaseSlot = data.SLOTS[2]
+bindings[legacyReleaseSlot.key] = "CLICK " .. legacyReleaseSlot.buttonName .. "Hud:LeftButton"
 local released, releaseCode = ApogeePartyHealthBars_BoundActionBindings.ReleaseAll({ manager })
 assert(released and releaseCode == "released", "Keys were not released")
 for _, slot in ipairs(data.SLOTS) do
@@ -121,7 +133,7 @@ local rollbackFailed, rollbackFailureCode = manager.ClaimCurrentSet()
 assert(not rollbackFailed and rollbackFailureCode == "binding_rollback_failed",
     "a rejected rollback was not reported distinctly")
 local recoveryOwnership = ApogeePartyHealthBars_S.charSv.keyActions.ownership["2"]
-assert(bindings["1"] == "CLICK " .. data.SLOTS[1].buttonName .. "Hud:LeftButton"
+assert(bindings["1"] == "CLICK " .. data.SLOTS[1].buttonName .. ":LeftButton"
     and recoveryOwnership and recoveryOwnership.key1.previousAction == "SECOND_1",
     "a rejected rollback did not preserve its restoration record")
 rejectedKey, rejectedRestoreKey = nil, nil
@@ -130,7 +142,7 @@ assert(recovered and #recoveryFailures == 0
     and not ApogeePartyHealthBars_S.charSv.keyActions.ownership["2"].__claimPending,
     "reconciliation did not retry an interrupted active-set claim")
 for _, slot in ipairs(data.SLOTS) do
-    assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. "Hud:LeftButton",
+    assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. ":LeftButton",
         "retried active-set claim missed " .. slot.key)
 end
 assert(ApogeePartyHealthBars_BoundActionBindings.ReleaseAll({ manager }),

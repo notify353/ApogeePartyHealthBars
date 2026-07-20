@@ -35,9 +35,10 @@ local function widget(shown)
         "SetSize", "EnableMouse", "SetTexCoord", "SetAllPoints", "SetDrawEdge",
         "SetText", "SetTextColor", "SetWidth", "SetHeight", "SetColorTexture", "SetAlpha",
         "SetTexture", "SetDesaturated", "SetCooldown", "Clear",
-        "SetFrameStrata", "SetFrameLevel", "RegisterForClicks",
+        "SetFrameStrata", "SetFrameLevel",
     }
     for _, name in ipairs(noops) do value[name] = function() end end
+    function value:RegisterForClicks(...) self.registeredClicks = { ... } end
     function value:SetText(text) self.text = text or "" end
     function value:SetCooldown(start, duration) self.cooldownStart, self.cooldownDuration = start, duration end
     function value:SetAlpha(alpha) self.alpha = alpha end
@@ -199,6 +200,8 @@ assert(shortcuts.SetSlotSound(99, "alarm_soft") == nil,
     "missing Shortcut slot accepted a dropdown sound")
 
 local castButton = assert(secureButtons[1], "Shortcut Bar did not create a secure cast button")
+assert(#castButton.registeredClicks == 1 and castButton.registeredClicks[1] == "AnyUp",
+    "Shortcut secure overlay was not restricted to one release phase")
 assert(castButton.attributes.type == "macro")
 assert(castButton.attributes.macrotext
     == "/cast Fireball(Rank 1)")

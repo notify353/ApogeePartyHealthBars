@@ -42,6 +42,11 @@ ApogeePartyHealthBars_MouseButtonActions = {
     OnCombatEnded = function() record("buttons-combat-end") end,
     Refresh = function() record("buttons-refresh") end,
 }
+ApogeePartyHealthBars_ConsumableBar = {
+    Initialize = function() record("consumable-init") end,
+    OnCombatEnded = function() record("consumable-combat-end") end,
+    OnBagUpdate = function() record("consumable-bags") end,
+}
 ApogeePartyHealthBars_RaidMarkers = {
     OnCombatLogEvent = function() record("raid-combat-log") end,
 }
@@ -87,6 +92,12 @@ ApogeePartyHealthBars_ProfileStore = {
 }
 function UnitClass() return "Warrior", "WARRIOR" end
 function UnitFullName() return "Bold", "Dreamscythe" end
+local reloadTimerDelay, reloadTimerCallback
+C_Timer = {
+    After = function(delay, callback)
+        reloadTimerDelay, reloadTimerCallback = delay, callback
+    end,
+}
 
 local required, optional = {}, {}
 local router = {}
@@ -145,7 +156,7 @@ dispatch("PLAYER_LOGIN")
 expect({
     "saved-variables", "binding-store", "fader-init:true", "macro-validation",
     "print:macro validation: broken recipe", "class-bindings", "shortcut-init",
-    "wheel-init", "keys-init", "buttons-init", "bindings-claim", "player-spells", "restore-position", "update-header",
+    "wheel-init", "keys-init", "buttons-init", "consumable-init", "bindings-claim", "player-spells", "restore-position", "update-header",
     "minimap", "shield-seed", "force-refresh",
 }, "PLAYER_LOGIN order changed")
 assert(ApogeePartyHealthBars_S.sv == ApogeePartyHealthSV
@@ -166,15 +177,30 @@ reset()
 dispatch("PLAYER_REGEN_ENABLED")
 expect({
     "fader-combat-end", "secure-flush", "shortcut-secure", "wheel-combat-end",
-    "keys-combat-end", "buttons-combat-end", "bindings-reconcile", "threat", "force-refresh",
+    "keys-combat-end", "buttons-combat-end", "consumable-combat-end",
+    "bindings-reconcile", "threat", "force-refresh",
 }, "combat-exit order changed")
 
 reset()
 dispatch("PLAYER_ENTERING_WORLD")
 expect({
-    "shortcut-rebaseline", "bindings-reconcile", "player-spells",
+    "shortcut-rebaseline", "consumable-bags", "bindings-reconcile", "player-spells",
     "minimap", "shield-seed", "threat", "request-update",
 }, "world-entry order changed")
+
+reset()
+reloadTimerDelay, reloadTimerCallback = nil, nil
+dispatch("PLAYER_ENTERING_WORLD", false, true)
+expect({
+    "shortcut-rebaseline", "consumable-bags", "bindings-reconcile", "player-spells",
+    "minimap", "shield-seed", "threat", "request-update",
+}, "reload world-entry order changed")
+assert(reloadTimerDelay == 0 and type(reloadTimerCallback) == "function",
+    "UI reload did not schedule a post-world consumable rescan")
+reset()
+reloadTimerCallback()
+expect({ "consumable-bags" },
+    "deferred UI-reload consumable rescan did not run")
 
 reset()
 runtimeFailures = {}

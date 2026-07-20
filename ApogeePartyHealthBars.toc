@@ -49,6 +49,7 @@ ApogeePartyHealthBars_ShieldTracker.lua
 ApogeePartyHealthBars_IncomingHeals.lua
 ApogeePartyHealthBars_HotTracker.lua
 ApogeePartyHealthBars_ShortcutBar.lua
+ApogeePartyHealthBars_ConsumableBar.lua
 ApogeePartyHealthBars_RaidMarkers.lua
 ApogeePartyHealthBars_Threat.lua
 ApogeePartyHealthBars_RowGeometry.lua

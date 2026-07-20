@@ -6,7 +6,7 @@ local function widget()
     local value = { shown = false, attributes = {}, scripts = {}, mouse = false }
     function value:CreateTexture() return widget() end
     function value:SetAttribute(key, data) self.attributes[key] = data end
-    function value:RegisterForClicks() end
+    function value:RegisterForClicks(...) self.registeredClicks = { ... } end
     function value:SetFrameStrata() end
     function value:SetFrameLevel() end
     function value:Show() self.shown = true end
@@ -59,6 +59,8 @@ utility.SetIconTexture("self-texture")
 utility.Refresh()
 utility.ApplyBinding()
 local icon, cast = utility.GetIcon(), utility.GetCastButton()
+assert(#cast.registeredClicks == 1 and cast.registeredClicks[1] == "AnyUp",
+    "self-buff secure overlay was not restricted to one release phase")
 assert(icon.shown and icon.texture.texture == "self-texture")
 assert(icon.point[1] == "BOTTOMLEFT" and icon.point[2] == anchor
         and icon.point[3] == "TOPLEFT"

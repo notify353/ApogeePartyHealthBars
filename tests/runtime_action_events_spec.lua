@@ -33,6 +33,7 @@ ApogeePartyHealthBars_WheelMacros = {
     end,
     ReconcileBindings = function() record("wheel-reconcile") end,
     OnStateChanged = function() record("wheel-state") end,
+    RefreshPhysicalClickRegistration = function() record("wheel-click-phase") end,
 }
 ApogeePartyHealthBars_KeyActions = {
     Refresh = function() record("keys-refresh") end,
@@ -44,6 +45,7 @@ ApogeePartyHealthBars_KeyActions = {
     end,
     ReconcileBindings = function() record("keys-reconcile") end,
     OnStateChanged = function() record("keys-state") end,
+    RefreshPhysicalClickRegistration = function() record("keys-click-phase") end,
 }
 ApogeePartyHealthBars_MouseButtonActions = {
     Refresh = function() record("buttons-refresh") end,
@@ -54,6 +56,12 @@ ApogeePartyHealthBars_MouseButtonActions = {
         return buttonLayoutsChanged
     end,
     OnStateChanged = function() record("buttons-state") end,
+    RefreshPhysicalClickRegistration = function() record("buttons-click-phase") end,
+}
+ApogeePartyHealthBars_ConsumableBar = {
+    Refresh = function(full) record("consumable-refresh:" .. tostring(full)) end,
+    OnBagUpdate = function() record("consumable-bags") end,
+    RefreshItemInfo = function() record("consumable-item-info") end,
 }
 
 local ui = {
@@ -100,6 +108,7 @@ reset()
 for _, event in ipairs({
     "SPELLS_CHANGED", "ACTIVE_TALENT_GROUP_CHANGED", "UPDATE_BINDINGS",
     "UPDATE_SHAPESHIFT_FORM", "UPDATE_SHAPESHIFT_FORMS", "UPDATE_STEALTH",
+    "CVAR_UPDATE",
 }) do
     assert(optional[event] and optional[event].owner == "Bootstrap",
         "action transition changed registration: " .. event)
@@ -126,7 +135,8 @@ expect({ "spellbook-open:false" },
 
 reset()
 dispatch("SPELL_UPDATE_COOLDOWN")
-expect({ "shortcut-refresh:false", "wheel-refresh", "keys-refresh", "buttons-refresh" },
+expect({ "shortcut-refresh:false", "wheel-refresh", "keys-refresh", "buttons-refresh",
+    "consumable-refresh:false" },
     "cooldown refresh fan-out changed")
 
 reset()
@@ -137,7 +147,7 @@ expect({ "shortcut-refresh:false" }, "target flag filtering changed")
 reset()
 dispatch("BAG_UPDATE_DELAYED")
 expect({
-    "shortcut-refresh:false", "wheel-refresh", "keys-refresh", "buttons-refresh",
+    "consumable-bags", "shortcut-refresh:false", "wheel-refresh", "keys-refresh", "buttons-refresh",
     "ui-shortcuts", "ui-keys", "ui-wheel", "ui-buttons",
 }, "bag update fan-out changed")
 
@@ -145,6 +155,7 @@ reset()
 dispatch("GET_ITEM_INFO_RECEIVED", 1251, true)
 expect({
     "shortcut-item-info", "wheel-item-info", "keys-item-info", "buttons-item-info",
+    "consumable-item-info",
     "ui-shortcuts", "ui-keys", "ui-wheel", "ui-buttons", "ui-healing",
 }, "item-info fan-out changed")
 
@@ -188,6 +199,14 @@ reset()
 dispatch("UPDATE_BINDINGS")
 expect({ "bindings-reconcile", "ui-keys", "ui-wheel", "ui-buttons" },
     "binding reconciliation order changed")
+
+reset()
+dispatch("CVAR_UPDATE", "ActionButtonUseKeyDown", "1")
+expect({ "wheel-click-phase", "keys-click-phase", "buttons-click-phase" },
+    "action-button click timing refresh changed")
+reset()
+dispatch("CVAR_UPDATE", "unrelatedCVar", "1")
+expect({}, "unrelated CVar refreshed physical click timing")
 
 reset()
 dispatch("UPDATE_SHAPESHIFT_FORM")

@@ -458,10 +458,10 @@ assert(wheelRuntime.GetHudCastButton("ctrlUp").shown,
     "permanent Wheel HUD did not become visible at login")
 assert(keysRuntime.GetHudCastButton("key1").shown,
     "permanent Keys HUD did not become visible at login")
-assert(smokeBindings.F == "CLICK ApogeePartyHealthBarsKeyFHud:LeftButton"
-    and smokeBindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton"
-    and smokeBindings.BUTTON3 == "CLICK ApogeePartyHealthBarsMouseNormal3Hud:LeftButton"
-    and smokeBindings["CTRL-BUTTON5"] == "CLICK ApogeePartyHealthBarsMouseCtrl5Hud:LeftButton",
+assert(smokeBindings.F == "CLICK ApogeePartyHealthBarsKeyF:LeftButton"
+    and smokeBindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUp:LeftButton"
+    and smokeBindings.BUTTON3 == "CLICK ApogeePartyHealthBarsMouseNormal3:LeftButton"
+    and smokeBindings["CTRL-BUTTON5"] == "CLICK ApogeePartyHealthBarsMouseCtrl5:LeftButton",
     "Keys, Wheel, and Buttons did not own their independent physical bindings")
 assert(ApogeePartyHealthBars_ConfigController.SetAddonEnabled(false),
     "global disable did not release permanent action bindings")
@@ -472,9 +472,9 @@ router.Dispatch("UPDATE_BINDINGS")
 assert(smokeBindings.F == "" and smokeBindings.MOUSEWHEELUP == "CAMERAZOOMIN",
     "binding reconciliation reclaimed Keys or Wheel while the add-on was disabled")
 assert(ApogeePartyHealthBars_ConfigController.SetAddonEnabled(true)
-        and smokeBindings.F == "CLICK ApogeePartyHealthBarsKeyFHud:LeftButton"
-        and smokeBindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton"
-        and smokeBindings.BUTTON3 == "CLICK ApogeePartyHealthBarsMouseNormal3Hud:LeftButton",
+        and smokeBindings.F == "CLICK ApogeePartyHealthBarsKeyF:LeftButton"
+        and smokeBindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUp:LeftButton"
+        and smokeBindings.BUTTON3 == "CLICK ApogeePartyHealthBarsMouseNormal3:LeftButton",
     "global re-enable did not reclaim permanent action bindings")
 local keysLayout = keysRuntime.GetActiveLayoutKey()
 local wheelLayout = wheelRuntime.GetActiveLayoutKey()

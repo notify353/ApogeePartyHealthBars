@@ -94,6 +94,7 @@ local saved = {
     enabled = true,
     showAllSlots = false,
     combatUIAutoHide = true,
+    automaticConsumablesEnabled = false,
     hotEnabled = true,
     hotDisabled = { renew = true },
 }
@@ -109,7 +110,7 @@ local calls = {
     refresh = 0, secure = 0, threat = 0, ticker = 0, hotInit = 0,
     hotTrack = 0, barReset = 0, force = 0, settingsReset = 0,
     minimapReset = 0, factoryReset = 0, soundPreview = 0,
-    messages = {}, feedbackClear = 0,
+    messages = {}, feedbackClear = 0, consumablesEnabled = nil,
 }
 local timerCallback
 C_Timer = { After = function(_, callback) timerCallback = callback end }
@@ -135,6 +136,9 @@ local deps = {
     ApplyDefaultPosition = function() calls.barReset = calls.barReset + 1 end,
     CombatUIFader = {
         ApplyEnabledState = function(enabled) calls.fadeState = enabled end,
+    },
+    ConsumableBar = {
+        SetEnabled = function(enabled) calls.consumablesEnabled = enabled == true end,
     },
     FactoryReset = function() calls.factoryReset = calls.factoryReset + 1 end,
     ForceRefresh = function() calls.force = calls.force + 1 end,
@@ -195,7 +199,8 @@ assert(config.GetForm().hint:GetText() == "Choose what the party bars show and h
     "General did not use the shared form hierarchy")
 
 assert(config.GetRow("showAllSlots").check:GetChecked() == false
-        and config.GetRow("combatUIAutoHide").check:GetChecked() == true,
+        and config.GetRow("combatUIAutoHide").check:GetChecked() == true
+        and config.GetRow("automaticConsumablesEnabled").check:GetChecked() == false,
     "saved General checkboxes did not refresh")
 assert(config.GetRow("enabled") == nil,
     "General still exposed the redundant add-on enable checkbox")
@@ -236,6 +241,12 @@ actionFeedback:SetChecked(false)
 Click(actionFeedback)
 assert(saved.actionFeedbackEnabled == false and calls.feedbackClear == 1,
     "action feedback setting did not persist and clear the visible text")
+
+local automaticConsumables = config.GetRow("automaticConsumablesEnabled").check
+automaticConsumables:SetChecked(true)
+Click(automaticConsumables)
+assert(saved.automaticConsumablesEnabled == true and calls.consumablesEnabled == true,
+    "General automatic consumables setting did not rebuild the dedicated HUD")
 
 local clickable = config.GetRow("clickableBuffIcons").check
 clickable:SetChecked(false)

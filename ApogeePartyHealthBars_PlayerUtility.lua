@@ -20,7 +20,7 @@ local function CreateSecureButton()
     button:SetAttribute("checkselfcast", false)
     button:SetAttribute("checkfocuscast", false)
     button:SetAttribute("checkmouseovercast", false)
-    button:RegisterForClicks("AnyUp", "AnyDown")
+    button:RegisterForClicks("AnyUp")
     button:Hide()
     return button
 end

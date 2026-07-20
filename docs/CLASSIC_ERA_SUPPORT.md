@@ -73,13 +73,30 @@ Completed on 2026-07-19:
 - Lua 5.1 validation passes 68 source files and 65 specs.
 - Package, release-workflow, whitespace, and one-root ZIP validation pass with
   the exact interface set `{11508, 20506}`.
+- Classic Era 1.15.8.67156 now lists the enabled addon without an **out of
+  date** warning. Login and two `/reload` cycles completed on Merritt, a level
+  45 Priest, without a Lua-error dialog.
+- Runtime diagnostics reported `classicEra` and interface `11508`; the General
+  tab exposed no unavailable optional features or isolated initialization
+  failures.
+- Solo rows, the minimap button, settings, and the Classic Era Spellbook opened
+  correctly. Priest spell discovery exposed the learned Classic healing and
+  cleansing spells.
+- Renew (Rank 7) was assigned to Left Click by drag-and-drop, cast securely on
+  the player row, and produced the expected mana change, timed aura, and HoT
+  indicator. The assignment survived `/reload` and was then cleared.
+- Wheel ownership produced the configured action feedback while enabled. The
+  documented two-step Prepare to Disable flow restored Keys, Wheel, and Buttons
+  bindings, reported success, and left the saved runtime state disabled before
+  logout.
 
 Still required before `0.42.0` release preparation:
 
-- Reopen the Classic Era addon list after authenticating to Battle.net and
-  confirm the addon no longer shows **out of date**.
-- Complete the Classic Era login, `/reload`, solo, party, overlay, secure-click,
-  combat, state-layout, binding backup/restore, and profile matrix below.
+- Complete the Classic Era five-player, target, target-of-target, range,
+  shield, incoming-heal, threat, raid-marker, item-click, in-combat secure-click,
+  and state-layout cases below.
+- Complete profile duplication and explicit export/import coverage, including
+  a cross-client round trip and unavailable-assignment preservation.
 - Repeat the complete regression matrix in TBC Anniversary.
 - Let pull-request CI run the BigWigs no-upload build and confirm it produces one
   archive while detecting both interface versions.

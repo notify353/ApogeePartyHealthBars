@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.42.0] - 2026-07-19
+
 ### Added
 
 - Added first-class World of Warcraft Classic Era 1.15.8 support alongside Burning Crusade Classic Anniversary 2.5.6 from one shared add-on package.

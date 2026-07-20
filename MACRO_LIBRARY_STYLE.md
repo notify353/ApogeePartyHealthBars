@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Library entries are practical combat examples for the supported TBC Anniversary client. They teach dependable patterns without automating rotations or assuming specialized gear. Universal entries are available to every character; class entries appear only for the logged-in class.
+Library entries are practical combat examples for the supported Classic Era and TBC Anniversary clients. They teach dependable patterns without automating rotations or assuming specialized gear. Universal entries are available to every character; class entries appear only for the logged-in class.
 
 ## Recipe metadata
 
@@ -28,4 +28,4 @@ Every recipe provides a stable ID, category, title, explanation, and body of at 
 
 ## Review checklist
 
-Before changing a recipe, verify its ID is unique, its class and category are correct, its commands and spell names exist on the supported client, and its body is nonblank and no more than 255 bytes. Confirm that the description matches the body and that spamming the macro cannot toggle off an intended attack or unexpectedly replace a valid target. Run the macro library and config specs, then test client-sensitive recipes in game.
+Before changing a recipe, verify its ID is unique, its class and category are correct, its commands and spell names exist on every client where the recipe is presented, and its body is nonblank and no more than 255 bytes. Prefer required player/pet spell discovery over a client allowlist. Add a flavor restriction only for behavior that cannot be discovered, such as expansion-specific macro mechanics or wording. Confirm that the description matches the body and that spamming the macro cannot toggle off an intended attack or unexpectedly replace a valid target. Run the macro library and config specs, then test client-sensitive recipes in game.

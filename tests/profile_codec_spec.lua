@@ -34,6 +34,9 @@ local profile = {
         actions = { shortcuts = { {
             kind = "spell", spellName = "Flash Heal(Rank 7)",
             macroText = "/cast [@mouseover,help,nodead] Flash Heal(Rank 7)",
+        }, {
+            kind = "spell", spellId = 33763, spellName = "Lifebloom(Rank 1)",
+            macroText = "/cast Lifebloom(Rank 1)",
         } } },
     },
 }
@@ -46,6 +49,10 @@ assert(envelope.profileName == "Raid" and envelope.classToken == "PRIEST"
     and envelope.payload.actions.shortcuts[1].macroText
         == "/cast [@mouseover,help,nodead] Flash Heal(Rank 7)",
     "share metadata did not round-trip")
+assert(envelope.payload.actions.shortcuts[2].spellId == 33763
+        and envelope.payload.actions.shortcuts[2].spellName == "Lifebloom(Rank 1)"
+        and envelope.payload.actions.shortcuts[2].macroText == "/cast Lifebloom(Rank 1)",
+    "cross-client profile round-trip removed an unavailable TBC assignment")
 assert(not codec.Decode("not-a-profile"), "invalid prefix was accepted")
 assert(not codec.Decode("APHB1:" .. string.rep("x", codec.MAX_ENCODED_BYTES)),
     "oversized share string was accepted")

@@ -5,7 +5,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 ## Ownership
 
 - `EventRouter`: event frame and isolated subscribers
-- `ClientCapabilities`: session-only client identity, volatile API-family detection, feature support, metadata fallbacks, and isolated startup diagnostics
+- `ClientCapabilities`: exact-interface `classicEra`/`tbcAnniversary` identity, volatile API-family detection, feature support, metadata fallbacks, and isolated startup diagnostics
 - `RuntimeLifecycleEvents`: login/bootstrap, world and roster changes, combat transitions, and combat-log fan-out
 - `RuntimeUnitEvents`: tracked-unit aura invalidation, shield synchronization, health/power update policy, targets, threat, and raid-marker refreshes
 - `RuntimeActionEvents`: spell/spec/form transitions, binding reconciliation, action-state refreshes, item updates, and macro requirements
@@ -56,6 +56,8 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 ## Invariants
 
 - Preserve TOC dependency order and Lua 5.1 compatibility.
+- Keep one runtime and one ordered TOC file list for Classic Era and TBC Anniversary; resolve client identity from exact supported interfaces and use flavor branches only for non-discoverable behavior.
+- Prefer player and pet Spellbook discovery for expansion-specific content. Preserve unavailable saved actions and preferences so profiles remain portable between supported clients.
 - Keep saved feature preferences separate from client support; unsupported features compute an effective disabled state without rewriting portable profile intent.
 - Keep volatile client APIs inside their domain adapters and capability detection; ordinary frame construction and widget methods remain direct.
 - Treat basic unit health and frame construction as the required baseline while aura, range, prediction, threat, markers, assignment, bindings, state layouts, and profile sharing degrade independently.

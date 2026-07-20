@@ -1,8 +1,21 @@
 {
-  "product": "wow_anniversary",
-  "clientDirectory": "_anniversary_",
-  "clientVersion": "2.5.6.68775",
-  "interface": 20506,
-  "exportedOn": "2026-07-17",
-  "generatedDocumentationPath": "BlizzardInterfaceCode/Interface/AddOns/Blizzard_APIDocumentationGenerated"
+  "schemaVersion": 2,
+  "targets": {
+    "classicEra": {
+      "product": "wow_classic_era",
+      "clientDirectory": "_classic_era_",
+      "clientVersion": "1.15.8.67156",
+      "interface": 11508,
+      "exportedOn": "2026-07-19",
+      "generatedDocumentationPath": "BlizzardInterfaceCode/Interface/AddOns/Blizzard_APIDocumentationGenerated"
+    },
+    "tbcAnniversary": {
+      "product": "wow_anniversary",
+      "clientDirectory": "_anniversary_",
+      "clientVersion": "2.5.6.68775",
+      "interface": 20506,
+      "exportedOn": "2026-07-17",
+      "generatedDocumentationPath": "BlizzardInterfaceCode/Interface/AddOns/Blizzard_APIDocumentationGenerated"
+    }
+  }
 }

@@ -15,7 +15,9 @@ local auras = {
     { name = "Renew", spellId = 139, sourceUnit = "player", duration = 15, expirationTime = 20 },
 }
 C_UnitAuras = {
-    GetAuraDataByIndex = function(_, index)
+    GetAuraDataByIndex = function(unit, index, filter)
+        assert(unit == "player" and filter == "HELPFUL",
+            "Classic Era aura lookup did not use the documented unit/filter shape")
         return auras[index]
     end,
 }
@@ -44,6 +46,14 @@ assert(scanner.SnapshotHasAura(snapshot, nil, { ["Inner Fire"] = true }),
     "snapshot lost configured self-buff aura data")
 assert(snapshot.playerHots[1] == auras[4],
     "HoT matcher did not isolate the player's aura source")
+
+auras[1].name = "Power Word: Shield"
+auras[1].spellId = 17
+auras[1].points = { 321 }
+ApogeePartyHealthBars_C.PW_SHIELD_SPELL_IDS[17] = true
+local shieldSnapshot = scanner.ScanUnitHelpfulAuras("player")
+assert(scanner.GetShieldPointsFromSnapshot(shieldSnapshot) == 321,
+    "Classic Era AuraData points were not normalized for shield tracking")
 
 scanner.ConfigureBuffMatchers(nil, nil, nil, nil)
 scanner.ConfigureHotMatchers(nil)

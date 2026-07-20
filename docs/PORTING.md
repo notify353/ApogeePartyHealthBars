@@ -1,5 +1,9 @@
 # Porting Apogee Party Health Bars
 
+For the currently supported Classic Era and TBC Anniversary targets, including
+the completed audit and in-game acceptance record, see
+`CLASSIC_ERA_SUPPORT.md`.
+
 ## Goal
 
 The add-on keeps one shared codebase and isolates client differences at narrow,
@@ -17,14 +21,29 @@ Before changing client-dependent behavior, follow `WOW_INTERFACE_EXPORT.md` and
 inspect an export from the exact target client. Do not infer a new branch from
 Retail, another Classic client, or remembered API behavior.
 
-Do not change the TOC interface, packaging, or release workflow until a real
-target and its distribution requirements are known.
+The supported targets are Classic Era 1.15.8/interface `11508` and TBC
+Anniversary 2.5.6/interface `20506`. Both are recorded in
+`wow-api-export.json` and declared by one TOC. Do not add another interface or
+change packaging until that target and its distribution requirements are known.
+
+## Distribution Contract
+
+Both supported clients load the same ordered runtime file list, SavedVariables,
+and TOC. The BigWigs packager reads both interface values and publishes one ZIP
+under CurseForge project `1608100`; GitHub receives the identical package bytes.
+Do not create per-client core trees, TOCs, repositories, CurseForge projects, or
+archives unless a future client difference makes the shared package impossible.
 
 ## Compatibility Contract
 
 `ApogeePartyHealthBars_ClientCapabilities.lua` is the session-only registry for
 client identity, API-family detection, feature support, and isolated runtime
 failures. It must not write SavedVariables.
+
+`GetClientInfo().flavor` is `classicEra`, `tbcAnniversary`, or `unsupported`,
+resolved from the active build's exact interface number. `WOW_PROJECT_ID` is
+retained only as diagnostic metadata because several Classic products can share
+or change project identifiers independently of this repository's release target.
 
 The required baseline is frame creation, combat-lockdown detection, and basic
 unit existence and health. Without that baseline the add-on cannot provide its
@@ -64,6 +83,23 @@ Add a new adapter only when a client difference needs normalized inputs,
 outputs, or failure behavior. Extend
 `tests/compatibility_boundaries_spec.lua` when a newly isolated volatile family
 needs protection from future leakage.
+
+## Content Availability
+
+Class, spell, buff, HoT, control, and macro catalogs remain shared. Known
+player and pet Spellbook discovery is the primary availability test, including
+for expansion-specific entries such as Lifebloom, Water Shield, Cyclone, or
+Spell Lock. This keeps standard Classic Era free of TBC-only claims while still
+allowing a future Classic variant to expose an ability without a duplicated
+catalog. Use an explicit flavor restriction only when the difference cannot be
+discovered from learned spells—for example a formula, macro mechanic, label, or
+documentation claim. Never delete or rewrite a saved assignment merely because
+it is unavailable on the active client.
+
+Power Word: Shield prefers the client-reported AuraData amount. Rank estimates
+are used only for recognized spell IDs; Classic Era must never substitute the
+TBC maximum-rank fallback for an unknown rank. Verify rank IDs and coefficients
+in both clients before extending either estimate table.
 
 ## Port Workflow
 

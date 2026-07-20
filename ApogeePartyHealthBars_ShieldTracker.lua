@@ -3,6 +3,7 @@ local C = ApogeePartyHealthBars_C
 ApogeePartyHealthBars_ShieldTracker = {}
 local X = ApogeePartyHealthBars_ShieldTracker
 local UnitAPI = ApogeePartyHealthBars_UnitAPI
+local ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities
 local D
 local remainingByGuid = {}
 
@@ -64,7 +65,15 @@ function X.SyncUnit(unitId)
 end
 
 local function EstimatePWShieldAmount(spellId, sourceGUID)
-    local rank = C.PW_SHIELD_RANKS[spellId] or C.PW_SHIELD_RANKS[25218]
+    local rank = C.PW_SHIELD_RANKS[spellId]
+    if not rank then
+        local clientInfo = ClientCapabilities and ClientCapabilities.GetClientInfo
+            and ClientCapabilities.GetClientInfo()
+        if not clientInfo or clientInfo.flavor == "tbcAnniversary" then
+            rank = C.PW_SHIELD_RANKS[25218]
+        end
+    end
+    if not rank then return 0 end
     local base, coeff = rank[1], rank[2]
     local sp = 0
     if sourceGUID and sourceGUID == UnitGUID("player") then
@@ -138,7 +147,11 @@ function X.SeedFromAuras()
         if X.ShouldTrackUnit(unitId) and UnitHasPWShield(unitId) then
             local guid = UnitGUID(unitId)
             if guid and not remainingByGuid[guid] then
-                Set(guid, EstimatePWShieldAmount(25218, UnitGUID("player")))
+                local snapshot = D.Auras.GetUnitAuraSnapshot(unitId)
+                local amount = D.Auras.GetShieldPointsFromSnapshot(snapshot)
+                local spellId = D.Auras.GetShieldSpellIdFromSnapshot
+                    and D.Auras.GetShieldSpellIdFromSnapshot(snapshot)
+                Set(guid, amount or EstimatePWShieldAmount(spellId, UnitGUID("player")))
             end
         end
     end
@@ -158,7 +171,9 @@ function X.GetRemaining(unitId)
     local auraAmount = D.Auras.GetShieldPointsFromSnapshot(snapshot)
     if auraAmount and auraAmount > 0 then return auraAmount end
 
-    return EstimatePWShieldAmount(25218, UnitGUID("player"))
+    local spellId = D.Auras.GetShieldSpellIdFromSnapshot
+        and D.Auras.GetShieldSpellIdFromSnapshot(snapshot)
+    return EstimatePWShieldAmount(spellId, UnitGUID("player"))
 end
 
 function X.UpdateRowVisual(row, unitId, shield)

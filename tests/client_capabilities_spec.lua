@@ -20,8 +20,26 @@ assert(capabilities.Has("core"), "required core capability was not detected")
 assert(capabilities.GetAddonVersion("ApogeePartyHealthBars") == "legacy-version",
     "legacy addon metadata fallback failed")
 local info = capabilities.GetClientInfo()
-assert(info.projectId == 14 and info.interface == 20506 and info.build == "68775",
+assert(info.flavor == "tbcAnniversary" and info.product == "wow_anniversary"
+        and info.projectId == 14 and info.interface == 20506 and info.build == "68775",
     "client identity was not normalized")
+
+GetBuildInfo = function() return "1.15.8", "67156", "Jul 19 2026", 11508 end
+info = capabilities.GetClientInfo()
+assert(info.flavor == "classicEra" and info.product == "wow_classic_era"
+        and info.interface == 11508 and info.build == "67156",
+    "Classic Era identity was not normalized")
+
+GetBuildInfo = function() return "11.2.7", "70000", "Jul 19 2026", 110207 end
+info = capabilities.GetClientInfo()
+assert(info.flavor == "unsupported" and info.product == nil
+        and info.interface == 110207 and info.projectId == 14,
+    "unsupported client identity did not fail closed while retaining diagnostics")
+
+GetBuildInfo = nil
+info = capabilities.GetClientInfo()
+assert(info.flavor == "unsupported" and info.interface == nil,
+    "missing build metadata did not return unsupported identity")
 
 C_AddOns = { GetAddOnMetadata = function() return "modern-version" end }
 assert(capabilities.GetAddonVersion("ApogeePartyHealthBars") == "modern-version",

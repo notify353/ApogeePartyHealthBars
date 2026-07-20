@@ -18,16 +18,22 @@ From clean, synchronized `main`:
 pwsh ./scripts/prepare-release.ps1 -Version X.Y.Z
 ```
 
-Release preparation validates that the TOC interface matches the recorded Blizzard export. On a machine with WoW installed, it also requires the installed Anniversary build and local export to be current.
+Release preparation validates that the TOC declares exactly Classic Era `11508` and TBC Anniversary `20506`, matching the recorded Blizzard exports. On a machine with either client installed, it also requires every installed supported build and local export to be current.
 
-Push the preparation commit and wait for CI. Then verify in game:
+Push the preparation commit and wait for CI. Then verify the complete checklist in both Classic Era and TBC Anniversary:
 
-- Login and `/reload`
+- Addon list shows the addon without **out of date**
+- Login and `/reload` without Lua errors
 - Solo and party layouts
 - Entering and leaving combat
 - Healing-tab click assignment
 - Spell tracking, threat, shields, heals, and HoTs
-- Settings, minimap position, persistence, and macros
+- Settings, minimap position, persistence, profiles, and macros
+- Secure Healing clicks and Keys/Wheel/Buttons before and during combat
+- Binding backup, conflict handling, Prepare to Disable, and restoration
+
+Record the exact client build used for each pass. A Classic Era pass does not replace the TBC regression pass, and vice versa.
+Use the detailed matrix and record the results in [docs/CLASSIC_ERA_SUPPORT.md](docs/CLASSIC_ERA_SUPPORT.md). The first dual-client feature release is `0.42.0`; do not prepare it while either client matrix or pull-request packager validation is incomplete.
 
 ## Publish
 
@@ -37,7 +43,7 @@ Push the preparation commit and wait for CI. Then verify in game:
 pwsh ./scripts/publish-release.ps1 -Version X.Y.Z -ConfirmProduction
 ```
 
-The script pushes the production tag. GitHub Actions validates, packages, and publishes identical bytes to GitHub Releases and CurseForge, then attaches a SHA-256 checksum.
+The script pushes the production tag. GitHub Actions validates the exact two-interface TOC, creates one package, publishes identical bytes to GitHub Releases and CurseForge, then attaches a SHA-256 checksum. Verify that CurseForge lists both supported game versions for that file.
 
 Never create or move production tags manually. Never publish or upload assets manually. Fix a bad release with a new patch version. Never expose `CF_API_KEY` or another secret.
 

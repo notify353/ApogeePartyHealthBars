@@ -26,6 +26,20 @@ if ($ExpectedVersion -and $tocVersion -ne $ExpectedVersion) {
     Fail "TOC version '$tocVersion' does not match expected version '$ExpectedVersion'."
 }
 
+$interfaceLines = @($tocLines | Where-Object { $_ -match '^## Interface:' })
+if ($interfaceLines.Count -ne 1) { Fail 'TOC must contain exactly one Interface metadata line.' }
+$interfaceValue = ([regex]::Match($interfaceLines[0], '^## Interface:\s*(.+?)\s*$')).Groups[1].Value
+$interfaceParts = @($interfaceValue.Split(',') | ForEach-Object { $_.Trim() })
+$malformedInterfaces = @($interfaceParts | Where-Object { $_ -notmatch '^\d+$' })
+if ($interfaceParts.Count -eq 0 -or $malformedInterfaces.Count -gt 0) {
+    Fail "TOC Interface metadata '$interfaceValue' is malformed."
+}
+$actualInterfaces = @($interfaceParts | ForEach-Object { [int]$_ } | Sort-Object -Unique)
+$expectedInterfaces = @(11508, 20506)
+if (($actualInterfaces -join ',') -ne ($expectedInterfaces -join ',')) {
+    Fail "TOC interfaces must be exactly '$($expectedInterfaces -join ', ')'; found '$($actualInterfaces -join ', ')'."
+}
+
 $curseLine = $tocLines | Where-Object { $_ -match '^## X-Curse-Project-ID:\s*1608100\s*$' }
 if (-not $curseLine) { Fail 'TOC CurseForge project ID must be 1608100.' }
 

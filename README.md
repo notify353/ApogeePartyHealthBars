@@ -1,6 +1,6 @@
 # Apogee Party Health Bars
 
-Compact five-player healing frames for World of Warcraft Anniversary and Burning Crusade Classic.
+Compact five-player healing frames for World of Warcraft Classic Era and Burning Crusade Classic Anniversary.
 
 ## Features
 
@@ -32,7 +32,7 @@ Left-click the minimap button to open settings; the Spellbook opens alongside it
 
 When Unit target bars are enabled, every player and party row reserves aligned columns for its immediate target and target-of-target. Existing units use the same health, adaptive power, shield, incoming-heal, HoT, range, offline, party-buff, and Healing-click behavior as the primary bars. Player-only action HUDs and the compact self-buff reminder remain attached at the player's left edge. Compact crowd-control utilities grow from the current target's left edge, while raid-marker controls occupy its right edge; their shared accessory tier remains stable as icons appear and disappear.
 
-The crowd-control utility lane recognizes active control options for every TBC class. Strategic hard control, stuns, roots, interrupts, and silences appear automatically when learned, including available pet actions such as Seduction, Spell Lock, and Water Elemental Freeze. Interrupt-capable actions carry a compact `I` badge while readiness, cooldown, range, and validity remain encoded by the normal icon border and state. Movement control and disarms are recognized when assigned as Shortcuts without automatically filling the lane. Traps, totems, ground effects, and caster-centered controls use their native activation behavior instead of requiring a hostile current target. Customized focus or mouseover macros remain clickable but deliberately skip current-target eligibility and range prediction.
+The crowd-control utility lane recognizes active control options for the player's class and current client. Strategic hard control, stuns, roots, interrupts, and silences appear automatically when learned, including available pet actions. Interrupt-capable actions carry a compact `I` badge while readiness, cooldown, range, and validity remain encoded by the normal icon border and state. Movement control and disarms are recognized when assigned as Shortcuts without automatically filling the lane. Traps, totems, ground effects, and caster-centered controls use their native activation behavior instead of requiring a hostile current target. Customized focus or mouseover macros remain clickable but deliberately skip current-target eligibility and range prediction.
 
 Settings open on General and proceed from the add-on's core behavior through Healing, Keys, Wheel, Buttons, Shortcuts, and Macros, with profile administration last. The Profiles tab groups the current profile, copy, and sharing workflows into compact sections. Each character owns an independent profile library; profiles are never changed or selected implicitly by another character. A profile contains all feature settings, action assignments, custom macros, sounds, and the positions of the bars, settings window, and minimap button. Use New for addon defaults, Duplicate to branch from an existing setup, or Copy to Active to replace the active profile while retaining its name. Profile changes are blocked in combat and reload the UI after safely restoring owned Keys, Wheel, and Buttons bindings.
 
@@ -105,7 +105,7 @@ The Macros tab is the in-addon reference for generated templates, macro syntax, 
 
 The repository is the development copy; cloning or downloading it does not automatically place it in WoW's add-on directory. Keep the repository outside the WoW installation and create a Windows directory junction so WoW loads the same files you edit.
 
-1. Install the Anniversary client and [Git](https://git-scm.com/download/win).
+1. Install at least one supported client—Classic Era or Anniversary—and [Git](https://git-scm.com/download/win).
 2. Clone the repository to a normal development directory:
 
    ```powershell
@@ -115,11 +115,11 @@ The repository is the development copy; cloning or downloading it does not autom
    Set-Location ApogeePartyHealthBars
    ```
 
-3. Close WoW. Open PowerShell as Administrator and create the junction below. Change `$Repo` or `$WoW` first if either location is different on your computer.
+3. Close WoW. Open PowerShell as Administrator and create a junction for the client you are testing. Change `$Repo` or `$WoW` first if either location is different on your computer. Use `_classic_era_` for Classic Era or `_anniversary_` for TBC Anniversary.
 
    ```powershell
    $Repo = (Resolve-Path 'C:\Dev\WoW\ApogeePartyHealthBars').Path
-   $WoW = 'C:\Program Files (x86)\World of Warcraft\_anniversary_'
+   $WoW = 'C:\Program Files (x86)\World of Warcraft\_classic_era_'
    $AddOns = Join-Path $WoW 'Interface\AddOns'
    $Link = Join-Path $AddOns 'ApogeePartyHealthBars'
 
@@ -130,7 +130,7 @@ The repository is the development copy; cloning or downloading it does not autom
    New-Item -ItemType Junction -Path $Link -Target $Repo
    ```
 
-   Do not initialize another Git repository inside the WoW directory, copy the development repository there, or replace an existing path without first checking whether it contains files you need.
+   Use separate worktrees when testing different branches in both clients. Do not initialize another Git repository inside the WoW directory, copy the development repository there, or replace an existing path without first checking whether it contains files you need.
 
 4. Verify the junction and TOC from the same PowerShell window:
 
@@ -152,13 +152,13 @@ pwsh ./scripts/test-local.ps1
 
 The runner rejects other Lua versions, parses every add-on source file, runs every Lua specification, validates the package and release workflow, builds and inspects a local ZIP, and checks the Git diff for whitespace errors.
 
-The matching local Blizzard interface export is the primary development reference for WoW APIs and interface behavior. Read [docs/WOW_INTERFACE_EXPORT.md](docs/WOW_INTERFACE_EXPORT.md) before API-dependent work. The validation suite fails when the installed Anniversary client is newer than the recorded export and explains how to refresh it.
+The matching local Blizzard interface exports are the primary development references for WoW APIs and interface behavior. Read [docs/WOW_INTERFACE_EXPORT.md](docs/WOW_INTERFACE_EXPORT.md) before API-dependent work. The validation suite fails when an installed supported client is newer than its recorded export and explains how to refresh it.
 
-For work targeting another WoW branch, read [docs/PORTING.md](docs/PORTING.md). The add-on uses capability-driven, domain-owned compatibility boundaries so optional features can degrade independently without overwriting shared profile preferences.
+For the supported-client audit, development install, acceptance matrix, and CurseForge procedure, read [docs/CLASSIC_ERA_SUPPORT.md](docs/CLASSIC_ERA_SUPPORT.md). For future branches, read [docs/PORTING.md](docs/PORTING.md). The add-on uses capability-driven, domain-owned compatibility boundaries so optional features can degrade independently without overwriting shared profile preferences.
 
 ## Compatibility
 
-Current target: Anniversary/Burning Crusade Classic 2.5.6, TOC interface `20506`. Retail and other Classic clients are unsupported.
+Supported targets: Classic Era 1.15.8 (interface `11508`) and Burning Crusade Classic Anniversary 2.5.6 (interface `20506`). Retail and other Classic branches are unsupported.
 
 ## Support
 

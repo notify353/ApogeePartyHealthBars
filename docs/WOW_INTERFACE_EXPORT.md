@@ -4,21 +4,21 @@
 
 The matching local Blizzard interface export is this repository's primary authority for WoW APIs, events, arguments, return values, enums, structures, frame templates, and secure UI behavior. The export also contains Blizzard's Lua and XML, which shows how the client uses those interfaces in practice.
 
-Do not use a Retail export, another Classic branch, remembered behavior, or unverified online documentation in place of the export from the client targeted by `ApogeePartyHealthBars.toc`.
+Do not use a Retail export, another Classic branch, remembered behavior, or unverified online documentation in place of the exports from the clients targeted by `ApogeePartyHealthBars.toc`.
 
 ## Export on Windows
 
 1. Open the Battle.net launcher.
 2. Select World of Warcraft.
 3. Click the gear beside **Play**, then open **Game Settings**.
-4. Find the specific WoW client used by this add-on. The current target is the Anniversary client.
+4. Find each supported WoW client: Classic Era and Anniversary.
 5. Enable **Additional command line arguments** and enter:
 
    ```text
    -console
    ```
 
-6. Launch WoW and stay at the login or character-selection screen.
+6. Launch that client and stay at the login or character-selection screen.
 7. Press the backtick or tilde key (`` ` `` or `~`) to open the developer console.
 8. Enter:
 
@@ -28,23 +28,29 @@ Do not use a Retail export, another Classic branch, remembered behavior, or unve
 
 9. Press Enter and wait for the export to finish.
 10. Close WoW before inspecting the files.
-11. From this repository, record and verify the new export:
+11. Repeat the export for the other supported client when its files also need refreshing.
+12. From this repository, record and verify all installed supported clients:
 
     ```powershell
-    pwsh ./scripts/record-wow-api-export.ps1
+    pwsh ./scripts/record-wow-api-export.ps1 -Target All
     pwsh ./scripts/check-wow-api-export.ps1
     ```
 
-12. Review and commit the updated `docs/wow-api-export.json` with any compatibility changes.
-13. Remove `-console` from Battle.net's command-line arguments when it is no longer needed.
+    To work on only one installed client, pass `-Target classicEra` or
+    `-Target tbcAnniversary` to either script. `-Target All` records all
+    installed targets and is the recorder default.
+
+13. Review and commit the updated `docs/wow-api-export.json` with any compatibility changes.
+14. Remove `-console` from Battle.net's command-line arguments when it is no longer needed.
 
 Run the command in the developer console, not normal in-game chat. The `/api` chat command is separate. `exportInterfaceFiles art` exports artwork and is not required for API research.
 
 ## Export Locations
 
-For this repository's current Anniversary client:
+For this repository's supported clients:
 
 ```text
+C:\Program Files (x86)\World of Warcraft\_classic_era_\BlizzardInterfaceCode\
 C:\Program Files (x86)\World of Warcraft\_anniversary_\BlizzardInterfaceCode\
 ```
 
@@ -61,6 +67,12 @@ BlizzardInterfaceCode\Interface\AddOns\
 ```
 
 Other installations may use paths such as `_classic_`, `_classic_ptr_`, `_classic_beta_`, or `_retail_`. Those exports are authoritative only when the repository explicitly targets that client.
+
+`docs/wow-api-export.json` records both supported targets. The checker always
+requires its interface set to match the TOC. For every installed target it also
+requires the recorded build and local export to be current. An uninstalled
+target produces a warning during the default all-target check; explicitly
+requesting that target is an error.
 
 ## Research Workflow
 
@@ -84,4 +96,7 @@ Repeat the export and record it whenever:
 - `## Interface` compatibility in the TOC changes.
 - Blizzard API behavior appears inconsistent with the recorded documentation.
 
-The local checker compares the installed `wow_anniversary` build in `.build.info` with `docs/wow-api-export.json`, so the normal validation suite provides an automatic reminder after client updates.
+The local checker compares the installed `wow_classic_era` and
+`wow_anniversary` builds in `.build.info` with `docs/wow-api-export.json`, so
+the normal validation suite provides an automatic reminder after either client
+updates.

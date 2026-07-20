@@ -194,6 +194,11 @@ function A.GetShieldPointsFromSnapshot(snapshot)
     return ExtractShieldPoints(snapshot.pwShield)
 end
 
+function A.GetShieldSpellIdFromSnapshot(snapshot)
+    if not snapshot or not snapshot.pwShield then return nil end
+    return snapshot.pwShield.spellId
+end
+
 function A.UnitHasPWShieldFromSnapshot(snapshot)
     return snapshot and snapshot.pwShield ~= nil
 end

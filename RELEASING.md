@@ -33,6 +33,7 @@ Push the preparation commit and wait for CI. Then verify the complete checklist 
 - Binding backup, conflict handling, Prepare to Disable, and restoration
 
 Record the exact client build used for each pass. A Classic Era pass does not replace the TBC regression pass, and vice versa.
+Use the detailed matrix and record the results in [docs/CLASSIC_ERA_SUPPORT.md](docs/CLASSIC_ERA_SUPPORT.md). The first dual-client feature release is `0.42.0`; do not prepare it while either client matrix or pull-request packager validation is incomplete.
 
 ## Publish
 

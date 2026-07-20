@@ -1,5 +1,9 @@
 # Porting Apogee Party Health Bars
 
+For the currently supported Classic Era and TBC Anniversary targets, including
+the completed audit and in-game acceptance record, see
+`CLASSIC_ERA_SUPPORT.md`.
+
 ## Goal
 
 The add-on keeps one shared codebase and isolates client differences at narrow,

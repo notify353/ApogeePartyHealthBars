@@ -19,6 +19,12 @@ if ($workflow -notmatch 'gh release download') {
 if ($workflow -notmatch 'validate-package\.ps1[^\r\n]*-ArchivePath') {
     throw 'Release workflow must validate an archive before completing.'
 }
+if ($workflow -notmatch 'gh release upload \$env:GITHUB_REF_NAME \$localZip\.FullName') {
+    throw 'Release workflow must recover a missing GitHub asset with the validated packager ZIP.'
+}
+if ($workflow -notmatch '\$localHash -ne \$publishedHash') {
+    throw 'Release workflow must prove the public ZIP matches the validated packager ZIP.'
+}
 foreach ($entry in @(
     @{ Name = 'Release workflow'; Content = $workflow },
     @{ Name = 'Lua validation workflow'; Content = $validationWorkflow },

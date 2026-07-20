@@ -70,18 +70,58 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          $localZip = Get-Item '${{ steps.package.outputs.zip }}'
+          ./scripts/validate-package.ps1 -ExpectedVersion $env:GITHUB_REF_NAME.Substring(1) -ArchivePath $localZip.FullName
           $publishedDirectory = '.release/published'
           New-Item -ItemType Directory -Path $publishedDirectory -Force | Out-Null
-          gh release download $env:GITHUB_REF_NAME --pattern 'ApogeePartyHealthBars-*.zip' --dir $publishedDirectory
-          if ($LASTEXITCODE -ne 0) { throw 'Unable to download the published GitHub package.' }
-          $zip = Get-ChildItem $publishedDirectory -File -Filter 'ApogeePartyHealthBars-*.zip'
-          if ($zip.Count -ne 1) { throw "Expected exactly one published ZIP, found $($zip.Count)." }
-          ./scripts/validate-package.ps1 -ExpectedVersion $env:GITHUB_REF_NAME.Substring(1) -ArchivePath $zip.FullName
-          $checksumPath = "$($zip.FullName).sha256"
-          $hash = (Get-FileHash -Algorithm SHA256 $zip.FullName).Hash.ToLowerInvariant()
-          "$hash  $($zip.Name)" | Set-Content -Encoding utf8NoBOM $checksumPath
-          gh release upload $env:GITHUB_REF_NAME $checksumPath
-          if ($LASTEXITCODE -ne 0) { throw 'Unable to upload the package checksum.' }
+          $publishedZipPath = Join-Path $publishedDirectory $localZip.Name
+          $downloaded = $false
+          $fallbackAttempted = $false
+          for ($attempt = 1; $attempt -le 6; $attempt++) {
+            Remove-Item -LiteralPath $publishedZipPath -Force -ErrorAction SilentlyContinue
+            gh release download $env:GITHUB_REF_NAME --pattern $localZip.Name --dir $publishedDirectory
+            if ($LASTEXITCODE -eq 0 -and (Test-Path -LiteralPath $publishedZipPath -PathType Leaf)) {
+              $downloaded = $true
+              break
+            }
+            if (-not $fallbackAttempted) {
+              $fallbackAttempted = $true
+              Write-Warning 'The packager did not expose the GitHub ZIP; uploading the exact validated packager output.'
+              gh release upload $env:GITHUB_REF_NAME $localZip.FullName
+            }
+            if ($attempt -lt 6) { Start-Sleep -Seconds (5 * $attempt) }
+          }
+          if (-not $downloaded) { throw 'Unable to publish and download the GitHub package.' }
+
+          $publishedZip = Get-Item $publishedZipPath
+          ./scripts/validate-package.ps1 -ExpectedVersion $env:GITHUB_REF_NAME.Substring(1) -ArchivePath $publishedZip.FullName
+          $localHash = (Get-FileHash -Algorithm SHA256 $localZip.FullName).Hash.ToLowerInvariant()
+          $publishedHash = (Get-FileHash -Algorithm SHA256 $publishedZip.FullName).Hash.ToLowerInvariant()
+          if ($localHash -ne $publishedHash) {
+            throw 'The public GitHub package differs from the package submitted by the publisher.'
+          }
+
+          $checksumPath = "$($publishedZip.FullName).sha256"
+          "$publishedHash  $($publishedZip.Name)" | Set-Content -Encoding utf8NoBOM $checksumPath
+          $checksumName = Split-Path -Leaf $checksumPath
+          $checksumUploaded = $false
+          for ($attempt = 1; $attempt -le 4; $attempt++) {
+            gh release upload $env:GITHUB_REF_NAME $checksumPath
+            if ($LASTEXITCODE -eq 0) {
+              $checksumUploaded = $true
+              break
+            }
+            $releaseJson = gh release view $env:GITHUB_REF_NAME --json assets
+            if ($LASTEXITCODE -eq 0) {
+              $release = $releaseJson | ConvertFrom-Json
+              if ($release.assets.name -contains $checksumName) {
+                $checksumUploaded = $true
+                break
+              }
+            }
+            if ($attempt -lt 4) { Start-Sleep -Seconds (5 * $attempt) }
+          }
+          if (-not $checksumUploaded) { throw 'Unable to upload the package checksum.' }
 
       - name: Publish release summary
         shell: pwsh

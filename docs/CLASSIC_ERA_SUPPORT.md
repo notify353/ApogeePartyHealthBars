@@ -89,15 +89,17 @@ Completed on 2026-07-19:
   documented two-step Prepare to Disable flow restored Keys, Wheel, and Buttons
   bindings, reported success, and left the saved runtime state disabled before
   logout.
+- The owner completed the remaining Classic Era five-player, combat, overlay,
+  secure-click, state-layout, and class-state matrix without issues.
+- The owner completed profile duplication plus explicit cross-client
+  export/import round trips, including unavailable-assignment preservation,
+  without issues.
+- The owner completed the full TBC Anniversary regression matrix without
+  issues, including TBC-specific content and binding restoration.
 
 Still required before `0.42.0` release preparation:
 
-- Complete the Classic Era five-player, target, target-of-target, range,
-  shield, incoming-heal, threat, raid-marker, item-click, in-combat secure-click,
-  and state-layout cases below.
-- Complete profile duplication and explicit export/import coverage, including
-  a cross-client round trip and unavailable-assignment preservation.
-- Repeat the complete regression matrix in TBC Anniversary.
+- Push `codex/classic-era-support` and open a pull request for review.
 - Let pull-request CI run the BigWigs no-upload build and confirm it produces one
   archive while detecting both interface versions.
 

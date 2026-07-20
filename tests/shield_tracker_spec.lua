@@ -7,6 +7,10 @@ ApogeePartyHealthBars_C = {
         [25218] = { 100, 0.5 },
     },
 }
+local clientFlavor = "tbcAnniversary"
+ApogeePartyHealthBars_ClientCapabilities = {
+    GetClientInfo = function() return { flavor = clientFlavor } end,
+}
 
 local existing = { player = true, party1 = true, target = true }
 local dead = {}
@@ -39,6 +43,9 @@ local Auras = {
     end,
     GetShieldPointsFromSnapshot = function(snapshot)
         return snapshot and snapshot.amount or nil
+    end,
+    GetShieldSpellIdFromSnapshot = function(snapshot)
+        return snapshot and snapshot.spellId or nil
     end,
     IsPowerWordShieldAura = function(spellId, spellName)
         return spellId == 17 or spellId == 25218 or spellName == "Power Word: Shield"
@@ -99,10 +106,10 @@ dead.party1 = nil
 
 snapshots.player = { hasShield = true, amount = 300 }
 tracker.SeedFromAuras()
-assert(tracker.GetRemaining("player") == 125,
-    "aura seeding did not estimate the current player shield")
+assert(tracker.GetRemaining("player") == 300,
+    "aura seeding did not prefer the client-reported shield amount")
 snapshots.player.amount = 400
-assert(tracker.GetRemaining("player") == 125,
+assert(tracker.GetRemaining("player") == 300,
     "display reads overwrote an existing shield ledger entry")
 
 currentCombatLog = CombatLogEvent("SPELL_AURA_APPLIED")
@@ -175,5 +182,14 @@ configMode = false
 featureEnabled = false
 tracker.UpdateRowVisual(row, "player", 25)
 assert(not shieldBar.shown, "disabled shield feature displayed a segment")
+
+featureEnabled = true
+clientFlavor = "classicEra"
+snapshots.player = { hasShield = true, spellId = 99999 }
+assert(tracker.GetRemaining("player") == 0,
+    "Classic Era unknown shield rank fell back to the TBC maximum")
+snapshots.player.spellId = 17
+assert(tracker.GetRemaining("player") == 90,
+    "Classic Era recognized shield rank did not retain its verified estimate")
 
 print("PASS shield tracker")

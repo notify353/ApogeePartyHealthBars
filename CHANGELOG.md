@@ -15,6 +15,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 - Declared Classic Era interface `11508` and TBC Anniversary interface `20506` in one TOC so CurseForge and GitHub can distribute the same installable ZIP to both clients.
 - Expanded the authoritative Blizzard interface export guard to validate both supported clients while allowing contributors to work with only one client installed.
 - Added explicit `classicEra`, `tbcAnniversary`, and `unsupported` runtime identities while keeping expansion-specific spell content driven by the active Spellbook.
+- Prevented an unknown Classic Era Power Word: Shield rank from falling back to the TBC maximum-rank estimate.
 
 ## [0.41.1] - 2026-07-19
 

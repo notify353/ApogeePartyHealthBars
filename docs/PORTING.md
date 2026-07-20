@@ -92,6 +92,11 @@ discovered from learned spells—for example a formula, macro mechanic, label, o
 documentation claim. Never delete or rewrite a saved assignment merely because
 it is unavailable on the active client.
 
+Power Word: Shield prefers the client-reported AuraData amount. Rank estimates
+are used only for recognized spell IDs; Classic Era must never substitute the
+TBC maximum-rank fallback for an unknown rank. Verify rank IDs and coefficients
+in both clients before extending either estimate table.
+
 ## Port Workflow
 
 1. Export and record the exact target client's Blizzard interface code.

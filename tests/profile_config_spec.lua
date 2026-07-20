@@ -107,7 +107,7 @@ local config = ApogeePartyHealthBars_ProfileConfig
 config.Build(widget(), deps)
 config.Refresh()
 
-assert(form.hint:GetText() == "Create, switch, copy, or share profiles for this class."
+assert(form.hint:GetText() == "Profiles belong to this character. Use Export and Import to share them."
         and #form.entries == 7,
     "Profiles did not use the shared compact form scaffold")
 assert(form.entries[1].frame.label:GetText() == "Current profile"

@@ -298,10 +298,10 @@ assert(calls.factoryReset == 0
         and resets.factory.label:GetText() == "Confirm Erase",
     "factory reset lost its confirmation arm")
 timerCallback()
-assert(resets.factory.label:GetText() == "Factory Reset",
+assert(resets.factory.label:GetText() == "Reset Character",
     "factory reset timeout did not disarm")
 Click(resets.factory); Click(resets.factory)
-assert(calls.factoryReset == 1 and resets.factory.label:GetText() == "Factory Reset",
+assert(calls.factoryReset == 1 and resets.factory.label:GetText() == "Reset Character",
     "confirmed factory reset did not execute and disarm")
 
 saved.threatEnabled = true

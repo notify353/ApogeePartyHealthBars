@@ -30,6 +30,18 @@ controller.Initialize({
     HideAllSecureOverlays = function() end,
     UpdateMinimapButtonStyle = function() end,
     Print = function(message) messages[#messages + 1] = message end,
+    ProfileStore = {
+        ResetCharacter = function()
+            local root = {
+                profileStore = { schemaVersion = 2 },
+                bindingRuntime = {},
+            }
+            ApogeePartyHealthBars_S.characterRoot = root
+            ApogeePartyHealthBars_S.sv = {}
+            ApogeePartyHealthBars_S.charSv = {}
+            return root
+        end,
+    },
 })
 
 ApogeePartyHealthSV = ApogeePartyHealthBars_S.sv
@@ -58,10 +70,10 @@ assert(messages[#messages] == "Keys restore failed",
 transactionCanRelease = true
 assert(controller.FactoryReset(), "factory reset failed")
 assert(transactionCalls == 3, "factory reset did not use one shared binding transaction")
-assert(ApogeePartyHealthSV == nil and ApogeePartyHealthCharSV == nil,
-    "factory reset did not clear both saved-variable roots")
-assert(ApogeePartyHealthBars_S.sv == nil and ApogeePartyHealthBars_S.charSv == nil,
-    "factory reset retained live saved-variable references")
+assert(ApogeePartyHealthSV ~= nil and ApogeePartyHealthCharSV.profileStore.schemaVersion == 2,
+    "character reset changed account data or did not replace character storage")
+assert(ApogeePartyHealthBars_S.sv ~= nil and ApogeePartyHealthBars_S.charSv ~= nil,
+    "character reset did not bind clean live profile references")
 assert(reloads == 1, "factory reset did not reload the UI")
 
 print("PASS factory reset")

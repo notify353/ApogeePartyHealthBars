@@ -13,6 +13,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Moved named profile libraries into character-specific storage; profiles now change only through that character or explicit export and import.
+- Renamed Factory Reset to Reset Character and limited it to the current character's profiles, settings, and binding recovery state.
 - Preserved saved feature preferences while disabling unsupported optional features independently, including aura overlays, range, prediction, threat, raid markers, bound actions, and profile sharing.
 - Consolidated Spellbook discovery and lookup behind one adapter and isolated optional login and combat-log initialization so one feature failure does not stop the rest of the add-on.
 - Simplified generated action macros to direct `/cast` and `/use` defaults, retaining automatic targeting and spam protection only for melee and repeating ranged attacks.
@@ -20,6 +22,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Fixed
 
+- Fixed login discarding the player's class token, which could tag profiles as `UNKNOWN` and expose one character's actions to another; affected profiles now migrate with owner-aware cleanup, missing selections recover safely, older tracked-spell actions remain intact, and the original account data stays preserved.
 - Prevented failed profile storage from letting startup mutate invalid saved-variable roots, made modern Spellbook fallback nil-safe, enforced Base layouts when specialization or form APIs are unavailable, and made optional aura/combat-log events safe to omit.
 - Tightened binding, profile-sharing, and metadata compatibility checks so incomplete client API families fail closed and binding reconciliation errors remain visible without stopping later lifecycle work.
 - Fixed opening General settings attempting to enable the low-health threshold's display text as though it were an interactive control.

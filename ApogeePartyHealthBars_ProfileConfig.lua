@@ -168,7 +168,7 @@ function P.Build(parent, deps)
     tab:Hide()
 
     form = UIH.CreateFormScaffold(tab, "ApogeePartyHealthBarsProfileConfigScroll",
-        "Create, switch, copy, or share profiles for this class.")
+        "Profiles belong to this character. Use Export and Import to share them.")
     statusText = form.status
 
     currentSection = UIH.CreateFormSection(form.content, form.rowWidth, "Current profile")

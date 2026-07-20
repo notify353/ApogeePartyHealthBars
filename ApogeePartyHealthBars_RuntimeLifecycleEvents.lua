@@ -42,9 +42,6 @@ function L.Register(eventRouter, deps)
     local function HandleEvent(event, unit)
         local ok, err = pcall(function()
             if event == "PLAYER_LOGIN" then
-                if type(ApogeePartyHealthSV) ~= "table" then
-                    ApogeePartyHealthSV = {}
-                end
                 if type(ApogeePartyHealthCharSV) ~= "table" then
                     ApogeePartyHealthCharSV = {}
                 end
@@ -53,7 +50,7 @@ function L.Register(eventRouter, deps)
                 local storageReady, storageError = RunStep("Profile storage", function()
                     if ApogeePartyHealthBars_ProfileStore
                         and ApogeePartyHealthBars_ProfileStore.Initialize then
-                        local _, playerClass = UnitClass and UnitClass("player")
+                        local playerClass = UnitClass and select(2, UnitClass("player"))
                         local playerName, playerRealm
                         if UnitFullName then playerName, playerRealm = UnitFullName("player") end
                         if not playerName and UnitName then playerName = UnitName("player") end

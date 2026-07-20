@@ -1,5 +1,9 @@
 # Classic Era Support
 
+Status: completed and released in `v0.42.0` on 2026-07-19. This document is the
+audit and acceptance case study; use `ADDING_WOW_CLIENT.md` for the reusable
+future-client procedure.
+
 ## Supported Clients
 
 | Flavor | Product | Directory | Version | Interface |
@@ -43,8 +47,8 @@ Known differences are contained as follows:
 
 ## Development Installation
 
-Keep the existing TBC checkout and Classic Era feature worktree isolated. On
-this development machine the intended junctions are:
+During migration, the existing TBC checkout and Classic Era feature worktree
+were kept isolated. The development junctions used for acceptance were:
 
 ```text
 _classic_era_/Interface/AddOns/ApogeePartyHealthBars
@@ -97,11 +101,19 @@ Completed on 2026-07-19:
 - The owner completed the full TBC Anniversary regression matrix without
   issues, including TBC-specific content and binding restoration.
 
-Still required before `0.42.0` release preparation:
+## Release Record
 
-- Push `codex/classic-era-support` and open a pull request for review.
-- Let pull-request CI run the BigWigs no-upload build and confirm it produces one
-  archive while detecting both interface versions.
+- Pull request [#54](https://github.com/notify353/ApogeePartyHealthBars/pull/54)
+  passed both validation workflows and was merged to `main`.
+- Preparation commit `b9426e7` set version `0.42.0` while retaining the exact
+  interface set `{11508, 20506}`.
+- Production tag `v0.42.0` was published through GitHub Actions to
+  [GitHub Releases](https://github.com/notify353/ApogeePartyHealthBars/releases/tag/v0.42.0)
+  and [CurseForge project `1608100`](https://www.curseforge.com/wow/addons/apogee-party-health-bars/files).
+- The production packager detected game versions `1.15.8` and `2.5.6`, uploaded
+  one shared ZIP successfully, and attached its SHA-256 checksum.
+- The published ZIP SHA-256 is
+  `3ee5b334f55bd73d2af40a5a4b1b48b2e636a3b51e1acff513dfb09b3fe2345e`.
 
 ## In-Game Matrix
 
@@ -131,14 +143,7 @@ and assigns both game versions to the same upload. GitHub Actions is the only
 publisher and submits the same validated package bytes to GitHub Releases and
 CurseForge.
 
-After both in-game matrices and pull-request CI pass, merge to synchronized
-`main` and prepare the feature release with:
-
-```powershell
-pwsh ./scripts/prepare-release.ps1 -Version 0.42.0
-```
-
-Review that commit and wait for CI. Obtain explicit owner confirmation
-immediately before running the production publish script. After publication,
-verify the CurseForge file lists both Classic Era 1.15.8 and TBC 2.5.6 and that
-its archive matches the GitHub release asset.
+The first shared Classic Era/TBC package was released as `v0.42.0`. Future
+client patches and flavors must follow `ADDING_WOW_CLIENT.md`; ordinary releases
+must follow `RELEASING.md`. Preserve this acceptance record as evidence rather
+than reusing it as an unchecked signoff for later client builds.

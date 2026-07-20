@@ -6,6 +6,10 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Changed
+
+- Added a repeatable onboarding runbook for WoW client patches and new flavors, including every export, runtime, packaging, testing, acceptance, and release touchpoint.
+
 ## [0.42.0] - 2026-07-19
 
 ### Added

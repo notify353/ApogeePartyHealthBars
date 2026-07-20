@@ -154,7 +154,7 @@ The runner rejects other Lua versions, parses every add-on source file, runs eve
 
 The matching local Blizzard interface exports are the primary development references for WoW APIs and interface behavior. Read [docs/WOW_INTERFACE_EXPORT.md](docs/WOW_INTERFACE_EXPORT.md) before API-dependent work. The validation suite fails when an installed supported client is newer than its recorded export and explains how to refresh it.
 
-For the supported-client audit, development install, acceptance matrix, and CurseForge procedure, read [docs/CLASSIC_ERA_SUPPORT.md](docs/CLASSIC_ERA_SUPPORT.md). For future branches, read [docs/PORTING.md](docs/PORTING.md). The add-on uses capability-driven, domain-owned compatibility boundaries so optional features can degrade independently without overwriting shared profile preferences.
+For the supported-client audit, development install, acceptance matrix, and CurseForge procedure, read [docs/CLASSIC_ERA_SUPPORT.md](docs/CLASSIC_ERA_SUPPORT.md). To update an existing client patch or add another WoW flavor, follow [docs/ADDING_WOW_CLIENT.md](docs/ADDING_WOW_CLIENT.md), then use [docs/PORTING.md](docs/PORTING.md) for the compatibility architecture. The add-on uses capability-driven, domain-owned compatibility boundaries so optional features can degrade independently without overwriting shared profile preferences.
 
 ## Compatibility
 

@@ -1,5 +1,9 @@
 # Porting Apogee Party Health Bars
 
+For the operational checklist to update an existing client patch or add a new
+WoW flavor, start with `ADDING_WOW_CLIENT.md`. This document defines the runtime
+compatibility architecture that checklist must preserve.
+
 For the currently supported Classic Era and TBC Anniversary targets, including
 the completed audit and in-game acceptance record, see
 `CLASSIC_ERA_SUPPORT.md`.

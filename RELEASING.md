@@ -10,6 +10,10 @@ Requirements: PowerShell 7, Git, Lua 5.1 with its compiler, and an authenticated
 4. Run `pwsh ./scripts/test-local.ps1` to execute the WoW API export guard, Lua tests, package checks, workflow-safety check, ZIP validation, and `git diff --check`.
 5. Merge only after CI passes.
 
+If a client build/interface changed or the supported target set is changing,
+complete [docs/ADDING_WOW_CLIENT.md](docs/ADDING_WOW_CLIENT.md) before release
+preparation. A TOC-only compatibility change is not sufficient.
+
 ## Prepare
 
 From clean, synchronized `main`:
@@ -33,7 +37,7 @@ Push the preparation commit and wait for CI. Then verify the complete checklist 
 - Binding backup, conflict handling, Prepare to Disable, and restoration
 
 Record the exact client build used for each pass. A Classic Era pass does not replace the TBC regression pass, and vice versa.
-Use the detailed matrix and record the results in [docs/CLASSIC_ERA_SUPPORT.md](docs/CLASSIC_ERA_SUPPORT.md). The first dual-client feature release is `0.42.0`; do not prepare it while either client matrix or pull-request packager validation is incomplete.
+Use the detailed matrix in [docs/CLASSIC_ERA_SUPPORT.md](docs/CLASSIC_ERA_SUPPORT.md) and create a new dated acceptance record when a supported build changes. Do not prepare a release while any supported-client matrix or pull-request packager validation is incomplete.
 
 ## Publish
 

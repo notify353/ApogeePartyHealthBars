@@ -54,6 +54,11 @@ end
 
 local inCombat = false
 function InCombatLockdown() return inCombat end
+local actionButtonUseKeyDown = false
+function GetCVarBool(name)
+    assert(name == "ActionButtonUseKeyDown")
+    return actionButtonUseKeyDown
+end
 function UnitClass() return "Warrior", "WARRIOR" end
 
 local activeState = 1
@@ -215,7 +220,7 @@ assert(saveCount == 1, "first-run claim did not persist bindings")
 assert(wheel.GetHeight("player") == 169,
     "wheel HUD did not reserve a gap before the Shortcut Bar icons")
 for _, slot in ipairs(data.SLOTS) do
-    assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. "Hud:LeftButton",
+    assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. ":LeftButton",
         "first-run startup did not claim " .. slot.key)
 end
 assert(wheel.AssignSpell(PRIMARY, "normalUp", 2061, "Flash Heal"), "wheel spell assignment failed")
@@ -224,7 +229,7 @@ assert(wheel.AssignSpell(PRIMARY, "normalUp", 2061, "Flash Heal"),
     "wheel action could not be edited with a foreign binding present")
 assert(bindings.MOUSEWHEELUP == "SOMEOTHERADDONACTION",
     "editing a Wheel action silently reclaimed its physical binding")
-bindings.MOUSEWHEELUP = "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton"
+bindings.MOUSEWHEELUP = "CLICK ApogeePartyHealthBarsWheelNormalUp:LeftButton"
 assert(wheel.GetSlot(PRIMARY, "normalUp").macroText
     == "/cast Flash Heal",
     "Spellbook assignment seeded unexpected wheel macro text")
@@ -321,7 +326,7 @@ assert(saveCount == bindingSavesBeforeSpecChange
     and ApogeePartyHealthBars_S.charSv.wheelMacros.ownership == ownershipBeforeSpecChange,
     "talent-group change rewrote global Wheel binding ownership")
 for _, slot in ipairs(data.SLOTS) do
-    assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. "Hud:LeftButton",
+    assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. ":LeftButton",
         "talent-group change modified " .. slot.key)
 end
 local mutationsAfterSpecChange = stateSecure.mutations
@@ -485,16 +490,21 @@ assert(wheel.ClearSlot(PRIMARY, "normalUp") and wheel.GetSlot(PRIMARY, "normalUp
 assert(wheel.AssignSpell(PRIMARY, "normalUp", nil, warriorSpells[1]),
     "Wheel item could not be replaced by a spell")
 for _, slot in ipairs(data.SLOTS) do
-    local expected = "CLICK " .. slot.buttonName .. "Hud:LeftButton"
+    local expected = "CLICK " .. slot.buttonName .. ":LeftButton"
     assert(bindings[slot.key] == expected, "wheel key was not bound to its secure button")
     local button = assert(namedFrames[slot.buttonName], "secure wheel button was not created")
+    assert(#button.registeredClicks == 1 and button.registeredClicks[1] == "LeftButtonUp",
+        "physical Wheel target did not follow the release CVar phase")
     assert(button.attributes.type == "macro" and button.attributes.macrotext,
         "secure wheel button did not receive macro text")
     assert(button.attributes.macrotext:find("/run ApogeeWheelFeedback(" .. slot.index .. ")", 1, true) == 1,
         "secure wheel macro does not begin with its activation feedback signal")
     local castButton = assert(wheel.GetHudCastButton(slot.id), "wheel HUD icon has no secure cast overlay")
     assert(namedFrames[slot.buttonName .. "Hud"] == castButton,
-        "wheel binding does not target the working HUD action button")
+        "wheel HUD cast overlay was not created")
+    assert(#castButton.registeredClicks == 1
+            and castButton.registeredClicks[1] == "LeftButtonUp",
+        "clickable Wheel HUD overlay was not restricted to mouse release")
     assert(castButton.template == "SecureActionButtonTemplate,SecureHandlerStateTemplate"
         and castButton.parent == UIParent,
         "wheel HUD secure cast overlay is not isolated from the player-row layout")
@@ -503,6 +513,29 @@ for _, slot in ipairs(data.SLOTS) do
     assert(castButton.attributes.type == "macro"
         and castButton.attributes.macrotext == button.attributes.macrotext,
         "wheel HUD icon does not execute the same macro as its wheel binding")
+end
+
+
+actionButtonUseKeyDown = true
+assert(wheel.RefreshPhysicalClickRegistration(), "physical click phase did not refresh")
+for _, slot in ipairs(data.SLOTS) do
+    local button = assert(namedFrames[slot.buttonName])
+    assert(#button.registeredClicks == 1 and button.registeredClicks[1] == "LeftButtonDown",
+        "physical Wheel target did not follow the key-down CVar phase")
+end
+inCombat = true
+actionButtonUseKeyDown = false
+assert(not wheel.RefreshPhysicalClickRegistration(),
+    "physical click phase changed during combat")
+for _, slot in ipairs(data.SLOTS) do
+    assert(namedFrames[slot.buttonName].registeredClicks[1] == "LeftButtonDown",
+        "combat changed a protected physical click registration")
+end
+inCombat = false
+wheel.OnCombatEnded()
+for _, slot in ipairs(data.SLOTS) do
+    assert(namedFrames[slot.buttonName].registeredClicks[1] == "LeftButtonUp",
+        "combat-end refresh did not apply the deferred physical click phase")
 end
 
 wheel.GetHudCastButton("normalUp").scripts.OnReceiveDrag()
@@ -534,7 +567,7 @@ assert(not wheel.ApplyMacro(PRIMARY, "normalUp", string.rep("x", 256)), "oversiz
 assert(not wheel.ApplyMacro(PRIMARY, "normalUp", "  \n\t"), "blank macro was accepted")
 assert(wheel.GetSlot(PRIMARY, "normalUp").spellName == warriorSpells[1],
     "rejected blank macro changed the wheel action")
-assert(bindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton",
+assert(bindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUp:LeftButton",
     "rejected blank macro released a globally owned wheel binding")
 normalUpIcon.castButton.scripts.OnMouseDown(normalUpIcon.castButton)
 local blankFeedbackSlot, blankFeedbackUntil = wheel.GetLastActivation()
@@ -550,7 +583,7 @@ wheel.InitializeSaved()
 assert(wheel.GetSlot(PRIMARY, "shiftUp") == nil, "cleared slot did not remain empty on reload")
 assert(wheel.AssignSpell(PRIMARY, "shiftUp", nil, "Battle Shout"),
     "cleared wheel slot could not be configured manually")
-assert(bindings["SHIFT-MOUSEWHEELUP"]:find("CLICK ApogeePartyHealthBarsWheelShiftUpHud", 1, true),
+assert(bindings["SHIFT-MOUSEWHEELUP"]:find("CLICK ApogeePartyHealthBarsWheelShiftUp", 1, true),
     "manually configuring a cleared slot unexpectedly changed its existing binding")
 assert(wheel.AssignSpell(PRIMARY, "normalUp", nil, warriorSpells[1]),
     "wheel slot could not be configured again")
@@ -560,7 +593,7 @@ for _, slot in ipairs(data.SLOTS) do
         or (slot.id == "normalDown" and "CAMERAZOOMOUT") or ""
 end
 assert(wheel.ReconcileBindings(), "default reset bindings were not repaired")
-assert(bindings.MOUSEWHEELUP:find("CLICK ApogeePartyHealthBarsWheelNormalUpHud", 1, true),
+assert(bindings.MOUSEWHEELUP:find("CLICK ApogeePartyHealthBarsWheelNormalUp", 1, true),
     "camera zoom reset was not reclaimed")
 
 bindings["CTRL-MOUSEWHEELUP"] = "SOMEOTHERADDONACTION"
@@ -591,7 +624,7 @@ local released, releaseFailure, releaseDetail = ApogeePartyHealthBars_BoundActio
 assert(not released and releaseFailure == "binding_restore_failed"
     and releaseDetail:find("Normal Down", 1, true),
     "failed binding restoration did not leave Wheel atomically claimed")
-assert(bindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUpHud:LeftButton",
+assert(bindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUp:LeftButton",
     "failed Wheel release did not roll back bindings restored earlier in the transaction")
 rejectedBindingKey, rejectedBindingKind = nil, nil
 local releasedSuccessfully, releaseCode = ApogeePartyHealthBars_BoundActionBindings.ReleaseAll({ bindingManager })

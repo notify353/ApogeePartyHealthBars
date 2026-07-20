@@ -33,6 +33,8 @@ function Factory.Create(options)
     assert(type(options.stateKey) == "string", "bound action layouts require a state key")
     assert(type(options.slots) == "table", "bound action layouts require slots")
     assert(type(options.schemaVersion) == "number", "bound action layouts require a schema version")
+    assert(acceptedVersion(options.acceptedSchemaVersions, options.schemaVersion),
+        "bound action layouts must accept their current schema version")
 
     local L = {
         SCHEMA_VERSION = options.schemaVersion,

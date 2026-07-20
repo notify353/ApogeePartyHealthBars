@@ -21,6 +21,9 @@ ApogeePartyHealthBars_Effects = {
         if settings.enabled == nil then settings.enabled = true end
         if settings.showAllSlots == nil then settings.showAllSlots = true end
         if settings.combatUIAutoHide == nil then settings.combatUIAutoHide = true end
+        if settings.automaticConsumablesEnabled == nil then
+            settings.automaticConsumablesEnabled = false
+        end
         settings.schemaVersion = 5
         actions.bindings = type(actions.bindings) == "table" and actions.bindings or {}
         local legacyShortcuts = type(actions.trackedSpells) == "table" and actions.trackedSpells or nil
@@ -46,7 +49,8 @@ function time() clock = clock + 1; return clock end
 dofile("ApogeePartyHealthBars_ProfileStore.lua")
 local store = ApogeePartyHealthBars_ProfileStore
 
-local account = { schemaVersion = 5, enabled = false, x = 42, minimapAngle = 133 }
+local account = { schemaVersion = 5, enabled = false, x = 42, minimapAngle = 133,
+    automaticConsumablesEnabled = true }
 local character = {
     bindings = { ["1"] = { kind = "spell", spellName = "Flash Heal" } },
     shortcuts = { {
@@ -72,6 +76,7 @@ local active = store.Initialize(account, character, "PRIEST", "Healer - Realm")
 assert(active.name == "Healer - Realm" and active.classToken == "PRIEST",
     "legacy character did not receive a class profile")
 assert(active.payload.settings.enabled == false and active.payload.settings.x == 42
+    and active.payload.settings.automaticConsumablesEnabled == true
     and active.payload.settings.minimapAngle == 133,
     "legacy account settings were not migrated into the profile")
 assert(active.payload.actions.bindings["1"].spellName == "Flash Heal"
@@ -96,7 +101,9 @@ assert(account.enabled == false and account.profileStore == nil and character.bi
     "legacy roots were not converted to character-owned profile storage")
 
 local created = assert(store.Create("Clean"))
-assert(created.payload.settings.enabled and #created.payload.actions.shortcuts == 0,
+assert(created.payload.settings.enabled
+        and created.payload.settings.automaticConsumablesEnabled == false
+        and #created.payload.actions.shortcuts == 0,
     "new profile did not start from defaults")
 local duplicate = assert(store.Duplicate(active.id, "Copy"))
 duplicate.payload.settings.x = 999

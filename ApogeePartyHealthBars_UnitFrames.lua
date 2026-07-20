@@ -4,6 +4,7 @@ local T = ApogeePartyHealthBars_ShortcutBar
 local W = ApogeePartyHealthBars_WheelMacros
 local K = ApogeePartyHealthBars_KeyActions
 local B = ApogeePartyHealthBars_MouseButtonActions
+local CB = ApogeePartyHealthBars_ConsumableBar
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 local UnitBar = ApogeePartyHealthBars_UnitBar
@@ -147,6 +148,7 @@ function F.Build(D)
     W.Attach(rows[1].primary)
     K.Attach(rows[1].primary)
     B.Attach(rows[1].primary)
+    CB.Attach(rows[1].primary)
     M.Attach(rows[1].target)
     local primarySurfaces = {}
     for index = 1, C.MAX_ROWS do primarySurfaces[index] = rows[index].primary end

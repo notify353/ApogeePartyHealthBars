@@ -41,8 +41,9 @@ ApogeePartyHealthBars_S.charSv.shortcuts[1] = {
 local secureButtons, visualButtons = {}, {}
 local function widget(shown)
     local value = { shown = shown ~= false, attributes = {}, scripts = {}, points = {}, mutations = 0 }
-    local noops = { "EnableMouse", "SetTexCoord", "SetAllPoints", "SetDrawEdge", "SetText", "SetTextColor", "SetWidth", "SetHeight", "SetColorTexture", "SetAlpha", "SetTexture", "SetDesaturated", "SetCooldown", "Clear", "SetFrameStrata", "SetFrameLevel", "RegisterForClicks" }
+    local noops = { "EnableMouse", "SetTexCoord", "SetAllPoints", "SetDrawEdge", "SetText", "SetTextColor", "SetWidth", "SetHeight", "SetColorTexture", "SetAlpha", "SetTexture", "SetDesaturated", "SetCooldown", "Clear", "SetFrameStrata", "SetFrameLevel" }
     for _, name in ipairs(noops) do value[name] = function() end end
+    function value:RegisterForClicks(...) self.registeredClicks = { ... } end
     function value:SetText(nextText) self.text = nextText end
     function value:SetSize(width, height) self.width, self.height = width, height end
     function value:CreateTexture() return widget() end
@@ -136,6 +137,10 @@ shortcuts.Attach({ player = playerBtn, target = targetBtn }, {
 })
 shortcuts.Initialize()
 
+for _, button in ipairs(secureButtons) do
+    assert(#button.registeredClicks == 1 and button.registeredClicks[1] == "AnyUp",
+        "automatic crowd-control overlay was not restricted to one release phase")
+end
 assert(shortcuts.GetSlotLane(1) == "player")
 assert(shortcuts.GetSlotLane(2) == nil, "automatic CC occupied a configured Shortcut slot")
 assert(shortcuts.GetDisplayCount() == 1 + #automaticDefinitions,

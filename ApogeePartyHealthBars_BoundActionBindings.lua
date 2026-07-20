@@ -58,8 +58,13 @@ function Factory.Create(options)
     local B = {}
     local reconciling = false
 
+    local function isLegacyOwnedAction(slot, action)
+        return type(options.legacyOwnedAction) == "function"
+            and options.legacyOwnedAction(slot, action) == true
+    end
+
     local function isOwnedAction(slot, action)
-        return action == options.ownedAction(slot)
+        return action == options.ownedAction(slot) or isLegacyOwnedAction(slot, action)
     end
 
     local function ownershipForCurrentSet(create)
@@ -213,6 +218,33 @@ function Factory.Create(options)
         end
         reconciling = true
         local changed, conflicts = false, {}
+
+        -- Existing releases bound physical inputs to the clickable HUD overlay.
+        -- Move every recognized legacy target as one unit so a rejected binding
+        -- cannot leave only part of this feature on the new secure targets.
+        local legacySnapshots = {}
+        for _, slot in ipairs(options.slots) do
+            if ownership[slot.id] and isLegacyOwnedAction(slot, currentAction(slot)) then
+                legacySnapshots[#legacySnapshots + 1] = {
+                    slot = slot,
+                    action = currentAction(slot),
+                }
+            end
+        end
+        for _, snapshot in ipairs(legacySnapshots) do
+            if setSlotBinding(snapshot.slot, options.ownedAction(snapshot.slot)) then
+                changed = true
+            else
+                for _, rollback in ipairs(legacySnapshots) do
+                    if currentAction(rollback.slot) ~= rollback.action then
+                        setSlotBinding(rollback.slot, rollback.action)
+                    end
+                end
+                reconciling = false
+                return false, { { slot = snapshot.slot, action = snapshot.action } }
+            end
+        end
+
         for _, slot in ipairs(options.slots) do
             local record = ownership[slot.id]
             if record then

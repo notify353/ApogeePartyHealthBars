@@ -3,6 +3,7 @@ local T = ApogeePartyHealthBars_ShortcutBar
 local W = ApogeePartyHealthBars_WheelMacros
 local K = ApogeePartyHealthBars_KeyActions
 local B = ApogeePartyHealthBars_MouseButtonActions
+local CB = ApogeePartyHealthBars_ConsumableBar
 
 ApogeePartyHealthBars_RuntimeActionEvents = {}
 local A = ApogeePartyHealthBars_RuntimeActionEvents
@@ -30,7 +31,8 @@ function A.Register(eventRouter, deps)
         T.SetSpellbookOpen(spellbook:IsShown())
     end
 
-    local function HandleEvent(event)
+    local function HandleEvent(event, ...)
+        local firstArgument = ...
         local ok, err = pcall(function()
             if event == "ACTIVE_TALENT_GROUP_CHANGED" then
                 W.OnActiveSpecChanged()
@@ -68,6 +70,15 @@ function A.Register(eventRouter, deps)
                 if deps.GetConfigUI().RefreshWheelPanel then deps.GetConfigUI().RefreshWheelPanel() end
                 if deps.GetConfigUI().RefreshMouseButtonPanel then deps.GetConfigUI().RefreshMouseButtonPanel() end
 
+            elseif event == "CVAR_UPDATE" then
+                local cvarName = type(firstArgument) == "string"
+                    and string.lower(firstArgument) or ""
+                if cvarName == "actionbuttonusekeydown" then
+                    W.RefreshPhysicalClickRegistration()
+                    K.RefreshPhysicalClickRegistration()
+                    B.RefreshPhysicalClickRegistration()
+                end
+
             elseif event == "UPDATE_SHAPESHIFT_FORM" or event == "UPDATE_STEALTH" then
                 T.Refresh(false)
                 W.OnStateChanged()
@@ -93,6 +104,7 @@ function A.Register(eventRouter, deps)
     for _, event in ipairs({
         "SPELLS_CHANGED", "ACTIVE_TALENT_GROUP_CHANGED", "UPDATE_BINDINGS",
         "UPDATE_SHAPESHIFT_FORM", "UPDATE_SHAPESHIFT_FORMS", "UPDATE_STEALTH",
+        "CVAR_UPDATE",
     }) do
         eventRouter.RegisterOptional(event, "Bootstrap", HandleEvent)
     end
@@ -104,6 +116,7 @@ function A.Register(eventRouter, deps)
     }) do
         eventRouter.RegisterOptional(event, "ShortcutBar", function()
             T.Refresh(false); W.Refresh(); K.Refresh(); B.Refresh()
+            CB.Refresh(false)
         end)
     end
 
@@ -111,24 +124,31 @@ function A.Register(eventRouter, deps)
         if unit == "target" then T.Refresh(false) end
     end)
 
-    for _, event in ipairs({ "BAG_UPDATE_DELAYED", "BAG_UPDATE_COOLDOWN" }) do
-        eventRouter.RegisterOptional(event, "ShortcutItems", function()
-            T.Refresh(false)
-            W.Refresh()
-            K.Refresh()
-            B.Refresh()
-            local ui = deps.GetConfigUI()
-            if ui.RefreshShortcutPanel then ui.RefreshShortcutPanel() end
-            if ui.RefreshKeyPanel then ui.RefreshKeyPanel() end
-            if ui.RefreshWheelPanel then ui.RefreshWheelPanel() end
-            if ui.RefreshMouseButtonPanel then ui.RefreshMouseButtonPanel() end
-        end)
-    end
+    eventRouter.RegisterOptional("BAG_UPDATE_DELAYED", "ShortcutItems", function()
+        CB.OnBagUpdate()
+        T.Refresh(false)
+        W.Refresh()
+        K.Refresh()
+        B.Refresh()
+        local ui = deps.GetConfigUI()
+        if ui.RefreshShortcutPanel then ui.RefreshShortcutPanel() end
+        if ui.RefreshKeyPanel then ui.RefreshKeyPanel() end
+        if ui.RefreshWheelPanel then ui.RefreshWheelPanel() end
+        if ui.RefreshMouseButtonPanel then ui.RefreshMouseButtonPanel() end
+    end)
+    eventRouter.RegisterOptional("BAG_UPDATE_COOLDOWN", "ShortcutItems", function()
+        T.Refresh(false)
+        W.Refresh()
+        K.Refresh()
+        B.Refresh()
+        CB.Refresh(false)
+    end)
     eventRouter.RegisterOptional("GET_ITEM_INFO_RECEIVED", "ShortcutItemInfo", function()
         T.RefreshItemInfo()
         W.RefreshItemInfo()
         K.RefreshItemInfo()
         B.RefreshItemInfo()
+        CB.RefreshItemInfo()
         local ui = deps.GetConfigUI()
         if ui.RefreshShortcutPanel then ui.RefreshShortcutPanel() end
         if ui.RefreshKeyPanel then ui.RefreshKeyPanel() end

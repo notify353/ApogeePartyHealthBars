@@ -4,6 +4,7 @@ local T = ApogeePartyHealthBars_ShortcutBar
 local W = ApogeePartyHealthBars_WheelMacros
 local K = ApogeePartyHealthBars_KeyActions
 local B = ApogeePartyHealthBars_MouseButtonActions
+local CB = ApogeePartyHealthBars_ConsumableBar
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 local F = ApogeePartyHealthBars_SecureFrames
@@ -39,7 +40,7 @@ function L.Register(eventRouter, deps)
         error(detail or code or "Could not reconcile physical bindings.")
     end
 
-    local function HandleEvent(event, unit)
+    local function HandleEvent(event, isInitialLogin, isReloadingUi)
         local ok, err = pcall(function()
             if event == "PLAYER_LOGIN" then
                 if type(ApogeePartyHealthCharSV) ~= "table" then
@@ -82,6 +83,7 @@ function L.Register(eventRouter, deps)
                 RunStep("Wheel", W.InitializeSaved)
                 RunStep("Keys", K.InitializeSaved)
                 RunStep("Buttons", B.InitializeSaved)
+                RunStep("Consumables", CB.Initialize)
                 RunStep("Physical bindings", function()
                     local bindingsOk, bindingsCode, bindingsDetail
                     if S.sv and S.sv.enabled then
@@ -135,6 +137,7 @@ function L.Register(eventRouter, deps)
                 RunStep("Wheel", W.OnCombatEnded)
                 RunStep("Keys", K.OnCombatEnded)
                 RunStep("Buttons", B.OnCombatEnded)
+                RunStep("Consumables", CB.OnCombatEnded)
                 RunStep("Physical bindings", ReconcilePhysicalBindings)
                 RunStep("Threat", H.Refresh)
                 RunStep("Combat refresh", deps.ForceRefresh)
@@ -151,6 +154,12 @@ function L.Register(eventRouter, deps)
                 or event == "GROUP_ROSTER_UPDATE" then
                 if event == "PLAYER_ENTERING_WORLD" then
                     RunStep("Shortcuts", T.Rebaseline)
+                    RunStep("Consumables", CB.OnBagUpdate)
+                    if isReloadingUi == true and C_Timer and C_Timer.After then
+                        C_Timer.After(0, function()
+                            RunStep("Consumables reload", CB.OnBagUpdate)
+                        end)
+                    end
                     RunStep("Physical bindings", ReconcilePhysicalBindings)
                 end
                 RunStep("Spell discovery", deps.InitPlayerSpells)

@@ -78,7 +78,9 @@ local function CreateSecureOverlay(namePrefix, frameLevel)
     button:SetAttribute("checkselfcast", false)
     button:SetAttribute("checkfocuscast", false)
     button:SetAttribute("checkmouseovercast", false)
-    button:RegisterForClicks("AnyUp", "AnyDown")
+    -- Classic Era executes SecureActionButtonTemplate once for every registered
+    -- phase, so mouse-only overlays must register a single release phase.
+    button:RegisterForClicks("AnyUp")
     button:Hide()
     return button
 end

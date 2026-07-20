@@ -18,6 +18,26 @@ dofile("ApogeePartyHealthBars_MouseButtonData.lua")
 dofile("ApogeePartyHealthBars_ActionData.lua")
 dofile("ApogeePartyHealthBars_ActionMacros.lua")
 dofile("ApogeePartyHealthBars_BoundActionLayouts.lua")
+
+local factory = ApogeePartyHealthBars_BoundActionLayouts
+local createdWithoutAcceptedCurrent, missingAcceptedError = pcall(factory.Create, {
+    stateKey = "invalidActions",
+    slots = {},
+    schemaVersion = 2,
+})
+assert(not createdWithoutAcceptedCurrent
+        and tostring(missingAcceptedError):find("must accept their current schema version", 1, true),
+    "bound action layouts allowed an omitted current schema acceptance")
+local createdWithOnlyLegacyAccepted, legacyOnlyError = pcall(factory.Create, {
+    stateKey = "invalidActions",
+    slots = {},
+    schemaVersion = 2,
+    acceptedSchemaVersions = { [1] = true },
+})
+assert(not createdWithOnlyLegacyAccepted
+        and tostring(legacyOnlyError):find("must accept their current schema version", 1, true),
+    "bound action layouts allowed acceptance of only legacy schemas")
+
 dofile("ApogeePartyHealthBars_MouseButtonLayouts.lua")
 
 local layouts = ApogeePartyHealthBars_MouseButtonLayouts
@@ -30,6 +50,12 @@ assert(ApogeePartyHealthBars_S.charSv.mouseActions.schemaVersion == 1,
 
 assert(layouts.SetSlot("base", "normal3", actions.CreateSpell(133, "Fireball")),
     "Buttons base assignment failed")
+local savedMouseActions = ApogeePartyHealthBars_S.charSv.mouseActions
+assert(not layouts.Initialize(),
+    "reinitializing unchanged Buttons layouts unexpectedly changed context")
+assert(ApogeePartyHealthBars_S.charSv.mouseActions == savedMouseActions
+        and layouts.GetSlot("base", "normal3").spellName == "Fireball",
+    "reinitializing Buttons layouts discarded saved assignments")
 formCount = 2
 assert(layouts.RefreshActiveContext(), "Buttons did not discover form-state layouts")
 assert(#layouts.GetLayouts() == 3 and layouts.GetSlot("spell:2457", "normal3") == nil,

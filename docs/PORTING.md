@@ -75,7 +75,8 @@ Keep volatile API families in their existing domain modules:
 - `UnitAPI`: unit identity, health, power, healability, and range normalization
 - `Auras`: modern and legacy helpful-aura normalization
 - `PlayerSpells`: Spellbook enumeration, cursor resolution, and known-spell lookup
-- `ShortcutItems`: item information, count, usability, and cooldown normalization
+- `ShortcutItems`: item information, count, usability, cooldown normalization,
+  carried-bag enumeration, and automatic-consumable classification
 - `BoundActionBindings`: binding claims, restoration, and binding-set transactions
 - `BoundActionLayouts`: specialization, form, stance, and stealth layout state
 - `IncomingHeals`, `Threat`, and `RaidMarkers`: their optional client APIs
@@ -87,6 +88,13 @@ Add a new adapter only when a client difference needs normalized inputs,
 outputs, or failure behavior. Extend
 `tests/compatibility_boundaries_spec.lua` when a newly isolated volatile family
 needs protection from future leakage.
+
+Classic Era's exported `SecureActionButton_OnClick` performs an action for every
+registered press or release phase, while TBC Anniversary filters phases through
+`useOnKeyDown`. Register mouse-only secure overlays for one release phase. Keep
+physical `CLICK` bindings on separate secure targets registered for exactly the
+phase selected by `ActionButtonUseKeyDown`; never share a dual-phase button
+between a clickable HUD surface and a physical binding.
 
 ## Content Availability
 

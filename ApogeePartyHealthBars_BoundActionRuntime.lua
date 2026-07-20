@@ -150,7 +150,18 @@ function Factory.Create(options)
     end
 
     local function ownedAction(slot)
-        return "CLICK " .. slot.buttonName .. "Hud:LeftButton"
+        return "CLICK " .. slot.buttonName .. ":LeftButton"
+    end
+
+    local function legacyOwnedAction(slot, action)
+        return action == "CLICK " .. slot.buttonName .. "Hud:LeftButton"
+    end
+
+    local function registerPhysicalClicks(button)
+        if not button then return end
+        local useKeyDown = GetCVarBool
+            and GetCVarBool("ActionButtonUseKeyDown") == true
+        button:RegisterForClicks(useKeyDown and "LeftButtonDown" or "LeftButtonUp")
     end
 
     local function requestLayout()
@@ -248,7 +259,7 @@ function Factory.Create(options)
                     "SecureActionButtonTemplate,SecureHandlerStateTemplate")
                 button:SetSize(1, 1)
                 button:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", -100, -100)
-                button:RegisterForClicks("AnyUp", "AnyDown")
+                registerPhysicalClicks(button)
                 button:Show()
                 secureButtons[slot.id] = button
             end
@@ -456,10 +467,9 @@ function Factory.Create(options)
             "SecureActionButtonTemplate,SecureHandlerStateTemplate")
         castButton:SetFrameStrata("TOOLTIP")
         castButton:SetFrameLevel(103)
-        -- The binding and the physical icon share this one secure action. Let the
-        -- client's ActionButtonUseKeyDown setting select the binding phase; secure
-        -- mouse presses continue to execute on mouse-up.
-        castButton:RegisterForClicks("LeftButtonUp", "LeftButtonDown")
+        -- Physical bindings use the off-screen button. This overlay is mouse-only
+        -- and executes exactly once on release on every supported client.
+        castButton:RegisterForClicks("LeftButtonUp")
         castButton:SetScript("OnEnter", function(self) showActionTooltip(slot, self) end)
         castButton:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
         castButton:SetScript("OnMouseDown", function()
@@ -484,6 +494,7 @@ function Factory.Create(options)
         bindingOptions.slots = WD.SLOTS
         bindingOptions.state = bindingState
         bindingOptions.ownedAction = ownedAction
+        bindingOptions.legacyOwnedAction = legacyOwnedAction
         bindingManager = BoundBindings.Create(bindingOptions)
         ensureSecureButtons()
     end
@@ -753,6 +764,7 @@ function Factory.Create(options)
             local button = secureButtons[slot.id]
             local icon = hudIcons[slot.id]
             local castButton = icon and icon.castButton
+            registerPhysicalClicks(button)
             configureSecureAction(button, slot)
             configureSecureAction(castButton, slot)
             if castButton and container and container:IsShown()
@@ -763,6 +775,19 @@ function Factory.Create(options)
                 D.SetSecureMouseEnabled(castButton, false)
                 D.HideSecureFrame(castButton)
             end
+        end
+        return true
+    end
+
+    function W.RefreshPhysicalClickRegistration()
+        if not isSupported() then return false end
+        ensureSecureButtons()
+        if InCombatLockdown and InCombatLockdown() then
+            pendingSecure = true
+            return false
+        end
+        for _, slot in ipairs(WD.SLOTS) do
+            registerPhysicalClicks(secureButtons[slot.id])
         end
         return true
     end

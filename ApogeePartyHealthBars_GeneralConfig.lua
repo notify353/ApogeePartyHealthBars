@@ -156,6 +156,7 @@ local function Layout()
     addSetting("showAllSlots")
     addSetting("combatUIAutoHide")
     addSetting("actionFeedbackEnabled")
+    addSetting("automaticConsumablesEnabled")
 
     entries[#entries + 1] = { frame = alertsSection, height = 16, gap = 10 }
     addSetting("lowHealthThreshold")
@@ -358,7 +359,7 @@ function G.Build(parent, deps)
         "IsHotTrackKnown", "IsPartyBuffKnown", "IsSavedFeatureEnabled",
         "IsSelfBuffKnown", "Print", "RequestConfigRefresh", "SetAddonEnabled",
         "SetHotTrackEnabled", "SetSavedFeature", "SetSelfBuffPreference", "Sounds",
-        "SyncVisualTicker", "Threat",
+        "SyncVisualTicker", "Threat", "ConsumableBar",
     }) do
         assert(deps[key] ~= nil, "GeneralConfig missing dependency: " .. key)
     end
@@ -388,6 +389,10 @@ function G.Build(parent, deps)
     end)
     AddCheckbox("Show action feedback text", "actionFeedbackEnabled", function()
         D.ActionHud.Clear()
+    end)
+    AddCheckbox("Automatic consumables HUD beside Buttons", "automaticConsumablesEnabled", function()
+        local saved = D.GetSavedVariables()
+        D.ConsumableBar.SetEnabled(saved and saved.automaticConsumablesEnabled)
     end)
     AddLowHealthThresholdPreference()
     AddLowHealthSoundPreference()

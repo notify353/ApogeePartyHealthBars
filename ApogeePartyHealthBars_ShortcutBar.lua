@@ -278,7 +278,7 @@ local function CreateIcon(parent)
     castButton:SetFrameStrata("TOOLTIP")
     castButton:SetFrameLevel(103)
     castButton:SetAttribute("useOnKeyDown", false)
-    castButton:RegisterForClicks("AnyUp", "AnyDown")
+    castButton:RegisterForClicks("AnyUp")
     castButton:Hide()
 
     local texture = button:CreateTexture(nil, "ARTWORK")

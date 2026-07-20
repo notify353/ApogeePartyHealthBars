@@ -9,6 +9,7 @@ Compact five-player healing frames for World of Warcraft Classic Era and Burning
 - Uniform player, party, target, and target-of-target healing bars
 - Secure spell/item click-casting and clickable buff reminders
 - Player Shortcuts for spells, abilities, bandages, food, potions, and other usable items
+- Optional automatic 2×6 consumable HUD populated from carried bags
 - A fixed 15-key action cluster for `1`–`5`, `Q/E/R/T`, `F/G`, and `Z/X/C/V`
 - Editable mouse-wheel Shortcuts for six fixed modifier gestures
 - Contextual Middle/Button 4/Button 5 Healing clicks plus nine combat assignments
@@ -77,6 +78,8 @@ Item assignments in Shortcuts, Keys, Wheel, and Buttons start with the localized
 Each compact action row identifies itself as a Spell or Item and has sound, Macro, movement, and Clear controls. Macro opens a focused editor with Reset, Cancel, Save, and a 255-byte counter; blank or oversized text cannot be saved. Clear is the only way to remove an action. Clearing a Shortcuts row compacts the list, while moving a Keys, Wheel, or Buttons action swaps its complete shortcut, macro, and sound payload with the adjacent position.
 
 Healing uses the same scrollable action-row presentation as Shortcuts, Keys, Wheel, and Buttons, but deliberately omits macro and sound controls: its native secure action is what preserves the clicked health-bar unit. Healing gesture labels remain fixed while Up and Dn swap the complete spell/item assignments between adjacent gestures. The Shortcut Bar and active Keys, Wheel, and Buttons HUDs show spell range/cooldown state plus item icons, carried quantities, usability, and cooldowns. Depleted items stay assigned in every feature, so they become available automatically when restocked. Item range prediction is intentionally omitted because normal item targeting and custom macros may behave differently.
+
+General settings can enable Automatic Consumables. This dedicated two-row, six-column HUD sits one icon space to the right of Buttons and shows up to 12 carried consumables without creating empty placeholders or changing manual Shortcuts. It scans ordinary carried bags after bag updates and again after `/reload`, deduplicates stacks, and prioritizes potions, bandages, food and drink, elixirs and flasks, scrolls, item enhancements, then other usable consumables. Its secure item set remains fixed during combat and catches up after combat ends.
 
 Keys uses this fixed action order in settings and the same keyboard-shaped arrangement on the player HUD:
 

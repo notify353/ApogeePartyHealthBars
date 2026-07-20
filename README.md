@@ -38,7 +38,7 @@ Settings open on General and proceed from the add-on's core behavior through Hea
 
 Export creates a compressed `APHB1:` share string and selects it automatically; press Ctrl+C to copy it. Import is the only way to transfer a profile between characters and previews the profile name, author, addon version, and class. Import as New is the default, while Merge preserves settings absent from the incoming profile and Replace rebuilds the selected profile from the import. Profiles and imports are restricted to the class that created them.
 
-Drag a Spellbook spell or an item from an open bag directly onto a Shortcuts, Keys, Wheel, or Buttons HUD position, or onto its row in settings. For bag items, clicking the item and then its settings destination works too. Shortcuts, Keys, Wheel, and Buttons use the same compact action rows; settings exposes one extra empty Shortcut row for adding the next action. Drop directly onto an occupied row to replace it. Shortcuts supports up to 12 assignments and displays them six per row in a footer beneath the complete party-health frame. Shortcuts rejects duplicate spell and item IDs; Keys, Wheel, and Buttons permit the same spell or item in multiple positions and across features. Action changes are blocked in combat.
+Drag a Spellbook spell or an item from an open bag directly onto a Shortcuts, Keys, Wheel, or Buttons HUD position, or onto its row in settings. Opening the Spellbook shows the next empty Shortcut drop target beneath the party frames, even while settings are closed. For bag items, clicking the item and then its settings destination works too. Shortcuts, Keys, Wheel, and Buttons use the same compact action rows; settings exposes one extra empty Shortcut row for adding the next action. Drop directly onto an occupied row to replace it. Shortcuts supports up to 12 assignments and displays them six per row in a footer beneath the complete party-health frame. Shortcuts rejects duplicate spell and item IDs; Keys, Wheel, and Buttons permit the same spell or item in multiple positions and across features. Action changes are blocked in combat.
 
 Ordinary spell assignments in Shortcuts, Keys, Wheel, and Buttons start with this generated macro:
 
@@ -103,7 +103,7 @@ The Macros tab is the in-addon reference for generated templates, macro syntax, 
 
 ### Set up a development checkout on Windows
 
-The repository is the development copy; cloning or downloading it does not automatically place it in WoW's add-on directory. Keep the repository outside the WoW installation and create a Windows directory junction so WoW loads the same files you edit.
+The repository is the development copy; cloning or downloading it does not automatically place it in WoW's add-on directory. Keep the repository outside the WoW installation and use the development-link scripts so both clients load the same files you edit.
 
 1. Install at least one supported client—Classic Era or Anniversary—and [Git](https://git-scm.com/download/win).
 2. Clone the repository to a normal development directory:
@@ -115,31 +115,21 @@ The repository is the development copy; cloning or downloading it does not autom
    Set-Location ApogeePartyHealthBars
    ```
 
-3. Close WoW. Open PowerShell as Administrator and create a junction for the client you are testing. Change `$Repo` or `$WoW` first if either location is different on your computer. Use `_classic_era_` for Classic Era or `_anniversary_` for TBC Anniversary.
+3. Close both WoW clients. Open PowerShell as Administrator and point every installed supported client at the current checkout:
 
    ```powershell
-   $Repo = (Resolve-Path 'C:\Dev\WoW\ApogeePartyHealthBars').Path
-   $WoW = 'C:\Program Files (x86)\World of Warcraft\_classic_era_'
-   $AddOns = Join-Path $WoW 'Interface\AddOns'
-   $Link = Join-Path $AddOns 'ApogeePartyHealthBars'
-
-   if (Test-Path -LiteralPath $Link) {
-       throw "The add-on path already exists: $Link. Back it up or remove it intentionally before continuing."
-   }
-
-   New-Item -ItemType Junction -Path $Link -Target $Repo
+   pwsh ./scripts/set-dev-links.ps1 -Target All
    ```
 
-   Use separate worktrees when testing different branches in both clients. Do not initialize another Git repository inside the WoW directory, copy the development repository there, or replace an existing path without first checking whether it contains files you need.
+   Both clients should use the current workspace unless you are intentionally testing different branches. The setter refuses to run while WoW is open and never replaces a real add-on directory. For a nonstandard installation, pass `-WowRoot`; to deliberately use another worktree, run its copy of the script or pass `-RepoRoot` explicitly.
 
-4. Verify the junction and TOC from the same PowerShell window:
+4. Before each in-game testing session, verify the client-to-workspace mapping:
 
    ```powershell
-   Get-Item -LiteralPath $Link | Select-Object FullName, LinkType, Target
-   Test-Path -LiteralPath (Join-Path $Link 'ApogeePartyHealthBars.toc')
+   pwsh ./scripts/check-dev-links.ps1 -Target All
    ```
 
-   `LinkType` must be `Junction`, `Target` must be the development repository, and `Test-Path` must return `True`. WoW now sees repository edits immediately; use `/reload` after ordinary source changes. Secure-frame or initialization changes may require logging out or restarting the client.
+   The checker prints the active branch and commit plus each installed client's junction target, and fails when a client points elsewhere. WoW sees repository edits immediately; use `/reload` after ordinary source changes. Secure-frame or initialization changes may require logging out or restarting the client.
 
 ### Install development prerequisites and validate
 

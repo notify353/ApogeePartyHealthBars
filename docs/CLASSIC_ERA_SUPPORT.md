@@ -47,8 +47,9 @@ Known differences are contained as follows:
 
 ## Development Installation
 
-During migration, the existing TBC checkout and Classic Era feature worktree
-were kept isolated. The development junctions used for acceptance were:
+During the original migration, the existing TBC checkout and Classic Era
+feature worktree were intentionally isolated. That historical acceptance setup
+was:
 
 ```text
 _classic_era_/Interface/AddOns/ApogeePartyHealthBars
@@ -62,6 +63,11 @@ Never replace an existing addon directory without first identifying whether it
 is a junction, a packaged install, or user-owned files. SavedVariables are
 stored independently by the two WoW client directories even though the schema
 and explicit profile exports are portable.
+
+For normal ongoing development, both supported clients point to the same active
+workspace. Run `scripts/set-dev-links.ps1 -Target All` with WoW closed, then
+`scripts/check-dev-links.ps1 -Target All` before in-game testing. Use isolated
+worktrees only when different branches are being tested intentionally.
 
 ## Acceptance Record
 

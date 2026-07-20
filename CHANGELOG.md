@@ -6,6 +6,15 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Added
+
+- Added first-class World of Warcraft Classic Era 1.15.8 support alongside Burning Crusade Classic Anniversary 2.5.6 from one shared add-on package.
+
+### Changed
+
+- Declared Classic Era interface `11508` and TBC Anniversary interface `20506` in one TOC so CurseForge and GitHub can distribute the same installable ZIP to both clients.
+- Expanded the authoritative Blizzard interface export guard to validate both supported clients while allowing contributors to work with only one client installed.
+
 ## [0.41.1] - 2026-07-19
 
 ### Fixed

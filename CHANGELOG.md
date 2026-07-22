@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.44.0] - 2026-07-21
+
 ### Fixed
 
 - Prevented login and `/reload` errors when Classic fires DoT context events before the reminder HUD's normal login initialization.

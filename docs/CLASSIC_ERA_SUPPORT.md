@@ -8,7 +8,7 @@ future-client procedure.
 
 | Flavor | Product | Directory | Version | Interface |
 | --- | --- | --- | --- | --- |
-| Classic Era | `wow_classic_era` | `_classic_era_` | 1.15.8.67156 | `11508` |
+| Classic Era | `wow_classic_era` | `_classic_era_` | 1.15.9.68808 | `11508` |
 | TBC Anniversary | `wow_anniversary` | `_anniversary_` | 2.5.6.68775 | `20506` |
 
 Both clients load the same repository, ordered Lua file list, SavedVariables,
@@ -71,7 +71,15 @@ worktrees only when different branches are being tested intentionally.
 
 ## Acceptance Record
 
-Completed on 2026-07-19:
+Owner-confirmed release acceptance completed on 2026-07-21 for `v0.44.0`:
+
+- Classic Era 1.15.9.68808 — Merritt, Priest — full checklist passed.
+- TBC Anniversary 2.5.6.68775 — Bold, Warrior — full checklist passed.
+- The pass included the release checklist and detailed client matrix below,
+  including the DoT catalog's rank, aura ownership, target-state, threshold,
+  and combat-safety cases.
+
+Historical dual-client acceptance completed on 2026-07-19:
 
 - Classic Era 1.15.8 installation and isolated addon junction located.
 - Addon confirmed present in the Classic Era addon list before migration; the

@@ -65,6 +65,16 @@ assert(not cooldowns.UpdateAlertState(armed, "slot", true, "cooldown",
         "unavailable", false, false) and armed.slot == nil,
     "unavailable action emitted or retained an alert")
 
+actionStart, actionDuration, actionEnabled, actionGCD = 20, 1.5, true, false
+assert(not cooldowns.IsRealCooldownActive(8092, 20.5),
+    "global cooldown was treated as a real DoT blocker")
+actionStart, actionDuration = 18, 10
+assert(cooldowns.IsRealCooldownActive(8092, 20.5),
+    "real spell cooldown was ignored by DoT gating")
+actionStart, actionDuration = 1, 2
+assert(not cooldowns.IsRealCooldownActive(8092, 20.5),
+    "expired spell cooldown remained active")
+
 C_Spell = nil
 GetSpellCooldown = function()
     return 4, 12, 0

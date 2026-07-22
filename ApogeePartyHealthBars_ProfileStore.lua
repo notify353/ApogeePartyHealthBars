@@ -10,6 +10,8 @@ local SETTINGS_KEYS = {
     "partyBuffEnabled", "selfBuffEnabled", "clickableBuffIcons", "shieldEnabled",
     "incomingHealEnabled", "rangeCheckEnabled", "showUnitTargets", "hotEnabled",
     "lowHealthSoundKey", "lowHealthThreshold", "threatEnabled", "threatPercentEnabled",
+    "dotRemindersEnabled", "dotRefreshThreshold", "dotDisabled", "dotPriority", "dotThresholds",
+    "dotHudPoint", "dotHudRelPoint", "dotHudX", "dotHudY",
     "hotDisabled", "point", "relPoint", "x", "y", "configPoint", "configRelPoint",
     "configX", "configY", "minimapAngle",
 }
@@ -34,11 +36,13 @@ local LEGACY_SETTINGS_KEYS = {
     "partyBuffEnabled", "selfBuffEnabled", "clickableBuffIcons", "shieldEnabled",
     "incomingHealEnabled", "rangeCheckEnabled", "showUnitTargets", "hotEnabled",
     "lowHealthSoundKey", "lowHealthThreshold", "threatEnabled", "threatPercentEnabled",
+    "dotRemindersEnabled", "dotRefreshThreshold", "dotDisabled", "dotPriority", "dotThresholds",
+    "dotHudPoint", "dotHudRelPoint", "dotHudX", "dotHudY",
     "hotDisabled", "point", "relPoint", "x", "y", "configPoint", "configRelPoint",
     "configX", "configY", "minimapAngle", "fortEnabled", "innerFireEnabled",
     "lowHealthSoundEnabled", "spellTrackerEnabled", "spellTrackerSoundsEnabled", "bindings",
 }
-local ORDERED_COLLECTIONS = { bindings = true, shortcuts = true, slots = true }
+local ORDERED_COLLECTIONS = { bindings = true, shortcuts = true, slots = true, dotPriority = true }
 local SETTINGS_TYPES = {
     schemaVersion = "number", enabled = "boolean", combatUIAutoHide = "boolean",
     showAllSlots = "boolean", actionFeedbackEnabled = "boolean", automaticConsumablesEnabled = "boolean",
@@ -46,6 +50,9 @@ local SETTINGS_TYPES = {
     clickableBuffIcons = "boolean", shieldEnabled = "boolean", incomingHealEnabled = "boolean",
     rangeCheckEnabled = "boolean", showUnitTargets = "boolean", hotEnabled = "boolean",
     lowHealthSoundKey = "string", lowHealthThreshold = "number", threatEnabled = "boolean",
+    dotRemindersEnabled = "boolean", dotRefreshThreshold = "number", dotDisabled = "table",
+    dotPriority = "table", dotThresholds = "table", dotHudPoint = "string",
+    dotHudRelPoint = "string", dotHudX = "number", dotHudY = "number",
     threatPercentEnabled = "boolean", hotDisabled = "table", point = "string",
     relPoint = "string", x = "number", y = "number", configPoint = "string",
     configRelPoint = "string", configX = "number", configY = "number", minimapAngle = "number",

@@ -1,6 +1,6 @@
 -- Constants and mutable state (separate file — Lua main-chunk 200 local limit).
 ApogeePartyHealthBars_C = {
-    SAVED_VARIABLES_VERSION = 5,
+    SAVED_VARIABLES_VERSION = 6,
     PROFILE_STORE_VERSION   = 2,
     PROFILE_PAYLOAD_VERSION = 2,
     ADDON_PREFIX         = "|cffFFD700Party Health:|r",

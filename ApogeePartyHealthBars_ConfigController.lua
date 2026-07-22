@@ -11,6 +11,7 @@ end
 function C.Exit()
     if not S.configMode then return end
     S.configMode = false
+    if D.DotHud then D.DotHud.SetUnlocked(false) end
     D.panel:EnableMouse(false)
     D.panel:RegisterForDrag()
     D.panel:SetScript("OnDragStart", nil)
@@ -39,11 +40,13 @@ function C.SetAddonEnabled(enabled)
     S.sv.enabled = enabled
     if enabled then
         D.ForceRefresh()
+        if D.DotTracker then D.DotTracker.Refresh(true) end
     else
         D.StopUpdateFrames()
         D.ClearDirtyFlags()
         D.panel:Hide()
         D.HideAllSecureOverlays()
+        if D.DotHud then D.DotHud.Hide() end
         C.Exit()
     end
     D.UpdateMinimapButtonStyle()
@@ -139,6 +142,7 @@ function C.SetMode(active)
     end
     if active then
         S.configMode = true
+        if D.DotHud then D.DotHud.SetUnlocked(true) end
         S.configTab = S.configTab or "general"
         D.panel:EnableMouse(true)
         D.panel:RegisterForDrag("LeftButton")

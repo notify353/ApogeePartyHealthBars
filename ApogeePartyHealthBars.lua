@@ -332,6 +332,7 @@ visualTicker.Initialize({
     MouseButtonActions = B,
     ConsumableBar = CB,
     Threat = H,
+    DotTracker = ApogeePartyHealthBars_DotTracker,
 })
 local targetChainGUIDs = {}
 
@@ -770,6 +771,8 @@ configController.Initialize({
     ReleaseBoundActionBindings = ReleaseBoundActionBindings,
     ReconcileBoundActionBindings = ReconcileBoundActionBindings,
     ProfileStore = ApogeePartyHealthBars_ProfileStore,
+    DotTracker = ApogeePartyHealthBars_DotTracker,
+    DotHud = ApogeePartyHealthBars_DotHud,
     Print = Print,
 })
 ExitConfigMode = configController.Exit
@@ -801,6 +804,9 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
     AddonVersion              = ApogeePartyHealthBars_ClientCapabilities.GetAddonVersion(
         "ApogeePartyHealthBars"),
     ClientCapabilities       = ApogeePartyHealthBars_ClientCapabilities,
+    DotTracker               = ApogeePartyHealthBars_DotTracker,
+    DotHud                   = ApogeePartyHealthBars_DotHud,
+    GetSavedVariables        = function() return S.sv end,
         GeneralConfig = {
         ForceRefresh                = ForceRefresh,
         InitHotSpells               = InitHotSpells,

@@ -17,7 +17,7 @@ function A.GetSpellCooldown(identifier)
     end
     if GetSpellCooldown then
         local start, duration, enabled = GetSpellCooldown(identifier)
-        return start or 0, duration or 0, enabled ~= 0
+        return tonumber(start) or 0, tonumber(duration) or 0, enabled ~= 0
     end
     return 0, 0, true
 end
@@ -30,6 +30,13 @@ function A.IsGlobalCooldown(start, duration, reportedGCD)
     return gcdDuration > 0
         and math.abs((tonumber(start) or 0) - gcdStart) < 0.05
         and math.abs(duration - gcdDuration) < 0.05
+end
+
+function A.IsRealCooldownActive(identifier, now)
+    local start, duration, enabled, reportedGCD = A.GetSpellCooldown(identifier)
+    if not enabled or start <= 0 or duration <= 0 then return false end
+    if A.IsGlobalCooldown(start, duration, reportedGCD) then return false end
+    return start + duration > (now or (GetTime and GetTime()) or 0)
 end
 
 function A.IsAlertable(duration, gcdOnly, noCharges)

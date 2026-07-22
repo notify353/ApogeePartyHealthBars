@@ -1,6 +1,21 @@
 local S = ApogeePartyHealthBars_S
 local Actions = ApogeePartyHealthBars_ActionMacros
 local ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities
+local PlayerContext = ApogeePartyHealthBars_PlayerContext or {
+    GetActiveTalentGroup = function()
+        local value = C_SpecializationInfo and C_SpecializationInfo.GetActiveSpecGroup
+            and C_SpecializationInfo.GetActiveSpecGroup(false, false)
+            or (GetActiveTalentGroup and GetActiveTalentGroup())
+        return tonumber(value) or 1
+    end,
+    GetClassToken = function()
+        if not UnitClass then return nil end
+        local _, token = UnitClass("player")
+        return token
+    end,
+    GetForm = function() return tonumber(GetShapeshiftForm and GetShapeshiftForm()) or 0 end,
+    IsStealthed = function() return IsStealthed and IsStealthed() == true or false end,
+}
 
 ApogeePartyHealthBars_BoundActionLayouts = {}
 local Factory = ApogeePartyHealthBars_BoundActionLayouts
@@ -49,16 +64,8 @@ function Factory.Create(options)
     end
 
     local function resolveActiveSpecKey()
-        local groupIndex = 1
-        local current
-        if isFeatureAvailable("multiSpecLayouts") then
-            if C_SpecializationInfo and C_SpecializationInfo.GetActiveSpecGroup then
-                current = C_SpecializationInfo.GetActiveSpecGroup(false, false)
-            elseif GetActiveTalentGroup then
-                current = GetActiveTalentGroup()
-            end
-            if type(current) == "number" and current >= 1 then groupIndex = math.floor(current) end
-        end
+        local groupIndex = isFeatureAvailable("multiSpecLayouts")
+            and PlayerContext.GetActiveTalentGroup() or 1
         return tostring(groupIndex)
     end
 
@@ -122,9 +129,7 @@ function Factory.Create(options)
     end
 
     local function playerClass()
-        local class
-        if UnitClass then _, class = UnitClass("player") end
-        return class
+        return PlayerContext.GetClassToken()
     end
 
     local function shouldExposeBase(class, formCount)
@@ -141,7 +146,7 @@ function Factory.Create(options)
     end
 
     local function isStealthed()
-        return IsStealthed and IsStealthed() == true
+        return PlayerContext.IsStealthed()
     end
 
     local function ensureProfile(saved, specKey)
@@ -316,7 +321,7 @@ function Factory.Create(options)
             or layoutKeyByState[defaultStateValue] or L.BASE_KEY
     end
     function L.GetActiveStateValue()
-        local activeForm = tonumber(GetShapeshiftForm and GetShapeshiftForm()) or 0
+        local activeForm = PlayerContext.GetForm()
         for _, definition in ipairs(layouts) do
             if definition.composite and definition.matches(activeForm) then
                 return definition.runtimeState

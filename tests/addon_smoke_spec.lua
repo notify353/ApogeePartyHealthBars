@@ -348,6 +348,11 @@ assert(ApogeePartyHealthBars_EffectsTracker == nil,
     "retired EffectsTracker runtime was still loaded")
 
 local router = ApogeePartyHealthBars_EventRouter
+local earlyDotRefreshOk, earlyDotRefreshError = pcall(
+    ApogeePartyHealthBars_DotHud.SetSuggestions, {})
+assert(earlyDotRefreshOk,
+    "pre-login DoT context refresh failed before HUD initialization: "
+        .. tostring(earlyDotRefreshError))
 router.Dispatch("PLAYER_LOGIN")
 local dotHudAnchor = ApogeePartyHealthBars_DotHud.GetAnchor()
 assert(dotHudAnchor and dotHudAnchor.frameType == "Frame" and dotHudAnchor.template == nil

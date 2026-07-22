@@ -8,6 +8,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Fixed
 
+- Prevented login and `/reload` errors when Classic fires DoT context events before the reminder HUD's normal login initialization.
 - Moved action feedback below the complete player action HUD so Automatic Consumables can no longer cover it.
 - Limited action sounds and ready pulses to completed non-global cooldowns longer than 1.5 seconds and zero-charge recovery, using Classic's GCD probe plus delayed post-cast sampling so real cooldowns arm reliably while no-cooldown actions and other availability changes stay silent.
 

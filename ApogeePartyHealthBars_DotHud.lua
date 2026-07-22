@@ -91,6 +91,7 @@ local function Layout()
 end
 
 function H.SetSuggestions(nextSuggestions)
+    H.Initialize()
     nextSuggestions = nextSuggestions or {}
     local unchanged = #nextSuggestions == #suggestions
     if unchanged then

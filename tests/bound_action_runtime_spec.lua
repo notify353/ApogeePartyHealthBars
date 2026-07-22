@@ -128,6 +128,7 @@ local function makeCompositeLayouts(slotId)
     }
 end
 
+dofile("ApogeePartyHealthBars_ActionCooldowns.lua")
 dofile("ApogeePartyHealthBars_BoundActionRuntime.lua")
 local Factory = ApogeePartyHealthBars_BoundActionRuntime
 

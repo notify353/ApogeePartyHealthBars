@@ -1,6 +1,7 @@
 local LifecycleEvents = ApogeePartyHealthBars_RuntimeLifecycleEvents
 local UnitEvents = ApogeePartyHealthBars_RuntimeUnitEvents
 local ActionEvents = ApogeePartyHealthBars_RuntimeActionEvents
+local DotEvents = ApogeePartyHealthBars_RuntimeDotEvents
 
 ApogeePartyHealthBars_RuntimeEvents = {}
 local R = ApogeePartyHealthBars_RuntimeEvents
@@ -13,4 +14,5 @@ function R.Register(eventRouter, deps)
     LifecycleEvents.Register(eventRouter, deps)
     UnitEvents.Register(eventRouter, deps)
     ActionEvents.Register(eventRouter, deps)
+    if DotEvents then DotEvents.Register(eventRouter, deps) end
 end

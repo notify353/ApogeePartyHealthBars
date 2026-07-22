@@ -53,7 +53,7 @@ end
 
 function G.GetActionHudGeometry(rowOrUnit)
     local unitId = ResolveUnitId(rowOrUnit)
-    local geometry = { height = 0, offsets = {} }
+    local geometry = { height = 0, iconHeight = 0, offsets = {} }
     local measurements = {}
     local tallestIcons = 0
 
@@ -77,6 +77,8 @@ function G.GetActionHudGeometry(rowOrUnit)
         end
         geometry.offsets[definition.key] = offset
     end
+
+    geometry.iconHeight = tallestIcons
 
     return geometry
 end

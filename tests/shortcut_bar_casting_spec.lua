@@ -96,7 +96,21 @@ function GetSpellInfo(identifier)
     end
     return tostring(identifier), nil, 135812
 end
-function GetSpellCooldown() return 0, 0, 1 end
+local spellCooldownStart, spellCooldownDuration = 0, 0
+local gcdStart, gcdDuration = 0, 0
+local reportedGcd
+function GetSpellCooldown(identifier)
+    if identifier == 29515 then return gcdStart, gcdDuration, 1 end
+    return spellCooldownStart, spellCooldownDuration, 1
+end
+C_Spell = {
+    GetSpellCooldown = function(identifier)
+        local start, duration = spellCooldownStart, spellCooldownDuration
+        local isOnGCD = reportedGcd
+        if identifier == 29515 then start, duration, isOnGCD = gcdStart, gcdDuration, nil end
+        return { startTime = start, duration = duration, isEnabled = true, isOnGCD = isOnGCD }
+    end,
+}
 function GetSpellCharges() return nil, nil end
 function IsUsableSpell() return true, false end
 function SpellHasRange() return 1 end
@@ -143,6 +157,7 @@ GameTooltip.Hide = function() tooltipHides = tooltipHides + 1 end
 dofile("ApogeePartyHealthBars_Sounds.lua")
 dofile("ApogeePartyHealthBars_UIHelpers.lua")
 dofile("ApogeePartyHealthBars_AccessoryLayout.lua")
+dofile("ApogeePartyHealthBars_ActionCooldowns.lua")
 dofile("ApogeePartyHealthBars_ShortcutItems.lua")
 dofile("ApogeePartyHealthBars_ActionData.lua")
 dofile("ApogeePartyHealthBars_ActionMacros.lua")
@@ -198,6 +213,44 @@ assert(shortcuts.GetSlotSoundKey(1) == "alarm_bell"
 assert(shortcuts.SetSlotSound(1, "none") == "none")
 assert(shortcuts.SetSlotSound(99, "alarm_soft") == nil,
     "missing Shortcut slot accepted a dropdown sound")
+assert(shortcuts.SetSlotSound(1, "toast") == "toast")
+spellCooldownStart, spellCooldownDuration, reportedGcd = 10, 1.5, true
+shortcuts.Refresh()
+spellCooldownStart, spellCooldownDuration, reportedGcd = 10, 8, false
+shortcuts.Refresh()
+local soundsBeforeRealCooldownFinished = playedSounds
+spellCooldownStart, spellCooldownDuration = 0, 0
+shortcuts.Refresh()
+assert(playedSounds == soundsBeforeRealCooldownFinished + 1
+        and visualButtons[1].pulseUntil ~= nil,
+    "delayed post-cast Shortcut cooldown sample did not arm its completion alert")
+local soundsBeforeGlobalCooldown = playedSounds
+local pulseBeforeGlobalCooldown = visualButtons[1].pulseUntil
+spellCooldownStart, spellCooldownDuration, reportedGcd = 10, 1.5, true
+shortcuts.Refresh()
+assert(playedSounds == soundsBeforeGlobalCooldown
+        and visualButtons[1].pulseUntil == pulseBeforeGlobalCooldown,
+    "client-reported global cooldown emitted a Shortcut cooldown alert")
+spellCooldownStart, spellCooldownDuration, reportedGcd = 0, 0, false
+shortcuts.Refresh()
+assert(playedSounds == soundsBeforeGlobalCooldown
+        and visualButtons[1].pulseUntil == pulseBeforeGlobalCooldown,
+    "global cooldown completion emitted a Shortcut cooldown alert")
+spellCooldownStart, spellCooldownDuration, gcdStart, gcdDuration, reportedGcd = 10, 1.5, 10, 1.5, false
+shortcuts.Refresh()
+spellCooldownStart, spellCooldownDuration, gcdStart, gcdDuration = 0, 0, 0, 0
+shortcuts.Refresh()
+assert(playedSounds == soundsBeforeGlobalCooldown
+        and visualButtons[1].pulseUntil == pulseBeforeGlobalCooldown,
+    "Classic GCD probe completion emitted a Shortcut cooldown alert")
+spellCooldownStart, spellCooldownDuration, reportedGcd = 10, 1.5, false
+shortcuts.Refresh()
+spellCooldownStart, spellCooldownDuration = 0, 0
+shortcuts.Refresh()
+assert(playedSounds == soundsBeforeGlobalCooldown
+        and visualButtons[1].pulseUntil == pulseBeforeGlobalCooldown,
+    "unclassified short recovery from a no-cooldown Shortcut emitted an alert")
+assert(shortcuts.SetSlotSound(1, "none") == "none")
 
 local castButton = assert(secureButtons[1], "Shortcut Bar did not create a secure cast button")
 assert(#castButton.registeredClicks == 1 and castButton.registeredClicks[1] == "AnyUp",
@@ -257,18 +310,31 @@ itemUsable = true
 itemCooldown = 12
 shortcuts.Refresh()
 assert(shortcuts.GetSlotState(4) == "cooldown", "item Shortcut cooldown was not evaluated")
-itemCooldown, itemCount = 0, 0
+local soundsBeforeItemCooldown = playedSounds
+itemCooldown = 0
+shortcuts.Refresh()
+assert(playedSounds == soundsBeforeItemCooldown + 1,
+    "completed item Shortcut cooldown did not play its selected alert")
+itemCooldown = 12
+shortcuts.Refresh()
+itemCount = 0
+local soundsBeforeDepletion = playedSounds
+local pulseBeforeDepletion = visualButtons[4].pulseUntil
 shortcuts.Refresh()
 assert(shortcuts.GetSlotState(4) == "unavailable" and visualButtons[4].count.text == "0"
     and shortcuts.GetSlots()[4].itemId == 1251,
     "depleted item Shortcut was removed or did not retain a zero count")
+assert(playedSounds == soundsBeforeDepletion and visualButtons[4].pulseUntil == pulseBeforeDepletion,
+    "depleting an item Shortcut during cooldown emitted a false alert")
+itemCooldown = 0
 itemCount = 5
 local soundsBeforeRestock = playedSounds
+local pulseBeforeRestock = visualButtons[4].pulseUntil
 shortcuts.Refresh()
 assert(shortcuts.GetSlotState(4) == "ready" and visualButtons[4].count.text == "5",
     "restocked item Shortcut did not become ready automatically")
-assert(playedSounds == soundsBeforeRestock + 1,
-    "restocked item Shortcut did not play its selected ready sound")
+assert(playedSounds == soundsBeforeRestock and visualButtons[4].pulseUntil == pulseBeforeRestock,
+    "restocked item Shortcut incorrectly emitted a cooldown alert")
 local itemSecureMutations = secureButtons[4].mutations
 inCombat = true
 shortcuts.RefreshItemInfo()

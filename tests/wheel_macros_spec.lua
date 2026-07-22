@@ -110,11 +110,24 @@ function GetSpellInfo(identifier)
     end
 end
 local cooldownStart, cooldownDuration, currentCharges, maximumCharges = 0, 0, nil, nil
+local gcdStart, gcdDuration = 0, 0
+local reportedGcd
 local usable, noResource = true, false
 local currentSpell = false
 local rangeResult = 1
 local targetExists, targetDead, targetAttackable, targetAssistable = true, false, true, true
-function GetSpellCooldown() return cooldownStart, cooldownDuration, 1 end
+function GetSpellCooldown(identifier)
+    if identifier == 29515 then return gcdStart, gcdDuration, 1 end
+    return cooldownStart, cooldownDuration, 1
+end
+C_Spell = {
+    GetSpellCooldown = function(identifier)
+        local start, duration = cooldownStart, cooldownDuration
+        local isOnGCD = reportedGcd
+        if identifier == 29515 then start, duration, isOnGCD = gcdStart, gcdDuration, nil end
+        return { startTime = start, duration = duration, isEnabled = true, isOnGCD = isOnGCD }
+    end,
+}
 function GetSpellCharges() return currentCharges, maximumCharges end
 function IsUsableSpell() return usable, noResource end
 function IsCurrentSpell() return currentSpell end
@@ -172,6 +185,7 @@ function SaveBindings(set) assert(set == 2); saveCount = saveCount + 1 end
 dofile("ApogeePartyHealthBars_WheelData.lua")
 dofile("ApogeePartyHealthBars_UIHelpers.lua")
 dofile("ApogeePartyHealthBars_Sounds.lua")
+dofile("ApogeePartyHealthBars_ActionCooldowns.lua")
 dofile("ApogeePartyHealthBars_ShortcutItems.lua")
 dofile("ApogeePartyHealthBars_ActionData.lua")
 dofile("ApogeePartyHealthBars_ActionMacros.lua")
@@ -405,24 +419,58 @@ assert(normalUpIcon.texture.desaturated and normalUpIcon.alpha == 0.48,
     "invalid wheel display spell did not use tracker-invalid styling")
 wheel.GetSlot(PRIMARY, "normalUp").spellName = warriorSpells[1]; wheel.Refresh()
 assert(wheel.SetSlotSound(PRIMARY, "normalUp", "toast") == "toast", "wheel sound selection did not persist")
-local soundsBeforeWheelReady = #playedSounds
+local soundsBeforeRangeRecovery = #playedSounds
 rangeResult = 0; wheel.Refresh()
 rangeResult = 1; wheel.Refresh()
-assert(normalUpIcon.pulseUntil ~= nil, "wheel ready transition did not set a pulse")
+usable = false; noResource = true; wheel.Refresh()
+usable = true; noResource = false; wheel.Refresh()
+targetExists = false; wheel.Refresh()
+targetExists = true; wheel.Refresh()
+usable = false; wheel.Refresh()
+usable = true; wheel.Refresh()
+wheel.GetSlot(PRIMARY, "normalUp").spellName = "Unknown Wheel Spell"; wheel.Refresh()
+wheel.GetSlot(PRIMARY, "normalUp").spellName = warriorSpells[1]; wheel.Refresh()
+assert(normalUpIcon.pulseUntil == nil,
+    "non-cooldown availability recovery incorrectly set a cooldown-ready pulse")
+assert(#playedSounds == soundsBeforeRangeRecovery,
+    "range, resource, target, usability, or availability recovery played a cooldown alert")
+cooldownStart, cooldownDuration, currentCharges, maximumCharges = 20, 8, 0, 2; wheel.Refresh()
+local soundsBeforeCooldownFinished = #playedSounds
+cooldownStart, cooldownDuration, currentCharges, maximumCharges = 0, 0, 1, 2; wheel.Refresh()
+assert(normalUpIcon.pulseUntil ~= nil, "zero-charge recovery did not set a cooldown-ready pulse")
 assert(normalUpIcon.pulseBorder[1].alpha and normalUpIcon.pulseBorder[1].alpha > 0.99,
-    "wheel ready pulse did not start fully visible")
-assert(#playedSounds == soundsBeforeWheelReady + 1,
-    "wheel ready transition did not play its selected sound")
+    "cooldown-ready pulse did not start fully visible")
+assert(#playedSounds == soundsBeforeCooldownFinished + 1,
+    "zero-charge recovery did not play its selected cooldown alert")
 local soundsBeforeReassign = #playedSounds
 rangeResult = 0; wheel.Refresh()
 rangeResult = 1
 assert(wheel.AssignSpell(PRIMARY, "normalUp", nil, warriorSpells[1]))
-assert(#playedSounds == soundsBeforeReassign, "reassigning a ready wheel spell emitted a false ready sound")
-cooldownStart, cooldownDuration, currentCharges, maximumCharges = 11, 1.5, nil, nil; wheel.Refresh()
+assert(#playedSounds == soundsBeforeReassign, "reassigning a ready wheel spell emitted a false cooldown alert")
+local pulseBeforeGlobalCooldown = normalUpIcon.pulseUntil
+cooldownStart, cooldownDuration, currentCharges, maximumCharges, reportedGcd = 11, 1.5, nil, nil, true
+wheel.Refresh()
 assert(normalUpIcon.cooldown.shown == false, "wheel displayed the global cooldown swipe")
+assert(#playedSounds == soundsBeforeReassign and normalUpIcon.pulseUntil == pulseBeforeGlobalCooldown,
+    "client-reported global cooldown emitted a cooldown alert")
+cooldownStart, cooldownDuration, reportedGcd = 0, 0, false; wheel.Refresh()
+assert(#playedSounds == soundsBeforeReassign and normalUpIcon.pulseUntil == pulseBeforeGlobalCooldown,
+    "global cooldown completion emitted a cooldown alert")
+cooldownStart, cooldownDuration, gcdStart, gcdDuration, reportedGcd = 11, 1.5, 11, 1.5, false
+wheel.Refresh()
+cooldownStart, cooldownDuration, gcdStart, gcdDuration = 0, 0, 0, 0; wheel.Refresh()
+assert(#playedSounds == soundsBeforeReassign and normalUpIcon.pulseUntil == pulseBeforeGlobalCooldown,
+    "Classic GCD probe completion emitted a cooldown alert")
+cooldownStart, cooldownDuration, reportedGcd = 11, 1.5, false; wheel.Refresh()
+cooldownStart, cooldownDuration = 0, 0; wheel.Refresh()
+assert(#playedSounds == soundsBeforeReassign and normalUpIcon.pulseUntil == pulseBeforeGlobalCooldown,
+    "unclassified short recovery from a no-cooldown spell emitted a cooldown alert")
+local pulseBeforePartialRecharge = normalUpIcon.pulseUntil
 cooldownStart, cooldownDuration, currentCharges, maximumCharges = 12, 8, 1, 2; wheel.Refresh()
 assert(normalUpIcon.cooldown.shown == false and normalUpIcon.count.text == "1",
     "wheel treated a recharging spell with a usable charge as unavailable")
+assert(#playedSounds == soundsBeforeReassign and normalUpIcon.pulseUntil == pulseBeforePartialRecharge,
+    "ordinary charge replenishment emitted a cooldown alert")
 cooldownStart, cooldownDuration, currentCharges, maximumCharges = 0, 0, nil, nil
 normalUpIcon.scripts.OnEnter(normalUpIcon)
 assert(tooltipShows == 1, "wheel spell tooltip did not show out of combat")
@@ -446,18 +494,31 @@ itemUsable = true
 itemCooldown = 9
 wheel.Refresh()
 assert(normalUpIcon.cooldown.cooldown[2] == 9, "Wheel item cooldown was not displayed")
-itemCooldown, itemCount = 0, 0
+local soundsBeforeItemCooldown = #playedSounds
+itemCooldown = 0
+wheel.Refresh()
+assert(#playedSounds == soundsBeforeItemCooldown + 1,
+    "completed Wheel item cooldown did not play its selected alert")
+itemCooldown = 9
+wheel.Refresh()
+itemCount = 0
+local soundsBeforeDepletion = #playedSounds
+local pulseBeforeDepletion = normalUpIcon.pulseUntil
 wheel.Refresh()
 assert(normalUpIcon.count.text == "0" and normalUpIcon.texture.desaturated
     and wheel.GetSlot(PRIMARY, "normalUp").itemId == 1251,
     "depleted Wheel item was removed or did not show quantity zero")
+assert(#playedSounds == soundsBeforeDepletion and normalUpIcon.pulseUntil == pulseBeforeDepletion,
+    "depleting a Wheel item during cooldown emitted a false alert")
+itemCooldown = 0
 local soundsBeforeItemRestock = #playedSounds
+local pulseBeforeItemRestock = normalUpIcon.pulseUntil
 itemCount = 6
 wheel.Refresh()
 assert(normalUpIcon.count.text == "6" and not normalUpIcon.texture.desaturated,
     "restocked Wheel item did not return to ready state")
-assert(#playedSounds == soundsBeforeItemRestock + 1,
-    "restocked Wheel item did not play its selected ready sound")
+assert(#playedSounds == soundsBeforeItemRestock and normalUpIcon.pulseUntil == pulseBeforeItemRestock,
+    "restocked Wheel item incorrectly emitted a cooldown alert")
 local savedWheelItem = wheel.GetSlot(PRIMARY, "normalUp")
 savedWheelItem.itemName = "Old Bandage Name"
 savedWheelItem.macroText = "/use Old Bandage Name"

@@ -213,11 +213,22 @@ local sanitized = store.NormalizePayload({ settings = {
     minimapAngle = 0 / 0,
     x = math.huge,
     y = 24,
+    dotRemindersEnabled = false,
+    dotRefreshThreshold = 4,
+    dotDisabled = { corruption = true },
+    dotPriority = { "corruption", "immolate" },
+    dotThresholds = { corruption = 6 },
+    dotHudPoint = "CENTER", dotHudRelPoint = "CENTER", dotHudX = 12, dotHudY = 144,
 }, actions = {} })
 assert(sanitized.settings.minimapAngle == nil,
     "non-finite minimap position survived profile normalization")
 assert(sanitized.settings.x == nil and sanitized.settings.y == 24,
     "profile numeric normalization did not reject only non-finite values")
+assert(sanitized.settings.dotRemindersEnabled == false
+        and sanitized.settings.dotThresholds.corruption == 6
+        and sanitized.settings.dotPriority[2] == "immolate"
+        and sanitized.settings.dotHudY == 144,
+    "DoT policy or HUD position did not survive profile normalization")
 
 local legacyAccount = { schemaVersion = 1, profileStore = {
     schemaVersion = 1,

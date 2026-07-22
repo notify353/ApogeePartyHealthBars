@@ -6,6 +6,21 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Fixed
+
+- Moved action feedback below the complete player action HUD so Automatic Consumables can no longer cover it.
+- Limited action sounds and ready pulses to completed non-global cooldowns longer than 1.5 seconds and zero-charge recovery, using Classic's GCD probe plus delayed post-cast sampling so real cooldowns arm reliably while no-cooldown actions and other availability changes stay silent.
+
+### Added
+
+- Added a passive, movable center-screen DoT reminder HUD that discovers the current class's learned ranks, distinguishes the player's target debuffs from other casters, and suggests missing or expiring effects without targeting or casting.
+- Added a DoTs settings tab with profile-owned enablement, priority ordering, global and per-spell refresh thresholds, and HUD position reset controls.
+
+### Changed
+
+- Centralized player class, race, level, talent-group, talent-rank, form, stance, and stealth detection for action layouts and DoT eligibility.
+- Updated the recorded Classic Era interface export to build 1.15.9.68808.
+
 ## [0.43.0] - 2026-07-19
 
 ### Fixed

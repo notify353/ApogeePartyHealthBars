@@ -251,6 +251,13 @@ assert(tocLoadOrder["ApogeePartyHealthBars_ActionData.lua"]
 assert(tocLoadOrder["ApogeePartyHealthBars_ActionMacros.lua"]
     < tocLoadOrder["ApogeePartyHealthBars_ShortcutBar.lua"],
     "Shortcut Bar runtime loaded before its shared action dependency")
+assert(tocLoadOrder["ApogeePartyHealthBars_ActionCooldowns.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_ShortcutItems.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_ActionCooldowns.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_BoundActionRuntime.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_ActionCooldowns.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_ShortcutBar.lua"],
+    "action cooldown consumers loaded before their shared classifier")
 assert(tocLoadOrder["ApogeePartyHealthBars_AccessoryLayout.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_PlayerUtility.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_AccessoryLayout.lua"]
@@ -342,6 +349,10 @@ assert(ApogeePartyHealthBars_EffectsTracker == nil,
 
 local router = ApogeePartyHealthBars_EventRouter
 router.Dispatch("PLAYER_LOGIN")
+local dotHudAnchor = ApogeePartyHealthBars_DotHud.GetAnchor()
+assert(dotHudAnchor and dotHudAnchor.frameType == "Frame" and dotHudAnchor.template == nil
+        and dotHudAnchor.scripts.OnClick == nil,
+    "DoT reminder HUD was not created as a passive non-secure frame")
 assert(ApogeePartyHealthBarsPanel.point[1] == "RIGHT"
         and ApogeePartyHealthBarsPanel.point[3] == "RIGHT"
         and ApogeePartyHealthBarsPanel.point[4] == -8
@@ -388,8 +399,8 @@ assert(middleIcon.point[4] == 214 and middleIcon.point[5] == 0
     "Buttons HUD did not use the three-by-three grid to the right of Wheel")
 local feedbackText = assert(ApogeePartyHealthBars_ActionHud.GetFeedbackText(),
     "shared action feedback line was not attached")
-assert(feedbackText.point[4] == 302 and feedbackText.point[5] == -117,
-    "action feedback line did not sit just beyond the Buttons grid")
+assert(feedbackText.point[4] == 302 and feedbackText.point[5] == -171,
+    "action feedback line did not sit below the complete action icon footprint")
 
 RunFrameUpdates()
 local geometry = ApogeePartyHealthBars_RowGeometry
@@ -684,7 +695,7 @@ assert(ApogeePartyHealthBars_ConfigUI.prepareDisableButton
         == ApogeePartyHealthBars_GeneralConfig.GetPrepareDisableButton(),
     "ConfigUI did not bridge the binding-safe disable preparation control")
 assert(table.concat(ApogeePartyHealthBars_ConfigUI.tabOrder, ",")
-        == "general,healing,keys,wheel,buttons,shortcuts,macros,profiles",
+        == "general,dots,healing,keys,wheel,buttons,shortcuts,macros,profiles",
     "settings tabs did not follow the core-to-advanced order")
 assert(SpellBookFrame:IsShown(), "opening settings did not open the spellbook")
 assert(spellbookOpenCount == 1, "spellbook did not open exactly once")
@@ -819,6 +830,16 @@ assert(existingPreferences.spellTrackerEnabled == nil, "saved tracker preference
 assert(existingPreferences.spellTrackerSoundsEnabled == nil, "saved tracker sounds preference was not retired")
 assert(existingPreferences.lowHealthSoundKey == "alarm_bell", "saved low-health sound choice was overwritten")
 assert(existingPreferences.lowHealthThreshold == 65, "saved low-health threshold was overwritten")
+local fractionalDotPreferences = {
+    dotRefreshThreshold = 4.6,
+    dotThresholds = { corruption = 6.4, immolate = 30.8, invalid = 0 / 0 },
+}
+ApogeePartyHealthBars_Effects.InitializeSavedVariables(fractionalDotPreferences, {})
+assert(fractionalDotPreferences.dotRefreshThreshold == 5
+        and fractionalDotPreferences.dotThresholds.corruption == 6
+        and fractionalDotPreferences.dotThresholds.immolate == 30
+        and fractionalDotPreferences.dotThresholds.invalid == nil,
+    "DoT thresholds were not normalized to finite one-second steps")
 local legacyCharacter = {
     shortcuts = {},
     trackedSpells = { { spellId = 9001, spellName = "Fireball", macroText = "/cast Custom Fireball" } },

@@ -47,6 +47,7 @@ local function OnUpdate(_, elapsed)
         D.KeyActions.Refresh()
         D.MouseButtonActions.Refresh()
         D.ConsumableBar.Refresh(false)
+        if D.DotTracker then D.DotTracker.Refresh(false) end
     end
 
     V.Sync()

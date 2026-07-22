@@ -14,6 +14,7 @@ local W = ApogeePartyHealthBars_WheelMacros
 local K = ApogeePartyHealthBars_KeyActions
 local B = ApogeePartyHealthBars_MouseButtonActions
 local CB = ApogeePartyHealthBars_ConsumableBar
+local AH = ApogeePartyHealthBars_ActionHud
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 local rowGeometry = ApogeePartyHealthBars_RowGeometry
@@ -331,6 +332,7 @@ visualTicker.Initialize({
     MouseButtonActions = B,
     ConsumableBar = CB,
     Threat = H,
+    DotTracker = ApogeePartyHealthBars_DotTracker,
 })
 local targetChainGUIDs = {}
 
@@ -621,6 +623,7 @@ L.Register({
         K.Layout(actionGeometry.offsets.keys)
         B.Layout(actionGeometry.offsets.buttons)
         CB.Layout(actionGeometry.offsets.consumables)
+        AH.Layout(actionGeometry.iconHeight)
     end,
     GetShortcutFooterHeight = T.GetFooterHeight,
     LayoutShortcutFooter = T.Layout,
@@ -768,6 +771,8 @@ configController.Initialize({
     ReleaseBoundActionBindings = ReleaseBoundActionBindings,
     ReconcileBoundActionBindings = ReconcileBoundActionBindings,
     ProfileStore = ApogeePartyHealthBars_ProfileStore,
+    DotTracker = ApogeePartyHealthBars_DotTracker,
+    DotHud = ApogeePartyHealthBars_DotHud,
     Print = Print,
 })
 ExitConfigMode = configController.Exit
@@ -799,6 +804,9 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
     AddonVersion              = ApogeePartyHealthBars_ClientCapabilities.GetAddonVersion(
         "ApogeePartyHealthBars"),
     ClientCapabilities       = ApogeePartyHealthBars_ClientCapabilities,
+    DotTracker               = ApogeePartyHealthBars_DotTracker,
+    DotHud                   = ApogeePartyHealthBars_DotHud,
+    GetSavedVariables        = function() return S.sv end,
         GeneralConfig = {
         ForceRefresh                = ForceRefresh,
         InitHotSpells               = InitHotSpells,

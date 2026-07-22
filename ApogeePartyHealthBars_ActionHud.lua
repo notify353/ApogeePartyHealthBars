@@ -4,9 +4,9 @@ local S = ApogeePartyHealthBars_S
 ApogeePartyHealthBars_ActionHud = {}
 local H = ApogeePartyHealthBars_ActionHud
 
-local feedbackText, feedbackTicker, currentSource, feedbackUntil
+local feedbackText, feedbackParent, feedbackTicker, currentSource, feedbackUntil
 local GRID_HEIGHT = C.SHORTCUT_ICON_SIZE * 4 + C.SHORTCUT_ICON_GAP * 3
-local FEEDBACK_TOP = GRID_HEIGHT + C.SHORTCUT_ICON_GAP
+local feedbackIconHeight = GRID_HEIGHT
 -- Keep the activation confirmation clear of the player action HUD.  The Buttons
 -- HUD occupies the three-column grid immediately to the right of the Wheel rail,
 -- so place this transient banner just beyond that grid instead of over Keys.
@@ -29,9 +29,8 @@ end
 
 function H.Attach(playerRow)
     if feedbackText or not playerRow or not playerRow.btn then return end
-    feedbackText = playerRow.btn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    feedbackText:SetPoint("LEFT", playerRow.btn, "TOPLEFT",
-        FEEDBACK_LEFT + FEEDBACK_INSET, -(FEEDBACK_TOP + FEEDBACK_HEIGHT / 2))
+    feedbackParent = playerRow.btn
+    feedbackText = feedbackParent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     feedbackText:SetWidth(FEEDBACK_WIDTH - FEEDBACK_INSET * 2)
     feedbackText:SetJustifyH("LEFT")
     feedbackText:SetTextColor(1, 0.82, 0.15)
@@ -39,6 +38,16 @@ function H.Attach(playerRow)
     feedbackTicker = CreateFrame("Frame")
     feedbackTicker:SetScript("OnUpdate", updateFeedback)
     feedbackTicker:Hide()
+    H.Layout(feedbackIconHeight)
+end
+
+function H.Layout(iconHeight)
+    feedbackIconHeight = math.max(0, tonumber(iconHeight) or GRID_HEIGHT)
+    if not feedbackText then return end
+    feedbackText:ClearAllPoints()
+    feedbackText:SetPoint("LEFT", feedbackParent, "TOPLEFT",
+        FEEDBACK_LEFT + FEEDBACK_INSET,
+        -(feedbackIconHeight + C.SHORTCUT_ICON_GAP + FEEDBACK_HEIGHT / 2))
 end
 
 function H.Show(source, triggerLabel, actionName, duration)
@@ -65,4 +74,4 @@ end
 
 function H.GetFeedbackText() return feedbackText end
 function H.GetGridHeight() return GRID_HEIGHT end
-function H.GetFeedbackTop() return FEEDBACK_TOP end
+function H.GetFeedbackTop() return feedbackIconHeight + C.SHORTCUT_ICON_GAP end

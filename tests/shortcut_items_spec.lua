@@ -76,11 +76,12 @@ BACKPACK_CONTAINER = 0
 NUM_BAG_SLOTS = 4
 C_Spell = {
     GetSpellCooldown = function(spellId)
-        assert(spellId == 61304)
+        assert(spellId == 29515)
         return { startTime = 0, duration = 0 }
     end,
 }
 
+dofile("ApogeePartyHealthBars_ActionCooldowns.lua")
 dofile("ApogeePartyHealthBars_ShortcutItems.lua")
 local items = ApogeePartyHealthBars_ShortcutItems
 

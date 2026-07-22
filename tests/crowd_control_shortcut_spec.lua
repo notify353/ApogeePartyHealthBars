@@ -88,7 +88,7 @@ function GetSpellInfo(identifier)
     return name, nil, 135812, nil, nil, nil, type(identifier) == "number" and identifier or nil
 end
 function GetSpellCooldown(identifier)
-    if identifier == 61304 then return 0, 0, 1 end
+    if identifier == 29515 then return 0, 0, 1 end
     return 0, cooldownDuration, 1
 end
 function GetSpellCharges() return nil, nil end
@@ -119,6 +119,7 @@ GameTooltip.AddLine = function(self, line) self.lines[#self.lines + 1] = line en
 
 dofile("ApogeePartyHealthBars_Sounds.lua")
 dofile("ApogeePartyHealthBars_UIHelpers.lua")
+dofile("ApogeePartyHealthBars_ActionCooldowns.lua")
 dofile("ApogeePartyHealthBars_ShortcutItems.lua")
 dofile("ApogeePartyHealthBars_ActionData.lua")
 dofile("ApogeePartyHealthBars_ActionMacros.lua")

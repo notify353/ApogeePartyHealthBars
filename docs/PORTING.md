@@ -25,7 +25,7 @@ Before changing client-dependent behavior, follow `WOW_INTERFACE_EXPORT.md` and
 inspect an export from the exact target client. Do not infer a new branch from
 Retail, another Classic client, or remembered API behavior.
 
-The supported targets are Classic Era 1.15.8/interface `11508` and TBC
+The supported targets are Classic Era 1.15.9/interface `11508` and TBC
 Anniversary 2.5.6/interface `20506`. Both are recorded in
 `wow-api-export.json` and declared by one TOC. Do not add another interface or
 change packaging until that target and its distribution requirements are known.

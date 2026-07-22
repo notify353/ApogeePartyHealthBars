@@ -25,7 +25,16 @@ local FEATURE_DEFAULTS = {
     lowHealthThreshold = C.LOW_HEALTH_DEFAULT_THRESHOLD,
     threatEnabled = true,
     threatPercentEnabled = true,
+    dotRemindersEnabled = true,
+    dotRefreshThreshold = 3,
 }
+
+local function NormalizeDotThreshold(value, fallback)
+    value = tonumber(value)
+    if not value or value ~= value then value = fallback end
+    value = math.max(0, math.min(30, value))
+    return math.floor(value + 0.5)
+end
 
 function E.InitializeSavedVariables(saved, characterSaved)
     local version = tonumber(saved.schemaVersion) or 0
@@ -70,6 +79,28 @@ function E.InitializeSavedVariables(saved, characterSaved)
     if type(saved.hotDisabled) ~= "table" then
         saved.hotDisabled = {}
     end
+    if type(saved.dotDisabled) ~= "table" then saved.dotDisabled = {} end
+    if type(saved.dotPriority) ~= "table" then saved.dotPriority = {} end
+    if type(saved.dotThresholds) ~= "table" then saved.dotThresholds = {} end
+    saved.dotRefreshThreshold = NormalizeDotThreshold(saved.dotRefreshThreshold, 3)
+    for key, value in pairs(saved.dotThresholds) do
+        if type(key) ~= "string" or type(value) ~= "number" or value ~= value then
+            saved.dotThresholds[key] = nil
+        else
+            saved.dotThresholds[key] = NormalizeDotThreshold(value, 3)
+        end
+    end
+    for key, value in pairs(saved.dotDisabled) do
+        if type(key) ~= "string" or value ~= true then saved.dotDisabled[key] = nil end
+    end
+    local seenPriority, normalizedPriority = {}, {}
+    for _, key in ipairs(saved.dotPriority) do
+        if type(key) == "string" and not seenPriority[key] then
+            seenPriority[key] = true
+            normalizedPriority[#normalizedPriority + 1] = key
+        end
+    end
+    saved.dotPriority = normalizedPriority
 
     if type(characterSaved.bindings) ~= "table" then
         characterSaved.bindings = {}

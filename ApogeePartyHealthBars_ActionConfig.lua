@@ -126,6 +126,10 @@ function AC.CreateActionRow(parent, width, options)
     sound:SetArrowShown(false)
     sound:SetPoint("RIGHT", macro, "LEFT", -2, 0)
     sound:SetShown(showSound)
+    if showSound then
+        UIH.SetTooltip(sound, "Cooldown alert",
+            "Plays when a real cooldown longer than 1.5 seconds finishes, or when an action recovers from zero charges. Global cooldown, range, target, resource, usability, and restocking changes do not trigger it. Actions without a cooldown stay silent.")
+    end
     macro:SetShown(showMacro)
 
     local primary = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")

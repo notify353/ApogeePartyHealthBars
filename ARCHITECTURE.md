@@ -6,9 +6,11 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 
 - `EventRouter`: event frame and isolated subscribers
 - `ClientCapabilities`: exact-interface `classicEra`/`tbcAnniversary` identity, volatile API-family detection, feature support, metadata fallbacks, and isolated startup diagnostics
+- `PlayerContext`: normalized class, race, level, active talent group/tree/ranks, form/stance, and stealth state shared by context-sensitive features
 - `RuntimeLifecycleEvents`: login/bootstrap, world and roster changes, combat transitions, and combat-log fan-out
 - `RuntimeUnitEvents`: tracked-unit aura invalidation, shield synchronization, health/power update policy, targets, threat, and raid-marker refreshes
 - `RuntimeActionEvents`: spell/spec/form transitions, binding reconciliation, action-state refreshes, item updates, and macro requirements
+- `RuntimeDotEvents`: target-aura invalidation plus event-driven spell, talent, form, resource, cooldown, and usability refresh policy
 - `RuntimeEvents`: thin subscriber registration coordinator
 - `Sounds`: shared sound catalog, saved-key normalization, and SFX playback
 - `CrowdControl`: class-owned active-control catalog, control categories, activation modes, automatic-display policy, and per-class allocation bounds
@@ -37,6 +39,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `ShieldTracker`: private absorb ledger, aura/combat-log reconciliation, estimation fallbacks, and shield-segment rendering
 - `IncomingHeals`: alias-aware Blizzard heal prediction and overlay rendering for rows and inline targets
 - `HotTracker`: private known-spell and active-track state, player-cast aura matching, strip geometry inputs, and duration visuals
+- `DotData`, `DotTracker`, `DotHud`, `DotConfig`: ID-only learned-rank catalog, player-owned harmful-aura evaluation, event/timer-driven target suggestions, passive movable HUD, and profile-owned priority/threshold controls
 - `ShortcutBar`, `ShortcutConfig`: 12-slot typed shortcut storage, a full-size configured Shortcut footer beneath the party frame, compact left-aligned target crowd-control grids, player and pet spellbook discovery, targeting-mode-aware state prediction, independent footer/lane-height reporting, spell/item state icons, sound feedback, secure macros, smart Spellbook/bag assignment, and scrollable compact configuration
 - `WheelData`, `WheelLayouts`, `WheelMacros`, `WheelConfig`: fixed gesture definitions, Wheel-specific shared-runtime policy, active talent-spec profiles, per-form typed shortcut layouts, right-side HUD geometry, and compact configuration
 - `KeyData`, `KeyLayouts`, `KeyActions`, `KeyConfig`: fixed keyboard definitions, Keys-specific shared-runtime policy, independent empty per-spec/per-form profiles, bottom-aligned left-side HUD geometry, and uniform row-based configuration
@@ -77,6 +80,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - Keep resolved buff spells, aura matchers, family preferences, icon textures, and secure cast names behind `BuffReminders` APIs rather than session-state fields.
 - Keep shield ledger writes inside `ShieldTracker`; display reads may use aura or rank estimates but must never persist those fallbacks over tracked depletion.
 - Keep known and active HoT tracks inside `HotTracker`; aura scanning, layout, configuration, row display, and visual ticking consume only its explicit APIs.
+- Keep DoT family, rank, replacement, exclusivity, race, form, and target policy inside `DotData`; `DotTracker` may suggest only, and `DotHud` must remain non-secure and cast-free.
 - Preserve every nonblank saved macro exactly during normalization, metadata refresh, profiles, imports, and migration; regenerate defaults only for new assignments, explicit resets, or legacy entries without macro text.
 - Infer generated attack behavior only from Blizzard's auto-attack predicates or the reviewed canonical spell-family policy; class, harmfulness, range, resource type, and cast time are not sufficient.
 - Keep generated-template documentation sourced from `ActionMacros` so the Macros glossary cannot drift from runtime output.

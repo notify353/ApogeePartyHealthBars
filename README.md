@@ -6,6 +6,7 @@ Compact five-player healing frames for World of Warcraft Classic Era and Burning
 
 - Player and party health, power, shields, incoming heals, HoTs, and threat
 - Selectable sound and threshold when the player or a party member drops low on health
+- Passive center-screen reminders for usable, missing, or expiring player-applied DoTs
 - Uniform player, party, target, and target-of-target healing bars
 - Secure spell/item click-casting and clickable buff reminders
 - Player Shortcuts for spells, abilities, bandages, food, potions, and other usable items
@@ -35,7 +36,7 @@ When Unit target bars are enabled, every player and party row reserves aligned c
 
 The crowd-control utility lane recognizes active control options for the player's class and current client. Strategic hard control, stuns, roots, interrupts, and silences appear automatically when learned, including available pet actions. Interrupt-capable actions carry a compact `I` badge while readiness, cooldown, range, and validity remain encoded by the normal icon border and state. Movement control and disarms are recognized when assigned as Shortcuts without automatically filling the lane. Traps, totems, ground effects, and caster-centered controls use their native activation behavior instead of requiring a hostile current target. Customized focus or mouseover macros remain clickable but deliberately skip current-target eligibility and range prediction.
 
-Settings open on General and proceed from the add-on's core behavior through Healing, Keys, Wheel, Buttons, Shortcuts, and Macros, with profile administration last. The Profiles tab groups the current profile, copy, and sharing workflows into compact sections. Each character owns an independent profile library; profiles are never changed or selected implicitly by another character. A profile contains all feature settings, action assignments, custom macros, sounds, and the positions of the bars, settings window, and minimap button. Use New for addon defaults, Duplicate to branch from an existing setup, or Copy to Active to replace the active profile while retaining its name. Profile changes are blocked in combat and reload the UI after safely restoring owned Keys, Wheel, and Buttons bindings.
+Settings open on General and proceed through DoTs, Healing, Keys, Wheel, Buttons, Shortcuts, and Macros, with profile administration last. The DoTs tab controls a passive reminder row placed slightly above screen center by default. It discovers learned aura-based DoTs for the current class and client, shows only currently usable effects that are missing or inside their refresh threshold, and never targets or casts. Drag the labeled row while settings are open; its position, spell order, enablement, and global or per-spell thresholds travel with the active profile. The Profiles tab groups the current profile, copy, and sharing workflows into compact sections. Each character owns an independent profile library; profiles are never changed or selected implicitly by another character. A profile contains all feature settings, action assignments, custom macros, sounds, and movable positions. Use New for addon defaults, Duplicate to branch from an existing setup, or Copy to Active to replace the active profile while retaining its name. Profile changes are blocked in combat and reload the UI after safely restoring owned Keys, Wheel, and Buttons bindings.
 
 Export creates a compressed `APHB1:` share string and selects it automatically; press Ctrl+C to copy it. Import is the only way to transfer a profile between characters and previews the profile name, author, addon version, and class. Import as New is the default, while Merge preserves settings absent from the incoming profile and Replace rebuilds the selected profile from the import. Profiles and imports are restricted to the class that created them.
 
@@ -75,7 +76,7 @@ Item assignments in Shortcuts, Keys, Wheel, and Buttons start with the localized
 /use Item Name
 ```
 
-Each compact action row identifies itself as a Spell or Item and has sound, Macro, movement, and Clear controls. Macro opens a focused editor with Reset, Cancel, Save, and a 255-byte counter; blank or oversized text cannot be saved. Clear is the only way to remove an action. Clearing a Shortcuts row compacts the list, while moving a Keys, Wheel, or Buttons action swaps its complete shortcut, macro, and sound payload with the adjacent position.
+Each compact action row identifies itself as a Spell or Item and has cooldown-alert sound, Macro, movement, and Clear controls. The selected sound and ready pulse occur only after an observed non-global cooldown longer than 1.5 seconds finishes, or when an action recovers from zero charges. Actions without cooldowns and changes to range, target, resources, usability, or carried quantity stay silent. Macro opens a focused editor with Reset, Cancel, Save, and a 255-byte counter; blank or oversized text cannot be saved. Clear is the only way to remove an action. Clearing a Shortcuts row compacts the list, while moving a Keys, Wheel, or Buttons action swaps its complete shortcut, macro, and sound payload with the adjacent position.
 
 Healing uses the same scrollable action-row presentation as Shortcuts, Keys, Wheel, and Buttons, but deliberately omits macro and sound controls: its native secure action is what preserves the clicked health-bar unit. Healing gesture labels remain fixed while Up and Dn swap the complete spell/item assignments between adjacent gestures. The Shortcut Bar and active Keys, Wheel, and Buttons HUDs show spell range/cooldown state plus item icons, carried quantities, usability, and cooldowns. Depleted items stay assigned in every feature, so they become available automatically when restocked. Item range prediction is intentionally omitted because normal item targeting and custom macros may behave differently.
 
@@ -151,7 +152,7 @@ For the supported-client audit, development install, acceptance matrix, and Curs
 
 ## Compatibility
 
-Supported targets: Classic Era 1.15.8 (interface `11508`) and Burning Crusade Classic Anniversary 2.5.6 (interface `20506`). Retail and other Classic branches are unsupported.
+Supported targets: Classic Era 1.15.9 (interface `11508`) and Burning Crusade Classic Anniversary 2.5.6 (interface `20506`). Retail and other Classic branches are unsupported.
 
 ## Support
 

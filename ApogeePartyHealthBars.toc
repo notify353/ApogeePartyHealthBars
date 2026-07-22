@@ -8,6 +8,8 @@
 
 ApogeePartyHealthBars_Data.lua
 ApogeePartyHealthBars_ClientCapabilities.lua
+ApogeePartyHealthBars_PlayerContext.lua
+ApogeePartyHealthBars_DotData.lua
 ApogeePartyHealthBars_CrowdControl.lua
 ApogeePartyHealthBars_WheelData.lua
 ApogeePartyHealthBars_KeyData.lua
@@ -21,6 +23,7 @@ ApogeePartyHealthBars_MacroLibrary.lua
 ApogeePartyHealthBars_EventRouter.lua
 ApogeePartyHealthBars_SecureFrames.lua
 ApogeePartyHealthBars_Sounds.lua
+ApogeePartyHealthBars_ActionCooldowns.lua
 ApogeePartyHealthBars_ShortcutItems.lua
 ApogeePartyHealthBars_ActionData.lua
 ApogeePartyHealthBars_UnitBar.lua
@@ -43,6 +46,8 @@ ApogeePartyHealthBars_ProfileStore.lua
 ApogeePartyHealthBars_HealthAlerts.lua
 ApogeePartyHealthBars_Auras.lua
 ApogeePartyHealthBars_PlayerSpells.lua
+ApogeePartyHealthBars_DotHud.lua
+ApogeePartyHealthBars_DotTracker.lua
 ApogeePartyHealthBars_BuffReminders.lua
 ApogeePartyHealthBars_PlayerUtility.lua
 ApogeePartyHealthBars_ShieldTracker.lua
@@ -69,9 +74,11 @@ ApogeePartyHealthBars_WheelConfig.lua
 ApogeePartyHealthBars_MouseButtonConfig.lua
 ApogeePartyHealthBars_MacroConfig.lua
 ApogeePartyHealthBars_ProfileConfig.lua
+ApogeePartyHealthBars_DotConfig.lua
 ApogeePartyHealthBars_ConfigUI.lua
 ApogeePartyHealthBars_RuntimeLifecycleEvents.lua
 ApogeePartyHealthBars_RuntimeUnitEvents.lua
 ApogeePartyHealthBars_RuntimeActionEvents.lua
+ApogeePartyHealthBars_RuntimeDotEvents.lua
 ApogeePartyHealthBars_RuntimeEvents.lua
 ApogeePartyHealthBars.lua

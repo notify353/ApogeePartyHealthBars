@@ -10,6 +10,7 @@ local partyBuffAuraNames
 local selfBuffAuraIds
 local selfBuffAuraNames
 local hotMatchers = {}
+local harmfulCache = {}
 
 function A.ConfigureBuffMatchers(partyIds, partyNames, selfIds, selfNames)
     partyBuffAuraIds = partyIds
@@ -42,6 +43,21 @@ local function AuraFromIndex(unitId, index)
         duration = duration,
         expirationTime = expirationTime,
         sourceUnit = unitCaster,
+    }
+end
+
+local function HarmfulAuraFromIndex(unitId, index)
+    if C_UnitAuras and C_UnitAuras.GetAuraDataByIndex then
+        return C_UnitAuras.GetAuraDataByIndex(unitId, index, "HARMFUL")
+    end
+    if not UnitDebuff then return nil end
+    local name, icon, applications, dispelName, duration, expirationTime, sourceUnit,
+        _, _, spellId = UnitDebuff(unitId, index)
+    if not name then return nil end
+    return {
+        name = name, icon = icon, applications = applications, dispelName = dispelName,
+        duration = duration, expirationTime = expirationTime, sourceUnit = sourceUnit,
+        spellId = spellId, isHarmful = true,
     }
 end
 
@@ -174,6 +190,31 @@ function A.InvalidateUnitAuraCache(unitId)
     if unitId and S.auraCache then
         S.auraCache[unitId] = nil
     end
+    if unitId then harmfulCache[unitId] = nil end
+end
+
+function A.ScanUnitHarmfulAuras(unitId)
+    local snapshot = { auras = {}, playerBySpellId = {} }
+    if not unitId or not UnitExists or not UnitExists(unitId) then return snapshot end
+    for index = 1, 40 do
+        local aura = HarmfulAuraFromIndex(unitId, index)
+        if not aura then break end
+        snapshot.auras[#snapshot.auras + 1] = aura
+        local sourceUnit = aura.sourceUnit
+        if aura.spellId and sourceUnit and UnitIsUnit and UnitIsUnit(sourceUnit, "player") then
+            snapshot.playerBySpellId[aura.spellId] = aura
+        end
+    end
+    return snapshot
+end
+
+function A.GetUnitHarmfulAuraSnapshot(unitId)
+    if not unitId then return { auras = {}, playerBySpellId = {} } end
+    local cached = harmfulCache[unitId]
+    if cached then return cached end
+    cached = A.ScanUnitHarmfulAuras(unitId)
+    harmfulCache[unitId] = cached
+    return cached
 end
 
 function A.GetUnitAuraSnapshot(unitId)

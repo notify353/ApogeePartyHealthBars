@@ -6,6 +6,16 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Added
+
+- Added a passive, movable center-screen DoT reminder HUD that discovers the current class's learned ranks, distinguishes the player's target debuffs from other casters, and suggests missing or expiring effects without targeting or casting.
+- Added a DoTs settings tab with profile-owned enablement, priority ordering, global and per-spell refresh thresholds, and HUD position reset controls.
+
+### Changed
+
+- Centralized player class, race, level, talent-group, talent-rank, form, stance, and stealth detection for action layouts and DoT eligibility.
+- Updated the recorded Classic Era interface export to build 1.15.9.68808.
+
 ## [0.43.0] - 2026-07-19
 
 ### Fixed

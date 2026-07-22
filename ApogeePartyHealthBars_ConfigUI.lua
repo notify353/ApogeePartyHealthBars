@@ -8,6 +8,7 @@ local WC = ApogeePartyHealthBars_WheelConfig
 local BC = ApogeePartyHealthBars_MouseButtonConfig
 local MC = ApogeePartyHealthBars_MacroConfig
 local PC = ApogeePartyHealthBars_ProfileConfig
+local DC = ApogeePartyHealthBars_DotConfig
 local AC = ApogeePartyHealthBars_ActionConfig
 local UIH = ApogeePartyHealthBars_UIHelpers
 
@@ -18,7 +19,7 @@ local built = false
 local D
 
 local configPanel
-local profilesTab, generalTab, healingTab, shortcutsTab, keysTab, wheelTab, buttonsTab, macrosTab
+local profilesTab, generalTab, dotsTab, healingTab, shortcutsTab, keysTab, wheelTab, buttonsTab, macrosTab
 local profileLabel
 local tabs, tabOrder = {}, {}
 
@@ -202,6 +203,7 @@ function UI.Build(deps)
     D.RefreshProfileLabel = RefreshProfileLabel
     profilesTab = PC.Build(configPanel, D)
     generalTab = GC.Build(configPanel, BuildGeneralConfigDeps())
+    dotsTab = DC.Build(configPanel, D)
     healingTab = HC.Build(configPanel, D)
     shortcutsTab = SC.Build(configPanel, D)
     keysTab = KC.Build(configPanel, D)
@@ -210,6 +212,8 @@ function UI.Build(deps)
     macrosTab = MC.Build(configPanel, D)
 
     RegisterTab({ key = "general", label = "General", frame = generalTab, refresh = RefreshConfigPanel })
+    RegisterTab({ key = "dots", label = "DoTs", frame = dotsTab, refresh = DC.Refresh,
+        featureKey = "dotReminders" })
     RegisterTab({ key = "healing", label = "Healing", frame = healingTab, refresh = HC.Refresh })
     RegisterTab({ key = "keys", label = "Keys", frame = keysTab, refresh = KC.Refresh,
         featureKey = "boundActions" })
@@ -241,6 +245,7 @@ function UI.Build(deps)
     UI.configPanel = configPanel
     UI.RefreshConfigPanel = RefreshConfigPanel
     UI.RefreshBindPanel = HC.Refresh
+    UI.RefreshDotPanel = DC.Refresh
     UI.RefreshShortcutPanel = SC.Refresh
     UI.RefreshKeyPanel = KC.Refresh
     UI.RefreshWheelPanel = WC.Refresh

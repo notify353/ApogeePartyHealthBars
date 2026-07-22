@@ -40,6 +40,13 @@ local CAPABILITIES = {
                 or isFunction(UnitBuff)
         end,
     },
+    harmfulAuras = {
+        reason = "This client does not provide a supported harmful-aura API.",
+        detect = function()
+            return (C_UnitAuras and isFunction(C_UnitAuras.GetAuraDataByIndex))
+                or isFunction(UnitDebuff)
+        end,
+    },
     range = {
         reason = "This client does not provide party range checks.",
         detect = function() return isFunction(UnitInRange) end,
@@ -68,6 +75,18 @@ local CAPABILITIES = {
                 isFunction(C_SpellBook.GetSpellBookItemInfo)
                 or isFunction(C_SpellBook.GetSpellBookItemType)
             )) or isFunction(GetSpellBookItemInfo)
+        end,
+    },
+    dotActionState = {
+        reason = "This client does not provide supported DoT usability and cooldown APIs.",
+        detect = function()
+            local usable = (C_Spell and isFunction(C_Spell.IsSpellUsable))
+                or isFunction(IsUsableSpell)
+            local cooldown = (C_Spell and isFunction(C_Spell.GetSpellCooldown))
+                or isFunction(GetSpellCooldown)
+            local range = (C_Spell and isFunction(C_Spell.IsSpellInRange))
+                or isFunction(IsSpellInRange)
+            return usable and cooldown and range
         end,
     },
     items = {
@@ -139,6 +158,10 @@ local FEATURES = {
     formLayouts = { label = "Form and stance layouts", requires = { "forms" } },
     combatLogTracking = { label = "Combat-log tracking", requires = { "combatLog" } },
     profileSharing = { label = "Profile import and export", requires = { "profileSharing" } },
+    dotReminders = {
+        label = "DoT reminders",
+        requires = { "harmfulAuras", "spellbook", "dotActionState" },
+    },
 }
 
 function C.Has(capabilityKey)

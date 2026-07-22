@@ -342,6 +342,10 @@ assert(ApogeePartyHealthBars_EffectsTracker == nil,
 
 local router = ApogeePartyHealthBars_EventRouter
 router.Dispatch("PLAYER_LOGIN")
+local dotHudAnchor = ApogeePartyHealthBars_DotHud.GetAnchor()
+assert(dotHudAnchor and dotHudAnchor.frameType == "Frame" and dotHudAnchor.template == nil
+        and dotHudAnchor.scripts.OnClick == nil,
+    "DoT reminder HUD was not created as a passive non-secure frame")
 assert(ApogeePartyHealthBarsPanel.point[1] == "RIGHT"
         and ApogeePartyHealthBarsPanel.point[3] == "RIGHT"
         and ApogeePartyHealthBarsPanel.point[4] == -8
@@ -684,7 +688,7 @@ assert(ApogeePartyHealthBars_ConfigUI.prepareDisableButton
         == ApogeePartyHealthBars_GeneralConfig.GetPrepareDisableButton(),
     "ConfigUI did not bridge the binding-safe disable preparation control")
 assert(table.concat(ApogeePartyHealthBars_ConfigUI.tabOrder, ",")
-        == "general,healing,keys,wheel,buttons,shortcuts,macros,profiles",
+        == "general,dots,healing,keys,wheel,buttons,shortcuts,macros,profiles",
     "settings tabs did not follow the core-to-advanced order")
 assert(SpellBookFrame:IsShown(), "opening settings did not open the spellbook")
 assert(spellbookOpenCount == 1, "spellbook did not open exactly once")

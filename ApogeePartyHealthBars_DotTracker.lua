@@ -96,7 +96,10 @@ local function usable(entry, context, now)
     elseif IsSpellInRange then
         inRange = IsSpellInRange(entry.spellId, "target")
     end
-    return inRange ~= false and inRange ~= 0
+    -- Both supported API families return nil when the range check is invalid
+    -- (for example, for an invalid spell/target pairing).  A passive reminder
+    -- must only claim target eligibility when the client confirms it.
+    return inRange == true or inRange == 1
 end
 
 local function playerAura(entry, snapshot)

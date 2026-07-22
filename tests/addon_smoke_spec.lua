@@ -830,6 +830,16 @@ assert(existingPreferences.spellTrackerEnabled == nil, "saved tracker preference
 assert(existingPreferences.spellTrackerSoundsEnabled == nil, "saved tracker sounds preference was not retired")
 assert(existingPreferences.lowHealthSoundKey == "alarm_bell", "saved low-health sound choice was overwritten")
 assert(existingPreferences.lowHealthThreshold == 65, "saved low-health threshold was overwritten")
+local fractionalDotPreferences = {
+    dotRefreshThreshold = 4.6,
+    dotThresholds = { corruption = 6.4, immolate = 30.8, invalid = 0 / 0 },
+}
+ApogeePartyHealthBars_Effects.InitializeSavedVariables(fractionalDotPreferences, {})
+assert(fractionalDotPreferences.dotRefreshThreshold == 5
+        and fractionalDotPreferences.dotThresholds.corruption == 6
+        and fractionalDotPreferences.dotThresholds.immolate == 30
+        and fractionalDotPreferences.dotThresholds.invalid == nil,
+    "DoT thresholds were not normalized to finite one-second steps")
 local legacyCharacter = {
     shortcuts = {},
     trackedSpells = { { spellId = 9001, spellName = "Fireball", macroText = "/cast Custom Fireball" } },

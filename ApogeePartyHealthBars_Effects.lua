@@ -29,6 +29,13 @@ local FEATURE_DEFAULTS = {
     dotRefreshThreshold = 3,
 }
 
+local function NormalizeDotThreshold(value, fallback)
+    value = tonumber(value)
+    if not value or value ~= value then value = fallback end
+    value = math.max(0, math.min(30, value))
+    return math.floor(value + 0.5)
+end
+
 function E.InitializeSavedVariables(saved, characterSaved)
     local version = tonumber(saved.schemaVersion) or 0
 
@@ -75,13 +82,12 @@ function E.InitializeSavedVariables(saved, characterSaved)
     if type(saved.dotDisabled) ~= "table" then saved.dotDisabled = {} end
     if type(saved.dotPriority) ~= "table" then saved.dotPriority = {} end
     if type(saved.dotThresholds) ~= "table" then saved.dotThresholds = {} end
-    saved.dotRefreshThreshold = math.max(0, math.min(30,
-        tonumber(saved.dotRefreshThreshold) or 3))
+    saved.dotRefreshThreshold = NormalizeDotThreshold(saved.dotRefreshThreshold, 3)
     for key, value in pairs(saved.dotThresholds) do
         if type(key) ~= "string" or type(value) ~= "number" or value ~= value then
             saved.dotThresholds[key] = nil
         else
-            saved.dotThresholds[key] = math.max(0, math.min(30, value))
+            saved.dotThresholds[key] = NormalizeDotThreshold(value, 3)
         end
     end
     for key, value in pairs(saved.dotDisabled) do

@@ -36,7 +36,7 @@ ApogeePartyHealthBars_DotHud = {
 }
 ApogeePartyHealthBars_ClientCapabilities = { IsFeatureAvailable = function() return true end }
 
-local now, timers = 100, {}
+local now, timers, spellInRange = 100, {}, true
 function GetTime() return now end
 function UnitExists(unit) return unit == "target" end
 function UnitCanAttack() return true end
@@ -45,7 +45,7 @@ function UnitIsPlayer() return false end
 C_Spell = {
     GetSpellTexture = function(id) return id + 1000 end,
     IsSpellUsable = function() return true, false end,
-    IsSpellInRange = function() return true end,
+    IsSpellInRange = function() return spellInRange end,
 }
 C_Timer = { After = function(delay, callback) timers[#timers + 1] = { delay, callback } end }
 
@@ -69,6 +69,14 @@ T.Refresh(false)
 assert(shown[1].key == "curseA" and #shown == 1,
     "real cooldown did not hide an otherwise due suggestion")
 realCooldown[11] = nil
+spellInRange = nil
+T.Refresh(false)
+assert(#shown == 0,
+    "invalid range results were treated as confirmed target eligibility")
+spellInRange = 1
+T.Refresh(false)
+assert(#shown == 2,
+    "legacy numeric in-range results were rejected")
 T.SetEnabled("curseA", false)
 assert(#shown == 2 and shown[2].key == "curseB",
     "disabled exclusive priority did not fall through to the next usable member")
@@ -82,4 +90,3 @@ T.Refresh(true)
 assert(invalidations > 0, "explicit refresh did not invalidate the target aura cache")
 
 print("PASS context-aware DoT tracker")
-

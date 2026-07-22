@@ -1,5 +1,6 @@
 ApogeePartyHealthBars_ShortcutItems = {}
 local I = ApogeePartyHealthBars_ShortcutItems
+local Cooldowns = ApogeePartyHealthBars_ActionCooldowns
 
 local function validItemId(value)
     return type(value) == "number" and value > 0 and math.floor(value) == value and value or nil
@@ -9,18 +10,6 @@ local function validItemInfo(value)
     return validItemId(value)
         or (type(value) == "string" and value ~= "" and value)
         or nil
-end
-
-local function getSpellCooldown(identifier)
-    if C_Spell and C_Spell.GetSpellCooldown then
-        local info = C_Spell.GetSpellCooldown(identifier)
-        if info then return info.startTime or 0, info.duration or 0 end
-    end
-    if GetSpellCooldown then
-        local start, duration = GetSpellCooldown(identifier)
-        return start or 0, duration or 0
-    end
-    return 0, 0
 end
 
 function I.GetInfo(itemId)
@@ -226,11 +215,7 @@ function I.ScanConsumables(limit)
 end
 
 function I.IsGlobalCooldown(start, duration)
-    if not duration or duration <= 0 then return false end
-    local gcdStart, gcdDuration = getSpellCooldown(61304)
-    return gcdDuration > 0
-        and math.abs((start or 0) - gcdStart) < 0.05
-        and math.abs(duration - gcdDuration) < 0.05
+    return Cooldowns.IsGlobalCooldown(start, duration)
 end
 
 -- Return values mirror Wheel's spell evaluator:

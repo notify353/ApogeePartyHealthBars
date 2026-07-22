@@ -251,6 +251,13 @@ assert(tocLoadOrder["ApogeePartyHealthBars_ActionData.lua"]
 assert(tocLoadOrder["ApogeePartyHealthBars_ActionMacros.lua"]
     < tocLoadOrder["ApogeePartyHealthBars_ShortcutBar.lua"],
     "Shortcut Bar runtime loaded before its shared action dependency")
+assert(tocLoadOrder["ApogeePartyHealthBars_ActionCooldowns.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_ShortcutItems.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_ActionCooldowns.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_BoundActionRuntime.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_ActionCooldowns.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_ShortcutBar.lua"],
+    "action cooldown consumers loaded before their shared classifier")
 assert(tocLoadOrder["ApogeePartyHealthBars_AccessoryLayout.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_PlayerUtility.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_AccessoryLayout.lua"]
@@ -388,8 +395,8 @@ assert(middleIcon.point[4] == 214 and middleIcon.point[5] == 0
     "Buttons HUD did not use the three-by-three grid to the right of Wheel")
 local feedbackText = assert(ApogeePartyHealthBars_ActionHud.GetFeedbackText(),
     "shared action feedback line was not attached")
-assert(feedbackText.point[4] == 302 and feedbackText.point[5] == -117,
-    "action feedback line did not sit just beyond the Buttons grid")
+assert(feedbackText.point[4] == 302 and feedbackText.point[5] == -171,
+    "action feedback line did not sit below the complete action icon footprint")
 
 RunFrameUpdates()
 local geometry = ApogeePartyHealthBars_RowGeometry

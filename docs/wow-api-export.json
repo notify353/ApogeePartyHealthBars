@@ -4,9 +4,9 @@
     "classicEra": {
       "product": "wow_classic_era",
       "clientDirectory": "_classic_era_",
-      "clientVersion": "1.15.8.67156",
+      "clientVersion": "1.15.9.68808",
       "interface": 11508,
-      "exportedOn": "2026-07-19",
+      "exportedOn": "2026-07-21",
       "generatedDocumentationPath": "BlizzardInterfaceCode/Interface/AddOns/Blizzard_APIDocumentationGenerated"
     },
     "tbcAnniversary": {

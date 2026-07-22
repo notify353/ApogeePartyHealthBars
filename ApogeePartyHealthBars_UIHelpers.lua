@@ -55,6 +55,30 @@ function H.SetButtonEnabled(button, enabled)
     end
 end
 
+function H.SetTooltip(frame, title, body)
+    if not frame then return end
+    frame.apogeeTooltipTitle = title
+    frame.apogeeTooltipBody = body
+    if not title or title == "" then
+        frame:SetScript("OnEnter", nil)
+        frame:SetScript("OnLeave", nil)
+        return
+    end
+    frame:SetScript("OnEnter", function(self)
+        if not GameTooltip or not GameTooltip.SetOwner then return end
+        if GameTooltip.ClearLines then GameTooltip:ClearLines() end
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        if GameTooltip.SetText then GameTooltip:SetText(title, 1, 0.82, 0.15) end
+        if body and body ~= "" and GameTooltip.AddLine then
+            GameTooltip:AddLine(body, 0.85, 0.85, 0.85, true)
+        end
+        if GameTooltip.Show then GameTooltip:Show() end
+    end)
+    frame:SetScript("OnLeave", function()
+        if GameTooltip and GameTooltip.Hide then GameTooltip:Hide() end
+    end)
+end
+
 function H.SetUnavailableTooltip(frame, reason)
     if not frame then return end
     frame.apogeeUnavailableReason = reason

@@ -1,4 +1,5 @@
 local calls = {}
+local scheduledTimers = {}
 local function record(value) calls[#calls + 1] = value end
 local function reset() calls = {} end
 local function expect(expected, message)
@@ -10,6 +11,11 @@ local function expect(expected, message)
 end
 
 local wheelLayoutsChanged, keyLayoutsChanged, buttonLayoutsChanged = false, false, false
+C_Timer = {
+    After = function(delay, callback)
+        scheduledTimers[#scheduledTimers + 1] = { delay = delay, callback = callback }
+    end,
+}
 ApogeePartyHealthBars_S = {
     InitializeClassDefaultBindings = function() record("class-bindings") end,
     RequestUpdate = function() record("request-update") end,
@@ -114,6 +120,7 @@ for _, event in ipairs({
         "action transition changed registration: " .. event)
 end
 assert(optional.SPELL_UPDATE_COOLDOWN.owner == "ShortcutBar"
+        and optional.UNIT_SPELLCAST_SUCCEEDED.owner == "ActionCooldownSampling"
         and optional.UNIT_FLAGS.owner == "ShortcutBarTarget"
         and optional.BAG_UPDATE_DELAYED.owner == "ShortcutItems"
         and optional.GET_ITEM_INFO_RECEIVED.owner == "ShortcutItemInfo"
@@ -138,6 +145,34 @@ dispatch("SPELL_UPDATE_COOLDOWN")
 expect({ "shortcut-refresh:false", "wheel-refresh", "keys-refresh", "buttons-refresh",
     "consumable-refresh:false" },
     "cooldown refresh fan-out changed")
+
+reset()
+scheduledTimers = {}
+dispatch("UNIT_SPELLCAST_SUCCEEDED", "party1", "cast-guid", 8092)
+assert(#scheduledTimers == 0, "another unit's successful cast scheduled cooldown sampling")
+dispatch("UNIT_SPELLCAST_SUCCEEDED", "player", "cast-guid", 8092)
+assert(#scheduledTimers == 1 and scheduledTimers[1].delay == 0.5,
+    "player cast did not schedule delayed cooldown sampling")
+expect({}, "delayed cooldown sampling refreshed actions immediately")
+scheduledTimers[1].callback()
+expect({ "shortcut-refresh:false", "wheel-refresh", "keys-refresh", "buttons-refresh" },
+    "delayed cooldown sampling did not refresh every manual action feature")
+
+reset()
+scheduledTimers = {}
+local refreshWheel = ApogeePartyHealthBars_WheelMacros.Refresh
+ApogeePartyHealthBars_WheelMacros.Refresh = function()
+    error("delayed refresh failure")
+end
+dispatch("UNIT_SPELLCAST_SUCCEEDED", "player", "cast-guid", 8092)
+local callbackSucceeded = pcall(scheduledTimers[1].callback)
+ApogeePartyHealthBars_WheelMacros.Refresh = refreshWheel
+assert(callbackSucceeded, "delayed cooldown sampling leaked an asynchronous error")
+assert(calls[1] == "shortcut-refresh:false"
+        and calls[2]
+        and calls[2]:find("print:event error (delayed cooldown sampling):", 1, true)
+        and calls[2]:find("delayed refresh failure", 1, true),
+    "delayed cooldown sampling did not report its asynchronous error")
 
 reset()
 dispatch("UNIT_FLAGS", "party1")

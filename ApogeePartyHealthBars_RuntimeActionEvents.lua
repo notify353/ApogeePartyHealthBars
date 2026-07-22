@@ -20,6 +20,17 @@ function A.Register(eventRouter, deps)
         if ui.RefreshMacroPanel then ui.RefreshMacroPanel() end
     end
 
+    local function RefreshManualActionCooldowns()
+        T.Refresh(false); W.Refresh(); K.Refresh(); B.Refresh()
+    end
+
+    local function ProtectedRefreshManualActionCooldowns()
+        local ok, err = pcall(RefreshManualActionCooldowns)
+        if not ok then
+            deps.Print("event error (delayed cooldown sampling): " .. tostring(err))
+        end
+    end
+
     local spellbook = _G.SpellBookFrame
     if spellbook and spellbook.HookScript then
         spellbook:HookScript("OnShow", function()
@@ -115,10 +126,18 @@ function A.Register(eventRouter, deps)
         "CURRENT_SPELL_CAST_CHANGED", "PLAYER_EQUIPMENT_CHANGED",
     }) do
         eventRouter.RegisterOptional(event, "ShortcutBar", function()
-            T.Refresh(false); W.Refresh(); K.Refresh(); B.Refresh()
+            RefreshManualActionCooldowns()
             CB.Refresh(false)
         end)
     end
+
+    eventRouter.RegisterOptional("UNIT_SPELLCAST_SUCCEEDED", "ActionCooldownSampling", function(_, unit)
+        if unit ~= "player" or not C_Timer or not C_Timer.After then return end
+        -- Classic can initially expose only start recovery, then publish the
+        -- spell's real cooldown. Doom Cooldown Pulse uses the same half-second
+        -- post-cast sampling window before it starts tracking a cooldown.
+        C_Timer.After(0.5, ProtectedRefreshManualActionCooldowns)
+    end)
 
     eventRouter.RegisterOptional("UNIT_FLAGS", "ShortcutBarTarget", function(_, unit)
         if unit == "target" then T.Refresh(false) end

@@ -122,6 +122,7 @@ assert(actionGeometry.offsets.wheel == 0
         and actionGeometry.offsets.keys == 54
         and actionGeometry.offsets.buttons == 81
         and actionGeometry.offsets.consumables == 108
+        and actionGeometry.iconHeight == 159
         and actionGeometry.height == 190
         and geometry.GetActionAreaHeight("player", actionGeometry) == 190,
     "Keys and Buttons icon grids were not bottom-aligned with Wheel")

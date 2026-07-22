@@ -4,6 +4,7 @@ local Sounds = ApogeePartyHealthBars_Sounds
 local UIH = ApogeePartyHealthBars_UIHelpers
 local Actions = ApogeePartyHealthBars_ActionMacros
 local Items = ApogeePartyHealthBars_ShortcutItems
+local Cooldowns = ApogeePartyHealthBars_ActionCooldowns
 local BoundBindings = ApogeePartyHealthBars_BoundActionBindings
 local ActionHud = ApogeePartyHealthBars_ActionHud
 local ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities
@@ -50,7 +51,7 @@ function Factory.Create(options)
     local secureButtons, hudIcons, slotById = {}, {}, {}
     local bindingManager, pendingSecure = nil, false
     local feedbackTicker
-    local previousStates, lastSoundAt = {}, {}
+    local previousStates, lastSoundAt, cooldownAlertArmed = {}, {}, {}
     local initialized = false
     local feedbackSlotId, feedbackUntil = nil, 0
     local FEEDBACK_DURATION = 0.75
@@ -84,10 +85,6 @@ function Factory.Create(options)
         ready = "Ready", current = "Queued or current", cooldown = "On cooldown", resource = "Not enough resource",
         unavailable = "Unavailable", unusable = "Not currently usable", invalid = "Invalid current target",
     }
-    local READY_TRANSITION_STATES = {
-        cooldown = true, resource = true, invalid = true, range = true, unavailable = true, unusable = true,
-    }
-
     for index, slot in ipairs(WD.SLOTS) do
         slot.index = index
         slotById[slot.id] = slot
@@ -170,7 +167,7 @@ function Factory.Create(options)
     end
 
     local function clearSlotFeedback(slotId)
-        previousStates[slotId], lastSoundAt[slotId] = nil, nil
+        previousStates[slotId], lastSoundAt[slotId], cooldownAlertArmed[slotId] = nil, nil, nil
         local icon = hudIcons[slotId]
         if not icon then return end
         icon.pulseUntil = nil
@@ -289,18 +286,6 @@ function Factory.Create(options)
         return Actions.ResolveDisplay(entry)
     end
 
-    local function getCooldown(identifier)
-        if C_Spell and C_Spell.GetSpellCooldown then
-            local info = C_Spell.GetSpellCooldown(identifier)
-            if info then return info.startTime or 0, info.duration or 0, info.isEnabled ~= false end
-        end
-        if GetSpellCooldown then
-            local start, duration, enabled = GetSpellCooldown(identifier)
-            return start or 0, duration or 0, enabled ~= 0
-        end
-        return 0, 0, true
-    end
-
     local function getCharges(identifier)
         if C_Spell and C_Spell.GetSpellCharges then
             local info = C_Spell.GetSpellCharges(identifier)
@@ -347,12 +332,6 @@ function Factory.Create(options)
         return true
     end
 
-    local function isGlobalCooldown(start, duration)
-        if duration <= 0 then return false end
-        local gcdStart, gcdDuration = getCooldown(61304)
-        return gcdDuration > 0 and math.abs(start - gcdStart) < 0.05 and math.abs(duration - gcdDuration) < 0.05
-    end
-
     local function targetReason(identifier)
         if not UnitExists or not UnitExists("target") then return "Select a valid target" end
         if UnitIsDeadOrGhost and UnitIsDeadOrGhost("target") then return "Target is dead" end
@@ -361,18 +340,23 @@ function Factory.Create(options)
     end
 
     local function evaluate(entry, known)
-        if entry and entry.kind == "item" then return Items.Evaluate(entry) end
+        if entry and entry.kind == "item" then
+            local state, icon, start, duration, count, available, reason, gcdOnly = Items.Evaluate(entry)
+            return state, icon, start, duration, count, available, reason, gcdOnly,
+                state == "cooldown" and Cooldowns.IsAlertable(duration, gcdOnly, false)
+        end
         local name, icon, spellId = spellInfo(entry)
         if not name then return "invalid", nil, 0, 0, nil, false end
         local available = isKnownSpell(entry, name, known)
         if not available then return "unavailable", icon, 0, 0, nil, false end
         local identifier = spellId or entry.spellId or name
         if isCurrent(identifier) then return "current", icon, 0, 0, nil, true end
-        local start, duration, enabled = getCooldown(identifier)
+        local start, duration, enabled, reportedGCD = Cooldowns.GetSpellCooldown(identifier)
         local charges, maxCharges = getCharges(identifier)
         local noCharges = maxCharges and maxCharges > 0 and (charges or 0) <= 0
-        local gcdOnly = isGlobalCooldown(start, duration)
+        local gcdOnly = Cooldowns.IsGlobalCooldown(start, duration, reportedGCD)
         local rechargingWithCharge = maxCharges and maxCharges > 0 and (charges or 0) > 0
+        local alertableCooldown = Cooldowns.IsAlertable(duration, gcdOnly, noCharges)
         local usable, noResource = true, false
         if C_Spell and C_Spell.IsSpellUsable then
             usable, noResource = C_Spell.IsSpellUsable(identifier)
@@ -380,7 +364,8 @@ function Factory.Create(options)
             usable, noResource = IsUsableSpell(identifier)
         end
         if enabled and ((duration > 0 and not gcdOnly and not rechargingWithCharge) or noCharges) then
-            return "cooldown", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil, true, nil, gcdOnly
+            return "cooldown", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil,
+                true, nil, gcdOnly, alertableCooldown
         end
         if noResource then return "resource", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil, true, nil, gcdOnly end
         local inRange = getRange(identifier)
@@ -841,7 +826,8 @@ function Factory.Create(options)
             local icon, entry = hudIcons[slot.id], W.GetSlot(activeLayoutKey, slot.id)
             if icon then
                 if hasMacro(entry) and Actions.GetName(entry) then
-                    local status, texture, start, duration, charges, available, reason, gcdOnly = evaluate(entry, known)
+                    local status, texture, start, duration, charges, available, reason, gcdOnly, alertableCooldown =
+                        evaluate(entry, known)
                     icon.emptyFill:Hide()
                     icon.texture:Show()
                     icon.texture:SetTexture(texture or QUESTION_MARK)
@@ -861,11 +847,13 @@ function Factory.Create(options)
                         icon.cooldown:Hide()
                     end
                     icon.count:SetText(charges or "")
-                    local becameReady = initialized and READY_TRANSITION_STATES[previousStates[slot.id]] and status == "ready"
-                    if becameReady then
+                    local cooldownFinished = Cooldowns.UpdateAlertState(
+                        cooldownAlertArmed, slot.id, initialized, previousStates[slot.id],
+                        status, gcdOnly, alertableCooldown)
+                    if cooldownFinished then
                         icon.pulseUntil = now + C.SHORTCUT_READY_PULSE
                         local soundKey = W.GetSlotSoundKey(activeLayoutKey, slot.id)
-                        if not soundPlayed and not gcdOnly and soundKey and soundKey ~= "none"
+                        if not soundPlayed and soundKey and soundKey ~= "none"
                             and now - (lastSoundAt[slot.id] or 0) >= C.SHORTCUT_SOUND_DEBOUNCE and Sounds.Play(soundKey) then
                             lastSoundAt[slot.id], soundPlayed = now, true
                         end
@@ -875,7 +863,7 @@ function Factory.Create(options)
                     icon.texture:Hide(); icon.emptyFill:Show(); icon:SetAlpha(0.48)
                     for _, border in ipairs(icon.borders) do border:SetColorTexture(0.25, 0.25, 0.27, 1) end
                     icon.cooldown:Hide(); icon.count:SetText("")
-                    previousStates[slot.id] = nil
+                    previousStates[slot.id], cooldownAlertArmed[slot.id] = nil, nil
                 end
             end
         end

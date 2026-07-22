@@ -8,10 +8,11 @@ ApogeePartyHealthBars_S = { sv = { actionFeedbackEnabled = true } }
 local now = 20
 function GetTime() return now end
 
-local text, ticker
+local text, ticker, button
 local function region()
     local value = { shown = true }
     function value:SetPoint(...) self.point = { ... } end
+    function value:ClearAllPoints() self.point = nil end
     function value:SetSize(width, height) self.width, self.height = width, height end
     function value:SetColorTexture(...) self.color = { ... } end
     function value:SetWidth(width) self.width = width end
@@ -25,7 +26,7 @@ local function region()
     return value
 end
 
-local button = {}
+button = {}
 function button:CreateTexture()
     error("action feedback must not create a black backing texture")
 end
@@ -47,6 +48,12 @@ Hud.Attach({ btn = button })
 assert(text.point[1] == "LEFT" and text.point[4] == 302 and text.point[5] == -117,
     "feedback text did not use the Buttons-side inset and vertical centering")
 assert(text.width == 206, "feedback text did not retain four-pixel horizontal padding")
+
+Hud.Layout(159)
+assert(text.point[4] == 302 and text.point[5] == -171,
+    "feedback text did not move below the authoritative action icon height")
+assert(Hud.GetFeedbackTop() == 162,
+    "feedback top did not track the authoritative action icon height")
 
 assert(Hud.Show("keys", "F", "Frostbolt", 0.75), "Keys feedback did not show")
 assert(text:IsShown() and text:GetText() == "F — Frostbolt",

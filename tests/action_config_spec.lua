@@ -69,6 +69,9 @@ end
 function ApogeePartyHealthBars_UIHelpers.SetButtonEnabled(button, enabled)
     if enabled then button:Enable() else button:Disable() end
 end
+function ApogeePartyHealthBars_UIHelpers.SetTooltip(frame, title, body)
+    frame.tooltipTitle, frame.tooltipBody = title, body
+end
 
 dofile("ApogeePartyHealthBars_ActionConfig.lua")
 local config = ApogeePartyHealthBars_ActionConfig
@@ -94,6 +97,8 @@ config.SetActionRowState(actionRow, {
 assert(actionRow.primary:GetText() == "Fireball"
         and actionRow.icon.texture == "Interface\\Icons\\Spell_Fire_FlameBolt"
         and actionRow.sound.selectedKey == "toast"
+        and actionRow.sound.tooltipTitle == "Cooldown alert"
+        and actionRow.sound.tooltipBody:find("Actions without a cooldown stay silent", 1, true)
         and actionRow.sound:IsEnabled() and actionRow.macro:IsEnabled()
         and actionRow.macro.label:GetText() == "Macro*" and actionRow.up:IsEnabled()
         and not actionRow.down:IsEnabled() and actionRow.clear:IsEnabled(),

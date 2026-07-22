@@ -5,6 +5,7 @@ local UIH = ApogeePartyHealthBars_UIHelpers
 local Accessory = ApogeePartyHealthBars_AccessoryLayout
 local Actions = ApogeePartyHealthBars_ActionMacros
 local Items = ApogeePartyHealthBars_ShortcutItems
+local Cooldowns = ApogeePartyHealthBars_ActionCooldowns
 local CrowdControl = ApogeePartyHealthBars_CrowdControl
 
 ApogeePartyHealthBars_ShortcutBar = {}
@@ -18,6 +19,7 @@ local resolved = {}
 local resolvedSlots = {}
 local previousStates = {}
 local lastSoundAt = {}
+local cooldownAlertArmed = {}
 local spellbookOpen = false
 local initialized = false
 local resolutionPending = false
@@ -71,15 +73,6 @@ local STATE_LABELS = {
     invalid = "Invalid current target",
     unusable = "Not currently usable",
     unavailable = "Not in bags",
-}
-
-local READY_TRANSITION_STATES = {
-    cooldown = true,
-    resource = true,
-    invalid = true,
-    range = true,
-    unusable = true,
-    unavailable = true,
 }
 
 local SHORTCUTS_SCHEMA_VERSION = 1
@@ -430,18 +423,6 @@ function T.RefreshSecureActions()
     return true
 end
 
-local function GetCooldown(identifier)
-    if C_Spell and C_Spell.GetSpellCooldown then
-        local info = C_Spell.GetSpellCooldown(identifier)
-        if info then return info.startTime or 0, info.duration or 0, info.isEnabled ~= false end
-    end
-    if GetSpellCooldown then
-        local start, duration, enabled = GetSpellCooldown(identifier)
-        return start or 0, duration or 0, enabled ~= 0
-    end
-    return 0, 0, true
-end
-
 local function GetCharges(identifier)
     if C_Spell and C_Spell.GetSpellCharges then
         local info = C_Spell.GetSpellCharges(identifier)
@@ -493,14 +474,6 @@ local function IsCurrent(identifier)
     return IsCurrentSpell and IsCurrentSpell(identifier)
 end
 
-local function IsGlobalCooldown(start, duration)
-    if duration <= 0 then return false end
-    local gcdStart, gcdDuration = GetCooldown(61304)
-    return gcdDuration > 0
-        and math.abs(start - gcdStart) < 0.05
-        and math.abs(duration - gcdDuration) < 0.05
-end
-
 local function EvaluateCrowdControlTarget(info)
     local definition = info.crowdControl
     if not definition then return true end
@@ -533,7 +506,8 @@ end
 local function Evaluate(info)
     if info.kind == "item" then
         local state, _, start, duration, count, _, reason, gcdOnly = Items.Evaluate(info.entry)
-        return state, start, duration, gcdOnly, count, reason
+        return state, start, duration, gcdOnly, count, reason,
+            state == "cooldown" and Cooldowns.IsAlertable(duration, gcdOnly, false)
     end
     local identifier = info.id or info.castName or info.name
     local customMacro = info.entry and Actions.IsCustomized(info.entry)
@@ -543,14 +517,15 @@ local function Evaluate(info)
     end
     if IsCurrent(identifier) then return "current", 0, 0, false, nil end
 
-    local start, duration, enabled = GetCooldown(identifier)
+    local start, duration, enabled, reportedGCD = Cooldowns.GetSpellCooldown(identifier)
     local currentCharges, maxCharges = GetCharges(identifier)
     local noCharges = maxCharges and maxCharges > 0 and (currentCharges or 0) <= 0
     local chargeText = maxCharges and maxCharges > 1 and tostring(currentCharges or 0) or nil
-    local gcdOnly = IsGlobalCooldown(start, duration)
+    local gcdOnly = Cooldowns.IsGlobalCooldown(start, duration, reportedGCD)
     local rechargingWithCharge = maxCharges and maxCharges > 0 and (currentCharges or 0) > 0
+    local alertableCooldown = Cooldowns.IsAlertable(duration, gcdOnly, noCharges)
     if enabled and ((duration > 0 and not gcdOnly and not rechargingWithCharge) or noCharges) then
-        return "cooldown", start, duration, gcdOnly, chargeText
+        return "cooldown", start, duration, gcdOnly, chargeText, nil, alertableCooldown
     end
 
     local usable, noResource = IsUsable(identifier)
@@ -693,9 +668,12 @@ function T.Refresh(suppressSound)
         local icon, info = icons[i], resolved[i]
         if IsEnabled() and info then
             icon.texture:SetTexture(info.icon)
-            local state, start, duration, gcdOnly, charges, reason = Evaluate(info)
+            local state, start, duration, gcdOnly, charges, reason, alertableCooldown =
+                Evaluate(info)
             local previous = previousStates[i]
-            local becameReady = initialized and READY_TRANSITION_STATES[previous] and state == "ready"
+            local cooldownFinished = Cooldowns.UpdateAlertState(
+                cooldownAlertArmed, i, initialized, previous, state, gcdOnly,
+                alertableCooldown)
             ApplyState(icon, state, start, duration, charges)
             local isInterrupt = info.crowdControl
                 and CrowdControl.HasCapability(info.crowdControl, CrowdControl.CONTROL.INTERRUPT)
@@ -703,10 +681,10 @@ function T.Refresh(suppressSound)
             icon.interruptBadge:SetShown(isInterrupt)
             icon.shortcutInfo = info
             icon.shortcutReason = reason
-            if becameReady then
+            if cooldownFinished then
                 icon.pulseUntil = now + C.SHORTCUT_READY_PULSE
                 local entry = entries and info.slot and entries[info.slot]
-                local canSound = not suppressSound and not soundPlayed and not gcdOnly and IsSoundsEnabled()
+                local canSound = not suppressSound and not soundPlayed and IsSoundsEnabled()
                     and entry and entry.soundKey and entry.soundKey ~= "none"
                     and now - (lastSoundAt[i] or 0) >= C.SHORTCUT_SOUND_DEBOUNCE
                 if canSound and PlayReadySound(entry.soundKey) then
@@ -721,7 +699,7 @@ function T.Refresh(suppressSound)
             icon.interruptBadge:Hide()
             icon.shortcutInfo = nil
             icon.shortcutReason = nil
-            previousStates[i] = nil
+            previousStates[i], cooldownAlertArmed[i] = nil, nil
         end
     end
     initialized = true
@@ -753,6 +731,7 @@ end
 
 function T.Rebaseline()
     wipe(previousStates)
+    wipe(cooldownAlertArmed)
     initialized = false
     T.Refresh(true)
 end
@@ -766,6 +745,7 @@ function T.ResolveAndRefresh()
     resolutionPending = false
     ResolveEntries()
     wipe(previousStates)
+    wipe(cooldownAlertArmed)
     initialized = false
     -- Icon count, order, or lane can change without changing Shortcut Bar height.
     -- Always queue the authoritative row layout before secure overlays are reused.

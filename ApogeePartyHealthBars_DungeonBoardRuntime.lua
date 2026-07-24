@@ -9,6 +9,11 @@ local nowFn
 local clientFlavor
 local timeoutSeconds
 local initialized = false
+local changedCallback
+
+local function notifyChanged()
+    if changedCallback then changedCallback() end
+end
 
 local function defaultNow()
     return GetTime and GetTime() or 0
@@ -136,6 +141,7 @@ function Runtime.Ingest(data)
         firstSeen = firstSeen,
         lastSeen = currentTime,
     }
+    notifyChanged()
     return classification
 end
 
@@ -157,4 +163,10 @@ end
 function Runtime.GetTimeoutSeconds()
     ensureInitialized()
     return timeoutSeconds
+end
+
+function Runtime.SetChangedCallback(callback)
+    assert(callback == nil or type(callback) == "function",
+        "DungeonBoardRuntime changed callback must be a function or nil")
+    changedCallback = callback
 end

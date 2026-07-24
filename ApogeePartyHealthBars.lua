@@ -28,7 +28,7 @@ local unitAPI = ApogeePartyHealthBars_UnitAPI
 local unitBar = ApogeePartyHealthBars_UnitBar
 local playerUtility = ApogeePartyHealthBars_PlayerUtility
 
-local panel, configUI, minimapController
+local panel, configUI, minimapController, dungeonBoardUI
 local rows = {}
 
 local throttleFrame = CreateFrame("Frame")
@@ -468,6 +468,17 @@ local ApplyDefaultPosition = unitFrames.ApplyDefaultPosition
 local RestorePosition = unitFrames.RestorePosition
 local ApplyBackdrop = unitFrames.ApplyBackdrop
 local ApplyPanelChrome = unitFrames.ApplyPanelChrome
+
+dungeonBoardUI = ApogeePartyHealthBars_DungeonBoardUI.Build({
+    Runtime = ApogeePartyHealthBars_DungeonBoardRuntime,
+    Catalog = ApogeePartyHealthBars_DungeonBoardCatalog,
+    GetClientFlavor = function()
+        local info = ApogeePartyHealthBars_ClientCapabilities.GetClientInfo()
+        return info and info.flavor or "unsupported"
+    end,
+    Now = function() return GetTime() end,
+    ApplyBackdrop = ApplyBackdrop,
+})
 playerUtility.Attach(rows[1].primary, {
     ShouldShowSelfBuffIcon = ShouldShowSelfBuffIcon,
     IsSelfBuffKnown = buffReminders.IsSelfKnown,
@@ -694,10 +705,22 @@ minimapController.Initialize({
     IsEnabled = IsEnabled,
     SetAddonEnabled = function(enabled) SetAddonEnabled(enabled) end,
     SetConfigMode = function(active) SetConfigMode(active) end,
+    ToggleDungeonBoard = dungeonBoardUI.Toggle,
 })
 EnsureMinimapButton = minimapController.Ensure
 local UpdateMinimapButtonStyle = minimapController.UpdateStyle
 local ApplyDefaultMinimapPosition = minimapController.ResetPosition
+
+SLASH_APOGEEPARTYHEALTHBARS1 = "/aphb"
+SlashCmdList = SlashCmdList or {}
+SlashCmdList.APOGEEPARTYHEALTHBARS = function(message)
+    local command = tostring(message or ""):match("^%s*(.-)%s*$"):lower()
+    if command == "board" then
+        dungeonBoardUI.Toggle()
+        return
+    end
+    Print("use /aphb board to toggle Dungeon Board.")
+end
 
 
 

@@ -9,6 +9,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `DungeonBoardCatalog`: private English Classic Era and TBC Anniversary five-player dungeon definitions, level ranges, aliases, and deterministic client-filtered order
 - `DungeonBoardClassifier`: pure request-intent, heroic, dungeon, service-noise, and ambiguous wing classification for the future Dungeon Board runtime
 - `DungeonBoardRuntime`: session-only one-record-per-sender request collection, refresh/replacement semantics, expiration, and immutable newest-first snapshots
+- `DungeonBoardUI`: read-only, session-positioned request window; catalog-ordered single-dungeon groups; one non-duplicating ambiguous/multiple group; and age/expiry refresh
 - `RuntimeDungeonBoardEvents`: authoritative `CHAT_MSG_CHANNEL` payload adaptation and login initialization for Dungeon Board collection
 - `PlayerContext`: normalized class, race, level, active talent group/tree/ranks, form/stance, and stealth state shared by context-sensitive features
 - `RuntimeLifecycleEvents`: login/bootstrap, world and roster changes, combat transitions, and combat-log fan-out
@@ -54,7 +55,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `GeneralConfig`: grouped General-tab visibility, feature toggles, alert preferences, HoT controls, compact position resets, and destructive reset confirmation
 - `HealingConfig`: fixed-gesture Healing action rows, inline movement and clearing, display refresh, and right-click clearing compatibility
 - `ConfigUI`: settings-window shell, tab registry, activation, and cross-tab refresh routing
-- `ConfigController`, `MinimapController`: settings-mode and minimap lifecycle
+- `ConfigController`, `MinimapController`: settings-mode, minimap lifecycle, and the Dungeon Board minimap access gesture
 - `ProfileStore`: character-owned named profiles, read-only account-profile migration, portable payload normalization, stable identity, and CRUD/copy/import mutations
 - `ProfileCodec`: native CBOR, Deflate, and URL-safe Base64 profile sharing with versioned metadata and bounded decoding
 - `ProfileConfig`: compact profile selection, management, and copy sections plus export/import preview and confirmation workflows
@@ -67,7 +68,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - Prefer player and pet Spellbook discovery for expansion-specific content. Preserve unavailable saved actions and preferences so profiles remain portable between supported clients.
 - Keep saved feature preferences separate from client support; unsupported features compute an effective disabled state without rewriting portable profile intent.
 - Keep volatile client APIs inside their domain adapters and capability detection; ordinary frame construction and widget methods remain direct.
-- Keep Dungeon Board catalog and classification independent from chat events, saved variables, UI, localization, and Blizzard Group Finder APIs; the session-only runtime consumes classifier results and the event adapter alone owns chat payload knowledge.
+- Keep Dungeon Board catalog and classification independent from chat events, saved variables, UI, localization, and Blizzard Group Finder APIs; the session-only runtime consumes classifier results, the event adapter alone owns chat payload knowledge, and the UI consumes only immutable runtime snapshots.
 - Give Dungeon Board service/noise classifications precedence over dungeon requests, and preserve unresolved `DM`, Dire Maul, and Scarlet Monastery candidates instead of guessing or duplicating requests.
 - Treat basic unit health and frame construction as the required baseline while aura, range, prediction, threat, markers, assignment, bindings, state layouts, and profile sharing degrade independently.
 - Never mutate secure attributes, position, visibility, or mouse state during combat.

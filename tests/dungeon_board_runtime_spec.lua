@@ -7,6 +7,8 @@ dofile("ApogeePartyHealthBars_DungeonBoardRuntime.lua")
 local Runtime = ApogeePartyHealthBars_DungeonBoardRuntime
 
 local now = 100
+local changedCount = 0
+Runtime.SetChangedCallback(function() changedCount = changedCount + 1 end)
 Runtime.Initialize({
     clientFlavor = "classicEra",
     Now = function() return now end,
@@ -33,6 +35,7 @@ assert(snapshot[1].firstSeen == 100 and snapshot[1].lastSeen == 100,
 assert(snapshot[1].channelBaseName == "LookingForGroup" and snapshot[1].channelIndex == 4
     and snapshot[1].zoneChannelID == 26,
     "chat channel metadata was not retained")
+assert(changedCount == 1, "initial request did not notify the snapshot consumer")
 
 now = 110
 Runtime.Ingest({
@@ -54,6 +57,7 @@ Runtime.Ingest({
 })
 assert(Runtime.GetSnapshot()[1].lastSeen == 110,
     "duplicate chat line extended request lifetime")
+assert(changedCount == 2, "duplicate chat line notified the snapshot consumer")
 
 now = 130
 Runtime.Ingest({
@@ -76,6 +80,7 @@ local noise = Runtime.Ingest({
 })
 assert(noise.kind == "noise" and Runtime.GetSnapshot()[1].lastSeen == 130,
     "noise classification replaced or refreshed a collected request")
+assert(changedCount == 3, "noise classification notified the snapshot consumer")
 
 now = 140
 Runtime.Ingest({
@@ -116,5 +121,10 @@ Runtime.Initialize({ clientFlavor = "tbcAnniversary", Now = function() return no
 assert(Runtime.Ingest({
     message = "LFM Ramparts", sender = "Tbc", guid = "Player-4",
 }).kind == "request", "TBC request was not collected on TBC Anniversary")
+assert(changedCount == 6, "accepted requests did not consistently notify the snapshot consumer")
+
+Runtime.SetChangedCallback(nil)
+local callbackValid = pcall(Runtime.SetChangedCallback, "invalid")
+assert(not callbackValid, "runtime accepted a non-function changed callback")
 
 print("PASS session-only Dungeon Board runtime")

@@ -343,6 +343,15 @@ assert(type(ApogeePartyHealthBars_RuntimeLifecycleEvents.Register) == "function"
     "runtime event subscriber API was not loaded")
 assert(type(ApogeePartyHealthBars_DungeonBoardRuntime.GetSnapshot) == "function",
     "Dungeon Board runtime API was not loaded")
+assert(tocLoadOrder["ApogeePartyHealthBars_DungeonBoardRuntime.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardUI.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_UIHelpers.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardUI.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_DungeonBoardUI.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars.lua"],
+    "Dungeon Board UI loaded outside its dependency-safe order")
+assert(type(ApogeePartyHealthBars_DungeonBoardUI.Toggle) == "function",
+    "Dungeon Board UI API was not loaded")
 assert(type(ApogeePartyHealthBars_BuffReminders.RefreshKnownSpells) == "function",
     "buff-reminder runtime did not expose known-spell refresh")
 assert(type(ApogeePartyHealthBars_ShieldTracker.GetRemaining) == "function"
@@ -670,6 +679,22 @@ assert(minimapButton.scripts.OnClick == nil,
 assert(type(minimapButton.scripts.PreClick) == "function"
         and type(minimapButton.scripts.PostClick) == "function",
     "minimap action phases were not configured")
+assert(not ApogeePartyHealthBars_DungeonBoardUI.IsShown(),
+    "Dungeon Board started visible")
+minimapButton.scripts.PostClick(minimapButton, "MiddleButton")
+assert(ApogeePartyHealthBars_DungeonBoardUI.IsShown(),
+    "middle-click did not open Dungeon Board")
+minimapButton.scripts.PostClick(minimapButton, "MiddleButton")
+assert(not ApogeePartyHealthBars_DungeonBoardUI.IsShown(),
+    "second middle-click did not close Dungeon Board")
+assert(SlashCmdList and type(SlashCmdList.APOGEEPARTYHEALTHBARS) == "function",
+    "Dungeon Board slash command was not registered")
+SlashCmdList.APOGEEPARTYHEALTHBARS("board")
+assert(ApogeePartyHealthBars_DungeonBoardUI.IsShown(),
+    "Dungeon Board slash command did not open the window")
+SlashCmdList.APOGEEPARTYHEALTHBARS("board")
+assert(not ApogeePartyHealthBars_DungeonBoardUI.IsShown(),
+    "Dungeon Board slash command did not close the window")
 local function ClickMinimapButton()
     local preClick = minimapButton.scripts.PreClick
     if preClick then preClick(minimapButton, "LeftButton") end

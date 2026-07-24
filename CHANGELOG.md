@@ -10,6 +10,10 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 - Added a lean, English-only Dungeon Board window for recent Classic Era and TBC Anniversary five-player dungeon requests from joined chat channels. Open it with middle-click on the minimap button or `/aphb board`; requests remain session-only and expire automatically.
 
+### Fixed
+
+- Added a duplicate-safe chat-filter fallback so live channel messages reach Dungeon Board when the shared event route does not deliver them.
+
 ## [0.44.0] - 2026-07-21
 
 ### Fixed

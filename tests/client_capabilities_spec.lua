@@ -24,10 +24,10 @@ assert(info.flavor == "tbcAnniversary" and info.product == "wow_anniversary"
         and info.projectId == 14 and info.interface == 20506 and info.build == "68775",
     "client identity was not normalized")
 
-GetBuildInfo = function() return "1.15.8", "67156", "Jul 19 2026", 11508 end
+GetBuildInfo = function() return "1.15.9", "68808", "Jul 21 2026", 11509 end
 info = capabilities.GetClientInfo()
 assert(info.flavor == "classicEra" and info.product == "wow_classic_era"
-        and info.interface == 11508 and info.build == "67156",
+        and info.interface == 11509 and info.build == "68808",
     "Classic Era identity was not normalized")
 
 GetBuildInfo = function() return "11.2.7", "70000", "Jul 19 2026", 110207 end

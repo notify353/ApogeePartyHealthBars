@@ -39,6 +39,12 @@ assertKeys(result, { "ZF" }, "source-derived run intent")
 result = classify("LFG Zul'Farrak")
 assertKeys(result, { "ZF" }, "punctuated multi-token alias")
 
+assert(classify("<Honor> LFM Naxx GDKP signups. Fridays @ 11:30pm ST").kind == "none",
+    "server-time suffix was misclassified as Sunken Temple")
+assert(classify("LFM Naxx at 8pm ST").kind == "none",
+    "short server-time suffix was misclassified as Sunken Temple")
+assertKeys(classify("LFM ST"), { "ST" }, "explicit Sunken Temple abbreviation")
+
 local noiseCases = {
     { "WTS SM boosting runs", "boost" },
     { "WTS RFC runs", "trade" },

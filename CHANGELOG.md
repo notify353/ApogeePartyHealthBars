@@ -12,7 +12,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Fixed
 
-- Added a duplicate-safe chat-filter fallback so live channel messages reach Dungeon Board when the shared event route does not deliver them.
+- Corrected Classic Era client detection and TOC metadata to live interface `11509`, allowing Dungeon Board to classify requests instead of rejecting every message as unsupported.
 
 ## [0.44.0] - 2026-07-21
 

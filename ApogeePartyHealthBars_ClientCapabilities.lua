@@ -4,7 +4,7 @@ local C = ApogeePartyHealthBars_ClientCapabilities
 local runtimeFailures = {}
 
 local CLIENTS_BY_INTERFACE = {
-    [11508] = { flavor = "classicEra", product = "wow_classic_era" },
+    [11509] = { flavor = "classicEra", product = "wow_classic_era" },
     [20506] = { flavor = "tbcAnniversary", product = "wow_anniversary" },
 }
 

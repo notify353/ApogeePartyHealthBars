@@ -66,7 +66,7 @@ finds test fixtures and safety assertions that may not need a structural change
 but must be reviewed:
 
 ```powershell
-rg -n "classicEra|tbcAnniversary|11508|20506" .
+rg -n "classicEra|tbcAnniversary|11509|20506" .
 ```
 
 Replace the example names and interfaces with the complete old and new target

@@ -25,7 +25,7 @@ $repo = Join-Path $fixtureRoot 'repo'
 $wow = Join-Path $fixtureRoot 'wow'
 try {
     New-Item -ItemType Directory -Path $repo -Force | Out-Null
-    Set-Content -LiteralPath (Join-Path $repo 'ApogeePartyHealthBars.toc') -Value '## Interface: 11508, 20506'
+    Set-Content -LiteralPath (Join-Path $repo 'ApogeePartyHealthBars.toc') -Value '## Interface: 11509, 20506'
     foreach ($directory in @('_classic_era_', '_anniversary_')) {
         New-Item -ItemType Directory -Path (Join-Path $wow "$directory\Interface\AddOns") -Force | Out-Null
     }

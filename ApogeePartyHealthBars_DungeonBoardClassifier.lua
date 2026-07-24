@@ -66,7 +66,18 @@ local function containsSequence(tokens, sequence)
                 break
             end
         end
-        if matched then return true end
+        if matched then return true, startIndex end
+    end
+    return false
+end
+
+local function isTimeZoneSt(tokens, tokenIndex)
+    local previous = tokens[tokenIndex - 1]
+    local beforePrevious = tokens[tokenIndex - 2]
+    if previous == "time" then return true end
+    if previous and previous:match("^%d%d?[ap]m$") then return true end
+    if beforePrevious and beforePrevious:match("^%d%d?$") and previous then
+        return previous:match("^%d%d$") ~= nil or previous:match("^%d%d[ap]m$") ~= nil
     end
     return false
 end
@@ -94,7 +105,13 @@ end
 
 local function hasExplicitMatch(tokens, definition)
     for _, aliasSequence in ipairs(definition.aliasSequences) do
-        if containsSequence(tokens, aliasSequence) then return true end
+        local matched, tokenIndex = containsSequence(tokens, aliasSequence)
+        local suppressedTimeZone = definition.key == "ST"
+            and #aliasSequence == 1
+            and aliasSequence[1] == "st"
+            and matched
+            and isTimeZoneSt(tokens, tokenIndex)
+        if matched and not suppressedTimeZone then return true end
     end
     return false
 end

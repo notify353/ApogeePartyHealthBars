@@ -155,7 +155,7 @@ For the supported-client audit, development install, acceptance matrix, and Curs
 
 ## Compatibility
 
-Supported targets: Classic Era 1.15.9 (interface `11508`) and Burning Crusade Classic Anniversary 2.5.6 (interface `20506`). Retail and other Classic branches are unsupported.
+Supported targets: Classic Era 1.15.9 (interface `11509`) and Burning Crusade Classic Anniversary 2.5.6 (interface `20506`). Retail and other Classic branches are unsupported.
 
 ## Support
 

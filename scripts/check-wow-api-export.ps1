@@ -85,6 +85,13 @@ function Get-InstalledBuilds([string]$Root) {
     return $builds
 }
 
+function Get-InterfaceFromVersion([string]$Version) {
+    if ($Version -notmatch '^(\d+)\.(\d+)\.(\d+)\.\d+$') {
+        Fail "client version '$Version' must use X.Y.Z.BUILD format."
+    }
+    return ([int]$Matches[1] * 10000) + ([int]$Matches[2] * 100) + [int]$Matches[3]
+}
+
 if (-not (Test-Path -LiteralPath $MetadataPath -PathType Leaf)) {
     Fail "tracked metadata is missing at '$MetadataPath'."
 }
@@ -131,6 +138,10 @@ foreach ($targetProperty in $targetProperties) {
     }
     if ("$($record.interface)" -notmatch '^\d+$') {
         Fail "metadata target '$targetName' interface '$($record.interface)' must be numeric."
+    }
+    $versionInterface = Get-InterfaceFromVersion $record.clientVersion
+    if ([int]$record.interface -ne $versionInterface) {
+        Fail "metadata target '$targetName' interface '$($record.interface)' does not match client version '$($record.clientVersion)' (expected '$versionInterface')."
     }
     if ($record.exportedOn -notmatch '^\d{4}-\d{2}-\d{2}$') {
         Fail "metadata target '$targetName' exportedOn '$($record.exportedOn)' must use YYYY-MM-DD format."

@@ -65,6 +65,13 @@ function Get-InstalledBuilds([string]$Root) {
     return $builds
 }
 
+function Get-InterfaceFromVersion([string]$Version) {
+    if ($Version -notmatch '^(\d+)\.(\d+)\.(\d+)\.\d+$') {
+        Fail "installed client version '$Version' must use X.Y.Z.BUILD format."
+    }
+    return ([int]$Matches[1] * 10000) + ([int]$Matches[2] * 100) + [int]$Matches[3]
+}
+
 if (-not (Test-Path -LiteralPath $MetadataPath -PathType Leaf)) {
     Fail "metadata is missing at '$MetadataPath'."
 }
@@ -132,6 +139,7 @@ foreach ($targetName in $selectedNames) {
     }
 
     $record.clientVersion = $installedBuilds["$($record.product)"]
+    $record.interface = Get-InterfaceFromVersion $record.clientVersion
     $record.exportedOn = (Get-Date).ToString('yyyy-MM-dd')
 }
 

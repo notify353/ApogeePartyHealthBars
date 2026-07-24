@@ -14,8 +14,8 @@ $definitions = [ordered]@{
     classicEra = [ordered]@{
         product = 'wow_classic_era'
         clientDirectory = '_classic_era_'
-        clientVersion = '1.15.8.67156'
-        interface = 11508
+        clientVersion = '1.15.9.68808'
+        interface = 11509
     }
     tbcAnniversary = [ordered]@{
         product = 'wow_anniversary'
@@ -84,7 +84,7 @@ function Assert-Fails([scriptblock]$Action, [string]$Pattern) {
 
 New-Item -ItemType Directory -Path $wowRoot -Force | Out-Null
 try {
-    Set-Content -LiteralPath $tocPath -Value '## Interface: 11508, 20506' -Encoding utf8NoBOM
+    Set-Content -LiteralPath $tocPath -Value '## Interface: 11509, 20506' -Encoding utf8NoBOM
     foreach ($targetName in @('classicEra', 'tbcAnniversary')) { Initialize-Export $targetName }
     Write-BuildInfo
     Write-Metadata
@@ -97,7 +97,13 @@ try {
     Write-BuildInfo
     Set-Content -LiteralPath $tocPath -Value '## Interface: 20506' -Encoding utf8NoBOM
     Assert-Fails { & $checkerPath -WowRoot $wowRoot -MetadataPath $metadataPath -TocPath $tocPath } 'do not match TOC interfaces'
+    Set-Content -LiteralPath $tocPath -Value '## Interface: 11509, 20506' -Encoding utf8NoBOM
+
+    Write-Metadata -Interfaces @{ classicEra = 11508 }
     Set-Content -LiteralPath $tocPath -Value '## Interface: 11508, 20506' -Encoding utf8NoBOM
+    Assert-Fails { & $checkerPath -WowRoot $wowRoot -MetadataPath $metadataPath -TocPath $tocPath } "interface '11508'.*does not match client version.*expected '11509'"
+    Write-Metadata
+    Set-Content -LiteralPath $tocPath -Value '## Interface: 11509, 20506' -Encoding utf8NoBOM
 
     $eraDocumentationRoot = Get-DocumentationRoot 'classicEra'
     [System.IO.File]::SetLastWriteTimeUtc((Join-Path $eraDocumentationRoot 'Blizzard_APIDocumentationGenerated.toc'), [DateTime]::UtcNow.AddMinutes(-20))
@@ -130,19 +136,21 @@ try {
     & $recorderPath -WowRoot $wowRoot -MetadataPath $metadataPath -TocPath $tocPath
     $recorded = Get-Content -LiteralPath $metadataPath -Raw | ConvertFrom-Json
     if ($recorded.targets.classicEra.clientVersion -ne $definitions.classicEra.clientVersion -or
-        $recorded.targets.tbcAnniversary.clientVersion -ne $definitions.tbcAnniversary.clientVersion) {
-        throw 'Recorder did not persist both installed target builds.'
+        $recorded.targets.classicEra.interface -ne $definitions.classicEra.interface -or
+        $recorded.targets.tbcAnniversary.clientVersion -ne $definitions.tbcAnniversary.clientVersion -or
+        $recorded.targets.tbcAnniversary.interface -ne $definitions.tbcAnniversary.interface) {
+        throw 'Recorder did not persist both installed target builds and derived interfaces.'
     }
     $recordedText = [System.IO.File]::ReadAllText($metadataPath)
     if ($recordedText.Contains("`r") -or -not $recordedText.EndsWith("`n")) {
         throw 'Recorder did not persist LF-normalized JSON with a final newline.'
     }
 
-    Write-Metadata -Versions @{ classicEra = '0.0.0.0'; tbcAnniversary = '9.9.9.9' }
+    Write-Metadata -Versions @{ classicEra = '0.0.0.0'; tbcAnniversary = '2.5.6.99999' }
     & $recorderPath -WowRoot $wowRoot -MetadataPath $metadataPath -TocPath $tocPath -Target classicEra
     $targeted = Get-Content -LiteralPath $metadataPath -Raw | ConvertFrom-Json
     if ($targeted.targets.classicEra.clientVersion -ne $definitions.classicEra.clientVersion -or
-        $targeted.targets.tbcAnniversary.clientVersion -ne '9.9.9.9') {
+        $targeted.targets.tbcAnniversary.clientVersion -ne '2.5.6.99999') {
         throw 'Targeted recorder changed an unrequested target or failed to update the requested target.'
     }
 

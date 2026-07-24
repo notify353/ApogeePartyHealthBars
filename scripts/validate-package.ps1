@@ -35,7 +35,7 @@ if ($interfaceParts.Count -eq 0 -or $malformedInterfaces.Count -gt 0) {
     Fail "TOC Interface metadata '$interfaceValue' is malformed."
 }
 $actualInterfaces = @($interfaceParts | ForEach-Object { [int]$_ } | Sort-Object -Unique)
-$expectedInterfaces = @(11508, 20506)
+$expectedInterfaces = @(11509, 20506)
 if (($actualInterfaces -join ',') -ne ($expectedInterfaces -join ',')) {
     Fail "TOC interfaces must be exactly '$($expectedInterfaces -join ', ')'; found '$($actualInterfaces -join ', ')'."
 }

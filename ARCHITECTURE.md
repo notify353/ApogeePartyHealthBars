@@ -6,6 +6,8 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 
 - `EventRouter`: event frame and isolated subscribers
 - `ClientCapabilities`: exact-interface `classicEra`/`tbcAnniversary` identity, volatile API-family detection, feature support, metadata fallbacks, and isolated startup diagnostics
+- `DungeonBoardCatalog`: private English Classic Era and TBC Anniversary five-player dungeon definitions, level ranges, aliases, and deterministic client-filtered order
+- `DungeonBoardClassifier`: pure request-intent, heroic, dungeon, service-noise, and ambiguous wing classification for the future Dungeon Board runtime
 - `PlayerContext`: normalized class, race, level, active talent group/tree/ranks, form/stance, and stealth state shared by context-sensitive features
 - `RuntimeLifecycleEvents`: login/bootstrap, world and roster changes, combat transitions, and combat-log fan-out
 - `RuntimeUnitEvents`: tracked-unit aura invalidation, shield synchronization, health/power update policy, targets, threat, and raid-marker refreshes
@@ -63,6 +65,8 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - Prefer player and pet Spellbook discovery for expansion-specific content. Preserve unavailable saved actions and preferences so profiles remain portable between supported clients.
 - Keep saved feature preferences separate from client support; unsupported features compute an effective disabled state without rewriting portable profile intent.
 - Keep volatile client APIs inside their domain adapters and capability detection; ordinary frame construction and widget methods remain direct.
+- Keep Dungeon Board catalog and classification independent from chat events, saved variables, UI, localization, and Blizzard Group Finder APIs; runtime collection and presentation consume only the classifier result contract.
+- Give Dungeon Board service/noise classifications precedence over dungeon requests, and preserve unresolved `DM`, Dire Maul, and Scarlet Monastery candidates instead of guessing or duplicating requests.
 - Treat basic unit health and frame construction as the required baseline while aura, range, prediction, threat, markers, assignment, bindings, state layouts, and profile sharing degrade independently.
 - Never mutate secure attributes, position, visibility, or mouse state during combat.
 - Keep every displayed unit inside `UnitTopology`; event routing, trackers, and layout must not grow independent token-pattern rules.

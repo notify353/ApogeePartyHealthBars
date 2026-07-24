@@ -8,6 +8,8 @@
 
 ApogeePartyHealthBars_Data.lua
 ApogeePartyHealthBars_ClientCapabilities.lua
+ApogeePartyHealthBars_DungeonBoardCatalog.lua
+ApogeePartyHealthBars_DungeonBoardClassifier.lua
 ApogeePartyHealthBars_PlayerContext.lua
 ApogeePartyHealthBars_DotData.lua
 ApogeePartyHealthBars_CrowdControl.lua

@@ -17,6 +17,12 @@ ApogeePartyHealthBars_RuntimeActionEvents = {
         assert(router.name == "router" and deps.name == "deps")
     end,
 }
+ApogeePartyHealthBars_RuntimeDungeonBoardEvents = {
+    Register = function(router, deps)
+        calls[#calls + 1] = "dungeon"
+        assert(router.name == "router" and deps.name == "deps")
+    end,
+}
 
 dofile("ApogeePartyHealthBars_RuntimeEvents.lua")
 local events = ApogeePartyHealthBars_RuntimeEvents
@@ -38,7 +44,7 @@ local router = {
 }
 events.Register(router, { name = "deps", Print = printer })
 
-assert(table.concat(calls, ",") == "initialize,lifecycle,unit,action",
+assert(table.concat(calls, ",") == "initialize,lifecycle,unit,action,dungeon",
     "runtime subscriber registration order changed: " .. table.concat(calls, ","))
 
 print("PASS runtime event coordinator")

@@ -3,10 +3,12 @@ local DungeonBoard = ApogeePartyHealthBars_DungeonBoardRuntime
 ApogeePartyHealthBars_RuntimeDungeonBoardEvents = {}
 local D = ApogeePartyHealthBars_RuntimeDungeonBoardEvents
 
-local function ingestChannelMessage(
+local function ingestChatMessage(
+    source,
     text, playerName, channelName, zoneChannelID, channelIndex, channelBaseName,
     lineID, guid)
     DungeonBoard.Ingest({
+        source = source,
         message = text,
         sender = playerName,
         guid = guid,
@@ -29,7 +31,17 @@ function D.Register(eventRouter)
     eventRouter.Subscribe("CHAT_MSG_CHANNEL", "DungeonBoard", function(
         _, text, playerName, _, channelName, _, _, zoneChannelID, channelIndex,
         channelBaseName, _, lineID, guid)
-        ingestChannelMessage(
+        ingestChatMessage(
+            "channel",
+            text, playerName, channelName, zoneChannelID, channelIndex, channelBaseName,
+            lineID, guid)
+    end)
+
+    eventRouter.Subscribe("CHAT_MSG_GUILD", "DungeonBoard", function(
+        _, text, playerName, _, channelName, _, _, zoneChannelID, channelIndex,
+        channelBaseName, _, lineID, guid)
+        ingestChatMessage(
+            "guild",
             text, playerName, channelName, zoneChannelID, channelIndex, channelBaseName,
             lineID, guid)
     end)

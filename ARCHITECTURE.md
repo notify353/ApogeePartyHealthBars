@@ -9,8 +9,8 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `DungeonBoardCatalog`: private English Classic Era and TBC Anniversary five-player dungeon definitions, level ranges, aliases, and deterministic client-filtered order
 - `DungeonBoardClassifier`: pure request-intent, heroic, dungeon, service-noise, and ambiguous wing classification for the future Dungeon Board runtime
 - `DungeonBoardRuntime`: session-only one-record-per-sender request collection, refresh/replacement semantics, expiration, and immutable newest-first snapshots
-- `DungeonBoardUI`: read-only, session-positioned request window; catalog-ordered single-dungeon groups; one non-duplicating ambiguous/multiple group; and age/expiry refresh
-- `RuntimeDungeonBoardEvents`: authoritative `CHAT_MSG_CHANNEL` payload adaptation, direct event subscription, and login initialization for Dungeon Board collection
+- `DungeonBoardUI`: read-only, session-positioned request window; highlighted leading guild section; catalog-ordered channel-request groups; one non-duplicating ambiguous/multiple group; and age/expiry refresh
+- `RuntimeDungeonBoardEvents`: authoritative `CHAT_MSG_CHANNEL`/`CHAT_MSG_GUILD` payload adaptation, direct event subscriptions, and login initialization for Dungeon Board collection
 - `PlayerContext`: normalized class, race, level, active talent group/tree/ranks, form/stance, and stealth state shared by context-sensitive features
 - `RuntimeLifecycleEvents`: login/bootstrap, world and roster changes, combat transitions, and combat-log fan-out
 - `RuntimeUnitEvents`: tracked-unit aura invalidation, shield synchronization, health/power update policy, targets, threat, and raid-marker refreshes

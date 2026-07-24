@@ -28,6 +28,7 @@ end
 local function cloneRequest(request)
     return {
         id = request.id,
+        source = request.source,
         sender = request.sender,
         guid = request.guid,
         message = request.message,
@@ -127,6 +128,7 @@ function Runtime.Ingest(data)
 
     requestsBySender[senderKey] = {
         id = senderKey,
+        source = data.source == "guild" and "guild" or "channel",
         sender = data.sender,
         guid = data.guid,
         message = data.message,

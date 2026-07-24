@@ -8,7 +8,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
-- Added a lean, English-only Dungeon Board window for recent Classic Era and TBC Anniversary five-player dungeon requests from joined chat channels. Open it with middle-click on the minimap button or `/aphb board`; requests remain session-only and expire automatically.
+- Added a lean, English-only Dungeon Board window for recent Classic Era and TBC Anniversary five-player dungeon requests from joined chat channels and guild chat. Guild requests appear in a highlighted leading section. Open it with middle-click on the minimap button or `/aphb board`; requests remain session-only and expire automatically.
 
 ### Fixed
 

@@ -17,6 +17,7 @@ assert(Runtime.GetTimeoutSeconds() == 150, "default request timeout changed")
 assert(Runtime.Ingest(nil).kind == "none", "invalid request input was accepted")
 
 Runtime.Ingest({
+    source = "channel",
     message = "LFM RFC need tank",
     sender = "First-Realm",
     guid = "Player-1",
@@ -33,7 +34,7 @@ assert(#snapshot == 1 and snapshot[1].id == "Player-1"
 assert(snapshot[1].firstSeen == 100 and snapshot[1].lastSeen == 100,
     "initial timestamps were incorrect")
 assert(snapshot[1].channelBaseName == "LookingForGroup" and snapshot[1].channelIndex == 4
-    and snapshot[1].zoneChannelID == 26,
+    and snapshot[1].zoneChannelID == 26 and snapshot[1].source == "channel",
     "chat channel metadata was not retained")
 assert(changedCount == 1, "initial request did not notify the snapshot consumer")
 
@@ -84,6 +85,7 @@ assert(changedCount == 3, "noise classification notified the snapshot consumer")
 
 now = 140
 Runtime.Ingest({
+    source = "guild",
     message = "LFG SFK",
     sender = "Second-Realm",
     guid = "Player-2",
@@ -92,6 +94,7 @@ Runtime.Ingest({
 snapshot = Runtime.GetSnapshot()
 assert(#snapshot == 2 and snapshot[1].id == "Player-2" and snapshot[2].id == "Player-1",
     "snapshot was not ordered newest first")
+assert(snapshot[1].source == "guild", "guild request source was not retained")
 
 snapshot[1].sender = "Changed"
 snapshot[1].dungeonKeys[1] = "CHANGED"

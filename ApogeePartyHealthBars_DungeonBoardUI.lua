@@ -12,6 +12,7 @@ local HINT_HEIGHT = 24
 local SECTION_HEIGHT = 22
 local REQUEST_HEIGHT = 54
 local ENTRY_GAP = 3
+local GUILD_GROUP = "__guild"
 local SPECIAL_GROUP = "__special"
 
 local D
@@ -44,7 +45,9 @@ local function groupRequests(snapshot)
     local grouped = {}
     for _, request in ipairs(snapshot or {}) do
         local groupKey = SPECIAL_GROUP
-        if request.status == "matched" and #request.dungeonKeys == 1 then
+        if request.source == "guild" then
+            groupKey = GUILD_GROUP
+        elseif request.status == "matched" and #request.dungeonKeys == 1 then
             groupKey = request.dungeonKeys[1]
         end
         grouped[groupKey] = grouped[groupKey] or {}
@@ -64,6 +67,7 @@ function UI.BuildEntries(snapshot, clientFlavor, atTime)
         entries[#entries + 1] = {
             kind = "section",
             text = label .. " (" .. tostring(#requests) .. ")",
+            isGuild = groupKey == GUILD_GROUP,
         }
         for _, request in ipairs(requests) do
             local detail = dungeonNames(request.dungeonKeys)
@@ -75,10 +79,12 @@ function UI.BuildEntries(snapshot, clientFlavor, atTime)
                 detail = detail,
                 message = request.message,
                 status = request.status,
+                isGuild = request.source == "guild",
             }
         end
     end
 
+    appendGroup(GUILD_GROUP, "Guild requests")
     for _, dungeon in ipairs(D.Catalog.GetDungeons(clientFlavor)) do
         appendGroup(dungeon.key, dungeon.name)
     end
@@ -123,17 +129,31 @@ end
 local function renderEntry(entryFrame, entry)
     if entry.kind == "section" then
         entryFrame:SetHeight(SECTION_HEIGHT)
-        entryFrame.background:SetColorTexture(0.12, 0.12, 0.15, 1)
+        if entry.isGuild then
+            entryFrame.background:SetColorTexture(0.06, 0.18, 0.08, 1)
+        else
+            entryFrame.background:SetColorTexture(0.12, 0.12, 0.15, 1)
+        end
         entryFrame.title:SetText(escape(entry.text))
-        entryFrame.title:SetTextColor(1, 0.82, 0)
+        if entry.isGuild then
+            entryFrame.title:SetTextColor(0.3, 1, 0.35)
+        else
+            entryFrame.title:SetTextColor(1, 0.82, 0)
+        end
         entryFrame.meta:SetText("")
         entryFrame.message:SetText("")
         return SECTION_HEIGHT
     end
 
     entryFrame:SetHeight(REQUEST_HEIGHT)
-    entryFrame.background:SetColorTexture(0.075, 0.075, 0.09, 1)
-    entryFrame.title:SetText(escape(entry.sender) .. "  |cff888888" .. escape(entry.age) .. "|r")
+    if entry.isGuild then
+        entryFrame.background:SetColorTexture(0.045, 0.12, 0.055, 1)
+    else
+        entryFrame.background:SetColorTexture(0.075, 0.075, 0.09, 1)
+    end
+    local sourceBadge = entry.isGuild and "|cff4dff59GUILD|r  " or ""
+    entryFrame.title:SetText(sourceBadge
+        .. escape(entry.sender) .. "  |cff888888" .. escape(entry.age) .. "|r")
     entryFrame.title:SetTextColor(0.95, 0.95, 0.95)
     entryFrame.meta:SetText(escape(entry.detail))
     entryFrame.message:SetText(escape(entry.message))
@@ -207,7 +227,7 @@ function UI.Build(deps)
     hint:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -FRAME_PADDING, -(HEADER_HEIGHT + 7))
     hint:SetJustifyH("LEFT")
     hint:SetWordWrap(false)
-    hint:SetText("Joined chat channels • one current request per sender • expires after 2m 30s")
+    hint:SetText("Joined channels + Guild • one current request per sender • expires after 2m 30s")
 
     scroll = CreateFrame("ScrollFrame", "ApogeePartyHealthBarsDungeonBoardScroll", frame,
         "UIPanelScrollFrameTemplate")

@@ -100,6 +100,9 @@ local layouts = {
 }
 local wheel = {}
 function wheel.GetActiveLayoutKey() return currentLayout end
+function wheel.GetActiveLayoutLabel()
+    return currentLayout == "battle" and "Battle Stance" or "Base"
+end
 function wheel.GetActiveSpecKey() return currentSpec end
 function wheel.HasStateLayouts() return true end
 function wheel.GetLayoutOptions() return { { key = "base", label = "Base" }, { key = "battle", label = "Battle" } } end
@@ -147,7 +150,7 @@ config.Build(widget(), {
 
 local rows = config.GetRows()
 assert(#createdRows == 6 and #actionList.visibleRows == 6
-        and actionList.layoutControl == dropdowns[1],
+        and actionList.layoutControl:GetText() == "Current state: Base",
     "Wheel did not retain all six gestures in the shared action list")
 assert(actionList.hint:GetText() == "Drag a spell or bag item onto a row.",
     "Wheel did not use the shared minimal instruction")
@@ -185,10 +188,15 @@ assert(editorOptions == nil and closeCount > 0,
 rows.ctrlUp.down.scripts.OnClick()
 assert(layouts.base.shiftUp and layouts.base.shiftUp.spellName == "Charge",
     "Wheel Down did not move the complete action")
-dropdowns[1].onSelect("battle")
-assert(ApogeePartyHealthBars_S.selectedWheelLayout == "battle" and closeCount > 0
-        and rows.ctrlUp.primary:GetText() == "Battle Shout",
-    "Wheel layout change did not close editing and refresh all rows")
+rows.shiftUp.macro.scripts.OnClick()
+local closesBeforeStateChange = closeCount
+currentLayout = "battle"
+config.Refresh()
+assert(ApogeePartyHealthBars_S.selectedWheelLayout == "battle"
+        and actionList.layoutControl:GetText() == "Current state: Battle Stance"
+        and rows.ctrlUp.primary:GetText() == "Battle Shout"
+        and editorOptions == nil and closeCount > closesBeforeStateChange,
+    "Wheel did not follow a manually changed game state")
 
 rows.ctrlUp.macro.scripts.OnClick()
 local closesBeforeSpecChange = closeCount

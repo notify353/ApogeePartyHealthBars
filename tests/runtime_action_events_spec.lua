@@ -245,12 +245,14 @@ expect({}, "unrelated CVar refreshed physical click timing")
 
 reset()
 dispatch("UPDATE_SHAPESHIFT_FORM")
-expect({ "shortcut-refresh:false", "wheel-state", "keys-state", "buttons-state", "layout" },
+expect({ "shortcut-refresh:false", "wheel-state", "keys-state", "buttons-state",
+    "ui-keys", "ui-wheel", "ui-buttons", "layout" },
     "form-state transition order changed")
 
 reset()
 dispatch("UPDATE_STEALTH")
-expect({ "shortcut-refresh:false", "wheel-state", "keys-state", "buttons-state", "layout" },
+expect({ "shortcut-refresh:false", "wheel-state", "keys-state", "buttons-state",
+    "ui-keys", "ui-wheel", "ui-buttons", "layout" },
     "stealth-state transition order changed")
 
 reset()

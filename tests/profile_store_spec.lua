@@ -22,7 +22,7 @@ ApogeePartyHealthBars_Effects = {
         if settings.showAllSlots == nil then settings.showAllSlots = true end
         if settings.combatUIAutoHide == nil then settings.combatUIAutoHide = true end
         if settings.automaticConsumablesEnabled == nil then
-            settings.automaticConsumablesEnabled = false
+            settings.automaticConsumablesEnabled = true
         end
         if settings.dungeonBoardFeedEnabled == nil then
             settings.dungeonBoardFeedEnabled = true
@@ -122,7 +122,7 @@ active.payload.settings.dungeonBoardRole = "tank"
 active.payload.settings.dungeonBoardFeedEnabled = false
 local created = assert(store.Create("Clean"))
 assert(created.payload.settings.enabled
-        and created.payload.settings.automaticConsumablesEnabled == false
+        and created.payload.settings.automaticConsumablesEnabled == true
         and created.payload.settings.dungeonBoardRole == "healer"
         and created.payload.settings.dungeonBoardFeedEnabled == true
         and created.payload.settings.cleanseWatchPoint == "TOPRIGHT"

@@ -7,7 +7,7 @@ local Actions = ApogeePartyHealthBars_ActionMacros
 ApogeePartyHealthBars_KeyConfig = {}
 local KC = ApogeePartyHealthBars_KeyConfig
 
-local tab, K, D, list, layoutSelector
+local tab, K, D, list, stateIndicator
 local lastSpecKey, lastLayoutKey
 local slotRows, definitions = {}, {}
 local statusIsConflict = false
@@ -29,9 +29,7 @@ local function bindingConflictMessage(conflicts)
 end
 
 local function selectedLayout()
-    if not K.IsKnownLayout(S.selectedKeyLayout) then
-        S.selectedKeyLayout = K.GetActiveLayoutKey()
-    end
+    S.selectedKeyLayout = K.GetActiveLayoutKey()
     return S.selectedKeyLayout
 end
 
@@ -71,9 +69,8 @@ function KC.Refresh(assignedSlot)
     end
 
     local hasStates = K.HasStateLayouts()
-    layoutSelector:SetOptions(K.GetLayoutOptions())
-    layoutSelector:SetSelectedKey(layoutKey)
-    layoutSelector:SetShown(hasStates)
+    stateIndicator:SetText("Current state: " .. K.GetActiveLayoutLabel())
+    stateIndicator:SetShown(hasStates)
 
     local rows = {}
     local order = K.GetDisplayOrder()
@@ -95,7 +92,7 @@ function KC.Refresh(assignedSlot)
         })
         rows[#rows + 1] = row
     end
-    AC.LayoutActionList(list, rows, hasStates and layoutSelector or nil)
+    AC.LayoutActionList(list, rows, hasStates and stateIndicator or nil)
 end
 
 function KC.Build(parent, deps)
@@ -107,12 +104,10 @@ function KC.Build(parent, deps)
     tab:Hide()
 
     list = AC.CreateActionList(tab, "ApogeePartyHealthBarsKeyConfigScroll")
-    layoutSelector = UIH.CreateDropdown(list.content, list.rowWidth, 22, list.rowWidth)
-    layoutSelector:SetSelectionCallback(function(layoutKey)
-        if not K.IsKnownLayout(layoutKey) then return end
-        S.selectedKeyLayout = layoutKey
-        AC.CloseEditor(); setStatus(""); KC.Refresh()
-    end)
+    stateIndicator = list.content:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    stateIndicator:SetWidth(list.rowWidth)
+    stateIndicator:SetHeight(22)
+    stateIndicator:SetJustifyH("LEFT")
 
     for _, definition in ipairs(K.GetDefinitions()) do
         definitions[definition.id] = definition

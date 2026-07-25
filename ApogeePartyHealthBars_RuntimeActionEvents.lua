@@ -95,6 +95,10 @@ function A.Register(eventRouter, deps)
                 W.OnStateChanged()
                 K.OnStateChanged()
                 B.OnStateChanged()
+                local ui = deps.GetConfigUI()
+                if ui.RefreshKeyPanel then ui.RefreshKeyPanel() end
+                if ui.RefreshWheelPanel then ui.RefreshWheelPanel() end
+                if ui.RefreshMouseButtonPanel then ui.RefreshMouseButtonPanel() end
                 S.RequestLayoutUpdate()
 
             elseif event == "UPDATE_SHAPESHIFT_FORMS" then

@@ -308,6 +308,10 @@ assert(#wheel.GetLayouts() == 3 and wheel.GetLayouts()[1].key == PRIMARY
 local defensive = "spell:71"
 assert(wheel.GetSlot(defensive, "normalUp") == nil,
     "new Warrior state did not start empty")
+local inactiveAssigned, inactiveMessage = wheel.AssignSpell(defensive, "normalUp", nil, "Charge")
+assert(not inactiveAssigned and inactiveMessage:find("Change to that state", 1, true),
+    "inactive state accepted a spell assignment")
+activeState = 2
 assert(wheel.AssignSpell(defensive, "normalUp", nil, "Charge"),
     "state-specific wheel spell assignment failed")
 assert(wheel.AssignItem(defensive, "shiftDown", 1251, "Linen Bandage"),
@@ -317,6 +321,7 @@ assert(wheel.GetSlot(defensive, "shiftDown").kind == "item"
     "editing a state-specific item mutated another layout")
 assert(wheel.GetSlot(PRIMARY, "normalUp").spellName == warriorSpells[1],
     "editing one Warrior state layout mutated another")
+activeState = 1
 wheel.RefreshSecureActions()
 local stateSecure = wheel.GetSecureButton("normalUp")
 assert(stateSecure.stateDrivers.wheelstate

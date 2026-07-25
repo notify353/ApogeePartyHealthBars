@@ -165,6 +165,28 @@ assert(lanes.Magic.background.alpha == 1
         and lanes.Disease.typeTitle.alpha == 0
         and lanes.Disease.emptyLabel.alpha == 0,
     "runtime panel rendered a clean debuff category beside an active category")
+assert(lanes.Magic.ignoreButton.shown
+        and lanes.Magic.ignoreButton.effectKey == "id:9001",
+    "runtime debuff card did not expose its session Ignore action")
+lanes.Magic.ignoreButton.scripts.OnClick(lanes.Magic.ignoreButton)
+assert(lanes.Magic.typeTitle.text
+            == "Magic  ·  2 removable effects  ·  +1 more"
+        and lanes.Magic.effectCard.title.text:find(
+            "Lingering Hex", 1, true)
+        and lanes.Magic.ignoreButton.effectKey == "id:9002"
+        and ApogeePartyHealthBars_S.sv.cleanseWatchIgnoredEffects == nil,
+    "session Ignore did not suppress only the selected debuff without persistence")
+harmful.player = { auras = {
+    { name = "Arcane Lock", icon = 136116, applications = 1,
+        dispelName = "Magic", duration = 12, expirationTime = 15,
+        spellId = 9001 },
+} }
+Watch.Refresh()
+assert(lanes.Magic.typeTitle.text
+            == "Magic  ·  2 removable effects  ·  +1 more"
+        and magicPlayer.inputShield.shown,
+    "session Ignore did not suppress the selected debuff for every member")
+harmful.player = { auras = {} }
 harmful.party1 = { auras = {} }
 inCombat = true
 Watch.Refresh()
@@ -174,9 +196,9 @@ assert(magicParty.inputShield.shown
         and lanes.Disease.background.alpha == 0,
     "clean combat refresh did not shield the inactive secure cleanse button")
 harmful.party1 = { auras = {
-    { name = "Arcane Lock", icon = 136116, applications = 1,
+    { name = "Lingering Hex", icon = 136129, applications = 1,
         dispelName = "Magic", duration = 12, expirationTime = 15,
-        spellId = 9001 },
+        spellId = 9002 },
 } }
 Watch.Refresh()
 assert(not magicParty.inputShield.shown
@@ -205,6 +227,15 @@ assert(lanes.Disease.typeTitle.text == "Disease  ·  configuration preview"
         and lanes.Disease.buttons[1].label.text == "Healer"
         and lanes.Disease.buttons[2].label.text == "",
     "configuration mode did not show one complete real-game disease card")
+assert(lanes.Magic.ignoreButton.shown
+        and lanes.Disease.ignoreButton.shown
+        and lanes.Magic.ignoreButton.effectKey == nil
+        and lanes.Disease.ignoreButton.effectKey == nil,
+    "configuration samples did not preview a nonfunctional Ignore action")
+lanes.Magic.ignoreButton.scripts.OnClick(lanes.Magic.ignoreButton)
+assert(lanes.Magic.effectCard.title.text:find("Polymorph", 1, true)
+        and ApogeePartyHealthBars_S.sv.cleanseWatchIgnoredEffects == nil,
+    "configuration preview Ignore action changed session or saved state")
 assert(Watch.SetUnlocked(false),
     "configuration mode did not lock Cleanse Watch")
 assert(watchFrame.height == 252,

@@ -27,12 +27,20 @@ dofile("ApogeePartyHealthBars_PlayerSpells.lua")
 local spells = ApogeePartyHealthBars_PlayerSpells
 
 local spellID, castName = spells.GetSpellFromCursor(7, BOOKTYPE_SPELL, 143)
-assert(spellID == 143 and castName == "Fireball(Rank 2)",
-    "spell cursor did not preserve its rank-qualified Spellbook cast name")
+assert(spellID == 143 and castName == "Fireball",
+    "ordinary spell cursor assignment did not select the highest-rank cast name")
+
+local rankedSpellID, rankedCastName = spells.GetSpellFromCursor(7, BOOKTYPE_SPELL, 143, true)
+assert(rankedSpellID == 143 and rankedCastName == "Fireball(Rank 2)",
+    "rank-preserving spell cursor assignment lost its Spellbook rank")
 
 local petSpellID, petCastName = spells.GetSpellFromCursor(3, BOOKTYPE_PET, 17253)
-assert(petSpellID == 17253 and petCastName == "Bite(Rank 1)",
-    "pet spell cursor did not use the pet Spellbook bank")
+assert(petSpellID == 17253 and petCastName == "Bite",
+    "ordinary pet spell cursor assignment did not select the highest rank")
+
+local rankedPetID, rankedPetName = spells.GetSpellFromCursor(3, BOOKTYPE_PET, 17253, true)
+assert(rankedPetID == 17253 and rankedPetName == "Bite(Rank 1)",
+    "rank-preserving pet spell cursor assignment did not use the pet Spellbook bank")
 
 local fallbackID, fallbackName = spells.GetSpellFromCursor(nil, BOOKTYPE_SPELL, 133)
 assert(fallbackID == 133 and fallbackName == "Fireball",
@@ -57,8 +65,10 @@ C_Spell = {
     end,
 }
 local modernID, modernName = spells.GetSpellFromCursor(2, BOOKTYPE_SPELL)
-assert(modernID == 205 and modernName == "Frostbolt(Rank 3)"
-        and spells.IsKnownSpell(205, modernName)
+local modernRankedID, modernRankedName = spells.GetSpellFromCursor(2, BOOKTYPE_SPELL, nil, true)
+assert(modernID == 205 and modernName == "Frostbolt"
+        and modernRankedID == 205 and modernRankedName == "Frostbolt(Rank 3)"
+        and spells.IsKnownSpell(205, modernRankedName)
         and not spells.IsKnownSpell(33786, "Cyclone"),
     "modern Spellbook lookup did not preserve Classic rank names or reject a missing TBC spell")
 

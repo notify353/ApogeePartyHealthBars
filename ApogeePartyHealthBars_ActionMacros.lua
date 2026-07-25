@@ -1,5 +1,6 @@
 local Sounds = ApogeePartyHealthBars_Sounds
 local Data = ApogeePartyHealthBars_ActionData
+local PlayerContext = ApogeePartyHealthBars_PlayerContext
 
 ApogeePartyHealthBars_ActionMacros = {}
 local A = ApogeePartyHealthBars_ActionMacros
@@ -16,7 +17,7 @@ local RANGED_AUTO_ATTACK_IDS = { [75] = true, [5019] = true }
 local MELEE_ATTACK_FAMILY_IDS = {
     -- Warrior
     78, 845, 772, 1715, 7386, 7384, 6572, 5308, 1464, 1680,
-    12294, 23881, 23922, 20243,
+    12294, 23881, 23922, 20243, 100, 20252,
     -- Hunter
     2973, 1495, 19306, 2974,
     -- Paladin and Shaman
@@ -27,7 +28,7 @@ local STEALTH_SAFE_MELEE_ATTACK_FAMILY_IDS = {
     -- Rogue
     1752, 53, 2098, 1943, 16511, 14278, 5938, 1329, 32645, 8647,
     -- Druid
-    1082, 1822, 5221, 33876, 33878, 1079, 22568, 6807, 33745, 779,
+    1082, 1822, 5221, 33876, 33878, 1079, 22568, 6807, 33745, 779, 16979,
 }
 
 local function getSpellInfo(identifier)
@@ -86,6 +87,10 @@ local function classifySpell(spellId, spellName)
             or spellPredicate("IsAutoRepeatSpell", identifier) then
         return "ranged-auto"
     end
+    if PlayerContext and PlayerContext.GetClassToken
+            and PlayerContext.GetClassToken() == "WARRIOR" then
+        return "melee-attack"
+    end
     if matchesFamily(assignedName, STEALTH_SAFE_MELEE_ATTACK_FAMILY_IDS) then
         return "stealth-safe-melee-attack"
     end
@@ -99,10 +104,10 @@ local function renderSpellTemplate(spellName, templateId)
     local castLine = "/cast " .. (templateId == "ranged-auto" and "!" or "") .. spellName
     if templateId == "ranged-auto" then return TARGET_ENEMY .. "\n" .. castLine .. "\n/startattack" end
     if templateId == "melee-attack" then
-        return TARGET_ENEMY .. "\n/startattack\n" .. castLine
+        return "/startattack\n" .. castLine
     end
     if templateId == "stealth-safe-melee-attack" then
-        return TARGET_ENEMY .. "\n/startattack [nostealth]\n" .. castLine
+        return "/startattack [nostealth]\n" .. castLine
     end
     return castLine
 end
@@ -208,11 +213,11 @@ function A.GetTemplateTopics()
         },
         {
             id = "generated-melee-attack", category = "generated", kind = "template",
-            title = "Melee Combat Ability",
-            explanation = "Acquires an enemy only when necessary, keeps auto-attack running, and casts the exact assigned ability and rank.",
-            applied = "New assignments and Reset for explicitly reviewed Warrior, Hunter-melee, Paladin, and Shaman combat families.",
+            title = "Melee and Warrior Ability",
+            explanation = "Keeps auto-attack running on the current target and casts the exact assigned ability and rank.",
+            applied = "Every new Warrior spell assignment, plus Reset; other classes use it only for explicitly reviewed melee combat families.",
             why = "The weapon swing continues even when the ability cannot fire because of resources, stance, range, or cooldown.",
-            tradeoffs = "Only curated weapon abilities receive this behavior; uncertain, control, movement, and utility actions remain direct casts.",
+            tradeoffs = "It never selects another enemy. Warrior utility and stance actions also start attacking by class policy; other classes remain limited to reviewed weapon abilities and hostile melee gap closers.",
             body = renderSpellTemplate("Heroic Strike(Rank 1)", "melee-attack"), copyable = true,
         },
         {

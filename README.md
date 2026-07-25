@@ -49,12 +49,12 @@ Settings open on General and proceed through DoTs, Healing, Keys, Wheel, Buttons
 
 Export creates a compressed `APHB1:` share string and selects it automatically; press Ctrl+C to copy it. Import is the only way to transfer a profile between characters and previews the profile name, author, addon version, and class. Import as New is the default, while Merge preserves settings absent from the incoming profile and Replace rebuilds the selected profile from the import. Profiles and imports are restricted to the class that created them.
 
-Drag a Spellbook spell or an item from an open bag directly onto a Shortcuts, Keys, Wheel, or Buttons HUD position, or onto its row in settings. Opening the Spellbook shows the next empty Shortcut drop target beneath the party frames, even while settings are closed. For bag items, clicking the item and then its settings destination works too. Shortcuts, Keys, Wheel, and Buttons use the same compact action rows; settings exposes one extra empty Shortcut row for adding the next action. Drop directly onto an occupied row to replace it. Shortcuts supports up to 12 assignments and displays them six per row in a footer beneath the complete party-health frame. Shortcuts rejects duplicate spell and item IDs; Keys, Wheel, and Buttons permit the same spell or item in multiple positions and across features. Action changes are blocked in combat.
+Drag a Spellbook spell or an item from an open bag directly onto a Healing, Shortcuts, Keys, Wheel, or Buttons HUD position, or onto its row in settings. Spell drops use the highest learned rank by default; hold Shift while dropping to preserve the selected Spellbook rank. Opening the Spellbook shows the next empty Shortcut drop target beneath the party frames, even while settings are closed. For bag items, clicking the item and then its settings destination works too. Shortcuts, Keys, Wheel, and Buttons use the same compact action rows; settings exposes one extra empty Shortcut row for adding the next action. Drop directly onto an occupied row to replace it. Shortcuts supports up to 12 assignments and displays them six per row in a footer beneath the complete party-health frame. Shortcuts rejects duplicate spell and item IDs; Keys, Wheel, and Buttons permit the same spell or item in multiple positions and across features. Action changes are blocked in combat.
 
 Ordinary spell assignments in Shortcuts, Keys, Wheel, and Buttons start with this generated macro:
 
 ```text
-/cast Spell Name(Rank N)
+/cast Spell Name
 ```
 
 The direct default deliberately does not add conditions, retarget, or start attacking, so heals, utility, Stealth, crowd control, and ordinary damage spells retain their normal behavior. Actual channeled spells can use an optional spell-specific `[nochanneling:Spell Name]` condition through the macro editor when preventing self-restarts is worth giving up normal spell queuing.
@@ -62,12 +62,11 @@ The direct default deliberately does not add conditions, retarget, or start atta
 Reviewed melee combat families instead keep weapon swings active when the assigned ability cannot fire because of resources, stance, range, or cooldown:
 
 ```text
-/targetenemy [noexists][dead][help]
 /startattack
-/cast Heroic Strike(Rank N)
+/cast Heroic Strike
 ```
 
-This policy covers the add-on's curated Warrior, Hunter-melee, Paladin, and Shaman weapon abilities. Reviewed Rogue and Feral Druid abilities use `/startattack [nostealth]` so a failed press cannot waste Stealth or Prowl. Stealth openers, control, interrupts, movement, forms, buffs, heals, dispels, taunts, pet commands, caster damage, targetless utility, and ordinary Hunter shots remain direct casts. Queued next-swing abilities use normal `/cast`, preserving deliberate queue cancellation; the toggle-locked `!` form remains an optional Macros-library recipe.
+For Warriors, this policy applies to every spell assigned to Shortcuts, Keys, Wheel, or Buttons, including stances, shouts, interrupts, Charge, and defensive abilities. It starts attacking only the current target and never selects another enemy. Other classes remain limited to reviewed weapon abilities and hostile melee gap closers. Reviewed Rogue and Feral Druid abilities, including Feral Charge, use `/startattack [nostealth]` so a failed press cannot waste Stealth or Prowl. Their stealth openers, control, interrupts, friendly movement, forms, buffs, heals, dispels, taunts, pet commands, caster damage, targetless utility, and ordinary Hunter shots remain direct casts. Items remain direct `/use` actions and never start attacking. Healing assignments continue using native unit-targeted actions without generated macros. Queued next-swing abilities use normal `/cast`, preserving deliberate queue cancellation; the toggle-locked `!` form remains an optional Macros-library recipe.
 
 Melee Attack uses conditional enemy targeting plus `/startattack`. Auto Shot, wand Shoot, and other client-confirmed ranged auto-attacks additionally use `!Spell Name` so repeated presses cannot toggle the repeating attack off, followed by `/startattack` as a close-range melee fallback:
 

@@ -52,7 +52,8 @@ function ApogeePartyHealthBars_ActionConfig.CreateActionList()
     actionList = {
         content = widget(), hint = widget(), status = widget(), scroll = widget(), rowWidth = 372,
     }
-    actionList.hint:SetText("Drag a spell or bag item onto a row.")
+    actionList.hint:SetText(
+        "Drop spell/item on a row. Shift-drop preserves spell rank.")
     return actionList
 end
 function ApogeePartyHealthBars_ActionConfig.CreateActionRow()
@@ -152,7 +153,8 @@ local rows = config.GetRows()
 assert(#createdRows == 6 and #actionList.visibleRows == 6
         and actionList.layoutControl:GetText() == "Current state: Base",
     "Wheel did not retain all six gestures in the shared action list")
-assert(actionList.hint:GetText() == "Drag a spell or bag item onto a row.",
+assert(actionList.hint:GetText()
+        == "Drop spell/item on a row. Shift-drop preserves spell rank.",
     "Wheel did not use the shared minimal instruction")
 assert(rows.ctrlUp.primary:GetText() == "Charge"
         and rows.ctrlUp.secondary:GetText() == "Ctrl + Wheel Up — Spell"

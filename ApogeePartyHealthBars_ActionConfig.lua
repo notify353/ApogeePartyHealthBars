@@ -189,7 +189,7 @@ function AC.CreateActionList(parent, frameName)
     hint:SetPoint("TOPLEFT", content, "TOPLEFT", 0, 0)
     hint:SetWidth(rowWidth); hint:SetHeight(LIST_HINT_H)
     hint:SetJustifyH("LEFT"); hint:SetJustifyV("TOP"); hint:SetWordWrap(false)
-    hint:SetText("Drag a spell or bag item onto a row.")
+    hint:SetText("Drop spell/item on a row. Shift-drop preserves spell rank.")
 
     local status = content:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     status:SetWidth(rowWidth); status:SetJustifyH("LEFT"); status:SetWordWrap(false)

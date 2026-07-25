@@ -10,6 +10,7 @@ local normalMeleeFamilies = {
     { 6572, "Revenge" }, { 5308, "Execute" }, { 1464, "Slam" },
     { 1680, "Whirlwind" }, { 12294, "Mortal Strike" }, { 23881, "Bloodthirst" },
     { 23922, "Shield Slam" }, { 20243, "Devastate" },
+    { 100, "Charge" }, { 20252, "Intercept" },
     { 2973, "Raptor Strike" }, { 1495, "Mongoose Bite" },
     { 19306, "Counterattack" }, { 2974, "Wing Clip" },
     { 35395, "Crusader Strike" }, { 20271, "Judgement" }, { 17364, "Stormstrike" },
@@ -21,13 +22,13 @@ local stealthSafeFamilies = {
     { 8647, "Expose Armor" }, { 1082, "Claw" }, { 1822, "Rake" },
     { 5221, "Shred" }, { 33876, "Mangle (Cat)" }, { 33878, "Mangle (Bear)" },
     { 1079, "Rip" }, { 22568, "Ferocious Bite" }, { 6807, "Maul" },
-    { 33745, "Lacerate" }, { 779, "Swipe" },
+    { 33745, "Lacerate" }, { 779, "Swipe" }, { 16979, "Feral Charge" },
 }
 local excludedFamilies = {
     { 14914, "Holy Fire" }, { 6770, "Sap" }, { 1776, "Gouge" },
     { 1833, "Cheap Shot" }, { 408, "Kidney Shot" }, { 6552, "Pummel" },
-    { 1766, "Kick" }, { 118, "Polymorph" }, { 100, "Charge" },
-    { 16979, "Feral Charge" }, { 1784, "Stealth" }, { 5215, "Prowl" },
+    { 1766, "Kick" }, { 118, "Polymorph" },
+    { 1784, "Stealth" }, { 5215, "Prowl" },
     { 8676, "Ambush" }, { 703, "Garrote" }, { 6785, "Ravage" }, { 9005, "Pounce" },
     { 6673, "Battle Shout" }, { 6343, "Thunder Clap" }, { 2061, "Flash Heal" },
     { 4987, "Cleanse" }, { 355, "Taunt" }, { 2649, "Growl" },
@@ -72,6 +73,10 @@ ApogeePartyHealthBars_ShortcutItems = {
     GetInfo = function(id) if id == 1251 then return "Linen Bandage", 134436 end end,
     GetCount = function(id) return id == 1251 and 1 or 0 end,
 }
+local playerClassToken
+ApogeePartyHealthBars_PlayerContext = {
+    GetClassToken = function() return playerClassToken end,
+}
 
 dofile("ApogeePartyHealthBars_ActionData.lua")
 dofile("ApogeePartyHealthBars_ActionMacros.lua")
@@ -106,7 +111,7 @@ assert(actions.GetSpellTemplateId("Fireball(Rank 1)", 133) == "standard-spell"
         and actions.GetSpellTemplateId("Attack", 6603) == "melee-auto",
     "spell template classification lost a smart macro family")
 
-local normalPrefix = "/targetenemy [noexists][dead][help]\n/startattack\n/cast "
+local normalPrefix = "/startattack\n/cast "
 for _, family in ipairs(normalMeleeFamilies) do
     local castName = family[2] .. "(Rank 9)"
     assert(actions.GetSpellTemplateId(castName, family[1]) == "melee-attack",
@@ -115,7 +120,7 @@ for _, family in ipairs(normalMeleeFamilies) do
         family[2] .. " lost target, attack, cast, or rank behavior")
 end
 
-local stealthPrefix = "/targetenemy [noexists][dead][help]\n/startattack [nostealth]\n/cast "
+local stealthPrefix = "/startattack [nostealth]\n/cast "
 for _, family in ipairs(stealthSafeFamilies) do
     local castName = family[2] .. "(Rank 9)"
     assert(actions.GetSpellTemplateId(castName, family[1]) == "stealth-safe-melee-attack",
@@ -133,6 +138,24 @@ for _, family in ipairs(excludedFamilies) do
         and actions.BuildDefaultSpellMacro(castName, family[1]) == "/cast " .. castName,
         family[2] .. " unexpectedly received automatic attack behavior")
 end
+
+playerClassToken = "WARRIOR"
+for _, family in ipairs({
+    { 71, "Defensive Stance" },
+    { 6673, "Battle Shout" },
+    { 6552, "Pummel" },
+    { 100, "Charge" },
+}) do
+    spellNames[family[1]] = family[2]
+    assert(actions.GetSpellTemplateId(family[2], family[1]) == "melee-attack"
+            and actions.BuildDefaultSpellMacro(family[2], family[1])
+                == normalPrefix .. family[2],
+        family[2] .. " did not receive the Warrior-wide startattack policy")
+end
+local warriorItem = actions.CreateItem(1251, "Linen Bandage", "none")
+assert(warriorItem.macroText == "/use Linen Bandage",
+    "Warrior class policy added attack behavior to an item")
+playerClassToken = nil
 
 spellNames[90001] = "Heroic Strike"
 assert(actions.BuildDefaultSpellMacro("Heroic Strike(Rank 12)", 90001)

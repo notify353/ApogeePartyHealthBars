@@ -383,7 +383,14 @@ function Factory.Create(options)
         local entry = W.GetSlot(W.GetActiveLayoutKey(), slot.id)
         if not entry or not Actions.GetName(entry) then return end
         local status, _, _, _, _, _, reason = evaluate(entry, knownSpellNames())
-        local context = { { text = slot.label .. " action", r = 1, g = 0.82, b = 0.15 }, { text = "Left-click to run", r = 0.3, g = 1, b = 0.3 } }
+        local context = {
+            { text = slot.label .. " action", r = 1, g = 0.82, b = 0.15 },
+            { text = "Left-click to run", r = 0.3, g = 1, b = 0.3 },
+            {
+                text = "Drop a spell for highest rank; Shift-drop for this rank",
+                r = 1, g = 0.82, b = 0,
+            },
+        }
         if entry.kind == "item" then
             local name = Actions.ResolveDisplay(entry)
             UIH.ShowItemTooltip(icon, entry.itemId, name or entry.itemName,

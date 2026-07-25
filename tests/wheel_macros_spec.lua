@@ -60,6 +60,7 @@ function GetCVarBool(name)
     return actionButtonUseKeyDown
 end
 function UnitClass() return "Warrior", "WARRIOR" end
+dofile("ApogeePartyHealthBars_PlayerContext.lua")
 
 local activeState = 1
 local activeSpecGroup = 1
@@ -100,7 +101,7 @@ function GetSpellInfo(identifier)
     end
     local spellNamesById = {
         [78] = "Heroic Strike", [7386] = "Sunder Armor", [1715] = "Hamstring",
-        [2061] = "Flash Heal",
+        [100] = "Charge", [2061] = "Flash Heal",
     }
     local name = type(identifier) == "string"
         and identifier:gsub("%s*%(Rank %d+%)$", "") or spellNamesById[identifier]
@@ -245,8 +246,8 @@ assert(bindings.MOUSEWHEELUP == "SOMEOTHERADDONACTION",
     "editing a Wheel action silently reclaimed its physical binding")
 bindings.MOUSEWHEELUP = "CLICK ApogeePartyHealthBarsWheelNormalUp:LeftButton"
 assert(wheel.GetSlot(PRIMARY, "normalUp").macroText
-    == "/cast Flash Heal",
-    "Spellbook assignment seeded unexpected wheel macro text")
+    == "/startattack\n/cast Flash Heal",
+    "Warrior Spellbook assignment omitted the class-wide startattack policy")
 assert(not wheel.GetSlot(PRIMARY, "normalUp").macroText:find("#showtooltip", 1, true),
     "Spellbook assignment still seeded #showtooltip")
 local smartAssigned, _, smartSlot = wheel.AssignSpell(PRIMARY, nil, nil, "Auto Wheel Spell")
@@ -278,15 +279,15 @@ for index, slot in ipairs(data.SLOTS) do
     assert(wheel.AssignSpell(PRIMARY, slot.id, nil, warriorSpells[index]),
         "manual setup failed for " .. slot.id)
 end
-local attackPrefix = "/targetenemy [noexists][dead][help]\n/startattack\n/cast "
+local attackPrefix = "/startattack\n/cast "
 assert(wheel.GetSlot(PRIMARY, data.SLOTS[1].id).macroText == attackPrefix .. "Heroic Strike"
     and wheel.GetSlot(PRIMARY, data.SLOTS[2].id).macroText == attackPrefix .. "Sunder Armor"
     and wheel.GetSlot(PRIMARY, data.SLOTS[4].id).macroText == attackPrefix .. "Hamstring",
-    "curated Warrior abilities did not receive the shared melee macro policy")
-assert(wheel.GetSlot(PRIMARY, data.SLOTS[3].id).macroText == "/cast Battle Shout"
-    and wheel.GetSlot(PRIMARY, data.SLOTS[5].id).macroText == "/cast Charge"
-    and wheel.GetSlot(PRIMARY, data.SLOTS[6].id).macroText == "/cast Pummel",
-    "excluded Warrior utility, movement, or interrupt abilities gained attack behavior")
+    "Warrior attacks did not receive the shared startattack policy")
+assert(wheel.GetSlot(PRIMARY, data.SLOTS[3].id).macroText == attackPrefix .. "Battle Shout"
+    and wheel.GetSlot(PRIMARY, data.SLOTS[5].id).macroText == attackPrefix .. "Charge"
+    and wheel.GetSlot(PRIMARY, data.SLOTS[6].id).macroText == attackPrefix .. "Pummel",
+    "Warrior-wide startattack policy omitted utility, gap-closing, or interrupt actions")
 local wheelOverflow, wheelOverflowMessage = wheel.AssignSpell(PRIMARY, nil, nil, "Overflow Wheel Spell")
 assert(not wheelOverflow and wheelOverflowMessage:find("Drop onto a gesture", 1, true),
     "full Wheel layout did not instruct the user to replace or clear a gesture")

@@ -8,6 +8,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
+- Added profile-specific player-name mention alerts across social chat, with a configurable sound and optional in-message highlighting.
 - Added a lean, English-only Dungeon Board window for recent Classic Era and TBC Anniversary dungeon requests from joined chat channels and guild chat. Guild requests remain prominently green inside their dungeon sections. Open it with middle-click on the minimap button or `/aphb board`; requests remain session-only and expire automatically.
 - Added mutually exclusive Need Tank and Need Healer views that also select the always-active live watch role. Each requires the opposite support role to be covered; generic requests and groups needing both support roles are excluded. The role is saved per active character profile and defaults to Need Healer.
 - Added a movable, display-only three-entry mini-feed for new five-player chat and guild opportunities, with a compact one-line idle status, two-line alerts, 30-second expiry, guild emphasis, an optional profile sound that defaults to None, and unobtrusive deduplication and throttling. A per-profile General setting can hide and silence the feed without disabling the full board.

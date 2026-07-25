@@ -95,6 +95,9 @@ local saved = {
     showAllSlots = false,
     combatUIAutoHide = true,
     automaticConsumablesEnabled = false,
+    mentionAlertsEnabled = true,
+    mentionSoundKey = "toast",
+    mentionHighlightEnabled = true,
     dungeonBoardFeedEnabled = true,
     dungeonBoardSoundKey = "none",
     dungeonBoardLevelsBelow = 10,
@@ -114,7 +117,7 @@ local calls = {
     refresh = 0, secure = 0, threat = 0, ticker = 0, hotInit = 0,
     hotTrack = 0, barReset = 0, force = 0, settingsReset = 0,
     minimapReset = 0, factoryReset = 0, soundPreview = 0,
-    dungeonSoundPreview = 0,
+    dungeonSoundPreview = 0, mentionSoundPreview = 0,
     messages = {}, feedbackClear = 0, consumablesEnabled = nil,
 }
 local timerCallback
@@ -157,6 +160,16 @@ local deps = {
         PreviewSound = function() calls.soundPreview = calls.soundPreview + 1 end,
         GetThreshold = function() return threshold end,
         AdjustThreshold = function(direction) calls.thresholdDirection = direction end,
+    },
+    MentionAlerts = {
+        GetSoundKey = function() return saved.mentionSoundKey end,
+        SetSoundKey = function(key)
+            saved.mentionSoundKey = key
+            calls.mentionSoundKey = key
+        end,
+        PreviewSound = function()
+            calls.mentionSoundPreview = calls.mentionSoundPreview + 1
+        end,
     },
     DungeonBoardSettings = {
         GetFeedEnabled = function() return saved.dungeonBoardFeedEnabled ~= false end,
@@ -245,6 +258,9 @@ assert(config.GetRow("selfBuffPreference"):IsShown()
     "self-buff preference did not display the active family")
 assert(config.GetRow("lowHealthSoundKey").value.selectedKey == "alarm_soft"
         and config.GetRow("lowHealthThreshold").value:GetText() == "50%"
+        and config.GetRow("mentionAlertsEnabled").check:GetChecked()
+        and config.GetRow("mentionSoundKey").value.selectedKey == "toast"
+        and config.GetRow("mentionHighlightEnabled").check:GetChecked()
         and config.GetRow("dungeonBoardFeedEnabled").check:GetChecked()
         and config.GetRow("dungeonBoardSoundKey").value.selectedKey == "none"
         and config.GetRow("dungeonBoardLevelsBelow").value:GetText() == "10"
@@ -326,6 +342,9 @@ assert(calls.hotTrack == 1 and calls.hotTrackKey == "renew" and calls.hotTrackEn
 config.GetRow("lowHealthSoundKey").value.onSelect("alarm_high")
 assert(calls.soundKey == "alarm_high" and calls.soundPreview == 1,
     "low-health sound selection did not persist and preview")
+config.GetRow("mentionSoundKey").value.onSelect("glass")
+assert(calls.mentionSoundKey == "glass" and calls.mentionSoundPreview == 1,
+    "mention sound selection did not persist and preview")
 config.GetRow("dungeonBoardSoundKey").value.onSelect("alarm_soft")
 assert(calls.dungeonSoundKey == "alarm_soft" and calls.dungeonSoundPreview == 1,
     "Dungeon Board sound selection did not persist and preview")

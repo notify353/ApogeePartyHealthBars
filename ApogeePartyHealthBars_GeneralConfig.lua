@@ -130,6 +130,8 @@ local function Layout()
                 row.frame.value.label:SetText(currentLabel .. "  |cff777777(click to change)|r")
             elseif row.svKey == "lowHealthSoundKey" then
                 row.frame.value:SetSelectedKey(D.HealthAlerts.GetSoundKey())
+            elseif row.svKey == "mentionSoundKey" then
+                row.frame.value:SetSelectedKey(D.MentionAlerts.GetSoundKey())
             elseif row.svKey == "dungeonBoardFeedEnabled" then
                 SetCheckboxChecked(
                     row.frame.check, D.DungeonBoardSettings.GetFeedEnabled())
@@ -186,6 +188,9 @@ local function Layout()
     entries[#entries + 1] = { frame = alertsSection, height = 16, gap = 10 }
     addSetting("lowHealthThreshold")
     addSetting("lowHealthSoundKey")
+    addSetting("mentionAlertsEnabled")
+    addSetting("mentionSoundKey")
+    addSetting("mentionHighlightEnabled")
     addSetting("partyBuffEnabled")
     addSetting("selfBuffEnabled")
     addSetting("selfBuffPreference")
@@ -354,6 +359,29 @@ local function AddLowHealthSoundPreference()
     AddGeneralRow(frame, "lowHealthSoundKey")
 end
 
+local function AddMentionSoundPreference()
+    local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    label:SetPoint("LEFT", frame, "LEFT", 8, 0)
+    label:SetWidth(155)
+    label:SetJustifyH("LEFT")
+    label:SetText("Name mention sound")
+
+    local value = UIH.CreateDropdown(frame, 220, 22)
+    value:SetOptions(D.Sounds.GetOptions(true))
+    value:SetArrowShown(false)
+    value:SetPoint("RIGHT", frame, "RIGHT", -5, 0)
+    value:SetSelectionCallback(function(soundKey)
+        if refreshing then return end
+        D.MentionAlerts.SetSoundKey(soundKey)
+        D.MentionAlerts.PreviewSound()
+        D.RequestConfigRefresh()
+    end)
+
+    frame.value = value
+    AddGeneralRow(frame, "mentionSoundKey")
+end
+
 local function AddDungeonBoardSoundPreference()
     local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
@@ -455,7 +483,7 @@ function G.Build(parent, deps)
         "ApplyDefaultMinimapPosition", "ApplyDefaultPosition", "CombatUIFader",
         "FactoryReset", "ForceRefresh", "GetSavedVariables",
         "GetSelfBuffPreferenceKey", "GetSelfBuffPreferenceOptions",
-        "HasKnownBuffReminder", "HealthAlerts", "InitHotSpells", "IsHotEnabled",
+        "HasKnownBuffReminder", "HealthAlerts", "MentionAlerts", "InitHotSpells", "IsHotEnabled",
         "IsHotTrackKnown", "IsPartyBuffKnown", "IsSavedFeatureEnabled",
         "IsSelfBuffKnown", "Print", "RequestConfigRefresh", "SetAddonEnabled",
         "SetHotTrackEnabled", "SetSavedFeature", "SetSelfBuffPreference", "Sounds",
@@ -497,6 +525,9 @@ function G.Build(parent, deps)
     end)
     AddLowHealthThresholdPreference()
     AddLowHealthSoundPreference()
+    AddCheckbox("Player name mention alerts", "mentionAlertsEnabled")
+    AddMentionSoundPreference()
+    AddCheckbox("Highlight my name in chat", "mentionHighlightEnabled")
     AddDungeonBoardFeedPreference()
     AddDungeonBoardSoundPreference()
     AddDungeonBoardLevelOffsetPreference(

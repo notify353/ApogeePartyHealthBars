@@ -6,6 +6,7 @@ Compact five-player healing frames for World of Warcraft Classic Era and Burning
 
 - Player and party health, power, shields, incoming heals, HoTs, and threat
 - Selectable sound and threshold when the player or a party member drops low on health
+- Configurable sound and chat highlighting when another player mentions your character name
 - Passive center-screen reminders for usable, missing, or expiring player-applied DoTs
 - Uniform player, party, target, and target-of-target healing bars
 - Secure spell/item click-casting and clickable buff reminders

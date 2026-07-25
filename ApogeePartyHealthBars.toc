@@ -31,6 +31,7 @@ ApogeePartyHealthBars_MacroLibrary.lua
 ApogeePartyHealthBars_EventRouter.lua
 ApogeePartyHealthBars_SecureFrames.lua
 ApogeePartyHealthBars_Sounds.lua
+ApogeePartyHealthBars_MentionAlerts.lua
 ApogeePartyHealthBars_DungeonBoardSettings.lua
 ApogeePartyHealthBars_DungeonBoardFeed.lua
 ApogeePartyHealthBars_DungeonBoardUI.lua

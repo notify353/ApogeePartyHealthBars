@@ -3,6 +3,7 @@ local UnitEvents = ApogeePartyHealthBars_RuntimeUnitEvents
 local ActionEvents = ApogeePartyHealthBars_RuntimeActionEvents
 local DotEvents = ApogeePartyHealthBars_RuntimeDotEvents
 local DungeonBoardEvents = ApogeePartyHealthBars_RuntimeDungeonBoardEvents
+local MentionAlerts = ApogeePartyHealthBars_MentionAlerts
 
 ApogeePartyHealthBars_RuntimeEvents = {}
 local R = ApogeePartyHealthBars_RuntimeEvents
@@ -17,4 +18,5 @@ function R.Register(eventRouter, deps)
     ActionEvents.Register(eventRouter, deps)
     if DotEvents then DotEvents.Register(eventRouter, deps) end
     if DungeonBoardEvents then DungeonBoardEvents.Register(eventRouter, deps) end
+    if MentionAlerts then MentionAlerts.Register(eventRouter) end
 end

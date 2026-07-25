@@ -226,6 +226,13 @@ local deps = {
     },
     SyncVisualTicker = function() calls.ticker = calls.ticker + 1 end,
     Threat = { Refresh = function() calls.threat = calls.threat + 1 end },
+    CleanseWatch = {
+        HasCapability = function() return true end,
+        GetUnavailableReason = function() return nil end,
+        RefreshCapabilities = function() calls.cleanseRefresh = (calls.cleanseRefresh or 0) + 1 end,
+        ResetPosition = function() calls.cleanseReset = (calls.cleanseReset or 0) + 1 end,
+        Refresh = function() calls.cleansePanel = (calls.cleansePanel or 0) + 1 end,
+    },
     ClientCapabilities = clientCapabilities,
 }
 

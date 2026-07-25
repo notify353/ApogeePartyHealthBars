@@ -15,7 +15,7 @@ local resetBarBtn, resetSettingsBtn, resetMinimapBtn, prepareDisableBtn, factory
 local behaviorSection, alertsSection, dungeonBoardSection, displaySection
 local hotSection, compatibilitySection
 local positionsSection, dangerSection
-local resetRow, compatibilityRow, compatibilityLabel, prepareDisableRow, factoryRow
+local resetRow, cleanseResetRow, compatibilityRow, compatibilityLabel, prepareDisableRow, factoryRow
 local prepareDisableArmed, prepareDisableToken = false, 0
 local factoryResetArmed, factoryResetToken = false, 0
 local refreshing = false
@@ -34,6 +34,9 @@ local SUPPORT_FEATURE_BY_SETTING = {
 }
 
 local function GetSettingSupport(svKey)
+    if svKey == "cleanseWatchEnabled" and D and D.CleanseWatch then
+        return D.CleanseWatch.HasCapability(), D.CleanseWatch.GetUnavailableReason()
+    end
     local featureKey = SUPPORT_FEATURE_BY_SETTING[svKey]
     if not featureKey or not D or not D.ClientCapabilities then return true, nil end
     return D.ClientCapabilities.IsFeatureAvailable(featureKey),
@@ -41,7 +44,8 @@ local function GetSettingSupport(svKey)
 end
 
 local function ApplySettingSupport(entry)
-    if not SUPPORT_FEATURE_BY_SETTING[entry.svKey] then return true end
+    if not SUPPORT_FEATURE_BY_SETTING[entry.svKey]
+        and entry.svKey ~= "cleanseWatchEnabled" then return true end
     local supported, reason = GetSettingSupport(entry.svKey)
     local frame = entry.frame
     local control = frame.check or frame.value
@@ -191,6 +195,7 @@ local function Layout()
     addSetting("mentionAlertsEnabled")
     addSetting("mentionSoundKey")
     addSetting("mentionHighlightEnabled")
+    addSetting("cleanseWatchEnabled")
     addSetting("partyBuffEnabled")
     addSetting("selfBuffEnabled")
     addSetting("selfBuffPreference")
@@ -273,6 +278,7 @@ local function Layout()
 
     entries[#entries + 1] = { frame = positionsSection, height = 16, gap = 10 }
     entries[#entries + 1] = { frame = resetRow, height = 32 }
+    entries[#entries + 1] = { frame = cleanseResetRow, height = 32 }
     entries[#entries + 1] = { frame = dangerSection, height = 16, gap = 10 }
     entries[#entries + 1] = { frame = prepareDisableRow, height = 32 }
     entries[#entries + 1] = { frame = factoryRow, height = 32 }
@@ -488,6 +494,7 @@ function G.Build(parent, deps)
         "IsSelfBuffKnown", "Print", "RequestConfigRefresh", "SetAddonEnabled",
         "SetHotTrackEnabled", "SetSavedFeature", "SetSelfBuffPreference", "Sounds",
         "SyncVisualTicker", "Threat", "ConsumableBar", "DungeonBoardSettings",
+        "CleanseWatch",
     }) do
         assert(deps[key] ~= nil, "GeneralConfig missing dependency: " .. key)
     end
@@ -528,6 +535,9 @@ function G.Build(parent, deps)
     AddCheckbox("Player name mention alerts", "mentionAlertsEnabled")
     AddMentionSoundPreference()
     AddCheckbox("Highlight my name in chat", "mentionHighlightEnabled")
+    AddCheckbox("Show movable Cleanse Watch", "cleanseWatchEnabled", function()
+        D.CleanseWatch.RefreshCapabilities()
+    end)
     AddDungeonBoardFeedPreference()
     AddDungeonBoardSoundPreference()
     AddDungeonBoardLevelOffsetPreference(
@@ -589,6 +599,19 @@ function G.Build(parent, deps)
     resetMinimapBtn = UIH.CreateButton(resetRow, "Reset Minimap", resetWidth, 22)
     resetMinimapBtn:SetPoint("LEFT", resetSettingsBtn, "RIGHT", 6, 0)
     resetMinimapBtn:SetScript("OnClick", D.ApplyDefaultMinimapPosition)
+
+    cleanseResetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    local cleanseResetLabel = cleanseResetRow:CreateFontString(
+        nil, "ARTWORK", "GameFontHighlightSmall")
+    cleanseResetLabel:SetPoint("LEFT", cleanseResetRow, "LEFT", 8, 0)
+    cleanseResetLabel:SetText("Cleanse Watch panel")
+    local cleanseResetButton = UIH.CreateButton(
+        cleanseResetRow, "Reset Position", 126, 22)
+    cleanseResetButton:SetPoint("RIGHT", cleanseResetRow, "RIGHT", -5, 0)
+    cleanseResetButton:SetScript("OnClick", function()
+        D.CleanseWatch.ResetPosition()
+        D.CleanseWatch.Refresh()
+    end)
 
     prepareDisableRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local prepareDisableLabel = prepareDisableRow:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")

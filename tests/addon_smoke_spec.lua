@@ -753,7 +753,7 @@ end
 ClickMinimapButton()
 assert(ApogeePartyHealthBars_S.configMode, "minimap click did not open settings")
 local configSurfaces = ApogeePartyHealthBars_ConfigSurfaces
-local expectedConfigSurfaceKeys = { "settings", "party", "feed", "dot" }
+local expectedConfigSurfaceKeys = { "settings", "party", "feed", "dot", "cleanse" }
 for _, key in ipairs(expectedConfigSurfaceKeys) do
     local surface = assert(configSurfaces.Get(key), "missing configuration surface: " .. key)
     assert(surface.chrome.active and surface.chrome.foundation:IsShown()
@@ -767,7 +767,10 @@ for _, key in ipairs(expectedConfigSurfaceKeys) do
 end
 assert(configSurfaces.Get("dot").chrome.title:IsShown()
         and configSurfaces.Get("feed").chrome.title:IsShown(),
-    "compact configuration anchors did not expose their premium labeled chrome")
+    "labeled compact configuration anchors did not expose their chrome")
+assert(configSurfaces.Get("cleanse").chrome.title == nil
+        and configSurfaces.Get("cleanse").chrome.header == nil,
+    "headerless Cleanse Watch recreated configuration header chrome")
 assert(ApogeePartyHealthBars_ConfigUI.factoryResetButton,
     "General settings did not create the factory reset control")
 assert(ApogeePartyHealthBars_ConfigUI.factoryResetButton
@@ -813,6 +816,7 @@ for _, key in ipairs(expectedConfigSurfaceKeys) do
 end
 assert(configSurfaces.Get("settings").frame.frameStrata == "DIALOG"
         and configSurfaces.Get("feed").frame.frameStrata == "DIALOG"
+        and configSurfaces.Get("cleanse").frame.frameStrata == "DIALOG"
         and configSurfaces.Get("party").frame.frameStrata == "MEDIUM"
         and configSurfaces.Get("dot").frame.frameStrata == "MEDIUM",
     "configuration close did not restore runtime surface strata")

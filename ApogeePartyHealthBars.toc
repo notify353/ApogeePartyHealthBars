@@ -8,6 +8,7 @@
 
 ApogeePartyHealthBars_Data.lua
 ApogeePartyHealthBars_ClientCapabilities.lua
+ApogeePartyHealthBars_CleanseData.lua
 ApogeePartyHealthBars_DungeonBoardCatalog.lua
 ApogeePartyHealthBars_DungeonBoardActivityData.lua
 ApogeePartyHealthBars_DungeonBoardClassifier.lua
@@ -58,6 +59,7 @@ ApogeePartyHealthBars_ProfileStore.lua
 ApogeePartyHealthBars_HealthAlerts.lua
 ApogeePartyHealthBars_Auras.lua
 ApogeePartyHealthBars_PlayerSpells.lua
+ApogeePartyHealthBars_CleanseWatch.lua
 ApogeePartyHealthBars_DotHud.lua
 ApogeePartyHealthBars_DotTracker.lua
 ApogeePartyHealthBars_BuffReminders.lua
@@ -93,5 +95,6 @@ ApogeePartyHealthBars_RuntimeUnitEvents.lua
 ApogeePartyHealthBars_RuntimeActionEvents.lua
 ApogeePartyHealthBars_RuntimeDotEvents.lua
 ApogeePartyHealthBars_RuntimeDungeonBoardEvents.lua
+ApogeePartyHealthBars_RuntimeCleanseEvents.lua
 ApogeePartyHealthBars_RuntimeEvents.lua
 ApogeePartyHealthBars.lua

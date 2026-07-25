@@ -26,6 +26,10 @@ local rules = {
         allowed = { ApogeePartyHealthBars_PlayerSpells = true },
     },
     {
+        token = "C_Spell.GetSpellDescription(",
+        allowed = { ApogeePartyHealthBars_PlayerSpells = true },
+    },
+    {
         token = "SetBinding(",
         allowed = { ApogeePartyHealthBars_BoundActionBindings = true },
     },

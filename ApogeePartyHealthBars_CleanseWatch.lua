@@ -5,14 +5,25 @@ local Data = ApogeePartyHealthBars_CleanseData
 ApogeePartyHealthBars_CleanseWatch = {}
 local Watch = ApogeePartyHealthBars_CleanseWatch
 
-local FRAME_WIDTH, LANE_HEIGHT = 500, 126
-local BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_GAP = 84, 19, 3
+local FRAME_WIDTH, LANE_HEIGHT = 500, 84
+local BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_GAP = 84, 16, 3
+local LANE_SIDE_PADDING, CONTENT_TOP = 6, 15
+local BUTTON_BOTTOM, CONTENT_BUTTON_GAP = 3, 2
+local ICON_SIZE, ICON_GAP, TITLE_DESCRIPTION_GAP = 22, 5, 1
+local MIN_DESCRIPTION_FONT_SIZE = 4
 local DEFAULT_POINT, DEFAULT_X, DEFAULT_Y = "TOPRIGHT", 0, 0
 local units = C.SLOT_UNITS
 local D, frame, bodyBackground
 local lanes, capabilities = {}, {}
 local ignoredEffects = {}
 local unlocked = false
+
+local function capFontSize(fontString, maximumSize)
+    local fontPath, size, fontFlags = fontString:GetFont()
+    if fontPath and size and size > maximumSize then
+        fontString:SetFont(fontPath, maximumSize, fontFlags)
+    end
+end
 
 local function saved()
     return S.sv or {}
@@ -255,6 +266,48 @@ local function memberSummary(effect)
     return table.concat(values, ", ")
 end
 
+local function measureEffectRow(effectRow)
+    local titleHeight = effectRow.title.GetStringHeight
+        and effectRow.title:GetStringHeight() or 10
+    local descriptionHeight = effectRow.description.GetStringHeight
+        and effectRow.description:GetStringHeight() or 10
+    return math.max(ICON_SIZE,
+        math.ceil(titleHeight + descriptionHeight + TITLE_DESCRIPTION_GAP))
+end
+
+local function fitDescription(effectRow)
+    local description = effectRow.description
+    local fontPath, baseSize, fontFlags =
+        description.baseFontPath, description.baseFontSize,
+        description.baseFontFlags
+    if not (fontPath and baseSize and description.SetFont) then
+        effectRow.layoutHeight = measureEffectRow(effectRow)
+        return
+    end
+
+    local size = baseSize
+    description:SetFont(fontPath, size, fontFlags)
+    local measuredHeight = measureEffectRow(effectRow)
+    while measuredHeight > effectRow.maxLayoutHeight
+            and size > MIN_DESCRIPTION_FONT_SIZE do
+        size = math.max(MIN_DESCRIPTION_FONT_SIZE, size - 0.5)
+        description:SetFont(fontPath, size, fontFlags)
+        measuredHeight = measureEffectRow(effectRow)
+    end
+
+    -- Blizzard descriptions are normally satisfied by the compact range
+    -- above. Continue scaling only for an unusually verbose localized
+    -- description so the complete text remains visible in the fixed,
+    -- combat-safe lane instead of being clipped.
+    while measuredHeight > effectRow.maxLayoutHeight and size > 1 do
+        size = math.max(1, size - 0.5)
+        description:SetFont(fontPath, size, fontFlags)
+        measuredHeight = measureEffectRow(effectRow)
+    end
+    effectRow.descriptionFontSize = size
+    effectRow.layoutHeight = measuredHeight
+end
+
 local function renderEffectRow(effectRow, effect)
     local alpha = effect and 1 or 0
     effectRow.icon:SetAlpha(alpha)
@@ -263,6 +316,14 @@ local function renderEffectRow(effectRow, effect)
     if not effect then
         effectRow.title:SetText("")
         effectRow.description:SetText("")
+        if effectRow.description.baseFontPath then
+            effectRow.description:SetFont(
+                effectRow.description.baseFontPath,
+                effectRow.description.baseFontSize,
+                effectRow.description.baseFontFlags)
+        end
+        effectRow.descriptionFontSize =
+            effectRow.description.baseFontSize
         effectRow.layoutHeight = 0
         effectRow:SetHeight(0)
         return
@@ -278,12 +339,7 @@ local function renderEffectRow(effectRow, effect)
     description = description and description ~= ""
         and description or effect.fallbackDescription or "Description is loading…"
     effectRow.description:SetText("|cffc7ccd3" .. tostring(description) .. "|r")
-    local titleHeight = effectRow.title.GetStringHeight
-        and effectRow.title:GetStringHeight() or 12
-    local descriptionHeight = effectRow.description.GetStringHeight
-        and effectRow.description:GetStringHeight() or 12
-    effectRow.layoutHeight = math.max(
-        28, math.ceil(titleHeight + descriptionHeight + 3))
+    fitDescription(effectRow)
     effectRow:SetHeight(effectRow.layoutHeight)
 end
 
@@ -291,14 +347,16 @@ local function layoutEffectCard(lane, effect)
     local effectCard = lane.effectCard
     effectCard:ClearAllPoints()
     if not effect then return end
-    local contentTop = 18
+    local contentTop = CONTENT_TOP
     local contentBottom = (lane.layoutHeight or LANE_HEIGHT)
-        - (4 + BUTTON_HEIGHT + 6)
+        - (BUTTON_BOTTOM + BUTTON_HEIGHT + CONTENT_BUTTON_GAP)
     local freeSpace = math.max(
         0, contentBottom - contentTop - effectCard.layoutHeight)
     local topOffset = contentTop + math.floor(freeSpace / 2)
-    effectCard:SetPoint("TOPLEFT", lane, "TOPLEFT", 7, -topOffset)
-    effectCard:SetPoint("TOPRIGHT", lane, "TOPRIGHT", -7, -topOffset)
+    effectCard:SetPoint(
+        "TOPLEFT", lane, "TOPLEFT", LANE_SIDE_PADDING, -topOffset)
+    effectCard:SetPoint(
+        "TOPRIGHT", lane, "TOPRIGHT", -LANE_SIDE_PADDING, -topOffset)
 end
 
 local function render()
@@ -401,12 +459,13 @@ function Watch.Build()
             color[3] * 0.08, 0.96)
         local laneTitle = lane:CreateFontString(
             nil, "ARTWORK", "GameFontNormalSmall")
-        laneTitle:SetPoint("TOPLEFT", lane, "TOPLEFT", 7, -4)
+        capFontSize(laneTitle, 9)
+        laneTitle:SetPoint("TOPLEFT", lane, "TOPLEFT", 6, -2)
         laneTitle:SetJustifyH("LEFT")
         laneTitle:SetTextColor(color[1], color[2], color[3])
         local ignoreButton = CreateFrame("Button", nil, lane)
-        ignoreButton:SetSize(52, 16)
-        ignoreButton:SetPoint("TOPRIGHT", lane, "TOPRIGHT", -6, -2)
+        ignoreButton:SetSize(44, 13)
+        ignoreButton:SetPoint("TOPRIGHT", lane, "TOPRIGHT", -5, -1)
         ignoreButton:RegisterForClicks("LeftButtonUp")
         local ignoreBackground =
             ignoreButton:CreateTexture(nil, "BACKGROUND")
@@ -414,6 +473,7 @@ function Watch.Build()
         ignoreBackground:SetColorTexture(0.08, 0.09, 0.11, 0.96)
         local ignoreLabel = ignoreButton:CreateFontString(
             nil, "ARTWORK", "GameFontHighlightSmall")
+        capFontSize(ignoreLabel, 9)
         ignoreLabel:SetPoint("CENTER")
         ignoreLabel:SetText("Ignore")
         ignoreButton:SetScript("OnClick", function(self)
@@ -422,36 +482,44 @@ function Watch.Build()
             render()
         end)
         ignoreButton:Hide()
-        laneTitle:SetPoint("RIGHT", ignoreButton, "LEFT", -5, 0)
+        laneTitle:SetPoint("RIGHT", ignoreButton, "LEFT", -4, 0)
         local emptyLabel = lane:CreateFontString(
             nil, "ARTWORK", "GameFontHighlightSmall")
-        emptyLabel:SetPoint("TOPLEFT", lane, "TOPLEFT", 7, -21)
-        emptyLabel:SetPoint("RIGHT", lane, "RIGHT", -8, 0)
+        capFontSize(emptyLabel, 9)
+        emptyLabel:SetPoint("TOPLEFT", lane, "TOPLEFT", 6, -17)
+        emptyLabel:SetPoint("RIGHT", lane, "RIGHT", -6, 0)
         emptyLabel:SetJustifyH("LEFT")
 
         lane.background, lane.typeTitle, lane.emptyLabel =
             background, laneTitle, emptyLabel
         lane.ignoreButton = ignoreButton
         local effectCard = CreateFrame("Frame", nil, lane)
-        effectCard:SetHeight(28)
+        effectCard.maxLayoutHeight = LANE_HEIGHT
+            - CONTENT_TOP
+            - (BUTTON_BOTTOM + BUTTON_HEIGHT + CONTENT_BUTTON_GAP)
+        effectCard:SetHeight(ICON_SIZE)
         local icon = effectCard:CreateTexture(nil, "ARTWORK")
         icon:SetPoint("TOPLEFT")
-        icon:SetSize(28, 28)
+        icon:SetSize(ICON_SIZE, ICON_SIZE)
         icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
         local effectTitle = effectCard:CreateFontString(
             nil, "ARTWORK", "GameFontHighlightSmall")
-        effectTitle:SetPoint("TOPLEFT", icon, "TOPRIGHT", 6, 0)
+        effectTitle:SetPoint("TOPLEFT", icon, "TOPRIGHT", ICON_GAP, 0)
         effectTitle:SetPoint("RIGHT", effectCard, "RIGHT", 0, 0)
         effectTitle:SetJustifyH("LEFT")
         effectTitle:SetWordWrap(false)
         local effectDescription = effectCard:CreateFontString(
             nil, "ARTWORK", "GameFontHighlightSmall")
         effectDescription:SetPoint(
-            "TOPLEFT", icon, "TOPRIGHT", 6, -14)
+            "TOPLEFT", effectTitle, "BOTTOMLEFT",
+            0, -TITLE_DESCRIPTION_GAP)
         effectDescription:SetPoint("RIGHT", effectCard, "RIGHT", 0, 0)
         effectDescription:SetJustifyH("LEFT")
         effectDescription:SetJustifyV("TOP")
         effectDescription:SetWordWrap(true)
+        effectDescription.baseFontPath,
+            effectDescription.baseFontSize,
+            effectDescription.baseFontFlags = effectDescription:GetFont()
         effectCard.icon = icon
         effectCard.title = effectTitle
         effectCard.description = effectDescription
@@ -468,7 +536,7 @@ function Watch.Build()
                 lane, "SecureUnitButtonTemplate, SecureActionButtonTemplate")
             button:SetSize(BUTTON_WIDTH, BUTTON_HEIGHT)
             button:SetPoint("BOTTOMLEFT", lane, "BOTTOMLEFT",
-                buttonOffset, 4)
+                buttonOffset, BUTTON_BOTTOM)
             button:SetAttribute("unit", unitId)
             button:SetAttribute("useOnKeyDown", false)
             button:RegisterForClicks("AnyUp")
@@ -478,6 +546,7 @@ function Watch.Build()
                 color[3] * 0.22, 0.98)
             local label = button:CreateFontString(
                 nil, "ARTWORK", "GameFontHighlightSmall")
+            capFontSize(label, 9)
             label:SetPoint("CENTER")
             label:SetWidth(BUTTON_WIDTH - 8)
             label:SetWordWrap(false)
@@ -489,7 +558,7 @@ function Watch.Build()
             local inputShield = CreateFrame("Frame", nil, lane)
             inputShield:SetSize(BUTTON_WIDTH, BUTTON_HEIGHT)
             inputShield:SetPoint("BOTTOMLEFT", lane, "BOTTOMLEFT",
-                buttonOffset, 4)
+                buttonOffset, BUTTON_BOTTOM)
             inputShield:SetFrameLevel(button:GetFrameLevel() + 1)
             inputShield:EnableMouse(true)
             inputShield:SetPropagateMouseClicks(false)

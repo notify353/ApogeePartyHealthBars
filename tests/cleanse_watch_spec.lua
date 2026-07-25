@@ -16,6 +16,7 @@ local named, frames = {}, {}
 local function widget()
     local value = {
         shown = true, attributes = {}, scripts = {}, mutations = 0,
+        fontPath = "Fonts\\FRIZQT__.TTF", fontSize = 10,
     }
     local methods = {
         SetSize = function(self, width, height) self.width, self.height = width, height end,
@@ -37,6 +38,21 @@ local function widget()
         SetColorTexture = function() end,
         SetTexture = function(self, texture) self.texture = texture end,
         SetText = function(self, text) self.text = text end,
+        GetFont = function(self)
+            return self.fontPath, self.fontSize, self.fontFlags
+        end,
+        SetFont = function(self, path, size, flags)
+            self.fontPath, self.fontSize, self.fontFlags = path, size, flags
+        end,
+        GetStringHeight = function(self)
+            local text = tostring(self.text or "")
+                :gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+            local size = tonumber(self.fontSize) or 10
+            local charactersPerLine = math.max(
+                1, math.floor(455 / (size * 0.55)))
+            return math.max(1,
+                math.ceil(#text / charactersPerLine)) * size
+        end,
         SetTextColor = function() end,
         SetAlpha = function(self, alpha) self.alpha = alpha end,
         EnableMouse = function(self, enabled) self.mouseEnabled = enabled end,
@@ -92,6 +108,9 @@ local harmful = {
 local deferred = 0
 local registeredSurfaceOptions
 local cleanseChromeShown
+local longDescription = string.rep(
+    "This unusually long harmful effect description remains completely visible. ",
+    9)
 
 dofile("ApogeePartyHealthBars_CleanseWatch.lua")
 local Watch = ApogeePartyHealthBars_CleanseWatch
@@ -101,6 +120,7 @@ Watch.Initialize({
         BuildKnownSpellMap = function() return {}, {}, known end,
         GetSpellDescription = function(spellId)
             if spellId == 9001 then return "Prevents spellcasting for 5 sec." end
+            if spellId == 9002 then return longDescription end
             if spellId == 118 then
                 return "Transforms the enemy into a sheep, forcing it to wander around for up to 20 sec. While wandering, the sheep cannot attack or cast spells but will regenerate very quickly. Any damage will transform the target back into its normal form."
             end
@@ -124,7 +144,7 @@ Watch.Refresh()
 
 local lanes = Watch.GetLanes()
 local watchFrame = Watch.GetFrame()
-assert(watchFrame.width == 500 and watchFrame.height == 252,
+assert(watchFrame.width == 500 and watchFrame.height == 168,
     "Cleanse Watch did not retain its compact single-card footprint")
 assert(watchFrame.point[1] == "TOPRIGHT"
         and watchFrame.point[3] == "TOPRIGHT"
@@ -140,7 +160,10 @@ assert(magicPlayer.attributes.unit == "player"
         and magicParty.attributes.spell == "Dispel Magic"
         and magicParty.clickPhase == "AnyUp"
         and magicParty.point[1] == "BOTTOMLEFT"
-        and magicParty.point[5] == 4,
+        and magicParty.point[5] == 3
+        and magicParty.height == 16
+        and magicParty.inputShield.point[5] == 3
+        and magicParty.inputShield.height == 16,
     "cleanse buttons were not pre-created with stable secure targets")
 assert(magicParty.inputShield.mouseEnabled
         and magicParty.inputShield.propagateMouseClicks == false
@@ -173,6 +196,12 @@ assert(lanes.Magic.typeTitle.text
             == "Magic  ·  2 removable effects  ·  +1 more"
         and lanes.Magic.effectCard.title.text:find(
             "Lingering Hex", 1, true)
+        and lanes.Magic.effectCard.description.text:find(
+            longDescription, 1, true)
+        and not lanes.Magic.effectCard.description.text:find("…", 1, true)
+        and lanes.Magic.effectCard.descriptionFontSize < 10
+        and lanes.Magic.effectCard.layoutHeight
+            <= lanes.Magic.effectCard.maxLayoutHeight
         and lanes.Magic.ignoreButton.effectKey == "id:9002"
         and ApogeePartyHealthBars_S.sv.cleanseWatchIgnoredEffects == nil,
     "session Ignore did not suppress only the selected debuff without persistence")
@@ -208,7 +237,7 @@ harmful.party1 = { auras = {} }
 inCombat = false
 assert(Watch.SetUnlocked(true),
     "configuration mode did not unlock Cleanse Watch")
-assert(watchFrame.height == 252,
+assert(watchFrame.height == 168,
     "configuration preview changed the single-card lane height")
 assert(lanes.Magic.effectCard.title.text:find("Polymorph", 1, true)
         and lanes.Magic.effectCard.icon.texture == 100118
@@ -216,7 +245,9 @@ assert(lanes.Magic.effectCard.title.text:find("Polymorph", 1, true)
             "Any damage will transform the target back into its normal form.",
             1, true)
         and not lanes.Magic.effectCard.description.text:find("…", 1, true)
-        and lanes.Magic.effectCard.point[5] == -43,
+        and lanes.Magic.effectCard.descriptionFontSize == 10
+        and lanes.Magic.effectCard.layoutHeight
+            <= lanes.Magic.effectCard.maxLayoutHeight,
     "Magic configuration preview did not render exactly one complete example")
 assert(lanes.Disease.typeTitle.text == "Disease  ·  configuration preview"
         and lanes.Disease.effectCard.title.text:find(
@@ -238,7 +269,7 @@ assert(lanes.Magic.effectCard.title.text:find("Polymorph", 1, true)
     "configuration preview Ignore action changed session or saved state")
 assert(Watch.SetUnlocked(false),
     "configuration mode did not lock Cleanse Watch")
-assert(watchFrame.height == 252,
+assert(watchFrame.height == 168,
     "closing configuration changed the single-card runtime footprint")
 assert(Watch.ResetPosition()
         and ApogeePartyHealthBars_S.sv.cleanseWatchPoint == "TOPRIGHT"
@@ -275,6 +306,26 @@ assert(Watch.RefreshCapabilities()
         and magicParty.attributes.spell == "Cleanse"
         and lanes.Poison.buttons[2].attributes.spell == "Cleanse",
     "post-combat reconciliation did not install the broader cleanse spell")
+assert(Watch.SetUnlocked(true)
+        and watchFrame.height == 252
+        and lanes.Magic.height == 84
+        and lanes.Disease.height == 84
+        and lanes.Poison.height == 84
+        and lanes.Poison.effectCard.title.text:find(
+            "Deadly Poison", 1, true)
+        and lanes.Poison.ignoreButton.shown,
+    "three-category configuration preview did not fit the former two-lane height")
+assert(Watch.SetUnlocked(false),
+    "three-category configuration preview did not lock cleanly")
+
+known = {
+    { id = 527, name = "Dispel Magic(Rank 2)", baseName = "Dispel Magic",
+        sourceBook = "spell" },
+}
+assert(Watch.RefreshCapabilities()
+        and watchFrame.height == 84
+        and lanes.Magic.height == 84,
+    "single-category Cleanse Watch did not use one compact lane")
 
 known = {}
 assert(Watch.RefreshCapabilities() and Watch.SetUnlocked(true)

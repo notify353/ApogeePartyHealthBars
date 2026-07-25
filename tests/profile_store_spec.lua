@@ -27,6 +27,14 @@ ApogeePartyHealthBars_Effects = {
         if settings.dungeonBoardFeedEnabled == nil then
             settings.dungeonBoardFeedEnabled = true
         end
+        if settings.cleanseWatchPoint == nil then
+            settings.cleanseWatchPoint = "TOPRIGHT"
+        end
+        if settings.cleanseWatchRelPoint == nil then
+            settings.cleanseWatchRelPoint = "TOPRIGHT"
+        end
+        if settings.cleanseWatchX == nil then settings.cleanseWatchX = 0 end
+        if settings.cleanseWatchY == nil then settings.cleanseWatchY = 0 end
         local dungeonBoardRole = settings.dungeonBoardRole
         if dungeonBoardRole ~= "tank" and dungeonBoardRole ~= "healer" then
             dungeonBoardRole = settings.dungeonBoardMode
@@ -117,6 +125,10 @@ assert(created.payload.settings.enabled
         and created.payload.settings.automaticConsumablesEnabled == false
         and created.payload.settings.dungeonBoardRole == "healer"
         and created.payload.settings.dungeonBoardFeedEnabled == true
+        and created.payload.settings.cleanseWatchPoint == "TOPRIGHT"
+        and created.payload.settings.cleanseWatchRelPoint == "TOPRIGHT"
+        and created.payload.settings.cleanseWatchX == 0
+        and created.payload.settings.cleanseWatchY == 0
         and #created.payload.actions.shortcuts == 0,
     "new profile did not start from defaults")
 local duplicate = assert(store.Duplicate(active.id, "Copy"))
@@ -397,7 +409,14 @@ assert(not pcall(store.Initialize, {}, foreignCharacter, "WARRIOR", "Warrior - R
 
 local resetRoot = assert(store.ResetCharacter())
 assert(resetRoot.profileStore.schemaVersion == 2 and #store.List() == 1
-        and store.GetActiveProfile().name == "Default" and next(resetRoot.bindingRuntime) == nil,
+        and store.GetActiveProfile().name == "Default"
+        and store.GetActiveProfile().payload.settings.cleanseWatchPoint
+            == "TOPRIGHT"
+        and store.GetActiveProfile().payload.settings.cleanseWatchRelPoint
+            == "TOPRIGHT"
+        and store.GetActiveProfile().payload.settings.cleanseWatchX == 0
+        and store.GetActiveProfile().payload.settings.cleanseWatchY == 0
+        and next(resetRoot.bindingRuntime) == nil,
     "character reset did not create a clean authoritative store")
 local resetAgain = store.Initialize(legacyAccount, resetRoot, "WARRIOR", "Bolderbear - Dreamscythe")
 assert(resetAgain.name == "Default" and #store.List() == 1,

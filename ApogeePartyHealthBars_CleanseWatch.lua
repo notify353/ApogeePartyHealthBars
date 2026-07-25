@@ -7,6 +7,7 @@ local Watch = ApogeePartyHealthBars_CleanseWatch
 
 local FRAME_WIDTH, LANE_HEIGHT = 500, 126
 local BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_GAP = 84, 19, 3
+local DEFAULT_POINT, DEFAULT_X, DEFAULT_Y = "TOPRIGHT", 0, 0
 local units = C.SLOT_UNITS
 local D, frame, bodyBackground
 local lanes, capabilities = {}, {}
@@ -55,6 +56,11 @@ local function setButtonVisual(button, active, label)
     button.label:SetAlpha(alpha)
     button.label:SetText(active and label or "")
     for _, edge in ipairs(button.border) do edge:SetAlpha(alpha) end
+    -- Secure buttons must retain their unit and spell attributes in combat.
+    -- Cover inactive buttons with an ordinary frame instead of mutating their
+    -- protected mouse state, so hidden slots cannot cast while UNIT_AURA
+    -- updates remain combat-safe.
+    button.inputShield:SetShown(button.capability ~= nil and not active)
     button.active = active
 end
 
@@ -309,14 +315,14 @@ local function render()
             lane.emptyLabel:SetAlpha(0)
             renderEffectRow(lane.effectCard, typeState.effects[1])
             layoutEffectCard(lane, typeState.effects[1])
-        elseif lane.capability and (panelActive or unlocked) then
+        elseif lane.capability and unlocked then
             lane.typeTitle:SetText(dispelType .. "  ·  clear")
             lane.emptyLabel:SetText("No removable " .. dispelType .. " effects.")
             lane.emptyLabel:SetAlpha(1)
             renderEffectRow(lane.effectCard, nil)
             layoutEffectCard(lane, nil)
         end
-        setLaneVisual(lane, lane.capability and (panelActive or unlocked))
+        setLaneVisual(lane, lane.capability and (active or unlocked))
 
         for unitIndex, button in ipairs(lane.buttons) do
             local group = typeState.members[unitIndex]
@@ -327,8 +333,12 @@ local function render()
         end
     end
 
-    local visuallyShown = panelActive or (unlocked and hasCapabilities())
-    bodyBackground:SetAlpha(visuallyShown and 1 or 0)
+    -- Runtime lanes provide their own backgrounds. Keeping the shared body
+    -- transparent prevents clean, fixed secure lanes from leaving a visible
+    -- empty category or blank panel area. Configuration mode still shows the
+    -- complete positioning surface.
+    bodyBackground:SetAlpha(
+        unlocked and hasCapabilities() and 1 or 0)
     if not (InCombatLockdown and InCombatLockdown()) then
         frame:SetShown(shouldShowFrame())
     end
@@ -408,12 +418,14 @@ function Watch.Build()
         local buttonStart = (FRAME_WIDTH
             - (#units * BUTTON_WIDTH + (#units - 1) * BUTTON_GAP)) / 2
         for unitIndex, unitId in ipairs(units) do
+            local buttonOffset =
+                buttonStart + (unitIndex - 1) * (BUTTON_WIDTH + BUTTON_GAP)
             local button = CreateFrame("Button",
                 "ApogeePartyHealthBarsCleanse" .. dispelType .. tostring(unitIndex),
                 lane, "SecureUnitButtonTemplate, SecureActionButtonTemplate")
             button:SetSize(BUTTON_WIDTH, BUTTON_HEIGHT)
             button:SetPoint("BOTTOMLEFT", lane, "BOTTOMLEFT",
-                buttonStart + (unitIndex - 1) * (BUTTON_WIDTH + BUTTON_GAP), 4)
+                buttonOffset, 4)
             button:SetAttribute("unit", unitId)
             button:SetAttribute("useOnKeyDown", false)
             button:RegisterForClicks("AnyUp")
@@ -430,6 +442,16 @@ function Watch.Build()
             button.unitId, button.dispelType = unitId, dispelType
             button.background, button.label = buttonBackground, label
             button.border = D.CreateBorder(button, 0, 1)
+
+            local inputShield = CreateFrame("Frame", nil, lane)
+            inputShield:SetSize(BUTTON_WIDTH, BUTTON_HEIGHT)
+            inputShield:SetPoint("BOTTOMLEFT", lane, "BOTTOMLEFT",
+                buttonOffset, 4)
+            inputShield:SetFrameLevel(button:GetFrameLevel() + 1)
+            inputShield:EnableMouse(true)
+            inputShield:SetPropagateMouseClicks(false)
+            button.inputShield = inputShield
+
             lane.buttons[unitIndex] = button
         end
         lanes[dispelType] = lane
@@ -484,10 +506,10 @@ end
 
 function Watch.SetPosition(point, relativePoint, x, y)
     if not S.sv then return end
-    S.sv.cleanseWatchPoint = point or "CENTER"
-    S.sv.cleanseWatchRelPoint = relativePoint or point or "CENTER"
-    S.sv.cleanseWatchX = tonumber(x) or 0
-    S.sv.cleanseWatchY = tonumber(y) or 0
+    S.sv.cleanseWatchPoint = point or DEFAULT_POINT
+    S.sv.cleanseWatchRelPoint = relativePoint or point or DEFAULT_POINT
+    S.sv.cleanseWatchX = tonumber(x) or DEFAULT_X
+    S.sv.cleanseWatchY = tonumber(y) or DEFAULT_Y
 end
 
 function Watch.RestorePosition()
@@ -495,17 +517,19 @@ function Watch.RestorePosition()
     if InCombatLockdown and InCombatLockdown() then return false end
     local values = saved()
     frame:ClearAllPoints()
-    frame:SetPoint(values.cleanseWatchPoint or "CENTER", UIParent,
-        values.cleanseWatchRelPoint or "CENTER",
-        tonumber(values.cleanseWatchX) or 0, tonumber(values.cleanseWatchY) or 70)
+    frame:SetPoint(values.cleanseWatchPoint or DEFAULT_POINT, UIParent,
+        values.cleanseWatchRelPoint or DEFAULT_POINT,
+        tonumber(values.cleanseWatchX) or DEFAULT_X,
+        tonumber(values.cleanseWatchY) or DEFAULT_Y)
     return true
 end
 
 function Watch.ResetPosition()
     if InCombatLockdown and InCombatLockdown() then return false end
     frame:ClearAllPoints()
-    frame:SetPoint("CENTER", UIParent, "CENTER", 0, 70)
-    Watch.SetPosition("CENTER", "CENTER", 0, 70)
+    frame:SetPoint(DEFAULT_POINT, UIParent, DEFAULT_POINT,
+        DEFAULT_X, DEFAULT_Y)
+    Watch.SetPosition(DEFAULT_POINT, DEFAULT_POINT, DEFAULT_X, DEFAULT_Y)
     return true
 end
 

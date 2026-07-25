@@ -19,10 +19,13 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Cleanse Watch now hides clean debuff categories during normal gameplay while retaining complete category previews in configuration mode.
+- Cleanse Watch now defaults and resets flush against the top-right of the screen.
 - Rebuilt configuration-mode presentation around shared opaque-black panel chrome, compact labeled anchors, and click-to-front window stacking for settings, Party Health, DoT reminders, and the Dungeon Board mini-feed. Windows remain freely positionable and normal gameplay surfaces retain their existing appearance.
 
 ### Fixed
 
+- Prevented inactive Cleanse Watch slots from casting invisible cleanse actions when clicked.
 - Corrected Classic Era client detection and TOC metadata to live interface `11509`, allowing Dungeon Board to classify requests instead of rejecting every message as unsupported.
 - Prevented board entries and alerts for generic LFM posts, dual-role requests, self-role messages such as `tank LFG`, completed roles such as `got tank`, and out-of-range dungeons. Official listings and the UBRS board exception also remain excluded from alerts.
 - Prevented “DM for invite” and “DM me” instructions from being mistaken for Deadmines or Dire Maul requests.

@@ -56,7 +56,7 @@ local function Widget(name)
     local noops = {
         "SetPoint", "ClearAllPoints", "SetAllPoints",
         "SetFrameStrata", "SetFrameLevel", "SetClampedToScreen", "EnableMouse",
-        "SetJustifyH", "SetJustifyV", "SetWordWrap",
+        "SetJustifyH", "SetJustifyV", "SetWordWrap", "SetOwner",
     }
     for _, method in ipairs(noops) do methods[method] = function() end end
     return setmetatable(object, { __index = function(_, key) return methods[key] end })
@@ -130,6 +130,28 @@ assert(dropdown:SetSelectedKey("missing") == nil and dropdown.label.text == "Sel
     "invalid dropdown selection did not fail closed")
 assert(helpers.EscapeText("Raid |cff00ff00Profile|r") == "Raid ||cff00ff00Profile||r",
     "profile display text did not escape WoW markup")
+
+GameTooltip = Widget("GameTooltip")
+function GameTooltip:SetSpellByID(spellId)
+    self.spellId = spellId
+    return spellId == 17
+end
+function GameTooltip:SetItemByID(itemId)
+    self.itemId = itemId
+    return itemId == 6948
+end
+local tooltipAnchor = Widget("TooltipAnchor")
+helpers.ShowNativeSpellTooltip(tooltipAnchor, 999999, "Stored Spell")
+assert(GameTooltip.spellId == 999999 and GameTooltip.text == "Stored Spell",
+    "failed native spell tooltip did not fall back to its stored display name")
+GameTooltip.text = nil
+helpers.ShowNativeItemTooltip(tooltipAnchor, 999999, "Stored Item")
+assert(GameTooltip.itemId == 999999 and GameTooltip.text == "Stored Item",
+    "failed native item tooltip did not fall back to its stored display name")
+GameTooltip.text = nil
+helpers.ShowNativeSpellTooltip(tooltipAnchor, 17, "Fallback Spell")
+assert(GameTooltip.text == nil,
+    "successful native spell tooltip was overwritten by fallback text")
 
 local form = helpers.CreateFormScaffold(UIParent, "TestForm", "Choose settings.")
 local section = helpers.CreateFormSection(form.content, form.rowWidth, "Section")

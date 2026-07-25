@@ -46,7 +46,7 @@ assert(Settings.SetFeedEnabled(false)
         and Settings.SetFeedEnabled(true)
         and saved.dungeonBoardFeedEnabled == true
         and Settings.GetFeedEnabled(),
-    "mini-feed enabled preference did not persist or notify")
+    "LFG Alerts enabled preference did not persist or notify")
 assert(Settings.SetSoundKey("alarm_soft")
         and Settings.GetSoundKey() == "alarm_soft"
         and changes[#changes] == "sound"
@@ -73,5 +73,21 @@ Settings.SetFeedPosition("BOTTOM", "BOTTOM", -4, 12)
 point, relativePoint, x, y = Settings.GetFeedPosition()
 assert(point == "BOTTOM" and relativePoint == "BOTTOM" and x == -4 and y == 12,
     "feed position was not persisted")
+Settings.ResetFeedPosition()
+point, relativePoint, x, y = Settings.GetFeedPosition()
+assert(point == "CENTER" and relativePoint == "CENTER" and x == 0 and y == 0,
+    "LFG Alerts position did not reset to exact screen center")
+
+point, relativePoint, x, y = Settings.GetBoardPosition()
+assert(point == "TOP" and relativePoint == "TOP" and x == 0 and y == -20,
+    "Dungeon Board did not default to top-center")
+Settings.SetBoardPosition("BOTTOM", "BOTTOM", 9, 14)
+point, relativePoint, x, y = Settings.GetBoardPosition()
+assert(point == "BOTTOM" and relativePoint == "BOTTOM" and x == 9 and y == 14,
+    "Dungeon Board position was not persisted")
+Settings.ResetBoardPosition()
+point, relativePoint, x, y = Settings.GetBoardPosition()
+assert(point == "TOP" and relativePoint == "TOP" and x == 0 and y == -20,
+    "Dungeon Board position did not reset to top-center")
 
 print("PASS Dungeon Board profile settings")

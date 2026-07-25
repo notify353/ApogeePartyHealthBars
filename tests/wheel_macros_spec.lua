@@ -400,12 +400,7 @@ assert(not normalUpIcon.texture.desaturated and normalUpIcon.alpha == 0.35
     "out-of-range wheel spell did not retain only the faded range styling")
 tooltipLines = {}
 normalUpIcon.scripts.OnEnter(normalUpIcon)
-local foundActionHeading = false
-for _, line in ipairs(tooltipLines) do
-    if line == "Normal Up action" then foundActionHeading = true end
-    assert(line ~= "Out of range", "out-of-range wheel tooltip retained its status line")
-end
-assert(foundActionHeading, "wheel tooltip did not use the normalized action heading")
+assert(#tooltipLines == 0, "wheel tooltip appended Apogee status or instruction lines")
 tooltipShows = 0
 rangeResult = 1; usable = false; noResource = true; wheel.Refresh()
 assert(normalUpIcon.texture.desaturated, "insufficient rage did not desaturate the wheel spell")

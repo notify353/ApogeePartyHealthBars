@@ -31,7 +31,10 @@ local function widget(name, parent)
             self.shown = true
             if self.scripts.OnShow then self.scripts.OnShow(self) end
         end,
-        Hide = function(self) self.shown = false end,
+        Hide = function(self)
+            self.shown = false
+            if self.scripts.OnHide then self.scripts.OnHide(self) end
+        end,
         SetShown = function(self, shown) self.shown = shown end,
         Enable = function(self) self.enabled = true end,
         Disable = function(self) self.enabled = false end,
@@ -49,6 +52,9 @@ local function widget(name, parent)
         SetWidth = function(self, width) self.width = width end,
         SetWordWrap = function(self, value) self.wordWrap = value end,
         SetToplevel = function(self, value) self.topLevel = value == true end,
+        GetPoint = function(self)
+            return "TOP", UIParent, "TOP", 0, -20
+        end,
     }
     local noops = {
         "SetPoint", "SetMovable", "EnableMouse", "SetClampedToScreen",
@@ -90,6 +96,8 @@ local groupFinderChanged
 local settingsChanged
 local groupFinderStatus = { status = "idle", available = true }
 local role = "healer"
+local feedEnabled = true
+local levelsBelow, levelsAbove = 10, 3
 local backdropAlpha
 local actionCalls = {}
 UI.Build({
@@ -102,9 +110,27 @@ UI.Build({
     Settings = {
         GetRole = function() return role end,
         SetRole = function(value) role = value end,
+        GetFeedEnabled = function() return feedEnabled end,
+        SetFeedEnabled = function(value)
+            feedEnabled = value == true
+            if settingsChanged then settingsChanged("feedEnabled") end
+        end,
+        GetLevelOffsets = function() return levelsBelow, levelsAbove end,
+        GetLevelOffsetLimits = function() return 0, 60 end,
+        AdjustLevelOffset = function(kind, direction)
+            if kind == "below" then
+                levelsBelow = math.max(0, math.min(60, levelsBelow + direction))
+            elseif kind == "above" then
+                levelsAbove = math.max(0, math.min(60, levelsAbove + direction))
+            end
+            if settingsChanged then settingsChanged("levelRange") end
+        end,
+        GetBoardPosition = function() return "TOP", "TOP", 0, -20 end,
+        SetBoardPosition = function() end,
+        ResetBoardPosition = function() end,
         GetLevelWindow = function(level)
             return ApogeePartyHealthBars_DungeonBoardEligibility.GetLevelWindow(
-                level, 10, 3)
+                level, levelsBelow, levelsAbove)
         end,
         Subscribe = function(callback) settingsChanged = callback end,
     },
@@ -355,7 +381,10 @@ local guildSectionFrame
 local guildRequestFrame
 local needTankButton
 local needHealerButton
+local miniAlertsButton
 local refreshOfficialButton
+local belowDecrease
+local aboveIncrease
 local removedRoleControl
 for _, createdFrame in ipairs(createdFrames) do
     local title = createdFrame.children[2]
@@ -366,8 +395,18 @@ for _, createdFrame in ipairs(createdFrames) do
         needTankButton = createdFrame
     elseif title and title.text == "Need Healer" then
         needHealerButton = createdFrame
+    elseif title and title.text == "LFG Alerts: On" then
+        miniAlertsButton = createdFrame
     elseif title and title.text == "Refresh official" then
         refreshOfficialButton = createdFrame
+    elseif createdFrame.tooltip
+        == "Show one fewer level below your character."
+    then
+        belowDecrease = createdFrame
+    elseif createdFrame.tooltip
+        == "Show one more level above your character."
+    then
+        aboveIncrease = createdFrame
     elseif title and (title.text == "Need Both" or title.text == "All (no alerts)") then
         removedRoleControl = createdFrame
     elseif meta and meta.text and meta.text:find("GUILD", 1, true) then
@@ -384,11 +423,29 @@ assert(guildRequestFrame and guildRequestFrame.children[1].color[2] == 0.13
     and guildRequestFrame.children[5].text == "LFM BRD",
     "guild request did not receive its compact green presentation")
 assert(needTankButton and needHealerButton and not removedRoleControl
+        and miniAlertsButton and miniAlertsButton.width == 100
+        and miniAlertsButton.children[1].color[2] == 0.215
         and refreshOfficialButton and refreshOfficialButton.width == 104
         and type(needTankButton.scripts.OnClick) == "function"
         and needTankButton.tooltip
             == "Show groups that need a Tank and already have a Healer.",
     "Dungeon Board did not expose exactly the two supported role controls")
+assert(belowDecrease and aboveIncrease,
+    "Dungeon Board did not expose both level-window controls")
+belowDecrease.scripts.OnClick()
+aboveIncrease.scripts.OnClick()
+assert(levelsBelow == 9 and levelsAbove == 4
+        and compactContext.text == "Tank ready • Lv 51-64",
+    "Dungeon Board level controls did not persist and refresh the active range")
+miniAlertsButton.scripts.OnClick()
+assert(not feedEnabled and miniAlertsButton.children[2].text == "LFG Alerts: Off"
+        and miniAlertsButton.children[1].color[2] == 0.075
+        and miniAlertsButton.tooltip
+            == "Show LFG Alerts and enable their configured sound.",
+    "Dungeon Board LFG Alerts control did not persist or refresh its disabled state")
+miniAlertsButton.scripts.OnClick()
+assert(feedEnabled and miniAlertsButton.children[2].text == "LFG Alerts: On",
+    "Dungeon Board LFG Alerts control did not restore its enabled state")
 
 local guildWho
 local guildWhisper

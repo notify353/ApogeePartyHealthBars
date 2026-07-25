@@ -204,7 +204,7 @@ function M.SetConfigurationActive(value)
     for _, surface in pairs(surfaces) do
         setChromeActive(surface.chrome, configurationActive)
         if configurationActive and surface.frame.SetFrameStrata then
-            surface.frame:SetFrameStrata("MEDIUM")
+            surface.frame:SetFrameStrata("DIALOG")
         end
     end
     if configurationActive then

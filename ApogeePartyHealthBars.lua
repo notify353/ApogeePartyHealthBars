@@ -536,6 +536,7 @@ dungeonBoardFeed.Initialize({
     Sounds = ApogeePartyHealthBars_Sounds,
     Helpers = ApogeePartyHealthBars_UIHelpers,
     ConfigSurfaces = configSurfaces,
+    Actions = ApogeePartyHealthBars_DungeonBoardActions,
     GetPlayerLevel = GetDungeonBoardPlayerLevel,
     Now = function() return GetTime() end,
 })
@@ -948,6 +949,8 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
         HealthAlerts                = ApogeePartyHealthBars_HealthAlerts,
         MentionAlerts               = mentionAlerts,
         DungeonBoardSettings        = dungeonBoardSettings,
+        DungeonBoardFeed            = dungeonBoardFeed,
+        DungeonBoardUI              = dungeonBoardUI,
         CleanseWatch                 = cleanseWatch,
         Threat                      = H,
         CombatUIFader               = ApogeePartyHealthBars_CombatUIFader,

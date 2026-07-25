@@ -28,13 +28,11 @@ layout.Register({
 })
 
 layout.UpdateHeader()
-assert(title:GetText() == "|cffFFD700Party Health|r",
-    "configuration header restored verbose drag instructions")
-assert(title:IsShown() and separator:IsShown() and chromeRefreshes == 1,
-    "configuration header did not retain its visible drag surface")
-assert(rowAnchor.point[1] == "TOPLEFT" and rowAnchor.point[2] == separator
-        and rowAnchor.point[3] == "BOTTOMLEFT" and rowAnchor.point[4] == 5,
-    "configuration header changed party-row placement")
+assert(not title:IsShown() and not separator:IsShown() and chromeRefreshes == 1,
+    "configuration mode retained the Party Health header")
+assert(rowAnchor.point[1] == "TOPLEFT" and rowAnchor.point[2] == panel
+        and rowAnchor.point[3] == "TOPLEFT" and rowAnchor.point[4] == 12,
+    "configuration rows retained space for the removed header")
 
 ApogeePartyHealthBars_S.configMode = false
 layout.UpdateHeader()
@@ -43,4 +41,4 @@ assert(not title:IsShown() and not separator:IsShown() and chromeRefreshes == 2,
 assert(rowAnchor.point[2] == panel and rowAnchor.point[4] == 12,
     "ordinary party rows did not return to their original anchor")
 
-print("PASS concise party-bar configuration header")
+print("PASS headerless party-bar configuration")

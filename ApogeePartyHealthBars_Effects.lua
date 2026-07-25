@@ -43,7 +43,11 @@ local FEATURE_DEFAULTS = {
     dungeonBoardFeedPoint = "CENTER",
     dungeonBoardFeedRelPoint = "CENTER",
     dungeonBoardFeedX = 0,
-    dungeonBoardFeedY = 180,
+    dungeonBoardFeedY = 0,
+    dungeonBoardPoint = "TOP",
+    dungeonBoardRelPoint = "TOP",
+    dungeonBoardX = 0,
+    dungeonBoardY = -20,
 }
 
 local function NormalizeDotThreshold(value, fallback)

@@ -12,19 +12,11 @@ end
 
 function L.UpdateHeader()
     D.ApplyPanelChrome()
-    if S.configMode then
-        D.titleFS:SetText("|cffFFD700Party Health|r")
-        D.titleFS:Show()
-        D.sepTex:Show()
-        D.rowAnchor:ClearAllPoints()
-        D.rowAnchor:SetPoint("TOPLEFT", D.sepTex, "BOTTOMLEFT", D.GetThreatGutterWidth(), 0)
-    else
-        D.titleFS:Hide()
-        D.sepTex:Hide()
-        D.rowAnchor:ClearAllPoints()
-        D.rowAnchor:SetPoint(
-            "TOPLEFT", D.panel, "TOPLEFT", C.PAD_H + D.GetThreatGutterWidth(), 0)
-    end
+    D.titleFS:Hide()
+    D.sepTex:Hide()
+    D.rowAnchor:ClearAllPoints()
+    D.rowAnchor:SetPoint(
+        "TOPLEFT", D.panel, "TOPLEFT", C.PAD_H + D.GetThreatGutterWidth(), 0)
 end
 
 local function ClearSimpleSpellAttributes(button)
@@ -185,11 +177,9 @@ function L.LayoutRows()
     D.shortcutFooterAnchor:SetSize(C.ROW_CONTENT_W, 1)
     D.LayoutShortcutFooter()
 
-    local topChrome = S.configMode and C.HEADER_H or 0
     local bottomPad = S.configMode and C.PAD_BOT or 0
-    D.panel:SetHeight(topChrome + yOffset + shortcutFooterHeight + bottomPad)
+    D.panel:SetHeight(yOffset + shortcutFooterHeight + bottomPad)
     D.panel:SetWidth(ComputePanelWidth())
-    if S.configMode then D.sepTex:SetWidth(D.panel:GetWidth() - 20) end
     D.panel:Show()
     D.RebuildUnitToRow()
     return true

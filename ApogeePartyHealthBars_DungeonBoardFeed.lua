@@ -6,13 +6,17 @@ local FADE_SECONDS = 5
 local SOUND_THROTTLE_SECONDS = 3
 local MAX_ENTRIES = 3
 local FRAME_WIDTH = 340
-local STATUS_HEIGHT = 24
 local ROW_HEIGHT = 34
 local ROW_GAP = 2
+local ACTION_SIZE = 24
+local ACTION_GAP = 3
+local ACTION_RIGHT_INSET = 3
+local ACTIONS_WIDTH = ACTION_SIZE * 2 + ACTION_GAP + ACTION_RIGHT_INSET
+local WHO_TEXTURE = "Interface\\Common\\UI-Searchbox-Icon"
+local WHISPER_TEXTURE = "Interface\\ChatFrame\\UI-ChatIcon-Chat-Up"
 
 local D
 local frame
-local statusLabel
 local rows = {}
 local entries = {}
 local alertedByID = {}
@@ -80,16 +84,61 @@ local function dungeonNames(entry)
     return table.concat(result, "; ")
 end
 
-local function idleCopy(role)
-    local level = tonumber(D.GetPlayerLevel()) or 0
-    local levelWindow = D.Settings.GetLevelWindow
-        and D.Settings.GetLevelWindow(level) or nil
-    local levelText = levelWindow
-        and ("Lv " .. tostring(levelWindow.minLevel)
-            .. "-" .. tostring(levelWindow.maxLevel))
-        or "configured levels"
-    return "Watching " .. (role == "tank" and "Tank" or "Healer")
-        .. "  •  " .. levelText
+local function previewEntry(role)
+    local neededRole = role == "tank" and "tank" or "healer"
+    return {
+        preview = true,
+        source = "channel",
+        sender = "ExamplePlayer",
+        message = "LFM Wailing Caverns - need " .. neededRole,
+        dungeonKeys = { "WC" },
+        expiresAt = math.huge,
+    }
+end
+
+local function createActionButton(parent, texturePath)
+    local button = CreateFrame("Button", nil, parent)
+    button:SetSize(ACTION_SIZE, ACTION_SIZE)
+    local background = button:CreateTexture(nil, "BACKGROUND")
+    background:SetAllPoints()
+    background:SetColorTexture(0.07, 0.075, 0.095, 0.98)
+    local icon = button:CreateTexture(nil, "ARTWORK")
+    icon:SetSize(16, 16)
+    icon:SetPoint("CENTER")
+    icon:SetTexture(texturePath)
+    button.background, button.icon = background, icon
+    button:SetScript("OnEnter", function(self)
+        if not GameTooltip or not self.tooltip then return end
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText(self.tooltip, 1, 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    button:SetScript("OnLeave", function()
+        if GameTooltip then GameTooltip:Hide() end
+    end)
+    return button
+end
+
+local function configureAction(button, enabled, tooltip, callback)
+    button.tooltip = tooltip
+    if enabled then
+        if button.Enable then button:Enable() end
+        button.background:SetColorTexture(0.07, 0.075, 0.095, 0.98)
+        button.icon:SetVertexColor(1, 1, 1, 1)
+        button:SetScript("OnClick", callback)
+    else
+        if button.Disable then button:Disable() end
+        button.background:SetColorTexture(0.045, 0.05, 0.065, 0.98)
+        button.icon:SetVertexColor(0.42, 0.44, 0.48, 1)
+        button:SetScript("OnClick", nil)
+    end
+    button:Show()
+end
+
+local function reportAction(result, message)
+    if not result and type(message) == "string" and message ~= "" and D.Print then
+        D.Print(message)
+    end
 end
 
 function Feed.GetEntryAlpha(entry, atTime)
@@ -104,68 +153,75 @@ local function render()
     local now = D.Now()
     prune(now)
     local role = D.Settings.GetRole()
+    local enabled = D.Settings.GetFeedEnabled()
 
-    if not D.Settings.GetFeedEnabled() then
-        entries = {}
+    if not enabled then entries = {} end
+
+    local displayEntries = unlocked and { previewEntry(role) } or entries
+    if #displayEntries == 0 then
         for index = 1, MAX_ENTRIES do rows[index]:Hide() end
-        frame:SetHeight(STATUS_HEIGHT)
-        statusLabel:SetText("|cff888888Dungeon Board mini-feed alerts off|r")
-        statusLabel:SetShown(not unlocked)
-        D.ConfigSurfaces.SetTitle("feed", "Dungeon Board mini-feed (alerts off)")
-        D.ConfigSurfaces.SetTitleShown("feed", unlocked)
-        frame:SetShown(unlocked)
-        return
-    end
-
-    statusLabel:Show()
-    D.ConfigSurfaces.SetTitle("feed", "Dungeon Board mini-feed")
-    statusLabel:SetText("|cffffd100" .. idleCopy(role) .. "|r")
-
-    if #entries == 0 then
-        for index = 1, MAX_ENTRIES do rows[index]:Hide() end
-        frame:SetHeight(STATUS_HEIGHT)
-        statusLabel:SetShown(not unlocked)
-        D.ConfigSurfaces.SetTitleShown("feed", unlocked)
-        frame:Show()
+        frame:SetHeight(ROW_HEIGHT)
+        frame:Hide()
         return
     end
 
     for index = 1, MAX_ENTRIES do
         local row = rows[index]
-        local entry = entries[index]
+        local entry = displayEntries[index]
         if entry then
-            local source = entry.source == "guild"
-                and "|cff4dff59GUILD|r  " or "|cff8aa4bdCHAT|r  "
+            local source
+            if entry.preview then
+                source = "|cffffd100PREVIEW|r  "
+            elseif entry.source == "guild" then
+                source = "|cff4dff59GUILD|r  "
+            else
+                source = "|cff8aa4bdCHAT|r  "
+            end
             row.title:SetText(source .. "|cffffd100"
                 .. D.Helpers.EscapeText(dungeonNames(entry)) .. "|r")
             local sender = D.Helpers.EscapeText(entry.sender or "Unknown")
             local message = D.Helpers.EscapeText(entry.message or "")
             row.detail:SetText(sender .. (message ~= "" and ("  •  " .. message) or ""))
+            if entry.preview then
+                configureAction(row.who, false, "Preview only.", nil)
+                configureAction(row.whisper, false, "Preview only.", nil)
+            else
+                local canWho, whoReason = D.Actions.CanQueryWho(entry.sender)
+                configureAction(row.who, canWho,
+                    canWho and ("Search Who for " .. entry.sender .. ".")
+                        or whoReason,
+                    function()
+                        reportAction(D.Actions.QueryWho(entry.sender))
+                    end)
+                local canWhisper, whisperReason = D.Actions.CanWhisper(entry.sender)
+                configureAction(row.whisper, canWhisper,
+                    canWhisper and ("Open an empty whisper to " .. entry.sender .. ".")
+                        or whisperReason,
+                    function()
+                        reportAction(D.Actions.OpenWhisper(entry.sender))
+                    end)
+            end
             if entry.source == "guild" then
                 row.background:SetColorTexture(0.04, 0.18, 0.06, 0.92)
             else
                 row.background:SetColorTexture(0.035, 0.045, 0.065, 0.92)
             end
-            row:SetAlpha(Feed.GetEntryAlpha(entry, now))
+            row:SetAlpha(entry.preview and 1 or Feed.GetEntryAlpha(entry, now))
             row:Show()
         else
             row:Hide()
         end
     end
-    D.ConfigSurfaces.SetTitleShown("feed", false)
-    if #entries > 0 then
-        frame:SetHeight(STATUS_HEIGHT + (#entries * (ROW_HEIGHT + ROW_GAP)) - ROW_GAP)
-    else
-        frame:SetHeight(STATUS_HEIGHT)
-    end
-    frame:SetShown(unlocked or #entries > 0)
+    frame:SetHeight(
+        (#displayEntries * (ROW_HEIGHT + ROW_GAP)) - ROW_GAP)
+    frame:Show()
 end
 
 function Feed.Initialize(deps)
     assert(type(deps) == "table", "DungeonBoardFeed requires dependencies")
     for _, key in ipairs({
         "Runtime", "Settings", "Eligibility", "Catalog", "Sounds",
-        "Helpers", "ConfigSurfaces", "GetPlayerLevel", "Now",
+        "Helpers", "ConfigSurfaces", "Actions", "GetPlayerLevel", "Now",
     }) do
         assert(deps[key] ~= nil, "DungeonBoardFeed missing dependency: " .. key)
     end
@@ -237,7 +293,7 @@ function Feed.Build()
     if frame then return Feed end
     frame = CreateFrame("Frame", "ApogeePartyHealthBarsDungeonBoardFeed", UIParent)
     frame:SetSize(FRAME_WIDTH,
-        STATUS_HEIGHT + (MAX_ENTRIES * (ROW_HEIGHT + ROW_GAP)) - ROW_GAP)
+        (MAX_ENTRIES * (ROW_HEIGHT + ROW_GAP)) - ROW_GAP)
     frame:SetFrameStrata("DIALOG")
     frame:SetClampedToScreen(true)
     frame:SetMovable(true)
@@ -245,27 +301,12 @@ function Feed.Build()
     local point, relativePoint, x, y = D.Settings.GetFeedPosition()
     frame:SetPoint(point, UIParent, relativePoint, x, y)
 
-    local statusBackground = frame:CreateTexture(nil, "BACKGROUND")
-    statusBackground:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
-    statusBackground:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 0, 0)
-    statusBackground:SetHeight(STATUS_HEIGHT)
-    statusBackground:SetColorTexture(0.025, 0.035, 0.05, 0.98)
-
-    statusLabel = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    statusLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 7, -5)
-    statusLabel:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -7, -5)
-    statusLabel:SetJustifyH("LEFT")
-    statusLabel:SetWordWrap(false)
-
-    D.ConfigSurfaces.Register("feed", frame, {
-        headerHeight = STATUS_HEIGHT,
-        title = "Dungeon Board mini-feed",
-    })
+    D.ConfigSurfaces.Register("feed", frame)
 
     for index = 1, MAX_ENTRIES do
         local row = CreateFrame("Frame", nil, frame)
         row:SetHeight(ROW_HEIGHT)
-        local top = STATUS_HEIGHT + ((index - 1) * (ROW_HEIGHT + ROW_GAP))
+        local top = (index - 1) * (ROW_HEIGHT + ROW_GAP)
         row:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, -top)
         row:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 0, -top)
 
@@ -273,17 +314,22 @@ function Feed.Build()
         background:SetAllPoints()
         local title = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
         title:SetPoint("TOPLEFT", row, "TOPLEFT", 7, -3)
-        title:SetPoint("TOPRIGHT", row, "TOPRIGHT", -7, -3)
+        title:SetPoint("TOPRIGHT", row, "TOPRIGHT", -ACTIONS_WIDTH, -3)
         title:SetJustifyH("LEFT")
         title:SetWordWrap(false)
         local detail = row:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
         detail:SetPoint("TOPLEFT", row, "TOPLEFT", 7, -18)
-        detail:SetPoint("TOPRIGHT", row, "TOPRIGHT", -7, -18)
+        detail:SetPoint("TOPRIGHT", row, "TOPRIGHT", -ACTIONS_WIDTH, -18)
         detail:SetJustifyH("LEFT")
         detail:SetWordWrap(false)
         row.background = background
         row.title = title
         row.detail = detail
+        row.who = createActionButton(row, WHO_TEXTURE)
+        row.who:SetPoint("RIGHT", row, "RIGHT", -(ACTION_SIZE + ACTION_GAP
+            + ACTION_RIGHT_INSET), 0)
+        row.whisper = createActionButton(row, WHISPER_TEXTURE)
+        row.whisper:SetPoint("RIGHT", row, "RIGHT", -ACTION_RIGHT_INSET, 0)
         rows[index] = row
     end
 
@@ -304,13 +350,17 @@ function Feed.Build()
     return Feed
 end
 
-function Feed.SetUnlocked(value)
-    unlocked = value == true
+local function applyUnlocked()
     if not frame then return end
     frame:EnableMouse(unlocked)
     if unlocked then frame:RegisterForDrag("LeftButton") else frame:RegisterForDrag() end
     D.ConfigSurfaces.SetSurfaceChromeShown("feed", unlocked)
     render()
+end
+
+function Feed.SetUnlocked(value)
+    unlocked = value == true
+    applyUnlocked()
 end
 
 function Feed.IsUnlocked()
@@ -330,4 +380,9 @@ function Feed.RestorePosition()
     -- receives no OnUpdate callbacks, so refresh its watch state explicitly at
     -- PLAYER_LOGIN after the active profile becomes available.
     render()
+end
+
+function Feed.ResetPosition()
+    D.Settings.ResetFeedPosition()
+    Feed.RestorePosition()
 end

@@ -8,7 +8,7 @@ local FRAME_WIDTH = 540
 local FRAME_HEIGHT = 380
 local FRAME_PADDING = 9
 local HEADER_HEIGHT = 34
-local TOOLBAR_HEIGHT = 34
+local TOOLBAR_HEIGHT = 62
 local SECTION_HEIGHT = 22
 local REQUEST_HEIGHT = 28
 local REQUEST_PREVIEW_HEIGHT = 44
@@ -39,7 +39,9 @@ local content
 local emptyLabel
 local contextLabel
 local refreshButton
+local feedAlertButton
 local roleButtons = {}
+local levelControls = {}
 local entryFrames = {}
 
 local function escape(value)
@@ -452,10 +454,46 @@ local function setButtonSelected(button, selected)
     end
 end
 
+local function setButtonEnabled(button, enabled)
+    if enabled then
+        if button.Enable then button:Enable() end
+        button.background:SetColorTexture(unpack(BUTTON_FILL))
+        button.label:SetTextColor(0.80, 0.82, 0.86)
+    else
+        if button.Disable then button:Disable() end
+        button.background:SetColorTexture(unpack(BUTTON_DISABLED_FILL))
+        button.label:SetTextColor(0.45, 0.45, 0.48)
+    end
+end
+
 local function updateControls()
     if not frame then return end
     local role = currentRole()
     for key, button in pairs(roleButtons) do setButtonSelected(button, key == role) end
+    if feedAlertButton then
+        local enabled = not D.Settings or not D.Settings.GetFeedEnabled
+            or D.Settings.GetFeedEnabled()
+        feedAlertButton.label:SetText(enabled and "LFG Alerts: On" or "LFG Alerts: Off")
+        feedAlertButton.tooltip = enabled
+            and "Hide LFG Alerts and silence their configured sound."
+            or "Show LFG Alerts and enable their configured sound."
+        setButtonSelected(feedAlertButton, enabled)
+    end
+    if D.Settings and D.Settings.GetLevelOffsets then
+        local levelsBelow, levelsAbove = D.Settings.GetLevelOffsets()
+        local minOffset, maxOffset = D.Settings.GetLevelOffsetLimits()
+        for kind, value in pairs({
+            below = levelsBelow,
+            above = levelsAbove,
+        }) do
+            local control = levelControls[kind]
+            if control then
+                control.value:SetText(tostring(value))
+                setButtonEnabled(control.decrease, value > minOffset)
+                setButtonEnabled(control.increase, value < maxOffset)
+            end
+        end
+    end
 
     if not D.GroupFinder then
         refreshButton.label:SetText("Unavailable")
@@ -581,7 +619,8 @@ function UI.Build(deps)
 
     frame = CreateFrame("Frame", "ApogeePartyHealthBarsDungeonBoard", UIParent, "BackdropTemplate")
     frame:SetSize(FRAME_WIDTH, FRAME_HEIGHT)
-    frame:SetPoint("CENTER", UIParent, "CENTER", 260, 0)
+    local point, relativePoint, x, y = D.Settings.GetBoardPosition()
+    frame:SetPoint(point, UIParent, relativePoint, x, y)
     frame:SetMovable(true)
     frame:EnableMouse(true)
     frame:SetClampedToScreen(true)
@@ -607,14 +646,30 @@ function UI.Build(deps)
     closeButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -4, -4)
     closeButton:SetScript("OnClick", function() UI.Hide() end)
 
+    feedAlertButton = createControlButton(frame, "LFG Alerts: On", 100)
+    feedAlertButton:SetPoint("RIGHT", closeButton, "LEFT", -4, 0)
+    feedAlertButton:SetScript("OnClick", function()
+        if D.Settings and D.Settings.GetFeedEnabled
+            and D.Settings.SetFeedEnabled
+        then
+            D.Settings.SetFeedEnabled(not D.Settings.GetFeedEnabled())
+        end
+        UI.Refresh()
+    end)
+
     local dragHandle = CreateFrame("Frame", nil, frame)
     dragHandle:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
-    dragHandle:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -30, 0)
+    dragHandle:SetPoint("TOPRIGHT", feedAlertButton, "TOPLEFT", -4, 0)
     dragHandle:SetHeight(HEADER_HEIGHT)
     dragHandle:EnableMouse(true)
     dragHandle:RegisterForDrag("LeftButton")
     dragHandle:SetScript("OnDragStart", function() frame:StartMoving() end)
-    dragHandle:SetScript("OnDragStop", function() frame:StopMovingOrSizing() end)
+    dragHandle:SetScript("OnDragStop", function()
+        frame:StopMovingOrSizing()
+        local savedPoint, _, savedRelativePoint, savedX, savedY = frame:GetPoint(1)
+        D.Settings.SetBoardPosition(
+            savedPoint, savedRelativePoint, savedX, savedY)
+    end)
 
     local divider = frame:CreateTexture(nil, "ARTWORK")
     divider:SetPoint("TOPLEFT", frame, "TOPLEFT", FRAME_PADDING, -HEADER_HEIGHT)
@@ -660,6 +715,50 @@ function UI.Build(deps)
     contextLabel:SetJustifyH("LEFT")
     contextLabel:SetWordWrap(false)
     contextLabel:SetTextColor(0.70, 0.72, 0.77)
+
+    local levelRowLabel = frame:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    levelRowLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", FRAME_PADDING,
+        -(HEADER_HEIGHT + 37))
+    levelRowLabel:SetText("Level window")
+    levelRowLabel:SetTextColor(0.70, 0.72, 0.77)
+
+    local function createLevelControl(kind, labelText, anchor, offset)
+        local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+        label:SetPoint("LEFT", anchor, "RIGHT", offset, 0)
+        label:SetText(labelText)
+
+        local decrease = createControlButton(frame, "-", 24)
+        decrease:SetPoint("LEFT", label, "RIGHT", 5, 0)
+        decrease.tooltip = "Show one fewer level " .. kind .. " your character."
+        decrease:SetScript("OnClick", function()
+            D.Settings.AdjustLevelOffset(kind, -1)
+            UI.Refresh()
+        end)
+
+        local value = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+        value:SetPoint("LEFT", decrease, "RIGHT", 4, 0)
+        value:SetWidth(22)
+        value:SetJustifyH("CENTER")
+
+        local increase = createControlButton(frame, "+", 24)
+        increase:SetPoint("LEFT", value, "RIGHT", 4, 0)
+        increase.tooltip = "Show one more level " .. kind .. " your character."
+        increase:SetScript("OnClick", function()
+            D.Settings.AdjustLevelOffset(kind, 1)
+            UI.Refresh()
+        end)
+
+        levelControls[kind] = {
+            label = label,
+            decrease = decrease,
+            value = value,
+            increase = increase,
+        }
+        return increase
+    end
+
+    local belowEnd = createLevelControl("below", "Below", levelRowLabel, 12)
+    createLevelControl("above", "Above", belowEnd, 16)
 
     scroll = CreateFrame("ScrollFrame", "ApogeePartyHealthBarsDungeonBoardScroll", frame,
         "UIPanelScrollFrameTemplate")
@@ -725,4 +824,16 @@ end
 
 function UI.IsShown()
     return frame and frame:IsShown() or false
+end
+
+function UI.RestorePosition()
+    if not frame then return end
+    local point, relativePoint, x, y = D.Settings.GetBoardPosition()
+    frame:ClearAllPoints()
+    frame:SetPoint(point, UIParent, relativePoint, x, y)
+end
+
+function UI.ResetPosition()
+    D.Settings.ResetBoardPosition()
+    UI.RestorePosition()
 end

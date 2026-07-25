@@ -12,10 +12,12 @@ local generalRowsByKey = {}
 local hotRows = {}
 local hotRowsByKey = {}
 local resetBarBtn, resetSettingsBtn, resetMinimapBtn, prepareDisableBtn, factoryResetBtn
+local lfgAlertsResetBtn, dungeonBoardResetBtn
 local behaviorSection, alertsSection, dungeonBoardSection, displaySection
 local hotSection, compatibilitySection
 local positionsSection, dangerSection
-local resetRow, cleanseResetRow, compatibilityRow, compatibilityLabel, prepareDisableRow, factoryRow
+local resetRow, cleanseResetRow, lfgAlertsResetRow, dungeonBoardResetRow
+local compatibilityRow, compatibilityLabel, prepareDisableRow, factoryRow
 local prepareDisableArmed, prepareDisableToken = false, 0
 local factoryResetArmed, factoryResetToken = false, 0
 local refreshing = false
@@ -279,6 +281,8 @@ local function Layout()
     entries[#entries + 1] = { frame = positionsSection, height = 16, gap = 10 }
     entries[#entries + 1] = { frame = resetRow, height = 32 }
     entries[#entries + 1] = { frame = cleanseResetRow, height = 32 }
+    entries[#entries + 1] = { frame = lfgAlertsResetRow, height = 32 }
+    entries[#entries + 1] = { frame = dungeonBoardResetRow, height = 32 }
     entries[#entries + 1] = { frame = dangerSection, height = 16, gap = 10 }
     entries[#entries + 1] = { frame = prepareDisableRow, height = 32 }
     entries[#entries + 1] = { frame = factoryRow, height = 32 }
@@ -304,7 +308,7 @@ end
 
 local function AddDungeonBoardFeedPreference()
     local frame = CreateCheckboxRow(
-        form.content, "Show Dungeon Board mini-feed alerts", 0)
+        form.content, "Show LFG Alerts", 0)
     AddGeneralRow(frame, "dungeonBoardFeedEnabled")
     frame.check:SetScript("OnClick", function(self)
         if refreshing then return end
@@ -613,6 +617,26 @@ function G.Build(parent, deps)
         D.CleanseWatch.Refresh()
     end)
 
+    lfgAlertsResetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    local lfgAlertsResetLabel = lfgAlertsResetRow:CreateFontString(
+        nil, "ARTWORK", "GameFontHighlightSmall")
+    lfgAlertsResetLabel:SetPoint("LEFT", lfgAlertsResetRow, "LEFT", 8, 0)
+    lfgAlertsResetLabel:SetText("LFG Alerts")
+    lfgAlertsResetBtn = UIH.CreateButton(
+        lfgAlertsResetRow, "Reset Position", 126, 22)
+    lfgAlertsResetBtn:SetPoint("RIGHT", lfgAlertsResetRow, "RIGHT", -5, 0)
+    lfgAlertsResetBtn:SetScript("OnClick", D.DungeonBoardFeed.ResetPosition)
+
+    dungeonBoardResetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    local dungeonBoardResetLabel = dungeonBoardResetRow:CreateFontString(
+        nil, "ARTWORK", "GameFontHighlightSmall")
+    dungeonBoardResetLabel:SetPoint("LEFT", dungeonBoardResetRow, "LEFT", 8, 0)
+    dungeonBoardResetLabel:SetText("Dungeon Board")
+    dungeonBoardResetBtn = UIH.CreateButton(
+        dungeonBoardResetRow, "Reset Position", 126, 22)
+    dungeonBoardResetBtn:SetPoint("RIGHT", dungeonBoardResetRow, "RIGHT", -5, 0)
+    dungeonBoardResetBtn:SetScript("OnClick", D.DungeonBoardUI.ResetPosition)
+
     prepareDisableRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local prepareDisableLabel = prepareDisableRow:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     prepareDisableLabel:SetPoint("LEFT", prepareDisableRow, "LEFT", 8, 0)
@@ -691,6 +715,8 @@ function G.GetResetButtons()
         bar = resetBarBtn,
         settings = resetSettingsBtn,
         minimap = resetMinimapBtn,
+        lfgAlerts = lfgAlertsResetBtn,
+        dungeonBoard = dungeonBoardResetBtn,
         prepareDisable = prepareDisableBtn,
         factory = factoryResetBtn,
     }

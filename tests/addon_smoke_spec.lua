@@ -25,7 +25,7 @@ local function widget()
         GetStatusBarTexture = function() return widget() end,
         GetFont = function() return nil, nil end,
         GetFrameLevel = function(self) return self.frameLevel or 1 end,
-        GetFrameStrata = function() return "MEDIUM" end,
+        GetFrameStrata = function(self) return self.frameStrata or "MEDIUM" end,
         GetEffectiveScale = function() return 1 end,
         GetCenter = function() return 100, 100 end,
         GetRect = function() return 10, 10, 200, 26 end,
@@ -54,6 +54,8 @@ local function widget()
             self.mutations = self.mutations + 1
         end,
         SetFrameLevel = function(self, level) self.frameLevel = level end,
+        SetFrameStrata = function(self, strata) self.frameStrata = strata end,
+        SetToplevel = function(self, value) self.topLevel = value == true end,
         EnableMouse = function(self, enabled)
             self.mouseEnabled = enabled
             self.mutations = self.mutations + 1
@@ -76,7 +78,6 @@ local function widget()
     local noopMethods = {
         "SetAllPoints",
         "SetTexCoord", "SetDrawLayer", "SetHorizTile", "SetVertTile",
-        "SetFrameStrata",
         "EnableMouseWheel", "SetMovable", "SetClampedToScreen",
         "SetHighlightTexture", "SetBackdrop", "SetBackdropColor", "SetBackdropBorderColor",
         "SetStatusBarTexture", "SetStatusBarColor", "SetMinMaxValues", "SetValue",
@@ -282,6 +283,12 @@ assert(tocLoadOrder["ApogeePartyHealthBars_BoundActionLayouts.lua"]
     "bound-action runtimes loaded before their shared dependencies")
 assert(tocLoadOrder["ApogeePartyHealthBars_KeyLayouts.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_KeyActions.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_UIHelpers.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_ConfigSurfaces.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_ConfigSurfaces.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_DotHud.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_ConfigSurfaces.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_UnitFrames.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_ProfileCodec.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_ProfileConfig.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_ProfileStore.lua"]
@@ -369,6 +376,8 @@ assert(type(ApogeePartyHealthBars_DungeonBoardUI.Toggle) == "function"
         and type(ApogeePartyHealthBars_DungeonBoardGroupFinder.RequestRefresh) == "function"
         and type(ApogeePartyHealthBars_DungeonBoardFeed.SetUnlocked) == "function",
     "Dungeon Board focused APIs were not loaded")
+assert(ApogeePartyHealthBarsDungeonBoard.topLevel,
+    "Dungeon Board did not participate in native active-window stacking")
 assert(type(ApogeePartyHealthBars_BuffReminders.RefreshKnownSpells) == "function",
     "buff-reminder runtime did not expose known-spell refresh")
 assert(type(ApogeePartyHealthBars_ShieldTracker.GetRemaining) == "function"
@@ -476,8 +485,8 @@ assert(geometry.GetRowTotalHeight("player")
 ApogeePartyHealthBars_S.configMode = true
 ApogeePartyHealthBars_S.RequestLayoutUpdate()
 RunFrameUpdates()
-assert(ApogeePartyHealthBarsPanel.configBackground:IsShown()
-        and ApogeePartyHealthBarsPanel.configBackground.color[4] == 1,
+assert(ApogeePartyHealthBars_ConfigSurfaces.Get("party").chrome.foundation:IsShown()
+        and ApogeePartyHealthBars_ConfigSurfaces.Get("party").chrome.foundation.color[4] == 1,
     "Party Health configuration preview did not use its solid background")
 local positionedRows = {}
 for _, frame in ipairs(frames) do
@@ -504,7 +513,7 @@ end
 ApogeePartyHealthBars_S.configMode = false
 ApogeePartyHealthBars_S.RequestLayoutUpdate()
 RunFrameUpdates()
-assert(not ApogeePartyHealthBarsPanel.configBackground:IsShown(),
+assert(not ApogeePartyHealthBars_ConfigSurfaces.Get("party").chrome.foundation:IsShown(),
     "Party Health solid configuration background leaked into normal gameplay")
 assert(wheelRuntime.GetHudCastButton("ctrlUp").shown,
     "permanent Wheel HUD did not become visible at login")
@@ -743,6 +752,22 @@ end
 
 ClickMinimapButton()
 assert(ApogeePartyHealthBars_S.configMode, "minimap click did not open settings")
+local configSurfaces = ApogeePartyHealthBars_ConfigSurfaces
+local expectedConfigSurfaceKeys = { "settings", "party", "feed", "dot" }
+for _, key in ipairs(expectedConfigSurfaceKeys) do
+    local surface = assert(configSurfaces.Get(key), "missing configuration surface: " .. key)
+    assert(surface.chrome.active and surface.chrome.foundation:IsShown()
+            and surface.chrome.foundation.color[1] == 0
+            and surface.chrome.foundation.color[2] == 0
+            and surface.chrome.foundation.color[3] == 0
+            and surface.chrome.foundation.color[4] == 1,
+        "configuration surface lacked an opaque black foundation: " .. key)
+    assert(surface.frame.topLevel and surface.frame.frameStrata == "MEDIUM",
+        "configuration surface did not join native active-window stacking: " .. key)
+end
+assert(configSurfaces.Get("dot").chrome.title:IsShown()
+        and configSurfaces.Get("feed").chrome.title:IsShown(),
+    "compact configuration anchors did not expose their premium labeled chrome")
 assert(ApogeePartyHealthBars_ConfigUI.factoryResetButton,
     "General settings did not create the factory reset control")
 assert(ApogeePartyHealthBars_ConfigUI.factoryResetButton
@@ -782,6 +807,15 @@ router.Dispatch("GET_ITEM_INFO_RECEIVED", 1251, true)
 assert(ApogeePartyHealthBars_ShortcutBar.GetSlotState(3) == "ready",
     "item events did not restore a restocked Shortcut")
 ApogeePartyHealthBars_ConfigController.SetMode(false)
+for _, key in ipairs(expectedConfigSurfaceKeys) do
+    assert(not configSurfaces.Get(key).chrome.foundation:IsShown(),
+        "configuration chrome leaked into normal gameplay: " .. key)
+end
+assert(configSurfaces.Get("settings").frame.frameStrata == "DIALOG"
+        and configSurfaces.Get("feed").frame.frameStrata == "DIALOG"
+        and configSurfaces.Get("party").frame.frameStrata == "MEDIUM"
+        and configSurfaces.Get("dot").frame.frameStrata == "MEDIUM",
+    "configuration close did not restore runtime surface strata")
 local existingImmediatePoints = existingShortcutButton.pointWrites
 local addedImmediatePoints = addedShortcutButton.pointWrites
 RunFrameUpdates()

@@ -65,6 +65,15 @@ local soundKey = "none"
 local played = {}
 local opportunityCallback
 local settingsListener
+local configActive = false
+local configTitle, configTitleShown
+local savedFeedPosition
+local configSurface = {
+    Register = function() end,
+    SetSurfaceChromeShown = function(_, value) configActive = value == true end,
+    SetTitle = function(_, value) configTitle = value end,
+    SetTitleShown = function(_, value) configTitleShown = value == true end,
+}
 
 Feed.Initialize({
     Runtime = {
@@ -80,7 +89,9 @@ Feed.Initialize({
         end,
         Subscribe = function(callback) settingsListener = callback end,
         GetFeedPosition = function() return "CENTER", "CENTER", 0, 180 end,
-        SetFeedPosition = function() end,
+        SetFeedPosition = function(...)
+            savedFeedPosition = { ... }
+        end,
     },
     Eligibility = ApogeePartyHealthBars_DungeonBoardEligibility,
     Catalog = ApogeePartyHealthBars_DungeonBoardCatalog,
@@ -91,6 +102,7 @@ Feed.Initialize({
         end,
     },
     Helpers = { EscapeText = tostring },
+    ConfigSurfaces = configSurface,
     GetPlayerLevel = function() return playerLevel end,
     Now = function() return now end,
 })
@@ -100,20 +112,24 @@ assert(type(opportunityCallback) == "function" and type(settingsListener) == "fu
     "mini-feed did not attach to live chat and settings changes")
 local feedFrame = ApogeePartyHealthBarsDungeonBoardFeed
 local firstRow = createdFrames[2]
-local statusLabel = feedFrame.children[3]
+local statusLabel = feedFrame.children[2]
 assert(not feedFrame.shown and feedFrame.width == 340 and feedFrame.height == 24
         and not firstRow.shown
         and statusLabel.text:find("alerts off", 1, true),
     "profile-disabled mini-feed did not begin hidden")
 Feed.SetUnlocked(true)
 assert(Feed.IsUnlocked() and feedFrame.mouseEnabled
-        and feedFrame.shown and feedFrame.anchorBackground.shown
-        and feedFrame.anchorLabel.shown and not statusLabel.shown
-        and feedFrame.anchorLabel.text:find("alerts off", 1, true),
+        and feedFrame.shown and configActive and configTitleShown
+        and not statusLabel.shown
+        and configTitle:find("alerts off", 1, true),
     "disabled mini-feed did not expose its drag anchor in configuration mode")
+feedFrame.scripts.OnDragStop(feedFrame)
+assert(savedFeedPosition and savedFeedPosition[1] == "CENTER"
+        and savedFeedPosition[2] == "CENTER"
+        and savedFeedPosition[3] == 0 and savedFeedPosition[4] == 180,
+    "mini-feed drag stop did not preserve the released position directly")
 Feed.SetUnlocked(false)
-assert(not feedFrame.shown and not feedFrame.anchorBackground.shown
-        and not feedFrame.anchorLabel.shown and statusLabel.shown,
+assert(not feedFrame.shown and not configActive and not configTitleShown and statusLabel.shown,
     "disabled mini-feed remained visible after configuration mode closed")
 feedEnabled = true
 settingsListener("feedEnabled")
@@ -122,12 +138,10 @@ assert(feedFrame.shown and feedFrame.height == 24 and not firstRow.shown
         and statusLabel.text:find("Lv 10-23", 1, true),
     "enabling the mini-feed did not begin in the compact Healer watch state")
 Feed.SetUnlocked(true)
-assert(feedFrame.anchorBackground.shown and feedFrame.anchorLabel.shown
-        and not statusLabel.shown,
+assert(configActive and configTitleShown and not statusLabel.shown,
     "empty enabled mini-feed did not expose its drag anchor in configuration mode")
 Feed.SetUnlocked(false)
-assert(not feedFrame.anchorBackground.shown and not feedFrame.anchorLabel.shown
-        and statusLabel.shown,
+assert(not configActive and not configTitleShown and statusLabel.shown,
     "enabled mini-feed drag anchor remained visible after configuration mode closed")
 role = "tank"
 settingsListener("role")

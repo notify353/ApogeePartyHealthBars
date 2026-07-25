@@ -17,6 +17,7 @@ function F.Build(D)
     for _, key in ipairs({
         "rows", "StyleReadableText", "SyncVisualTicker", "PositionSecureOverlay",
         "ShowSecureFrame", "HideSecureFrame", "SetSecureMouseEnabled", "DeferSecureUpdate",
+        "ConfigSurfaces",
     }) do
         assert(D[key] ~= nil, "UnitFrames missing dependency: " .. key)
     end
@@ -53,27 +54,12 @@ function F.Build(D)
         ApplyDefaultPosition()
     end
     
-    local function ApplyBackdrop(frame, bgAlpha, borderColor)
-        frame:SetBackdrop(C.BACKDROP)
-        frame:SetBackdropColor(C.PANEL_BG_COLOR[1], C.PANEL_BG_COLOR[2], C.PANEL_BG_COLOR[3], bgAlpha or C.PANEL_BG_COLOR[4])
-        if borderColor then
-            frame:SetBackdropBorderColor(unpack(borderColor))
-        end
-    end
-    
     local panelBackdropMode = nil
-    local configBackground
     
     local function ApplyPanelChrome()
         if panelBackdropMode == S.configMode then return end
         panelBackdropMode = S.configMode
-        if S.configMode then
-            ApplyBackdrop(panel, 1, C.PANEL_EDGE_COLOR)
-            configBackground:Show()
-        else
-            configBackground:Hide()
-            if panel.SetBackdrop then panel:SetBackdrop(nil) end
-        end
+        D.ConfigSurfaces.SetSurfaceChromeShown("party", S.configMode)
     end
     
     
@@ -88,13 +74,9 @@ function F.Build(D)
     panel:SetClampedToScreen(true)
     panel:SetFrameStrata("MEDIUM")
     panel:SetPoint(C.DEFAULT_ANCHOR, UIParent, C.DEFAULT_REL, C.DEFAULT_X, C.DEFAULT_Y)
-    configBackground = panel:CreateTexture(nil, "BACKGROUND", nil, -8)
-    configBackground:SetAllPoints()
-    configBackground:SetColorTexture(
-        C.PANEL_BG_COLOR[1], C.PANEL_BG_COLOR[2], C.PANEL_BG_COLOR[3], 1
-    )
-    configBackground:Hide()
-    panel.configBackground = configBackground
+    D.ConfigSurfaces.Register("party", panel, {
+        headerHeight = C.HEADER_H,
+    })
     ApplyPanelChrome()
     panel:Hide()
     
@@ -173,7 +155,6 @@ function F.Build(D)
         panel = panel, rows = rows, titleFS = titleFS, sepTex = sepTex,
         rowAnchor = rowAnchor, shortcutFooterAnchor = shortcutFooterAnchor,
         SavePosition = SavePosition, ApplyDefaultPosition = ApplyDefaultPosition,
-        RestorePosition = RestorePosition, ApplyBackdrop = ApplyBackdrop,
-        ApplyPanelChrome = ApplyPanelChrome,
+        RestorePosition = RestorePosition, ApplyPanelChrome = ApplyPanelChrome,
     }
 end

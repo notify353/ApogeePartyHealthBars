@@ -1,13 +1,14 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local UIH = ApogeePartyHealthBars_UIHelpers
+local CS = ApogeePartyHealthBars_ConfigSurfaces
 
 ApogeePartyHealthBars_DotHud = {}
 local H = ApogeePartyHealthBars_DotHud
 
 local ICON_SIZE = C.SHORTCUT_ICON_SIZE or 24
 local ICON_GAP = C.SHORTCUT_ICON_GAP or 3
-local anchor, unlockLabel
+local anchor
 local icons = {}
 local suggestions = {}
 
@@ -130,7 +131,7 @@ function H.SetUnlocked(unlocked)
     unlocked = unlocked == true and not (InCombatLockdown and InCombatLockdown())
     anchor:EnableMouse(unlocked)
     if unlocked then anchor:RegisterForDrag("LeftButton") else anchor:RegisterForDrag() end
-    unlockLabel:SetShown(unlocked)
+    CS.SetSurfaceChromeShown("dot", unlocked)
     anchor:SetShown(unlocked or #suggestions > 0)
 end
 
@@ -141,12 +142,16 @@ function H.Initialize()
     anchor = CreateFrame("Frame", "ApogeePartyHealthBarsDotReminderHud", UIParent)
     anchor:SetClampedToScreen(true); anchor:SetMovable(true); anchor:SetFrameStrata("MEDIUM")
     anchor:SetScript("OnDragStart", function(self) self:StartMoving() end)
-    anchor:SetScript("OnDragStop", function(self) self:StopMovingOrSizing(); SavePosition() end)
+    anchor:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        SavePosition()
+    end)
     anchor:SetScript("OnUpdate", function() H.Tick() end)
-    unlockLabel = anchor:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    unlockLabel:SetPoint("BOTTOM", anchor, "TOP", 0, 4)
-    unlockLabel:SetText("DoT reminders")
-    unlockLabel:Hide()
+    CS.Register("dot", anchor, {
+        headerHeight = 20,
+        title = "DoT reminders",
+        insets = { left = 6, right = 6, top = 22, bottom = 6 },
+    })
     H.RestorePosition()
     anchor:Hide()
 end

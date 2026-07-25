@@ -446,6 +446,7 @@ CB.Configure({
 })
 
 
+local configSurfaces = ApogeePartyHealthBars_ConfigSurfaces
 local unitFrames = ApogeePartyHealthBars_UnitFrames.Build({
     rows = rows,
     StyleReadableText = StyleReadableText,
@@ -456,6 +457,7 @@ local unitFrames = ApogeePartyHealthBars_UnitFrames.Build({
     SetSecureMouseEnabled = SetSecureMouseEnabled,
     DeferSecureUpdate = DeferSecureUpdate,
     AssignCursorDrop = AssignCursorDrop,
+    ConfigSurfaces = configSurfaces,
 })
 panel = unitFrames.panel
 rows = unitFrames.rows
@@ -466,7 +468,7 @@ local shortcutFooterAnchor = unitFrames.shortcutFooterAnchor
 local SavePosition = unitFrames.SavePosition
 local ApplyDefaultPosition = unitFrames.ApplyDefaultPosition
 local RestorePosition = unitFrames.RestorePosition
-local ApplyBackdrop = unitFrames.ApplyBackdrop
+local ApplyBackdrop = ApogeePartyHealthBars_UIHelpers.ApplyBackdrop
 local ApplyPanelChrome = unitFrames.ApplyPanelChrome
 
 local function GetDungeonBoardClientFlavor()
@@ -525,6 +527,7 @@ dungeonBoardFeed.Initialize({
     Catalog = ApogeePartyHealthBars_DungeonBoardCatalog,
     Sounds = ApogeePartyHealthBars_Sounds,
     Helpers = ApogeePartyHealthBars_UIHelpers,
+    ConfigSurfaces = configSurfaces,
     GetPlayerLevel = GetDungeonBoardPlayerLevel,
     Now = function() return GetTime() end,
 })
@@ -861,6 +864,7 @@ configController.Initialize({
     DotTracker = ApogeePartyHealthBars_DotTracker,
     DotHud = ApogeePartyHealthBars_DotHud,
     DungeonBoardFeed = dungeonBoardFeed,
+    ConfigSurfaces = configSurfaces,
     Print = Print,
 })
 ExitConfigMode = configController.Exit
@@ -873,6 +877,7 @@ local CreateAndActivateProfile = configController.CreateAndActivateProfile
 
 configUI = ApogeePartyHealthBars_ConfigUI.Build({
     ApplyBackdrop               = ApplyBackdrop,
+    ConfigSurfaces             = configSurfaces,
     SetConfigMode              = SetConfigMode,
     GetBindingDisplay           = GetBindingDisplay,
     GetBinding                  = S.GetBinding,

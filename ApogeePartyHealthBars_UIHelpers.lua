@@ -2,6 +2,14 @@ local C = ApogeePartyHealthBars_C
 
 ApogeePartyHealthBars_UIHelpers = {}
 local H = ApogeePartyHealthBars_UIHelpers
+
+function H.ApplyBackdrop(frame, bgAlpha, borderColor)
+    frame:SetBackdrop(C.BACKDROP)
+    frame:SetBackdropColor(
+        C.PANEL_BG_COLOR[1], C.PANEL_BG_COLOR[2], C.PANEL_BG_COLOR[3],
+        bgAlpha or C.PANEL_BG_COLOR[4])
+    if borderColor then frame:SetBackdropBorderColor(unpack(borderColor)) end
+end
 local activeDropdown
 
 local FORM_SCROLLBAR_W = 24

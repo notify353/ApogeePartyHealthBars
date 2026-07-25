@@ -13,6 +13,7 @@ function C.Exit()
     S.configMode = false
     if D.DotHud then D.DotHud.SetUnlocked(false) end
     if D.DungeonBoardFeed then D.DungeonBoardFeed.SetUnlocked(false) end
+    D.ConfigSurfaces.SetConfigurationActive(false)
     D.panel:EnableMouse(false)
     D.panel:RegisterForDrag()
     D.panel:SetScript("OnDragStart", nil)
@@ -153,6 +154,7 @@ function C.SetMode(active)
             self:StopMovingOrSizing()
             D.SavePosition()
         end)
+        D.ConfigSurfaces.SetConfigurationActive(true)
         D.GetConfigUI().Show()
     else
         C.Exit()

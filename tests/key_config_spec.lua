@@ -109,6 +109,9 @@ function runtime.GetBindingStatus()
     return #bindingConflicts > 0 and "conflict" or "owned", bindingConflicts
 end
 function runtime.GetActiveLayoutKey() return currentLayout end
+function runtime.GetActiveLayoutLabel()
+    return currentLayout == "battle" and "Battle Stance" or "Base"
+end
 function runtime.GetActiveSpecKey() return currentSpec end
 function runtime.HasStateLayouts() return true end
 function runtime.GetLayoutOptions() return { { key = "base", label = "Base" }, { key = "battle", label = "Battle" } } end
@@ -155,7 +158,7 @@ config.Build(widget(), {
 
 local rows = config.GetRows()
 assert(#createdRows == 15 and #actionList.visibleRows == 15
-        and actionList.layoutControl == dropdowns[1],
+        and actionList.layoutControl:GetText() == "Current state: Base",
     "Keys did not expose all 15 destinations through the shared scroll list")
 assert(actionList.hint:GetText() == "Drag a spell or bag item onto a row.",
     "Keys did not use the shared minimal instruction")
@@ -197,9 +200,14 @@ config.Refresh()
 assert(actionList.status:GetText():find("Binding conflicts: Q, C", 1, true),
     "Keys list did not surface foreign binding conflicts")
 
-dropdowns[1].onSelect("battle")
-assert(ApogeePartyHealthBars_S.selectedKeyLayout == "battle" and closeCount > 0
-        and rows.key1.primary:GetText() == "Charge",
-    "Keys layout change did not close editing and refresh all rows")
+rows.keyF.macro.scripts.OnClick()
+local closesBeforeStateChange = closeCount
+currentLayout = "battle"
+config.Refresh()
+assert(ApogeePartyHealthBars_S.selectedKeyLayout == "battle"
+        and actionList.layoutControl:GetText() == "Current state: Battle Stance"
+        and rows.key1.primary:GetText() == "Charge"
+        and editorOptions == nil and closeCount > closesBeforeStateChange,
+    "Keys did not follow a manually changed game state")
 
 print("PASS uniform Keys row configuration")

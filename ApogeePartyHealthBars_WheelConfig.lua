@@ -6,7 +6,7 @@ local AC = ApogeePartyHealthBars_ActionConfig
 ApogeePartyHealthBars_WheelConfig = {}
 local WC = ApogeePartyHealthBars_WheelConfig
 
-local tab, W, D, list, layoutSelector
+local tab, W, D, list, stateIndicator
 local lastSpecKey, lastLayoutKey
 local slotRows = {}
 local DISPLAY_LABELS = {
@@ -23,9 +23,7 @@ local function setStatus(message, good)
 end
 
 local function selectedLayout()
-    if not W.IsKnownLayout(S.selectedWheelLayout) then
-        S.selectedWheelLayout = W.GetActiveLayoutKey()
-    end
+    S.selectedWheelLayout = W.GetActiveLayoutKey()
     return S.selectedWheelLayout
 end
 
@@ -55,9 +53,8 @@ function WC.Refresh(assignedSlot)
     lastSpecKey, lastLayoutKey = specKey, layoutKey
 
     local hasStates = W.HasStateLayouts()
-    layoutSelector:SetOptions(W.GetLayoutOptions())
-    layoutSelector:SetSelectedKey(layoutKey)
-    layoutSelector:SetShown(hasStates)
+    stateIndicator:SetText("Current state: " .. W.GetActiveLayoutLabel())
+    stateIndicator:SetShown(hasStates)
 
     local rows = {}
     local order = W.GetDisplayOrder()
@@ -78,7 +75,7 @@ function WC.Refresh(assignedSlot)
         })
         rows[#rows + 1] = row
     end
-    AC.LayoutActionList(list, rows, hasStates and layoutSelector or nil)
+    AC.LayoutActionList(list, rows, hasStates and stateIndicator or nil)
 end
 
 function WC.Build(parent, deps)
@@ -90,12 +87,10 @@ function WC.Build(parent, deps)
     tab:Hide()
 
     list = AC.CreateActionList(tab, "ApogeePartyHealthBarsWheelConfigScroll")
-    layoutSelector = UIH.CreateDropdown(list.content, list.rowWidth, 22, list.rowWidth)
-    layoutSelector:SetSelectionCallback(function(layoutKey)
-        if not W.IsKnownLayout(layoutKey) then return end
-        S.selectedWheelLayout = layoutKey
-        AC.CloseEditor(); setStatus(""); WC.Refresh()
-    end)
+    stateIndicator = list.content:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    stateIndicator:SetWidth(list.rowWidth)
+    stateIndicator:SetHeight(22)
+    stateIndicator:SetJustifyH("LEFT")
 
     for _, slotId in ipairs(W.GetDisplayOrder()) do
         local boundSlotId = slotId

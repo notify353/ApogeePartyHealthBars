@@ -6,7 +6,7 @@ local AC = ApogeePartyHealthBars_ActionConfig
 ApogeePartyHealthBars_MouseButtonConfig = {}
 local BC = ApogeePartyHealthBars_MouseButtonConfig
 
-local tab, B, D, list, layoutSelector
+local tab, B, D, list, stateIndicator
 local lastSpecKey, lastLayoutKey
 local slotRows = {}
 
@@ -15,9 +15,7 @@ local function setStatus(message, good)
 end
 
 local function selectedLayout()
-    if not B.IsKnownLayout(S.selectedMouseButtonLayout) then
-        S.selectedMouseButtonLayout = B.GetActiveLayoutKey()
-    end
+    S.selectedMouseButtonLayout = B.GetActiveLayoutKey()
     return S.selectedMouseButtonLayout
 end
 
@@ -48,9 +46,8 @@ function BC.Refresh(assignedSlot)
     lastSpecKey, lastLayoutKey = specKey, layoutKey
 
     local hasStates = B.HasStateLayouts()
-    layoutSelector:SetOptions(B.GetLayoutOptions())
-    layoutSelector:SetSelectedKey(layoutKey)
-    layoutSelector:SetShown(hasStates)
+    stateIndicator:SetText("Current state: " .. B.GetActiveLayoutLabel())
+    stateIndicator:SetShown(hasStates)
 
     local rows = {}
     local order = B.GetDisplayOrder()
@@ -72,7 +69,7 @@ function BC.Refresh(assignedSlot)
         })
         rows[#rows + 1] = row
     end
-    AC.LayoutActionList(list, rows, hasStates and layoutSelector or nil)
+    AC.LayoutActionList(list, rows, hasStates and stateIndicator or nil)
 end
 
 function BC.Build(parent, deps)
@@ -84,12 +81,10 @@ function BC.Build(parent, deps)
     tab:Hide()
 
     list = AC.CreateActionList(tab, "ApogeePartyHealthBarsMouseButtonConfigScroll")
-    layoutSelector = UIH.CreateDropdown(list.content, list.rowWidth, 22, list.rowWidth)
-    layoutSelector:SetSelectionCallback(function(layoutKey)
-        if not B.IsKnownLayout(layoutKey) then return end
-        S.selectedMouseButtonLayout = layoutKey
-        AC.CloseEditor(); setStatus(""); BC.Refresh()
-    end)
+    stateIndicator = list.content:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    stateIndicator:SetWidth(list.rowWidth)
+    stateIndicator:SetHeight(22)
+    stateIndicator:SetJustifyH("LEFT")
 
     for _, slotId in ipairs(B.GetDisplayOrder()) do
         local boundSlotId = slotId

@@ -335,6 +335,13 @@ function Factory.Create(options)
         return defaultStateValue
     end
     function L.GetActiveKey() return L.GetLayoutKeyForState(L.GetActiveStateValue()) end
+    function L.GetActiveLabel()
+        local definition = layoutByKey[L.GetActiveKey()]
+        return definition and definition.label or "Base"
+    end
+    function L.CanEditLayout(layoutKey)
+        return L.IsKnownLayout(layoutKey) and layoutKey == L.GetActiveKey()
+    end
     function L.GetLayout(layoutKey)
         return activeProfile and activeProfile.layouts and activeProfile.layouts[layoutKey]
     end

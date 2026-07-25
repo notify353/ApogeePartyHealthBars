@@ -47,6 +47,8 @@ assert(#layouts.GetLayouts() == 3 and layouts.GetSlot("spell:2457", "key1") == n
 layouts.SetSlot("spell:71", "key1", actions.CreateSpell(116, "Frostbolt"))
 activeForm = 2
 assert(layouts.GetActiveKey() == "spell:71"
+    and layouts.GetActiveLabel() == "Defensive Stance"
+    and layouts.CanEditLayout("spell:71")
     and layouts.GetSlot(layouts.GetActiveKey(), "key1").spellName == "Frostbolt",
     "Keys state selection did not preserve its independent action")
 

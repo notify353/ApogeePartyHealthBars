@@ -150,7 +150,8 @@ assert(layouts.HasBaseLayout() and layouts.IsKnownLayout(prowlKey)
 assert(layouts.GetActiveKey() == "spell:768",
     "ordinary Cat Form did not select the Cat layout")
 stealthed = true
-assert(layouts.GetActiveKey() == prowlKey,
+assert(layouts.GetActiveKey() == prowlKey
+        and layouts.GetActiveLabel() == "Cat Form — Prowl",
     "Cat stealth did not select the Prowl layout")
 assert(layouts.GetSlot(prowlKey, "normalUp") == nil,
     "new Prowl state did not start empty")

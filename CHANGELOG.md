@@ -20,6 +20,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Keys, Wheel, and Buttons now show the current stance or form as a read-only configuration label and edit only that state; state changes remain under the player's normal WoW controls.
+- Automatic consumable buttons are now enabled by default for new profiles, and the General setting has been renamed from "Automatic consumables HUD beside Buttons."
 - Compacted Cleanse Watch so three debuff categories now fit within the previous two-category height while retaining complete adaptive-size descriptions, Ignore actions, and fixed bottom cleanse buttons.
 - Cleanse Watch now hides clean debuff categories during normal gameplay while retaining complete category previews in configuration mode.
 - Cleanse Watch now defaults and resets flush against the top-right of the screen.

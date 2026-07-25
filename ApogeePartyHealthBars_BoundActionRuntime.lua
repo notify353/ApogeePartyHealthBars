@@ -539,6 +539,14 @@ function Factory.Create(options)
         return WL.GetActiveSpecKey()
     end
 
+    function W.CanEditLayout(layoutKey)
+        return WL.CanEditLayout(layoutKey)
+    end
+
+    function W.GetActiveLayoutLabel()
+        return WL.GetActiveLabel()
+    end
+
     function W.GetSlots(layoutKey)
         return WL.GetSlots(layoutKey) or {}
     end
@@ -563,6 +571,9 @@ function Factory.Create(options)
 
     function W.ValidateMacro(layoutKey, slotId, body)
         if not WL.IsKnownLayout(layoutKey) then return false, "Unknown " .. options.featureLabel .. " layout." end
+        if not W.CanEditLayout(layoutKey) then
+            return false, "Change to that state before editing its " .. options.featureLabel .. " actions."
+        end
         if not slotById[slotId] then return false, "Unknown " .. options.slotNoun .. "." end
         return Actions.ValidateMacro(W.GetSlot(layoutKey, slotId), body)
     end
@@ -572,6 +583,9 @@ function Factory.Create(options)
             return false, "Leave combat before editing " .. options.featureLabel .. " actions."
         end
         if not WL.IsKnownLayout(layoutKey) then return false, "Unknown " .. options.featureLabel .. " layout." end
+        if not W.CanEditLayout(layoutKey) then
+            return false, "Change to that state before editing its " .. options.featureLabel .. " actions."
+        end
         slotId = slotId or W.FindFirstEmptySlot(layoutKey)
         if not slotId then return false, options.allSlotsMessage end
         local slot = slotById[slotId]
@@ -592,6 +606,9 @@ function Factory.Create(options)
             return false, "Leave combat before editing " .. options.featureLabel .. " actions."
         end
         if not WL.IsKnownLayout(layoutKey) then return false, "Unknown " .. options.featureLabel .. " layout." end
+        if not W.CanEditLayout(layoutKey) then
+            return false, "Change to that state before editing its " .. options.featureLabel .. " actions."
+        end
         slotId = slotId or W.FindFirstEmptySlot(layoutKey)
         if not slotId then return false, options.allSlotsMessage end
         local slot = slotById[slotId]
@@ -609,6 +626,7 @@ function Factory.Create(options)
     end
 
     function W.SetSlotSound(layoutKey, slotId, key)
+        if not W.CanEditLayout(layoutKey) then return nil end
         local entry = W.GetSlot(layoutKey, slotId)
         if not entry then return nil end
         entry.soundKey = Sounds.NormalizeKey(key, "none", true)
@@ -643,6 +661,7 @@ function Factory.Create(options)
     end
 
     function W.ResetMacro(layoutKey, slotId)
+        if not W.CanEditLayout(layoutKey) then return nil end
         return Actions.ResetMacro(W.GetSlot(layoutKey, slotId))
     end
 
@@ -660,6 +679,9 @@ function Factory.Create(options)
 
     function W.MoveSlot(layoutKey, slotId, direction)
         if InCombatLockdown and InCombatLockdown() then return false, "Leave combat before moving this action." end
+        if not W.CanEditLayout(layoutKey) then
+            return false, "Change to that state before editing its " .. options.featureLabel .. " actions."
+        end
         if not WL.IsKnownLayout(layoutKey) or not slotById[slotId] then
             return false, "Unknown " .. options.slotNoun .. "."
         end
@@ -685,6 +707,9 @@ function Factory.Create(options)
     function W.ClearSlot(layoutKey, slotId)
         if InCombatLockdown and InCombatLockdown() then return false, "Leave combat before clearing this action." end
         if not WL.IsKnownLayout(layoutKey) then return false, "Unknown " .. options.featureLabel .. " layout." end
+        if not W.CanEditLayout(layoutKey) then
+            return false, "Change to that state before editing its " .. options.featureLabel .. " actions."
+        end
         local slot = slotById[slotId]
         if not slot then return false, "Unknown " .. options.slotNoun .. "." end
         WL.SetSlot(layoutKey, slotId, nil)

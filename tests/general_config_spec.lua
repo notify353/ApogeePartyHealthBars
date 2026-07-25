@@ -252,7 +252,9 @@ assert(config.GetForm().hint:GetText() == "Choose what the party bars show and h
 
 assert(config.GetRow("showAllSlots").check:GetChecked() == false
         and config.GetRow("combatUIAutoHide").check:GetChecked() == true
-        and config.GetRow("automaticConsumablesEnabled").check:GetChecked() == false,
+        and config.GetRow("automaticConsumablesEnabled").check:GetChecked() == false
+        and config.GetRow("automaticConsumablesEnabled").label:GetText()
+            == "Automatic consumable buttons",
     "saved General checkboxes did not refresh")
 assert(config.GetRow("enabled") == nil,
     "General still exposed the redundant add-on enable checkbox")

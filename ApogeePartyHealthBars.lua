@@ -541,6 +541,17 @@ dungeonBoardFeed.Initialize({
 })
 dungeonBoardFeed.Build()
 
+local cleanseWatch = ApogeePartyHealthBars_CleanseWatch
+cleanseWatch.Initialize({
+    Auras = ApogeePartyHealthBars_Auras,
+    PlayerSpells = ApogeePartyHealthBars_PlayerSpells,
+    SecureFrames = ApogeePartyHealthBars_SecureFrames,
+    ConfigSurfaces = configSurfaces,
+    CreateBorder = ApogeePartyHealthBars_AccessoryLayout.CreateBorder,
+    Now = function() return GetTime() end,
+})
+cleanseWatch.Build()
+
 dungeonBoardUI = ApogeePartyHealthBars_DungeonBoardUI.Build({
     Runtime = ApogeePartyHealthBars_DungeonBoardRuntime,
     Catalog = ApogeePartyHealthBars_DungeonBoardCatalog,
@@ -748,6 +759,7 @@ local function ReconcileAllSecureOverlays()
     K.RefreshSecureActions()
     B.RefreshSecureActions()
     CB.RefreshSecureActions()
+    cleanseWatch.ReconcileSecure()
     ReconcileBoundActionBindings()
 end
 
@@ -872,6 +884,7 @@ configController.Initialize({
     DotTracker = ApogeePartyHealthBars_DotTracker,
     DotHud = ApogeePartyHealthBars_DotHud,
     DungeonBoardFeed = dungeonBoardFeed,
+    CleanseWatch = cleanseWatch,
     ConfigSurfaces = configSurfaces,
     Print = Print,
 })
@@ -935,6 +948,7 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
         HealthAlerts                = ApogeePartyHealthBars_HealthAlerts,
         MentionAlerts               = mentionAlerts,
         DungeonBoardSettings        = dungeonBoardSettings,
+        CleanseWatch                 = cleanseWatch,
         Threat                      = H,
         CombatUIFader               = ApogeePartyHealthBars_CombatUIFader,
         SyncVisualTicker            = SyncVisualTicker,

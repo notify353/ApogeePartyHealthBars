@@ -13,6 +13,7 @@ function C.Exit()
     S.configMode = false
     if D.DotHud then D.DotHud.SetUnlocked(false) end
     if D.DungeonBoardFeed then D.DungeonBoardFeed.SetUnlocked(false) end
+    if D.CleanseWatch then D.CleanseWatch.SetUnlocked(false) end
     D.ConfigSurfaces.SetConfigurationActive(false)
     D.panel:EnableMouse(false)
     D.panel:RegisterForDrag()
@@ -146,6 +147,7 @@ function C.SetMode(active)
         S.configMode = true
         if D.DotHud then D.DotHud.SetUnlocked(true) end
         if D.DungeonBoardFeed then D.DungeonBoardFeed.SetUnlocked(true) end
+        if D.CleanseWatch then D.CleanseWatch.SetUnlocked(true) end
         S.configTab = S.configTab or "general"
         D.panel:EnableMouse(true)
         D.panel:RegisterForDrag("LeftButton")

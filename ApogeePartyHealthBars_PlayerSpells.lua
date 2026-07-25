@@ -22,6 +22,24 @@ local function GetSpellNameById(spellID)
     return nil
 end
 
+local function GetSpellDescription(spellID)
+    if not spellID then return nil end
+    if C_Spell and C_Spell.GetSpellDescription then
+        local description = C_Spell.GetSpellDescription(spellID)
+        if description and description ~= "" then return description end
+    end
+    return nil
+end
+
+local function GetSpellTextureById(spellID)
+    if not spellID then return nil end
+    if C_Spell and C_Spell.GetSpellTexture then
+        return C_Spell.GetSpellTexture(spellID)
+    end
+    if GetSpellTexture then return GetSpellTexture(spellID) end
+    return nil
+end
+
 local function GetSpellBookCastNameFromSlot(slot, spellBank)
     local name, subName
     if C_SpellBook and C_SpellBook.GetSpellBookItemName then
@@ -189,6 +207,8 @@ P.BuildKnownSpellMap = BuildKnownSpellMap
 P.IsKnownSpell = IsKnownSpell
 P.IsKnownSpellName = IsKnownSpellName
 P.ResolveKnownSpell = ResolveKnownSpell
+P.GetSpellDescription = GetSpellDescription
+P.GetSpellTexture = GetSpellTextureById
 P.IsSupported = function()
     return not ClientCapabilities
         or ClientCapabilities.IsFeatureAvailable("spellAssignment")

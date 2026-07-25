@@ -95,6 +95,10 @@ local saved = {
     showAllSlots = false,
     combatUIAutoHide = true,
     automaticConsumablesEnabled = false,
+    dungeonBoardFeedEnabled = true,
+    dungeonBoardSoundKey = "none",
+    dungeonBoardLevelsBelow = 10,
+    dungeonBoardLevelsAbove = 3,
     hotEnabled = true,
     hotDisabled = { renew = true },
 }
@@ -110,6 +114,7 @@ local calls = {
     refresh = 0, secure = 0, threat = 0, ticker = 0, hotInit = 0,
     hotTrack = 0, barReset = 0, force = 0, settingsReset = 0,
     minimapReset = 0, factoryReset = 0, soundPreview = 0,
+    dungeonSoundPreview = 0,
     messages = {}, feedbackClear = 0, consumablesEnabled = nil,
 }
 local timerCallback
@@ -152,6 +157,33 @@ local deps = {
         PreviewSound = function() calls.soundPreview = calls.soundPreview + 1 end,
         GetThreshold = function() return threshold end,
         AdjustThreshold = function(direction) calls.thresholdDirection = direction end,
+    },
+    DungeonBoardSettings = {
+        GetFeedEnabled = function() return saved.dungeonBoardFeedEnabled ~= false end,
+        SetFeedEnabled = function(enabled)
+            saved.dungeonBoardFeedEnabled = enabled == true
+            calls.dungeonFeedEnabled = enabled == true
+            return true
+        end,
+        GetSoundKey = function() return saved.dungeonBoardSoundKey end,
+        GetLevelOffsets = function()
+            return saved.dungeonBoardLevelsBelow, saved.dungeonBoardLevelsAbove
+        end,
+        GetLevelOffsetLimits = function() return 0, 60 end,
+        AdjustLevelOffset = function(kind, direction)
+            local key = kind == "below" and "dungeonBoardLevelsBelow"
+                or kind == "above" and "dungeonBoardLevelsAbove" or nil
+            if not key then return false end
+            saved[key] = math.max(0, math.min(60, saved[key] + direction))
+            return true
+        end,
+        SetSoundKey = function(key)
+            saved.dungeonBoardSoundKey = key
+            calls.dungeonSoundKey = key
+        end,
+        PreviewSound = function()
+            calls.dungeonSoundPreview = calls.dungeonSoundPreview + 1
+        end,
     },
     InitHotSpells = function() calls.hotInit = calls.hotInit + 1 end,
     IsHotEnabled = function() return saved.hotEnabled ~= false end,
@@ -212,7 +244,11 @@ assert(config.GetRow("selfBuffPreference"):IsShown()
         and config.GetRow("selfBuffPreference").value.label:GetText():find("Inner Fire", 1, true),
     "self-buff preference did not display the active family")
 assert(config.GetRow("lowHealthSoundKey").value.selectedKey == "alarm_soft"
-        and config.GetRow("lowHealthThreshold").value:GetText() == "50%",
+        and config.GetRow("lowHealthThreshold").value:GetText() == "50%"
+        and config.GetRow("dungeonBoardFeedEnabled").check:GetChecked()
+        and config.GetRow("dungeonBoardSoundKey").value.selectedKey == "none"
+        and config.GetRow("dungeonBoardLevelsBelow").value:GetText() == "10"
+        and config.GetRow("dungeonBoardLevelsAbove").value:GetText() == "3",
     "health-alert preferences did not refresh")
 assert(config.GetHotRow("renew"):IsShown()
         and not config.GetHotRow("renew").check:GetChecked()
@@ -229,6 +265,13 @@ showAll:SetChecked(true)
 Click(showAll)
 assert(saved.showAllSlots and calls.savedKey == "showAllSlots" and calls.refresh == 1,
     "General checkbox did not persist and request refresh")
+
+local dungeonFeed = config.GetRow("dungeonBoardFeedEnabled").check
+dungeonFeed:SetChecked(false)
+Click(dungeonFeed)
+assert(saved.dungeonBoardFeedEnabled == false
+        and calls.dungeonFeedEnabled == false,
+    "Dungeon Board mini-feed checkbox did not persist its immediate state")
 
 local combatFade = config.GetRow("combatUIAutoHide").check
 combatFade:SetChecked(false)
@@ -283,6 +326,17 @@ assert(calls.hotTrack == 1 and calls.hotTrackKey == "renew" and calls.hotTrackEn
 config.GetRow("lowHealthSoundKey").value.onSelect("alarm_high")
 assert(calls.soundKey == "alarm_high" and calls.soundPreview == 1,
     "low-health sound selection did not persist and preview")
+config.GetRow("dungeonBoardSoundKey").value.onSelect("alarm_soft")
+assert(calls.dungeonSoundKey == "alarm_soft" and calls.dungeonSoundPreview == 1,
+    "Dungeon Board sound selection did not persist and preview")
+Click(config.GetRow("dungeonBoardLevelsBelow").decrease)
+Click(config.GetRow("dungeonBoardLevelsAbove").increase)
+config.Refresh()
+assert(saved.dungeonBoardLevelsBelow == 9
+        and saved.dungeonBoardLevelsAbove == 4
+        and config.GetRow("dungeonBoardLevelsBelow").value:GetText() == "9"
+        and config.GetRow("dungeonBoardLevelsAbove").value:GetText() == "4",
+    "Dungeon Board per-profile level controls did not persist or refresh")
 Click(config.GetRow("lowHealthThreshold").decrease)
 assert(calls.thresholdDirection == -1, "threshold decrease control changed direction")
 Click(config.GetRow("selfBuffPreference").value, "RightButton")

@@ -24,10 +24,10 @@ assert(info.flavor == "tbcAnniversary" and info.product == "wow_anniversary"
         and info.projectId == 14 and info.interface == 20506 and info.build == "68775",
     "client identity was not normalized")
 
-GetBuildInfo = function() return "1.15.8", "67156", "Jul 19 2026", 11508 end
+GetBuildInfo = function() return "1.15.9", "68808", "Jul 21 2026", 11509 end
 info = capabilities.GetClientInfo()
 assert(info.flavor == "classicEra" and info.product == "wow_classic_era"
-        and info.interface == 11508 and info.build == "67156",
+        and info.interface == 11509 and info.build == "68808",
     "Classic Era identity was not normalized")
 
 GetBuildInfo = function() return "11.2.7", "70000", "Jul 19 2026", 110207 end
@@ -92,6 +92,22 @@ Enum.CompressionMethod.Deflate = 1
 Enum.Base64Variant.StandardUrlSafe = 2
 assert(capabilities.IsFeatureAvailable("profileSharing"),
     "profile codec API family was not detected")
+
+assert(not capabilities.IsFeatureAvailable("dungeonBoardOfficialListings"),
+    "missing official Group Finder APIs were accepted")
+C_LFGList = {
+    Search = noop,
+    GetSearchResults = noop,
+    GetSearchResultInfo = noop,
+    GetSearchResultMemberCounts = noop,
+    GetActivityInfoTable = noop,
+}
+C_LFGInfo = { CanPlayerUsePremadeGroup = noop }
+assert(capabilities.IsFeatureAvailable("dungeonBoardOfficialListings"),
+    "complete official Group Finder API family was not detected")
+C_LFGList.GetSearchResultMemberCounts = nil
+assert(not capabilities.IsFeatureAvailable("dungeonBoardOfficialListings"),
+    "official listing support without role counts was accepted")
 
 capabilities.RecordRuntimeFailure("Wheel", "expected failure")
 local failures = capabilities.ListRuntimeFailures()

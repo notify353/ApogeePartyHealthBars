@@ -158,7 +158,7 @@ function UI.Build(deps)
     configPanel:EnableMouse(true)
     configPanel:SetClampedToScreen(true)
     configPanel:SetFrameStrata("MEDIUM")
-    D.ApplyBackdrop(configPanel, C.PANEL_BG_COLOR[4], C.PANEL_EDGE_COLOR)
+    D.ApplyBackdrop(configPanel, 1, C.PANEL_EDGE_COLOR)
     local opaqueBackground = configPanel:CreateTexture(nil, "BACKGROUND", nil, -8)
     opaqueBackground:SetAllPoints()
     opaqueBackground:SetColorTexture(

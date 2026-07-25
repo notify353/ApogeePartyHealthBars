@@ -32,7 +32,12 @@ try {
         }
     }
     else { @() }
-    $files = @('ApogeePartyHealthBars.toc', 'LICENSE', 'README.md') + $runtimeFiles + $mediaFiles
+    $files = @(
+        'ApogeePartyHealthBars.toc'
+        'LICENSE'
+        'README.md'
+        'THIRD_PARTY_NOTICES.md'
+    ) + $runtimeFiles + $mediaFiles
     foreach ($file in ($files | Sort-Object -Unique)) {
         $destination = Join-Path $packageRoot $file
         $destinationDirectory = Split-Path -Parent $destination

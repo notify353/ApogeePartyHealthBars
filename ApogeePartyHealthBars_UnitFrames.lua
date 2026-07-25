@@ -62,14 +62,17 @@ function F.Build(D)
     end
     
     local panelBackdropMode = nil
+    local configBackground
     
     local function ApplyPanelChrome()
         if panelBackdropMode == S.configMode then return end
         panelBackdropMode = S.configMode
         if S.configMode then
-            ApplyBackdrop(panel, C.PANEL_BG_COLOR[4], C.PANEL_EDGE_COLOR)
-        elseif panel.SetBackdrop then
-            panel:SetBackdrop(nil)
+            ApplyBackdrop(panel, 1, C.PANEL_EDGE_COLOR)
+            configBackground:Show()
+        else
+            configBackground:Hide()
+            if panel.SetBackdrop then panel:SetBackdrop(nil) end
         end
     end
     
@@ -85,6 +88,13 @@ function F.Build(D)
     panel:SetClampedToScreen(true)
     panel:SetFrameStrata("MEDIUM")
     panel:SetPoint(C.DEFAULT_ANCHOR, UIParent, C.DEFAULT_REL, C.DEFAULT_X, C.DEFAULT_Y)
+    configBackground = panel:CreateTexture(nil, "BACKGROUND", nil, -8)
+    configBackground:SetAllPoints()
+    configBackground:SetColorTexture(
+        C.PANEL_BG_COLOR[1], C.PANEL_BG_COLOR[2], C.PANEL_BG_COLOR[3], 1
+    )
+    configBackground:Hide()
+    panel.configBackground = configBackground
     ApplyPanelChrome()
     panel:Hide()
     

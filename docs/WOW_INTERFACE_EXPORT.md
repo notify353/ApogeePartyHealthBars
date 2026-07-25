@@ -73,10 +73,12 @@ BlizzardInterfaceCode\Interface\AddOns\
 Other installations may use paths such as `_classic_`, `_classic_ptr_`, `_classic_beta_`, or `_retail_`. Those exports are authoritative only when the repository explicitly targets that client.
 
 `docs/wow-api-export.json` records both supported targets. The checker always
-requires its interface set to match the TOC. For every installed target it also
-requires the recorded build and local export to be current. An uninstalled
-target produces a warning during the default all-target check; explicitly
-requesting that target is an error.
+requires its interface set to match the TOC and the interface derived from each
+recorded `X.Y.Z.BUILD` client version. The recorder refreshes both values from
+the installed build. For every installed target, the checker also requires the
+recorded build and local export to be current. An uninstalled target produces a
+warning during the default all-target check; explicitly requesting that target
+is an error.
 
 ## Research Workflow
 

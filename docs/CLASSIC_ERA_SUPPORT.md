@@ -8,7 +8,7 @@ future-client procedure.
 
 | Flavor | Product | Directory | Version | Interface |
 | --- | --- | --- | --- | --- |
-| Classic Era | `wow_classic_era` | `_classic_era_` | 1.15.9.68808 | `11508` |
+| Classic Era | `wow_classic_era` | `_classic_era_` | 1.15.9.68808 | `11509` |
 | TBC Anniversary | `wow_anniversary` | `_anniversary_` | 2.5.6.68775 | `20506` |
 
 Both clients load the same repository, ordered Lua file list, SavedVariables,
@@ -19,7 +19,7 @@ by a monolithic client switch.
 ## Audit Findings
 
 The original Classic Era load blocker was the TBC-only `## Interface: 20506`
-declaration. The shared TOC now declares `11508, 20506`.
+declaration. The shared TOC now declares `11509, 20506`.
 
 The exact Classic Era and TBC Blizzard exports confirm the add-on's registered
 events and required secure templates. Classic Era provides the legacy globals
@@ -90,11 +90,11 @@ Historical dual-client acceptance completed on 2026-07-19:
   dual-installed, and targeted recording cases.
 - Lua 5.1 validation passes 68 source files and 65 specs.
 - Package, release-workflow, whitespace, and one-root ZIP validation pass with
-  the exact interface set `{11508, 20506}`.
+  the exact interface set `{11509, 20506}`.
 - Classic Era 1.15.8.67156 now lists the enabled addon without an **out of
   date** warning. Login and two `/reload` cycles completed on Merritt, a level
   45 Priest, without a Lua-error dialog.
-- Runtime diagnostics reported `classicEra` and interface `11508`; the General
+- Runtime diagnostics reported `classicEra` and interface `11509`; the General
   tab exposed no unavailable optional features or isolated initialization
   failures.
 - Solo rows, the minimap button, settings, and the Classic Era Spellbook opened
@@ -120,7 +120,7 @@ Historical dual-client acceptance completed on 2026-07-19:
 - Pull request [#54](https://github.com/notify353/ApogeePartyHealthBars/pull/54)
   passed both validation workflows and was merged to `main`.
 - Preparation commit `b9426e7` set version `0.42.0` while retaining the exact
-  interface set `{11508, 20506}`.
+  interface set `{11509, 20506}`.
 - Production tag `v0.42.0` was published through GitHub Actions to
   [GitHub Releases](https://github.com/notify353/ApogeePartyHealthBars/releases/tag/v0.42.0)
   and [CurseForge project `1608100`](https://www.curseforge.com/wow/addons/apogee-party-health-bars/files).

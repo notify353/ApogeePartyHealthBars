@@ -35,7 +35,7 @@ if ($interfaceParts.Count -eq 0 -or $malformedInterfaces.Count -gt 0) {
     Fail "TOC Interface metadata '$interfaceValue' is malformed."
 }
 $actualInterfaces = @($interfaceParts | ForEach-Object { [int]$_ } | Sort-Object -Unique)
-$expectedInterfaces = @(11508, 20506)
+$expectedInterfaces = @(11509, 20506)
 if (($actualInterfaces -join ',') -ne ($expectedInterfaces -join ',')) {
     Fail "TOC interfaces must be exactly '$($expectedInterfaces -join ', ')'; found '$($actualInterfaces -join ', ')'."
 }
@@ -82,7 +82,18 @@ $mediaFiles = if (Test-Path -LiteralPath $mediaRoot -PathType Container) {
     }
 }
 else { @() }
-$expectedFiles = @('ApogeePartyHealthBars.toc', 'LICENSE', 'README.md') + $runtimeFiles + $mediaFiles
+$requiredRootFiles = @(
+    'ApogeePartyHealthBars.toc'
+    'LICENSE'
+    'README.md'
+    'THIRD_PARTY_NOTICES.md'
+)
+foreach ($file in $requiredRootFiles) {
+    if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $file) -PathType Leaf)) {
+        Fail "required package file '$file' is missing."
+    }
+}
+$expectedFiles = $requiredRootFiles + $runtimeFiles + $mediaFiles
 $expectedFiles = $expectedFiles | Sort-Object -Unique
 
 if ($PackageRoot) {

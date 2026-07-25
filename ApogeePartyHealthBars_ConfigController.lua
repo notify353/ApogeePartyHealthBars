@@ -12,6 +12,7 @@ function C.Exit()
     if not S.configMode then return end
     S.configMode = false
     if D.DotHud then D.DotHud.SetUnlocked(false) end
+    if D.DungeonBoardFeed then D.DungeonBoardFeed.SetUnlocked(false) end
     D.panel:EnableMouse(false)
     D.panel:RegisterForDrag()
     D.panel:SetScript("OnDragStart", nil)
@@ -143,6 +144,7 @@ function C.SetMode(active)
     if active then
         S.configMode = true
         if D.DotHud then D.DotHud.SetUnlocked(true) end
+        if D.DungeonBoardFeed then D.DungeonBoardFeed.SetUnlocked(true) end
         S.configTab = S.configTab or "general"
         D.panel:EnableMouse(true)
         D.panel:RegisterForDrag("LeftButton")

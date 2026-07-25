@@ -22,7 +22,7 @@ From clean, synchronized `main`:
 pwsh ./scripts/prepare-release.ps1 -Version X.Y.Z
 ```
 
-Release preparation validates that the TOC declares exactly Classic Era `11508` and TBC Anniversary `20506`, matching the recorded Blizzard exports. On a machine with either client installed, it also requires every installed supported build and local export to be current.
+Release preparation validates that the TOC declares exactly Classic Era `11509` and TBC Anniversary `20506`, matching the recorded Blizzard exports. On a machine with either client installed, it also requires every installed supported build and local export to be current.
 
 Push the preparation commit and wait for CI. Then verify the complete checklist in both Classic Era and TBC Anniversary:
 

@@ -83,7 +83,7 @@ local function CreateMinimapButton()
     minimapBtn:SetFrameStrata(parent:GetFrameStrata() or "LOW")
     minimapBtn:SetFrameLevel((parent:GetFrameLevel() or 0) + 20)
     minimapBtn:EnableMouse(true)
-    minimapBtn:RegisterForClicks("LeftButtonUp")
+    minimapBtn:RegisterForClicks("LeftButtonUp", "MiddleButtonUp")
     minimapBtn:RegisterForDrag("RightButton")
     minimapBtn:SetAttribute("useOnKeyDown", false)
 
@@ -119,7 +119,12 @@ local function CreateMinimapButton()
         end
     end)
 
-    minimapBtn:SetScript("PostClick", function()
+    minimapBtn:SetScript("PostClick", function(_, mouseButton)
+        if mouseButton == "MiddleButton" then
+            D.ToggleDungeonBoard()
+            return
+        end
+        if mouseButton ~= "LeftButton" then return end
         if not D.IsEnabled() then
             D.SetAddonEnabled(true)
         end
@@ -137,6 +142,7 @@ local function CreateMinimapButton()
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
         GameTooltip:SetText("Apogee Party Health Bars")
         GameTooltip:AddLine("Left-click: settings.", 1, 1, 1)
+        GameTooltip:AddLine("Middle-click: Dungeon Board.", 1, 1, 1)
         GameTooltip:AddLine("Right-drag to move around minimap.", 0.8, 0.8, 0.8)
         GameTooltip:Show()
     end)

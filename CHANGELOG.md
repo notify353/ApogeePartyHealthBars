@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.45.0] - 2026-07-25
+
 ### Added
 
 - Added an in-window Dungeon Board control for showing or hiding LFG Alerts and their configured sound.

@@ -486,6 +486,14 @@ dungeonBoardSettings.Initialize({
     Sounds = ApogeePartyHealthBars_Sounds,
 })
 
+local mentionAlerts = ApogeePartyHealthBars_MentionAlerts
+mentionAlerts.Initialize({
+    GetSavedVariables = function() return S.sv end,
+    GetPlayerName = function() return UnitName and UnitName("player") end,
+    GetPlayerGUID = function() return UnitGUID and UnitGUID("player") end,
+    Sounds = ApogeePartyHealthBars_Sounds,
+})
+
 local dungeonBoardGroupFinder = ApogeePartyHealthBars_DungeonBoardGroupFinder
 dungeonBoardGroupFinder.Initialize({
     Runtime = ApogeePartyHealthBars_DungeonBoardRuntime,
@@ -925,6 +933,7 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
         GetSavedVariables           = function() return S.sv end,
         Sounds                      = ApogeePartyHealthBars_Sounds,
         HealthAlerts                = ApogeePartyHealthBars_HealthAlerts,
+        MentionAlerts               = mentionAlerts,
         DungeonBoardSettings        = dungeonBoardSettings,
         Threat                      = H,
         CombatUIFader               = ApogeePartyHealthBars_CombatUIFader,

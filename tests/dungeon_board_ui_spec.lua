@@ -48,6 +48,7 @@ local function widget(name, parent)
         SetHeight = function(self, height) self.height = height end,
         SetWidth = function(self, width) self.width = width end,
         SetWordWrap = function(self, value) self.wordWrap = value end,
+        SetToplevel = function(self, value) self.topLevel = value == true end,
     }
     local noops = {
         "SetPoint", "SetMovable", "EnableMouse", "SetClampedToScreen",
@@ -137,9 +138,10 @@ UI.Build({
 local boardFrame = _G.ApogeePartyHealthBarsDungeonBoard
 assert(backdropAlpha == 1 and boardFrame
         and boardFrame.width == 540 and boardFrame.height == 380
+        and boardFrame.topLevel
         and boardFrame.children[1].color[4] == 1
         and boardFrame.children[2].color[4] == 1,
-    "Dungeon Board did not build the compact opaque full-panel and header")
+    "Dungeon Board did not build the compact opaque top-level panel and header")
 
 local entries = UI.BuildEntries({
     {

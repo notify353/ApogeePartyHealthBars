@@ -15,7 +15,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `DungeonBoardActions`: manual player interaction boundary for Chat-origin Who queries and empty native whisper composition without automatically sending or retaining player information
 - `DungeonBoardSettings`: profile-owned watched role, alert sound, level-window offsets, and mini-feed position
 - `DungeonBoardFeed`: display-only three-entry chat/guild opportunity feed with 30-second lifetime, final-five-second fade, material-change deduplication, guild emphasis, and throttled optional sound
-- `DungeonBoardUI`: beginner-facing request explanations, full-name and level-range presentation, labeled original slang, plain-language role controls, an opaque high-contrast panel, adaptive compact request cards, manual official refresh state, source/member presentation, highlighted guild requests, dungeon-first catalog grouping, and age refresh
+- `DungeonBoardUI`: beginner-facing request explanations, full-name and level-range presentation, labeled original slang, plain-language role controls, an opaque high-contrast top-level panel, adaptive compact request cards, manual official refresh state, source/member presentation, highlighted guild requests, dungeon-first catalog grouping, and age refresh
 - `RuntimeDungeonBoardEvents`: authoritative chat/guild payload adaptation plus Group Finder result/failure/update routing and login initialization
 - `PlayerContext`: normalized class, race, level, active talent group/tree/ranks, form/stance, and stealth state shared by context-sensitive features
 - `RuntimeLifecycleEvents`: login/bootstrap, world and roster changes, combat transitions, and combat-log fan-out
@@ -29,7 +29,8 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `ActionData`: macro-independent spell/item identity, legacy normalization, cloning, and display resolution shared by every configurable action feature
 - `ActionMacros`: shared action-intent template rendering and documentation metadata, direct spell/item defaults, localized curated melee and stealth-safe families, dedicated repeating ranged-attack quality-of-life behavior, sound/macro extensions, custom-text detection, and 255-byte validation for Shortcuts, Keys, Wheel, and Buttons
 - `ActionConfig`: shared scrollable action-list scaffold and compact row state used by Healing, Shortcuts, Keys, Wheel, and Buttons, plus the focused macro editor used by the macro-capable features
-- `UIHelpers`: common buttons, dropdowns, tabs, scrolling, and the shared non-action form scaffold used by Profiles, General, and Macros
+- `UIHelpers`: common buttons, dropdowns, tabs, scrolling, shared panel backdrops, and the non-action form scaffold used by Profiles, General, and Macros
+- `ConfigSurfaces`: opaque-black configuration chrome, compact anchor labels, native top-level interaction stacking, shared configuration strata, and combat-safe runtime-strata restoration
 - `BoundActionLayouts`: shared per-spec class-state catalog and typed-action layout engine for native forms, secure stealth fallbacks, and composite Cat/Prowl state
 - `BoundActionBindings`: permanent binding-set-specific transactional claiming, reconciliation, conflict detection, restoration, and cross-feature rollback
 - `BoundActionRuntime`: per-instance Keys/Wheel/Buttons action evaluation, secure execution, HUD state, and feedback
@@ -78,6 +79,7 @@ The data and pure-policy chain loads as `DungeonBoardCatalog` → `DungeonBoardA
 - Prefer player and pet Spellbook discovery for expansion-specific content. Preserve unavailable saved actions and preferences so profiles remain portable between supported clients.
 - Keep saved feature preferences separate from client support; unsupported features compute an effective disabled state without rewriting portable profile intent.
 - Keep volatile client APIs inside their domain adapters and capability detection; ordinary frame construction and widget methods remain direct.
+- Keep configuration-only chrome and cross-surface stacking inside `ConfigSurfaces`; feature modules own their content and direct position persistence, configuration must never reposition another surface, and normal gameplay must not retain configuration backing or elevation.
 - Keep Dungeon Board catalog, activity mapping, classification, and eligibility independent from chat events, saved variables, and UI; keep search/result ingestion inside `DungeonBoardGroupFinder`, manual native player interactions inside `DungeonBoardActions`, chat payload knowledge inside the event adapter, and UI reads on immutable runtime snapshots.
 - Give Dungeon Board service/noise classifications precedence over dungeon requests, and preserve unresolved `DM`, Dire Maul, and Scarlet Monastery candidates instead of guessing or duplicating requests.
 - Preserve the original message alongside every plain-language Dungeon Board explanation; presentation may clarify known intent and catalog facts but must not invent an unstated role or resolve ambiguous slang.

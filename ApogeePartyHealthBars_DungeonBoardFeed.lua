@@ -111,23 +111,21 @@ local function render()
         frame:SetHeight(STATUS_HEIGHT)
         statusLabel:SetText("|cff888888Dungeon Board mini-feed alerts off|r")
         statusLabel:SetShown(not unlocked)
-        frame.anchorLabel:SetText("Dungeon Board mini-feed (alerts off)")
-        frame.anchorBackground:SetShown(unlocked)
-        frame.anchorLabel:SetShown(unlocked)
+        D.ConfigSurfaces.SetTitle("feed", "Dungeon Board mini-feed (alerts off)")
+        D.ConfigSurfaces.SetTitleShown("feed", unlocked)
         frame:SetShown(unlocked)
         return
     end
 
     statusLabel:Show()
-    frame.anchorLabel:SetText("Dungeon Board mini-feed")
+    D.ConfigSurfaces.SetTitle("feed", "Dungeon Board mini-feed")
     statusLabel:SetText("|cffffd100" .. idleCopy(role) .. "|r")
 
     if #entries == 0 then
         for index = 1, MAX_ENTRIES do rows[index]:Hide() end
         frame:SetHeight(STATUS_HEIGHT)
         statusLabel:SetShown(not unlocked)
-        frame.anchorBackground:SetShown(unlocked)
-        frame.anchorLabel:SetShown(unlocked)
+        D.ConfigSurfaces.SetTitleShown("feed", unlocked)
         frame:Show()
         return
     end
@@ -154,13 +152,12 @@ local function render()
             row:Hide()
         end
     end
+    D.ConfigSurfaces.SetTitleShown("feed", false)
     if #entries > 0 then
         frame:SetHeight(STATUS_HEIGHT + (#entries * (ROW_HEIGHT + ROW_GAP)) - ROW_GAP)
     else
         frame:SetHeight(STATUS_HEIGHT)
     end
-    frame.anchorBackground:SetShown(unlocked and #entries == 0)
-    frame.anchorLabel:SetShown(unlocked and #entries == 0)
     frame:SetShown(unlocked or #entries > 0)
 end
 
@@ -168,7 +165,7 @@ function Feed.Initialize(deps)
     assert(type(deps) == "table", "DungeonBoardFeed requires dependencies")
     for _, key in ipairs({
         "Runtime", "Settings", "Eligibility", "Catalog", "Sounds",
-        "Helpers", "GetPlayerLevel", "Now",
+        "Helpers", "ConfigSurfaces", "GetPlayerLevel", "Now",
     }) do
         assert(deps[key] ~= nil, "DungeonBoardFeed missing dependency: " .. key)
     end
@@ -248,11 +245,6 @@ function Feed.Build()
     local point, relativePoint, x, y = D.Settings.GetFeedPosition()
     frame:SetPoint(point, UIParent, relativePoint, x, y)
 
-    local anchorBackground = frame:CreateTexture(nil, "BACKGROUND")
-    anchorBackground:SetAllPoints()
-    anchorBackground:SetColorTexture(0.05, 0.05, 0.05, 0.65)
-    frame.anchorBackground = anchorBackground
-
     local statusBackground = frame:CreateTexture(nil, "BACKGROUND")
     statusBackground:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
     statusBackground:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 0, 0)
@@ -265,10 +257,10 @@ function Feed.Build()
     statusLabel:SetJustifyH("LEFT")
     statusLabel:SetWordWrap(false)
 
-    local anchorLabel = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    anchorLabel:SetPoint("CENTER")
-    anchorLabel:SetText("Dungeon Board mini-feed")
-    frame.anchorLabel = anchorLabel
+    D.ConfigSurfaces.Register("feed", frame, {
+        headerHeight = STATUS_HEIGHT,
+        title = "Dungeon Board mini-feed",
+    })
 
     for index = 1, MAX_ENTRIES do
         local row = CreateFrame("Frame", nil, frame)
@@ -316,12 +308,17 @@ function Feed.SetUnlocked(value)
     unlocked = value == true
     if not frame then return end
     frame:EnableMouse(unlocked)
-    if unlocked then frame:RegisterForDrag("LeftButton") end
+    if unlocked then frame:RegisterForDrag("LeftButton") else frame:RegisterForDrag() end
+    D.ConfigSurfaces.SetSurfaceChromeShown("feed", unlocked)
     render()
 end
 
 function Feed.IsUnlocked()
     return unlocked
+end
+
+function Feed.GetFrame()
+    return frame
 end
 
 function Feed.RestorePosition()

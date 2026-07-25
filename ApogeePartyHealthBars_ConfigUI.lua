@@ -157,13 +157,10 @@ function UI.Build(deps)
     configPanel:SetMovable(true)
     configPanel:EnableMouse(true)
     configPanel:SetClampedToScreen(true)
-    configPanel:SetFrameStrata("MEDIUM")
-    D.ApplyBackdrop(configPanel, 1, C.PANEL_EDGE_COLOR)
-    local opaqueBackground = configPanel:CreateTexture(nil, "BACKGROUND", nil, -8)
-    opaqueBackground:SetAllPoints()
-    opaqueBackground:SetColorTexture(
-        C.PANEL_BG_COLOR[1], C.PANEL_BG_COLOR[2], C.PANEL_BG_COLOR[3], 1
-    )
+    configPanel:SetFrameStrata("DIALOG")
+    D.ConfigSurfaces.Register("settings", configPanel, {
+        headerHeight = C.CONFIG_HEADER_H,
+    })
     AttachConfigDragHandle(configPanel)
     configPanel:Hide()
 
@@ -191,12 +188,6 @@ function UI.Build(deps)
     closeButton:SetSize(24, 24)
     closeButton:SetPoint("TOPRIGHT", header, "TOPRIGHT", 3, 1)
     closeButton:SetScript("OnClick", function() D.SetConfigMode(false) end)
-
-    local headerDivider = configPanel:CreateTexture(nil, "ARTWORK")
-    headerDivider:SetPoint("TOPLEFT", configPanel, "TOPLEFT", C.BIND_PAD, -C.CONFIG_HEADER_H)
-    headerDivider:SetPoint("TOPRIGHT", configPanel, "TOPRIGHT", -C.BIND_PAD, -C.CONFIG_HEADER_H)
-    headerDivider:SetHeight(1)
-    headerDivider:SetColorTexture(0.45, 0.38, 0.12, 0.8)
 
     AC.Initialize(configPanel, D.ApplyBackdrop)
 

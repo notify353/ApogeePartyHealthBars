@@ -1,6 +1,8 @@
 ApogeePartyHealthBars_C = {
     CONFIG_CONTENT_W = 396,
     CONFIG_BTN_H = 22,
+    PANEL_BG_COLOR = { 0.06, 0.06, 0.08, 0.96 },
+    BACKDROP = { bgFile = "background", edgeFile = "border" },
 }
 UISpecialFrames = {}
 
@@ -33,6 +35,9 @@ local function Widget(name)
         SetText = function(self, text) self.text = text end,
         SetTextColor = function(self, ...) self.textColor = { ... } end,
         SetColorTexture = function(self, ...) self.color = { ... } end,
+        SetBackdrop = function(self, value) self.backdrop = value end,
+        SetBackdropColor = function(self, ...) self.backdropColor = { ... } end,
+        SetBackdropBorderColor = function(self, ...) self.backdropBorderColor = { ... } end,
         SetHeight = function(self, value) self.height = value end,
         SetWidth = function(self, value) self.width = value end,
         SetSize = function(self, width, height) self.width, self.height = width, height end,
@@ -66,6 +71,12 @@ end
 
 dofile("ApogeePartyHealthBars_UIHelpers.lua")
 local helpers = ApogeePartyHealthBars_UIHelpers
+local panel = Widget()
+helpers.ApplyBackdrop(panel, 1, { 1, 0.8, 0, 1 })
+assert(panel.backdrop == ApogeePartyHealthBars_C.BACKDROP
+        and panel.backdropColor[4] == 1
+        and panel.backdropBorderColor[1] == 1,
+    "shared panel backdrop lost its explicit opacity or border")
 local selected
 local dropdown = helpers.CreateDropdown(UIParent, 100, 20, 140)
 dropdown:SetOptions({

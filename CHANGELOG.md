@@ -15,6 +15,10 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 - Presented Dungeon Board opportunities in a fixed 540×380 window with full dungeon names, level ranges, compact source/member details, one-line chat or note previews, and complete hover text. Heroic and ambiguous requests remain clearly marked without repeated role or dungeon wording.
 - Added compact icon actions for Who and Whisper to every Dungeon Board request. Who returns Blizzard's native lookup in chat, while Whisper opens an empty composer and never sends automatically.
 
+### Changed
+
+- Rebuilt configuration-mode presentation around shared opaque-black panel chrome, compact labeled anchors, and click-to-front window stacking for settings, Party Health, DoT reminders, and the Dungeon Board mini-feed. Windows remain freely positionable and normal gameplay surfaces retain their existing appearance.
+
 ### Fixed
 
 - Corrected Classic Era client detection and TOC metadata to live interface `11509`, allowing Dungeon Board to classify requests instead of rejecting every message as unsupported.
@@ -22,6 +26,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 - Prevented “DM for invite” and “DM me” instructions from being mistaken for Deadmines or Dire Maul requests.
 - Fixed official Group Finder groups with multiple selected dungeons being mislabeled as unclear chat slang; they now appear under every selected dungeon and show a clear group-note label.
 - Made the entire Dungeon Board, including its header, fully opaque and retuned section, card, tab, and supporting-text colors for clear contrast on the solid background.
+- Made the full Dungeon Board participate in the same click-to-front stacking behavior as the configuration surfaces.
 - Kept the enabled mini-feed visible with a plain-language watching state, and allowed matching reposts first seen under the other watched role to be reconsidered without producing duplicate alerts.
 - Sorted every Dungeon Board view by the latest update so the newest dungeon sections and requests appear at the top.
 - Applied an active-profile dungeon level window to every Dungeon Board view, mini-feed opportunity, and official refresh. It defaults to 10 levels below through 3 above the character, is adjustable under General → Dungeon Board, appears at the top of the board, and never bypasses the character's actual Heroic requirement.

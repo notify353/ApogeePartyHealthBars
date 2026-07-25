@@ -60,6 +60,9 @@ local function widget()
             self.mouseEnabled = enabled
             self.mutations = self.mutations + 1
         end,
+        SetPropagateMouseClicks = function(self, enabled)
+            self.propagateMouseClicks = enabled
+        end,
         IsEnabled = function() return true end,
         GetName = function() return nil end,
         GetParent = function() return UIParent end,

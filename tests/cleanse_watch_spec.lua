@@ -25,6 +25,8 @@ local function widget()
         ClearAllPoints = function(self) self.mutations = self.mutations + 1 end,
         SetAllPoints = function() end,
         SetFrameStrata = function() end,
+        SetFrameLevel = function(self, level) self.frameLevel = level end,
+        GetFrameLevel = function(self) return self.frameLevel or 1 end,
         SetClampedToScreen = function() end,
         SetMovable = function() end,
         SetJustifyH = function() end,
@@ -38,6 +40,9 @@ local function widget()
         SetTextColor = function() end,
         SetAlpha = function(self, alpha) self.alpha = alpha end,
         EnableMouse = function(self, enabled) self.mouseEnabled = enabled end,
+        SetPropagateMouseClicks = function(self, enabled)
+            self.propagateMouseClicks = enabled
+        end,
         RegisterForDrag = function() end,
         RegisterForClicks = function(self, phase) self.clickPhase = phase end,
         SetScript = function(self, name, callback) self.scripts[name] = callback end,
@@ -121,6 +126,11 @@ local lanes = Watch.GetLanes()
 local watchFrame = Watch.GetFrame()
 assert(watchFrame.width == 500 and watchFrame.height == 252,
     "Cleanse Watch did not retain its compact single-card footprint")
+assert(watchFrame.point[1] == "TOPRIGHT"
+        and watchFrame.point[3] == "TOPRIGHT"
+        and watchFrame.point[4] == 0
+        and watchFrame.point[5] == 0,
+    "Cleanse Watch did not use the flush top-right default position")
 assert(registeredSurfaceOptions == nil,
     "Cleanse Watch still requested configuration header chrome")
 local magicPlayer = lanes.Magic.buttons[1]
@@ -132,6 +142,11 @@ assert(magicPlayer.attributes.unit == "player"
         and magicParty.point[1] == "BOTTOMLEFT"
         and magicParty.point[5] == 4,
     "cleanse buttons were not pre-created with stable secure targets")
+assert(magicParty.inputShield.mouseEnabled
+        and magicParty.inputShield.propagateMouseClicks == false
+        and magicParty.inputShield.shown == false
+        and magicPlayer.inputShield.shown,
+    "active and inactive cleanse slots did not expose the correct input layer")
 assert(magicParty.scripts.OnEnter == nil and magicParty.scripts.OnLeave == nil,
     "Cleanse Watch buttons still installed hover tooltips")
 assert(lanes.Magic.typeTitle.text
@@ -145,7 +160,30 @@ assert(lanes.Magic.typeTitle.text
         and magicParty.label.text == "Tank"
         and magicPlayer.label.text == "",
     "single-card panel did not prioritize one effect and summarize overflow")
+assert(lanes.Magic.background.alpha == 1
+        and lanes.Disease.background.alpha == 0
+        and lanes.Disease.typeTitle.alpha == 0
+        and lanes.Disease.emptyLabel.alpha == 0,
+    "runtime panel rendered a clean debuff category beside an active category")
 harmful.party1 = { auras = {} }
+inCombat = true
+Watch.Refresh()
+assert(magicParty.inputShield.shown
+        and magicParty.attributes.spell == "Dispel Magic"
+        and lanes.Magic.background.alpha == 0
+        and lanes.Disease.background.alpha == 0,
+    "clean combat refresh did not shield the inactive secure cleanse button")
+harmful.party1 = { auras = {
+    { name = "Arcane Lock", icon = 136116, applications = 1,
+        dispelName = "Magic", duration = 12, expirationTime = 15,
+        spellId = 9001 },
+} }
+Watch.Refresh()
+assert(not magicParty.inputShield.shown
+        and magicParty.attributes.spell == "Dispel Magic",
+    "combat aura refresh did not expose the active secure cleanse button")
+harmful.party1 = { auras = {} }
+inCombat = false
 assert(Watch.SetUnlocked(true),
     "configuration mode did not unlock Cleanse Watch")
 assert(watchFrame.height == 252,
@@ -171,6 +209,12 @@ assert(Watch.SetUnlocked(false),
     "configuration mode did not lock Cleanse Watch")
 assert(watchFrame.height == 252,
     "closing configuration changed the single-card runtime footprint")
+assert(Watch.ResetPosition()
+        and ApogeePartyHealthBars_S.sv.cleanseWatchPoint == "TOPRIGHT"
+        and ApogeePartyHealthBars_S.sv.cleanseWatchRelPoint == "TOPRIGHT"
+        and ApogeePartyHealthBars_S.sv.cleanseWatchX == 0
+        and ApogeePartyHealthBars_S.sv.cleanseWatchY == 0,
+    "Cleanse Watch reset did not persist the top-right default position")
 
 assert(Watch.SetUnlocked(true) and watchFrame.mouseEnabled and cleanseChromeShown,
     "configuration interaction state did not activate")

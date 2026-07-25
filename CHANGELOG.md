@@ -8,6 +8,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
+- Added a session-only Ignore action to Cleanse Watch debuff cards; ignored debuffs remain hidden for every party member until `/reload` and are never saved to profiles.
 - Added a movable, profile-owned Cleanse Watch that discovers learned player and pet cleansing spells, groups active Magic, Curse, Disease, and Poison effects with their Blizzard descriptions shown inline, exposes combat-safe cleanse buttons only for affected members, and previews representative real-game debuffs while configuring its position.
 - Added profile-specific player-name mention alerts across social chat, with a configurable sound and optional in-message highlighting.
 - Added a lean, English-only Dungeon Board window for recent Classic Era and TBC Anniversary dungeon requests from joined chat channels and guild chat. Guild requests remain prominently green inside their dungeon sections. Open it with middle-click on the minimap button or `/aphb board`; requests remain session-only and expire automatically.

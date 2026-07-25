@@ -11,6 +11,7 @@ local DEFAULT_POINT, DEFAULT_X, DEFAULT_Y = "TOPRIGHT", 0, 0
 local units = C.SLOT_UNITS
 local D, frame, bodyBackground
 local lanes, capabilities = {}, {}
+local ignoredEffects = {}
 local unlocked = false
 
 local function saved()
@@ -191,32 +192,44 @@ local function buildState(now)
                 local group = unitSnapshot.byType[dispelType]
                 if group then
                     local typeState = state[dispelType]
-                    typeState.members[unitIndex] = group
-                    typeState.count = typeState.count + group.count
+                    local visibleAuras = {}
                     for _, aura in ipairs(group.auras) do
                         local key = auraKey(aura)
-                        local effect = typeState.effectsByKey[key]
-                        if not effect then
-                            effect = {
-                                name = aura.name or dispelType,
-                                icon = aura.icon,
-                                spellId = aura.spellId,
-                                applications = aura.applications,
-                                earliest = aura.remaining,
-                                members = {},
+                        if not ignoredEffects[key] then
+                            visibleAuras[#visibleAuras + 1] = aura
+                            local effect = typeState.effectsByKey[key]
+                            if not effect then
+                                effect = {
+                                    key = key,
+                                    name = aura.name or dispelType,
+                                    icon = aura.icon,
+                                    spellId = aura.spellId,
+                                    applications = aura.applications,
+                                    earliest = aura.remaining,
+                                    members = {},
+                                }
+                                typeState.effectsByKey[key] = effect
+                                typeState.effects[#typeState.effects + 1] = effect
+                            end
+                            effect.earliest = math.min(
+                                effect.earliest, aura.remaining)
+                            effect.applications = math.max(
+                                tonumber(effect.applications) or 0,
+                                tonumber(aura.applications) or 0)
+                            effect.members[#effect.members + 1] = {
+                                unitId = unitId,
+                                name = displayUnitName(unitIndex, unitId),
+                                remaining = aura.remaining,
                             }
-                            typeState.effectsByKey[key] = effect
-                            typeState.effects[#typeState.effects + 1] = effect
                         end
-                        effect.earliest = math.min(effect.earliest, aura.remaining)
-                        effect.applications = math.max(
-                            tonumber(effect.applications) or 0,
-                            tonumber(aura.applications) or 0)
-                        effect.members[#effect.members + 1] = {
-                            unitId = unitId,
-                            name = displayUnitName(unitIndex, unitId),
-                            remaining = aura.remaining,
+                    end
+                    if #visibleAuras > 0 then
+                        typeState.members[unitIndex] = {
+                            primary = visibleAuras[1],
+                            auras = visibleAuras,
+                            count = #visibleAuras,
                         }
+                        typeState.count = typeState.count + #visibleAuras
                     end
                 end
             end
@@ -304,6 +317,7 @@ local function render()
         local typeState = state[dispelType]
         local active = lane.capability and typeState.count > 0
         if active then
+            local primaryEffect = typeState.effects[1]
             local hiddenEffectCount = math.max(0, #typeState.effects - 1)
             local suffix = hiddenEffectCount > 0
                 and ("  ·  +" .. tostring(hiddenEffectCount) .. " more") or ""
@@ -313,15 +327,25 @@ local function render()
                     .. " removable effect" .. (typeState.count == 1 and "" or "s")))
                 .. suffix)
             lane.emptyLabel:SetAlpha(0)
-            renderEffectRow(lane.effectCard, typeState.effects[1])
-            layoutEffectCard(lane, typeState.effects[1])
+            renderEffectRow(lane.effectCard, primaryEffect)
+            layoutEffectCard(lane, primaryEffect)
+            lane.ignoreButton.effectKey =
+                not typeState.preview and primaryEffect.key or nil
+            lane.ignoreButton.preview = typeState.preview == true
         elseif lane.capability and unlocked then
             lane.typeTitle:SetText(dispelType .. "  ·  clear")
             lane.emptyLabel:SetText("No removable " .. dispelType .. " effects.")
             lane.emptyLabel:SetAlpha(1)
             renderEffectRow(lane.effectCard, nil)
             layoutEffectCard(lane, nil)
+            lane.ignoreButton.effectKey = nil
+            lane.ignoreButton.preview = false
+        else
+            lane.ignoreButton.effectKey = nil
+            lane.ignoreButton.preview = false
         end
+        lane.ignoreButton:SetShown(
+            lane.ignoreButton.effectKey ~= nil or lane.ignoreButton.preview)
         setLaneVisual(lane, lane.capability and (active or unlocked))
 
         for unitIndex, button in ipairs(lane.buttons) do
@@ -378,9 +402,27 @@ function Watch.Build()
         local laneTitle = lane:CreateFontString(
             nil, "ARTWORK", "GameFontNormalSmall")
         laneTitle:SetPoint("TOPLEFT", lane, "TOPLEFT", 7, -4)
-        laneTitle:SetPoint("RIGHT", lane, "RIGHT", -8, 0)
         laneTitle:SetJustifyH("LEFT")
         laneTitle:SetTextColor(color[1], color[2], color[3])
+        local ignoreButton = CreateFrame("Button", nil, lane)
+        ignoreButton:SetSize(52, 16)
+        ignoreButton:SetPoint("TOPRIGHT", lane, "TOPRIGHT", -6, -2)
+        ignoreButton:RegisterForClicks("LeftButtonUp")
+        local ignoreBackground =
+            ignoreButton:CreateTexture(nil, "BACKGROUND")
+        ignoreBackground:SetAllPoints()
+        ignoreBackground:SetColorTexture(0.08, 0.09, 0.11, 0.96)
+        local ignoreLabel = ignoreButton:CreateFontString(
+            nil, "ARTWORK", "GameFontHighlightSmall")
+        ignoreLabel:SetPoint("CENTER")
+        ignoreLabel:SetText("Ignore")
+        ignoreButton:SetScript("OnClick", function(self)
+            if not self.effectKey then return end
+            ignoredEffects[self.effectKey] = true
+            render()
+        end)
+        ignoreButton:Hide()
+        laneTitle:SetPoint("RIGHT", ignoreButton, "LEFT", -5, 0)
         local emptyLabel = lane:CreateFontString(
             nil, "ARTWORK", "GameFontHighlightSmall")
         emptyLabel:SetPoint("TOPLEFT", lane, "TOPLEFT", 7, -21)
@@ -389,6 +431,7 @@ function Watch.Build()
 
         lane.background, lane.typeTitle, lane.emptyLabel =
             background, laneTitle, emptyLabel
+        lane.ignoreButton = ignoreButton
         local effectCard = CreateFrame("Frame", nil, lane)
         effectCard:SetHeight(28)
         local icon = effectCard:CreateTexture(nil, "ARTWORK")

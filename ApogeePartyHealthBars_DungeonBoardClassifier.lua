@@ -4,6 +4,7 @@ local Catalog = ApogeePartyHealthBars_DungeonBoardCatalog
 
 local intentTerms = {
     group = true, run = true, runs = true, lfg = true, lf = true, lfm = true,
+    need = true, needs = true, needed = true, needing = true, looking = true,
     lftank = true, lfheal = true,
     lfhealer = true, lfdps = true, lfdd = true, dd = true, heal = true, healer = true,
     tank = true, dps = true, xdd = true, xheal = true, xhealer = true, xtank = true,
@@ -37,11 +38,30 @@ local scarletKeys = { "SMG", "SML", "SMA", "SMC" }
 local direMaulKeys = { "DME", "DMW", "DMN" }
 local unknownDmKeys = { "DM", "DME", "DMW", "DMN" }
 local matcherCache = {}
+local roleAliases = {
+    tank = { tank = true, tanks = true, lftank = true },
+    healer = {
+        heal = true, heals = true, healer = true, healers = true,
+        lfheal = true, lfhealer = true,
+    },
+}
+local negativeRoleTerms = {
+    got = true, have = true, has = true, found = true, no = true, ["not"] = true,
+    already = true, our = true,
+}
+local explicitNeedTerms = {
+    need = true, needs = true, needed = true, needing = true, lf = true,
+}
 
 local function tokenize(value)
     local tokens = {}
     local tokenSet = {}
     for token in string.lower(value or ""):gmatch("[%w]+") do
+        -- Numbered "looking for more" forms are common in live chat. The
+        -- upstream parser also reduces LF1M/LF2M and LFM1/LFM2 to LFM.
+        if token:match("^lf%d+m$") or token:match("^lfm%d+$") then
+            token = "lfm"
+        end
         tokens[#tokens + 1] = token
         tokenSet[token] = true
     end
@@ -132,6 +152,54 @@ local function orderedKeys(definitions, matches)
     return result
 end
 
+local function roleIsExplicitlyNeeded(tokens, role)
+    local aliases = roleAliases[role]
+    for index, token in ipairs(tokens) do
+        if aliases[token] then
+            if token == "lftank" or token == "lfheal" or token == "lfhealer" then
+                return true
+            end
+
+            local previous = tokens[index - 1]
+            local beforePrevious = tokens[index - 2]
+            local after = tokens[index + 1]
+            if negativeRoleTerms[previous] or negativeRoleTerms[beforePrevious]
+                or after == "lfg" or after == "here"
+            then
+                -- Keep scanning in case the message contains another explicit need
+                -- for the same role after describing the current composition.
+            elseif explicitNeedTerms[previous] or explicitNeedTerms[beforePrevious]
+                or after == "needed" or after == "need"
+            then
+                return true
+            elseif beforePrevious == "looking" and previous == "for" then
+                return true
+            else
+                for intentIndex = 1, index - 1 do
+                    if tokens[intentIndex] == "lfm" then return true end
+                end
+            end
+        end
+    end
+    return false
+end
+
+local function getNeededRoles(tokens)
+    local result = {}
+    for _, role in ipairs({ "tank", "healer" }) do
+        if roleIsExplicitlyNeeded(tokens, role) then
+            result[#result + 1] = role
+        end
+    end
+    return result
+end
+
+local function isDirectMessageInstruction(tokens)
+    return containsSequence(tokens, { "dm", "for", "invite" })
+        or containsSequence(tokens, { "dm", "for", "inv" })
+        or containsSequence(tokens, { "dm", "me" })
+end
+
 function Classifier.Classify(message, context)
     if type(message) ~= "string" or type(context) ~= "table" then
         return { kind = "none" }
@@ -174,7 +242,9 @@ function Classifier.Classify(message, context)
         ambiguous = true
     end
 
-    if tokenSet.dm and not matches.DM and not hasDireWing and not hasDireMaulFamily then
+    if tokenSet.dm and not isDirectMessageInstruction(tokens)
+        and not matches.DM and not hasDireWing and not hasDireMaulFamily
+    then
         if type(context.senderLevel) == "number" and context.senderLevel < 40 then
             if matcher.available.DM then matches.DM = true end
         elseif type(context.senderLevel) == "number" then
@@ -189,10 +259,12 @@ function Classifier.Classify(message, context)
     local dungeonKeys = orderedKeys(matcher.definitions, matches)
     if #dungeonKeys == 0 then return { kind = "none" } end
 
+    local neededRoles = getNeededRoles(tokens)
     return {
         kind = "request",
         status = ambiguous and "ambiguous" or "matched",
         dungeonKeys = dungeonKeys,
         heroic = anyTerm(tokenSet, heroicTerms),
+        neededRoles = neededRoles,
     }
 end

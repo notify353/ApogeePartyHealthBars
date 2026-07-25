@@ -8,11 +8,24 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
-- Added a lean, English-only Dungeon Board window for recent Classic Era and TBC Anniversary five-player dungeon requests from joined chat channels and guild chat. Guild requests appear in a highlighted leading section. Open it with middle-click on the minimap button or `/aphb board`; requests remain session-only and expire automatically.
+- Added a lean, English-only Dungeon Board window for recent Classic Era and TBC Anniversary dungeon requests from joined chat channels and guild chat. Guild requests remain prominently green inside their dungeon sections. Open it with middle-click on the minimap button or `/aphb board`; requests remain session-only and expire automatically.
+- Added mutually exclusive Need Tank and Need Healer views that also select the always-active live watch role. Each requires the opposite support role to be covered; generic requests and groups needing both support roles are excluded. The role is saved per active character profile and defaults to Need Healer.
+- Added a movable, display-only three-entry mini-feed for new five-player chat and guild opportunities, with a compact one-line idle status, two-line alerts, 30-second expiry, guild emphasis, an optional profile sound that defaults to None, and unobtrusive deduplication and throttling. A per-profile General setting can hide and silence the feed without disabling the full board.
+- Added manual Blizzard Group Finder refresh to the full board for level-appropriate normal and heroic five-player listings. Official results show source/member details, never trigger alerts, and remain snapshots until another user or add-on search completes.
+- Presented Dungeon Board opportunities in a fixed 540×380 window with full dungeon names, level ranges, compact source/member details, one-line chat or note previews, and complete hover text. Heroic and ambiguous requests remain clearly marked without repeated role or dungeon wording.
+- Added compact icon actions for Who and Whisper to every Dungeon Board request. Who returns Blizzard's native lookup in chat, while Whisper opens an empty composer and never sends automatically.
 
 ### Fixed
 
 - Corrected Classic Era client detection and TOC metadata to live interface `11509`, allowing Dungeon Board to classify requests instead of rejecting every message as unsupported.
+- Prevented board entries and alerts for generic LFM posts, dual-role requests, self-role messages such as `tank LFG`, completed roles such as `got tank`, and out-of-range dungeons. Official listings and the UBRS board exception also remain excluded from alerts.
+- Prevented “DM for invite” and “DM me” instructions from being mistaken for Deadmines or Dire Maul requests.
+- Fixed official Group Finder groups with multiple selected dungeons being mislabeled as unclear chat slang; they now appear under every selected dungeon and show a clear group-note label.
+- Made the entire Dungeon Board, including its header, fully opaque and retuned section, card, tab, and supporting-text colors for clear contrast on the solid background.
+- Kept the enabled mini-feed visible with a plain-language watching state, and allowed matching reposts first seen under the other watched role to be reconsidered without producing duplicate alerts.
+- Sorted every Dungeon Board view by the latest update so the newest dungeon sections and requests appear at the top.
+- Applied an active-profile dungeon level window to every Dungeon Board view, mini-feed opportunity, and official refresh. It defaults to 10 levels below through 3 above the character, is adjustable under General → Dungeon Board, appears at the top of the board, and never bypasses the character's actual Heroic requirement.
+- Made the main settings window and Party Health configuration preview fully opaque for the same clear contrast as Dungeon Board.
 
 ## [0.44.0] - 2026-07-21
 

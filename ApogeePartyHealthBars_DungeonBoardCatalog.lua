@@ -63,7 +63,8 @@ local definitions = {
     { key = "LBRS", name = "Lower Blackrock Spire", expansion = "classicEra",
         minLevel = 57, maxLevel = 60, aliases = { "lower", "lbrs", "lrbs" } },
     { key = "UBRS", name = "Upper Blackrock Spire", expansion = "classicEra",
-        minLevel = 58, maxLevel = 60, aliases = { "upper", "ubrs", "urbs", "rend" } },
+        minLevel = 58, maxLevel = 60, maxPlayers = 10,
+        aliases = { "upper", "ubrs", "urbs", "rend" } },
 
     { key = "RAMPS", name = "Hellfire Ramparts", expansion = "tbcAnniversary",
         minLevel = 59, maxLevel = 67, aliases = { "ramparts", "rampart", "ramp", "ramps" } },
@@ -105,6 +106,10 @@ local definitions = {
 
 local byKey = {}
 for _, definition in ipairs(definitions) do
+    definition.maxPlayers = definition.maxPlayers or 5
+    if definition.expansion == "tbcAnniversary" then
+        definition.heroicMinLevel = definition.heroicMinLevel or 70
+    end
     byKey[definition.key] = definition
 end
 
@@ -146,4 +151,22 @@ function Catalog.GetDungeons(clientFlavor)
         end
     end
     return result
+end
+
+function Catalog.IsFivePlayer(key)
+    local definition = byKey[key]
+    return definition ~= nil and definition.maxPlayers == 5
+end
+
+function Catalog.IsLevelAppropriate(key, playerLevel, heroic, levelWindow)
+    local definition = byKey[key]
+    if not definition or type(playerLevel) ~= "number" then return false end
+    if heroic then
+        return definition.heroicMinLevel ~= nil
+            and playerLevel >= definition.heroicMinLevel
+    end
+    local minLevel = levelWindow and tonumber(levelWindow.minLevel) or playerLevel
+    local maxLevel = levelWindow and tonumber(levelWindow.maxLevel) or playerLevel
+    if not minLevel or not maxLevel then return false end
+    return definition.maxLevel >= minLevel and definition.minLevel <= maxLevel
 end

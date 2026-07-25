@@ -12,7 +12,8 @@ local generalRowsByKey = {}
 local hotRows = {}
 local hotRowsByKey = {}
 local resetBarBtn, resetSettingsBtn, resetMinimapBtn, prepareDisableBtn, factoryResetBtn
-local behaviorSection, alertsSection, displaySection, hotSection, compatibilitySection
+local behaviorSection, alertsSection, dungeonBoardSection, displaySection
+local hotSection, compatibilitySection
 local positionsSection, dangerSection
 local resetRow, compatibilityRow, compatibilityLabel, prepareDisableRow, factoryRow
 local prepareDisableArmed, prepareDisableToken = false, 0
@@ -129,6 +130,30 @@ local function Layout()
                 row.frame.value.label:SetText(currentLabel .. "  |cff777777(click to change)|r")
             elseif row.svKey == "lowHealthSoundKey" then
                 row.frame.value:SetSelectedKey(D.HealthAlerts.GetSoundKey())
+            elseif row.svKey == "dungeonBoardFeedEnabled" then
+                SetCheckboxChecked(
+                    row.frame.check, D.DungeonBoardSettings.GetFeedEnabled())
+            elseif row.svKey == "dungeonBoardSoundKey" then
+                row.frame.value:SetSelectedKey(D.DungeonBoardSettings.GetSoundKey())
+            elseif row.svKey == "dungeonBoardLevelsBelow"
+                or row.svKey == "dungeonBoardLevelsAbove"
+            then
+                local levelsBelow, levelsAbove = D.DungeonBoardSettings.GetLevelOffsets()
+                local value = row.svKey == "dungeonBoardLevelsBelow"
+                    and levelsBelow or levelsAbove
+                local minOffset, maxOffset =
+                    D.DungeonBoardSettings.GetLevelOffsetLimits()
+                row.frame.value:SetText(tostring(value))
+                if value > minOffset then
+                    row.frame.decrease:Enable()
+                else
+                    row.frame.decrease:Disable()
+                end
+                if value < maxOffset then
+                    row.frame.increase:Enable()
+                else
+                    row.frame.increase:Disable()
+                end
             elseif row.svKey == "lowHealthThreshold" then
                 local threshold = D.HealthAlerts.GetThreshold()
                 row.frame.value:SetText(threshold .. "%")
@@ -165,6 +190,12 @@ local function Layout()
     addSetting("selfBuffEnabled")
     addSetting("selfBuffPreference")
     addSetting("clickableBuffIcons")
+
+    entries[#entries + 1] = { frame = dungeonBoardSection, height = 16, gap = 10 }
+    addSetting("dungeonBoardFeedEnabled")
+    addSetting("dungeonBoardSoundKey")
+    addSetting("dungeonBoardLevelsBelow")
+    addSetting("dungeonBoardLevelsAbove")
 
     entries[#entries + 1] = { frame = displaySection, height = 16, gap = 10 }
     addSetting("shieldEnabled")
@@ -260,6 +291,17 @@ local function AddCheckbox(label, svKey, onChange)
     end)
 end
 
+local function AddDungeonBoardFeedPreference()
+    local frame = CreateCheckboxRow(
+        form.content, "Show Dungeon Board mini-feed alerts", 0)
+    AddGeneralRow(frame, "dungeonBoardFeedEnabled")
+    frame.check:SetScript("OnClick", function(self)
+        if refreshing then return end
+        D.DungeonBoardSettings.SetFeedEnabled(self:GetChecked())
+        D.RequestConfigRefresh()
+    end)
+end
+
 local function AddSelfBuffPreference()
     local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
@@ -312,6 +354,64 @@ local function AddLowHealthSoundPreference()
     AddGeneralRow(frame, "lowHealthSoundKey")
 end
 
+local function AddDungeonBoardSoundPreference()
+    local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    label:SetPoint("LEFT", frame, "LEFT", 8, 0)
+    label:SetWidth(155)
+    label:SetJustifyH("LEFT")
+    label:SetText("Dungeon Board sound")
+
+    local value = UIH.CreateDropdown(frame, 220, 22)
+    value:SetOptions(D.Sounds.GetOptions(true))
+    value:SetArrowShown(false)
+    value:SetPoint("RIGHT", frame, "RIGHT", -5, 0)
+    value:SetSelectionCallback(function(soundKey)
+        if refreshing then return end
+        D.DungeonBoardSettings.SetSoundKey(soundKey)
+        D.DungeonBoardSettings.PreviewSound()
+        D.RequestConfigRefresh()
+    end)
+
+    frame.value = value
+    AddGeneralRow(frame, "dungeonBoardSoundKey")
+end
+
+local function AddDungeonBoardLevelOffsetPreference(svKey, labelText, kind)
+    local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    label:SetPoint("LEFT", frame, "LEFT", 8, 0)
+    label:SetWidth(190)
+    label:SetJustifyH("LEFT")
+    label:SetText(labelText)
+
+    local increase = UIH.CreateButton(frame, "+1", 44, 22)
+    increase:SetPoint("RIGHT", frame, "RIGHT", -5, 0)
+    increase:SetScript("OnClick", function()
+        if refreshing then return end
+        D.DungeonBoardSettings.AdjustLevelOffset(kind, 1)
+        D.RequestConfigRefresh()
+    end)
+
+    local value = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    value:SetPoint("RIGHT", increase, "LEFT", -4, 0)
+    value:SetWidth(44)
+    value:SetJustifyH("CENTER")
+
+    local decrease = UIH.CreateButton(frame, "-1", 44, 22)
+    decrease:SetPoint("RIGHT", value, "LEFT", -4, 0)
+    decrease:SetScript("OnClick", function()
+        if refreshing then return end
+        D.DungeonBoardSettings.AdjustLevelOffset(kind, -1)
+        D.RequestConfigRefresh()
+    end)
+
+    frame.decrease = decrease
+    frame.value = value
+    frame.increase = increase
+    AddGeneralRow(frame, svKey)
+end
+
 local function AddLowHealthThresholdPreference()
     local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
@@ -359,7 +459,7 @@ function G.Build(parent, deps)
         "IsHotTrackKnown", "IsPartyBuffKnown", "IsSavedFeatureEnabled",
         "IsSelfBuffKnown", "Print", "RequestConfigRefresh", "SetAddonEnabled",
         "SetHotTrackEnabled", "SetSavedFeature", "SetSelfBuffPreference", "Sounds",
-        "SyncVisualTicker", "Threat", "ConsumableBar",
+        "SyncVisualTicker", "Threat", "ConsumableBar", "DungeonBoardSettings",
     }) do
         assert(deps[key] ~= nil, "GeneralConfig missing dependency: " .. key)
     end
@@ -375,6 +475,7 @@ function G.Build(parent, deps)
 
     behaviorSection = UIH.CreateFormSection(form.content, form.rowWidth, "Behavior")
     alertsSection = UIH.CreateFormSection(form.content, form.rowWidth, "Alerts and reminders")
+    dungeonBoardSection = UIH.CreateFormSection(form.content, form.rowWidth, "Dungeon Board")
     displaySection = UIH.CreateFormSection(form.content, form.rowWidth, "Bar display")
     hotSection = UIH.CreateFormSection(form.content, form.rowWidth, "Tracked HoTs")
     compatibilitySection = UIH.CreateFormSection(form.content, form.rowWidth,
@@ -396,6 +497,12 @@ function G.Build(parent, deps)
     end)
     AddLowHealthThresholdPreference()
     AddLowHealthSoundPreference()
+    AddDungeonBoardFeedPreference()
+    AddDungeonBoardSoundPreference()
+    AddDungeonBoardLevelOffsetPreference(
+        "dungeonBoardLevelsBelow", "Levels below your character", "below")
+    AddDungeonBoardLevelOffsetPreference(
+        "dungeonBoardLevelsAbove", "Levels above your character", "above")
     AddCheckbox("Missing party buff icons", "partyBuffEnabled")
     AddCheckbox("Missing self-buff or aura icon", "selfBuffEnabled")
     AddSelfBuffPreference()

@@ -1,4 +1,5 @@
 local DungeonBoard = ApogeePartyHealthBars_DungeonBoardRuntime
+local GroupFinder = ApogeePartyHealthBars_DungeonBoardGroupFinder
 
 ApogeePartyHealthBars_RuntimeDungeonBoardEvents = {}
 local D = ApogeePartyHealthBars_RuntimeDungeonBoardEvents
@@ -26,6 +27,9 @@ function D.Register(eventRouter)
 
     eventRouter.Subscribe("PLAYER_LOGIN", "DungeonBoard", function()
         DungeonBoard.Initialize()
+        if ApogeePartyHealthBars_DungeonBoardFeed then
+            ApogeePartyHealthBars_DungeonBoardFeed.RestorePosition()
+        end
     end)
 
     eventRouter.Subscribe("CHAT_MSG_CHANNEL", "DungeonBoard", function(
@@ -45,4 +49,28 @@ function D.Register(eventRouter)
             text, playerName, channelName, zoneChannelID, channelIndex, channelBaseName,
             lineID, guid)
     end)
+
+    local function subscribeGroupFinderEvent(event, callback)
+        if type(eventRouter.RegisterOptional) == "function" then
+            return eventRouter.RegisterOptional(event, "DungeonBoard", callback)
+        end
+        return eventRouter.Subscribe(event, "DungeonBoard", callback)
+    end
+
+    subscribeGroupFinderEvent("LFG_LIST_SEARCH_RESULTS_RECEIVED", function()
+        GroupFinder.HandleSearchResultsReceived()
+    end)
+
+    subscribeGroupFinderEvent("LFG_LIST_UPDATE_SEARCH_RESULTS", function()
+        GroupFinder.HandleSearchResultsUpdated()
+    end)
+
+    subscribeGroupFinderEvent("LFG_LIST_SEARCH_FAILED", function(_, reason)
+        GroupFinder.HandleSearchFailed(reason)
+    end)
+
+    subscribeGroupFinderEvent("LFG_LIST_SEARCH_RESULT_UPDATED",
+        function(_, resultID)
+            GroupFinder.HandleSearchResultUpdated(resultID)
+        end)
 end

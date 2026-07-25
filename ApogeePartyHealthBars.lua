@@ -469,15 +469,79 @@ local RestorePosition = unitFrames.RestorePosition
 local ApplyBackdrop = unitFrames.ApplyBackdrop
 local ApplyPanelChrome = unitFrames.ApplyPanelChrome
 
+local function GetDungeonBoardClientFlavor()
+    local info = ApogeePartyHealthBars_ClientCapabilities.GetClientInfo()
+    return info and info.flavor or "unsupported"
+end
+
+local function GetDungeonBoardPlayerLevel()
+    return tonumber(UnitLevel and UnitLevel("player")) or 0
+end
+
+local dungeonBoardSettings = ApogeePartyHealthBars_DungeonBoardSettings
+dungeonBoardSettings.Initialize({
+    GetSavedVariables = function() return S.sv end,
+    Sounds = ApogeePartyHealthBars_Sounds,
+})
+
+local dungeonBoardGroupFinder = ApogeePartyHealthBars_DungeonBoardGroupFinder
+dungeonBoardGroupFinder.Initialize({
+    Runtime = ApogeePartyHealthBars_DungeonBoardRuntime,
+    ActivityData = ApogeePartyHealthBars_DungeonBoardActivityData,
+    Catalog = ApogeePartyHealthBars_DungeonBoardCatalog,
+    ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities,
+    Settings = dungeonBoardSettings,
+    API = {
+        Search = function(...) return C_LFGList.Search(...) end,
+        GetSearchResults = function() return C_LFGList.GetSearchResults() end,
+        GetSearchResultInfo = function(resultID)
+            return C_LFGList.GetSearchResultInfo(resultID)
+        end,
+        GetSearchResultMemberCounts = function(resultID)
+            return C_LFGList.GetSearchResultMemberCounts(resultID)
+        end,
+        GetActivityInfoTable = function(activityID)
+            return C_LFGList.GetActivityInfoTable(activityID)
+        end,
+        CanPlayerUsePremadeGroup = function()
+            return C_LFGInfo.CanPlayerUsePremadeGroup()
+        end,
+    },
+    GetClientFlavor = GetDungeonBoardClientFlavor,
+    GetPlayerLevel = GetDungeonBoardPlayerLevel,
+    Now = function() return GetTime() end,
+    HookSearch = function(callback)
+        hooksecurefunc(C_LFGList, "Search", callback)
+    end,
+})
+
+local dungeonBoardActions = ApogeePartyHealthBars_DungeonBoardActions
+
+local dungeonBoardFeed = ApogeePartyHealthBars_DungeonBoardFeed
+dungeonBoardFeed.Initialize({
+    Runtime = ApogeePartyHealthBars_DungeonBoardRuntime,
+    Settings = dungeonBoardSettings,
+    Eligibility = ApogeePartyHealthBars_DungeonBoardEligibility,
+    Catalog = ApogeePartyHealthBars_DungeonBoardCatalog,
+    Sounds = ApogeePartyHealthBars_Sounds,
+    Helpers = ApogeePartyHealthBars_UIHelpers,
+    GetPlayerLevel = GetDungeonBoardPlayerLevel,
+    Now = function() return GetTime() end,
+})
+dungeonBoardFeed.Build()
+
 dungeonBoardUI = ApogeePartyHealthBars_DungeonBoardUI.Build({
     Runtime = ApogeePartyHealthBars_DungeonBoardRuntime,
     Catalog = ApogeePartyHealthBars_DungeonBoardCatalog,
-    GetClientFlavor = function()
-        local info = ApogeePartyHealthBars_ClientCapabilities.GetClientInfo()
-        return info and info.flavor or "unsupported"
-    end,
+    Eligibility = ApogeePartyHealthBars_DungeonBoardEligibility,
+    Settings = dungeonBoardSettings,
+    GroupFinder = dungeonBoardGroupFinder,
+    Actions = dungeonBoardActions,
+    GetClientFlavor = GetDungeonBoardClientFlavor,
+    GetPlayerLevel = GetDungeonBoardPlayerLevel,
     Now = function() return GetTime() end,
     ApplyBackdrop = ApplyBackdrop,
+    Print = Print,
 })
 playerUtility.Attach(rows[1].primary, {
     ShouldShowSelfBuffIcon = ShouldShowSelfBuffIcon,
@@ -796,6 +860,7 @@ configController.Initialize({
     ProfileStore = ApogeePartyHealthBars_ProfileStore,
     DotTracker = ApogeePartyHealthBars_DotTracker,
     DotHud = ApogeePartyHealthBars_DotHud,
+    DungeonBoardFeed = dungeonBoardFeed,
     Print = Print,
 })
 ExitConfigMode = configController.Exit
@@ -855,6 +920,7 @@ configUI = ApogeePartyHealthBars_ConfigUI.Build({
         GetSavedVariables           = function() return S.sv end,
         Sounds                      = ApogeePartyHealthBars_Sounds,
         HealthAlerts                = ApogeePartyHealthBars_HealthAlerts,
+        DungeonBoardSettings        = dungeonBoardSettings,
         Threat                      = H,
         CombatUIFader               = ApogeePartyHealthBars_CombatUIFader,
         SyncVisualTicker            = SyncVisualTicker,

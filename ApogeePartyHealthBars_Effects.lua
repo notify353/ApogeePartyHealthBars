@@ -27,6 +27,15 @@ local FEATURE_DEFAULTS = {
     threatPercentEnabled = true,
     dotRemindersEnabled = true,
     dotRefreshThreshold = 3,
+    dungeonBoardRole = "healer",
+    dungeonBoardFeedEnabled = true,
+    dungeonBoardSoundKey = "none",
+    dungeonBoardLevelsBelow = 10,
+    dungeonBoardLevelsAbove = 3,
+    dungeonBoardFeedPoint = "CENTER",
+    dungeonBoardFeedRelPoint = "CENTER",
+    dungeonBoardFeedX = 0,
+    dungeonBoardFeedY = 180,
 }
 
 local function NormalizeDotThreshold(value, fallback)
@@ -34,6 +43,18 @@ local function NormalizeDotThreshold(value, fallback)
     if not value or value ~= value then value = fallback end
     value = math.max(0, math.min(30, value))
     return math.floor(value + 0.5)
+end
+
+local function NormalizeDungeonBoardLevelOffset(value, fallback)
+    value = tonumber(value)
+    if not value or value ~= value then value = fallback end
+    value = math.max(0, math.min(60, value))
+    return math.floor(value + 0.5)
+end
+
+local function NormalizeDungeonBoardRole(value)
+    if value == "tank" then return "tank" end
+    return "healer"
 end
 
 function E.InitializeSavedVariables(saved, characterSaved)
@@ -66,6 +87,12 @@ function E.InitializeSavedVariables(saved, characterSaved)
     saved.lowHealthSoundEnabled = nil
     saved.spellTrackerEnabled = nil
     saved.spellTrackerSoundsEnabled = nil
+    local dungeonBoardRole = saved.dungeonBoardRole
+    if dungeonBoardRole ~= "tank" and dungeonBoardRole ~= "healer" then
+        dungeonBoardRole = saved.dungeonBoardMode
+    end
+    saved.dungeonBoardRole = NormalizeDungeonBoardRole(dungeonBoardRole)
+    saved.dungeonBoardMode = nil
 
     for key, defaultValue in pairs(FEATURE_DEFAULTS) do
         if saved[key] == nil then
@@ -83,6 +110,10 @@ function E.InitializeSavedVariables(saved, characterSaved)
     if type(saved.dotPriority) ~= "table" then saved.dotPriority = {} end
     if type(saved.dotThresholds) ~= "table" then saved.dotThresholds = {} end
     saved.dotRefreshThreshold = NormalizeDotThreshold(saved.dotRefreshThreshold, 3)
+    saved.dungeonBoardLevelsBelow = NormalizeDungeonBoardLevelOffset(
+        saved.dungeonBoardLevelsBelow, 10)
+    saved.dungeonBoardLevelsAbove = NormalizeDungeonBoardLevelOffset(
+        saved.dungeonBoardLevelsAbove, 3)
     for key, value in pairs(saved.dotThresholds) do
         if type(key) ~= "string" or type(value) ~= "number" or value ~= value then
             saved.dotThresholds[key] = nil

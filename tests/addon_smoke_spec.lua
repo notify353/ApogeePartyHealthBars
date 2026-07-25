@@ -70,6 +70,7 @@ local function widget()
         SetText = function(self, value) self.text = value or "" end,
         GetText = function(self) return self.text or "" end,
         SetTexture = function(self, value) self.texture = value end,
+        SetColorTexture = function(self, ...) self.color = { ... } end,
         SetJustifyH = function(self, value) self.justifyH = value end,
     }
     local noopMethods = {
@@ -81,7 +82,7 @@ local function widget()
         "SetStatusBarTexture", "SetStatusBarColor", "SetMinMaxValues", "SetValue",
         "SetFontObject", "SetFont", "SetTextColor",
         "SetJustifyV", "SetWidth", "SetHeight", "SetWordWrap", "SetMaxLines",
-        "SetVertexColor", "SetColorTexture", "SetScrollChild",
+        "SetVertexColor", "SetScrollChild",
         "SetVerticalScroll", "SetMultiLine", "SetAutoFocus", "SetTextInsets",
         "SetFocus", "ClearFocus", "HighlightText", "SetChecked", "Enable", "Disable",
         "SetDesaturated", "SetCooldown", "Clear", "SetDuration", "SetFromAlpha", "SetToAlpha", "SetOrder",
@@ -343,15 +344,31 @@ assert(type(ApogeePartyHealthBars_RuntimeLifecycleEvents.Register) == "function"
     "runtime event subscriber API was not loaded")
 assert(type(ApogeePartyHealthBars_DungeonBoardRuntime.GetSnapshot) == "function",
     "Dungeon Board runtime API was not loaded")
-assert(tocLoadOrder["ApogeePartyHealthBars_DungeonBoardRuntime.lua"]
+assert(tocLoadOrder["ApogeePartyHealthBars_DungeonBoardCatalog.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardActivityData.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_DungeonBoardActivityData.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardClassifier.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_DungeonBoardClassifier.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardEligibility.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_DungeonBoardEligibility.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardRuntime.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_DungeonBoardRuntime.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardGroupFinder.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_Sounds.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardSettings.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_DungeonBoardSettings.lua"]
+        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardFeed.lua"]
+    and tocLoadOrder["ApogeePartyHealthBars_DungeonBoardFeed.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardUI.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_UIHelpers.lua"]
         < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardUI.lua"]
     and tocLoadOrder["ApogeePartyHealthBars_DungeonBoardUI.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"],
     "Dungeon Board UI loaded outside its dependency-safe order")
-assert(type(ApogeePartyHealthBars_DungeonBoardUI.Toggle) == "function",
-    "Dungeon Board UI API was not loaded")
+assert(type(ApogeePartyHealthBars_DungeonBoardUI.Toggle) == "function"
+        and type(ApogeePartyHealthBars_DungeonBoardGroupFinder.RequestRefresh) == "function"
+        and type(ApogeePartyHealthBars_DungeonBoardFeed.SetUnlocked) == "function",
+    "Dungeon Board focused APIs were not loaded")
 assert(type(ApogeePartyHealthBars_BuffReminders.RefreshKnownSpells) == "function",
     "buff-reminder runtime did not expose known-spell refresh")
 assert(type(ApogeePartyHealthBars_ShieldTracker.GetRemaining) == "function"
@@ -459,6 +476,9 @@ assert(geometry.GetRowTotalHeight("player")
 ApogeePartyHealthBars_S.configMode = true
 ApogeePartyHealthBars_S.RequestLayoutUpdate()
 RunFrameUpdates()
+assert(ApogeePartyHealthBarsPanel.configBackground:IsShown()
+        and ApogeePartyHealthBarsPanel.configBackground.color[4] == 1,
+    "Party Health configuration preview did not use its solid background")
 local positionedRows = {}
 for _, frame in ipairs(frames) do
     if frame.frameType == "Button"
@@ -484,6 +504,8 @@ end
 ApogeePartyHealthBars_S.configMode = false
 ApogeePartyHealthBars_S.RequestLayoutUpdate()
 RunFrameUpdates()
+assert(not ApogeePartyHealthBarsPanel.configBackground:IsShown(),
+    "Party Health solid configuration background leaked into normal gameplay")
 assert(wheelRuntime.GetHudCastButton("ctrlUp").shown,
     "permanent Wheel HUD did not become visible at login")
 assert(keysRuntime.GetHudCastButton("key1").shown,
@@ -846,6 +868,12 @@ assert(ApogeePartyHealthBars_S.sv.spellTrackerEnabled == nil, "retired tracker c
 assert(ApogeePartyHealthBars_S.sv.spellTrackerSoundsEnabled == nil, "retired tracker sounds checkbox state persisted")
 assert(ApogeePartyHealthBars_S.sv.lowHealthSoundEnabled == nil, "retired low-health checkbox state persisted")
 assert(ApogeePartyHealthBars_S.sv.lowHealthSoundKey == "focus", "low-health sound choice should default to Focus")
+assert(ApogeePartyHealthBars_S.sv.dungeonBoardRole == "healer"
+        and ApogeePartyHealthBars_S.sv.dungeonBoardMode == nil
+        and ApogeePartyHealthBars_S.sv.dungeonBoardFeedEnabled == true
+        and ApogeePartyHealthBars_S.sv.dungeonBoardLevelsBelow == 10
+        and ApogeePartyHealthBars_S.sv.dungeonBoardLevelsAbove == 3,
+    "Dungeon Board should default to Healer with feed alerts and its standard level window")
 assert(next(ApogeePartyHealthBars_C.SHORTCUT_CLASS_DEFAULTS) == nil,
     "Shortcut slots should start empty for every class")
 assert(ApogeePartyHealthBars_S.sv.lowHealthThreshold == 50, "low-health threshold should default to 50%")
@@ -857,6 +885,8 @@ local existingPreferences = {
     spellTrackerSoundsEnabled = false,
     lowHealthSoundKey = "alarm_bell",
     lowHealthThreshold = 65,
+    dungeonBoardMode = "tank",
+    dungeonBoardFeedEnabled = false,
 }
 ApogeePartyHealthBars_Effects.InitializeSavedVariables(existingPreferences, {})
 assert(existingPreferences.combatUIAutoHide == true, "saved combat UI fade preference was overwritten")
@@ -865,16 +895,29 @@ assert(existingPreferences.spellTrackerEnabled == nil, "saved tracker preference
 assert(existingPreferences.spellTrackerSoundsEnabled == nil, "saved tracker sounds preference was not retired")
 assert(existingPreferences.lowHealthSoundKey == "alarm_bell", "saved low-health sound choice was overwritten")
 assert(existingPreferences.lowHealthThreshold == 65, "saved low-health threshold was overwritten")
+assert(existingPreferences.dungeonBoardRole == "tank"
+        and existingPreferences.dungeonBoardMode == nil
+        and existingPreferences.dungeonBoardFeedEnabled == false,
+    "legacy Tank mode or saved mini-feed preference was not migrated correctly")
+local removedDungeonRolePreferences = { dungeonBoardMode = "both" }
+ApogeePartyHealthBars_Effects.InitializeSavedVariables(removedDungeonRolePreferences, {})
+assert(removedDungeonRolePreferences.dungeonBoardRole == "healer"
+        and removedDungeonRolePreferences.dungeonBoardMode == nil,
+    "removed Dungeon Board mode did not migrate to the Healer fallback")
 local fractionalDotPreferences = {
     dotRefreshThreshold = 4.6,
     dotThresholds = { corruption = 6.4, immolate = 30.8, invalid = 0 / 0 },
+    dungeonBoardLevelsBelow = -2,
+    dungeonBoardLevelsAbove = 90,
 }
 ApogeePartyHealthBars_Effects.InitializeSavedVariables(fractionalDotPreferences, {})
 assert(fractionalDotPreferences.dotRefreshThreshold == 5
         and fractionalDotPreferences.dotThresholds.corruption == 6
         and fractionalDotPreferences.dotThresholds.immolate == 30
-        and fractionalDotPreferences.dotThresholds.invalid == nil,
-    "DoT thresholds were not normalized to finite one-second steps")
+        and fractionalDotPreferences.dotThresholds.invalid == nil
+        and fractionalDotPreferences.dungeonBoardLevelsBelow == 0
+        and fractionalDotPreferences.dungeonBoardLevelsAbove == 60,
+    "numeric profile settings were not normalized to their supported ranges")
 local legacyCharacter = {
     shortcuts = {},
     trackedSpells = { { spellId = 9001, spellName = "Fireball", macroText = "/cast Custom Fireball" } },

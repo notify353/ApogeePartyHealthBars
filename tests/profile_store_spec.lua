@@ -24,6 +24,16 @@ ApogeePartyHealthBars_Effects = {
         if settings.automaticConsumablesEnabled == nil then
             settings.automaticConsumablesEnabled = false
         end
+        if settings.dungeonBoardFeedEnabled == nil then
+            settings.dungeonBoardFeedEnabled = true
+        end
+        local dungeonBoardRole = settings.dungeonBoardRole
+        if dungeonBoardRole ~= "tank" and dungeonBoardRole ~= "healer" then
+            dungeonBoardRole = settings.dungeonBoardMode
+        end
+        settings.dungeonBoardRole =
+            dungeonBoardRole == "tank" and "tank" or "healer"
+        settings.dungeonBoardMode = nil
         settings.schemaVersion = 5
         actions.bindings = type(actions.bindings) == "table" and actions.bindings or {}
         local legacyShortcuts = type(actions.trackedSpells) == "table" and actions.trackedSpells or nil
@@ -100,21 +110,35 @@ assert(account.enabled == false and account.profileStore == nil and character.bi
     and character.profileStore and character.profileStore.activeProfileId == active.id,
     "legacy roots were not converted to character-owned profile storage")
 
+active.payload.settings.dungeonBoardRole = "tank"
+active.payload.settings.dungeonBoardFeedEnabled = false
 local created = assert(store.Create("Clean"))
 assert(created.payload.settings.enabled
         and created.payload.settings.automaticConsumablesEnabled == false
+        and created.payload.settings.dungeonBoardRole == "healer"
+        and created.payload.settings.dungeonBoardFeedEnabled == true
         and #created.payload.actions.shortcuts == 0,
     "new profile did not start from defaults")
 local duplicate = assert(store.Duplicate(active.id, "Copy"))
+assert(duplicate.payload.settings.dungeonBoardRole == "tank"
+        and duplicate.payload.settings.dungeonBoardFeedEnabled == false,
+    "profile duplication did not retain the Dungeon Board preferences")
 duplicate.payload.settings.x = 999
 assert(duplicate.payload.actions.shortcuts[1].macroText
         == "/cast [@mouseover,help,nodead] Renew",
     "profile duplication changed custom macro text")
 duplicate.payload.actions.shortcuts[1].macroText = "/cast Duplicate Renew"
+duplicate.payload.settings.dungeonBoardRole = "healer"
 assert(active.payload.settings.x == 42
+        and active.payload.settings.dungeonBoardRole == "tank"
         and active.payload.actions.shortcuts[1].macroText
             == "/cast [@mouseover,help,nodead] Renew",
     "duplicated profile retained aliased settings or macro data")
+assert(store.SetActive(created.id)
+        and ApogeePartyHealthBars_S.sv.dungeonBoardFeedEnabled == true
+        and store.SetActive(active.id)
+        and ApogeePartyHealthBars_S.sv.dungeonBoardFeedEnabled == false,
+    "profile switching did not restore each Dungeon Board mini-feed preference")
 assert(not store.Create(" copy "), "profile names were not unique case-insensitively")
 assert(not store.Create(string.rep("x", 41)), "oversized profile name was accepted")
 assert(store.Rename(duplicate.id, "Raid"), "profile rename failed")
@@ -126,7 +150,10 @@ local imported = {
     profileName = "Shared",
     classToken = "PRIEST",
     author = "Author - Realm",
-    payload = { settings = { showAllSlots = true }, actions = { shortcuts = {
+    payload = { settings = {
+        showAllSlots = true,
+        dungeonBoardFeedEnabled = false,
+    }, actions = { shortcuts = {
         {
             kind = "spell", spellName = "Prayer of Healing",
             macroText = "/cast [mod:shift] Prayer of Healing",
@@ -135,6 +162,7 @@ local imported = {
 }
 local shared = assert(store.AddImported(imported))
 assert(shared.author == "Author - Realm" and shared.payload.settings.showAllSlots
+        and shared.payload.settings.dungeonBoardFeedEnabled == false
         and shared.payload.actions.shortcuts[1].macroText
             == "/cast [mod:shift] Prayer of Healing",
     "imported metadata or payload was not preserved")
@@ -219,6 +247,11 @@ local sanitized = store.NormalizePayload({ settings = {
     dotPriority = { "corruption", "immolate" },
     dotThresholds = { corruption = 6 },
     dotHudPoint = "CENTER", dotHudRelPoint = "CENTER", dotHudX = 12, dotHudY = 144,
+    dungeonBoardMode = "healer", dungeonBoardSoundKey = "alarm_soft",
+    dungeonBoardFeedEnabled = false,
+    dungeonBoardLevelsBelow = 12, dungeonBoardLevelsAbove = 4,
+    dungeonBoardFeedPoint = "TOP", dungeonBoardFeedRelPoint = "TOP",
+    dungeonBoardFeedX = 18, dungeonBoardFeedY = -36,
 }, actions = {} })
 assert(sanitized.settings.minimapAngle == nil,
     "non-finite minimap position survived profile normalization")
@@ -229,6 +262,16 @@ assert(sanitized.settings.dotRemindersEnabled == false
         and sanitized.settings.dotPriority[2] == "immolate"
         and sanitized.settings.dotHudY == 144,
     "DoT policy or HUD position did not survive profile normalization")
+assert(sanitized.settings.dungeonBoardRole == "healer"
+        and sanitized.settings.dungeonBoardMode == nil
+        and sanitized.settings.dungeonBoardFeedEnabled == false
+        and sanitized.settings.dungeonBoardSoundKey == "alarm_soft"
+        and sanitized.settings.dungeonBoardLevelsBelow == 12
+        and sanitized.settings.dungeonBoardLevelsAbove == 4
+        and sanitized.settings.dungeonBoardFeedPoint == "TOP"
+        and sanitized.settings.dungeonBoardFeedX == 18
+        and sanitized.settings.dungeonBoardFeedY == -36,
+    "Dungeon Board profile preferences did not survive normalization")
 
 local legacyAccount = { schemaVersion = 1, profileStore = {
     schemaVersion = 1,

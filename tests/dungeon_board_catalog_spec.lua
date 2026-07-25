@@ -44,6 +44,16 @@ for _, definition in ipairs(tbc) do
     assert(type(definition.minLevel) == "number" and type(definition.maxLevel) == "number"
         and definition.minLevel <= definition.maxLevel,
         definition.key .. " has invalid level range")
+    assert(definition.maxPlayers == 5 or definition.key == "UBRS"
+        and definition.maxPlayers == 10,
+        definition.key .. " has invalid group size")
+    if definition.expansion == "tbcAnniversary" then
+        assert(definition.heroicMinLevel == 70,
+            definition.key .. " has an invalid heroic level requirement")
+    else
+        assert(definition.heroicMinLevel == nil,
+            definition.key .. " unexpectedly allows heroic classification")
+    end
     assert(type(definition.aliases) == "table" and #definition.aliases > 0,
         definition.key .. " has no aliases")
 
@@ -69,5 +79,14 @@ local freshRfc = Catalog.GetDungeon("RFC")
 assert(freshRfc.name == "Ragefire Chasm" and freshRfc.aliases[1] == "rfc",
     "catalog callers can mutate private definitions")
 assert(Catalog.GetDungeon("UNKNOWN") == nil, "unknown dungeon key resolved unexpectedly")
+assert(Catalog.IsFivePlayer("RFC") and not Catalog.IsFivePlayer("UBRS"),
+    "five-player catalog boundary changed")
+assert(Catalog.IsLevelAppropriate("RFC", 15, false)
+        and Catalog.IsLevelAppropriate("RFC", 20, false)
+        and not Catalog.IsLevelAppropriate("RFC", 21, false)
+        and not Catalog.IsLevelAppropriate("RFC", 20, true)
+        and Catalog.IsLevelAppropriate("RAMPS", 70, true)
+        and not Catalog.IsLevelAppropriate("RAMPS", 69, true),
+    "catalog level eligibility changed")
 
 print("PASS Dungeon Board catalog")

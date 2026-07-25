@@ -93,6 +93,22 @@ Enum.Base64Variant.StandardUrlSafe = 2
 assert(capabilities.IsFeatureAvailable("profileSharing"),
     "profile codec API family was not detected")
 
+assert(not capabilities.IsFeatureAvailable("dungeonBoardOfficialListings"),
+    "missing official Group Finder APIs were accepted")
+C_LFGList = {
+    Search = noop,
+    GetSearchResults = noop,
+    GetSearchResultInfo = noop,
+    GetSearchResultMemberCounts = noop,
+    GetActivityInfoTable = noop,
+}
+C_LFGInfo = { CanPlayerUsePremadeGroup = noop }
+assert(capabilities.IsFeatureAvailable("dungeonBoardOfficialListings"),
+    "complete official Group Finder API family was not detected")
+C_LFGList.GetSearchResultMemberCounts = nil
+assert(not capabilities.IsFeatureAvailable("dungeonBoardOfficialListings"),
+    "official listing support without role counts was accepted")
+
 capabilities.RecordRuntimeFailure("Wheel", "expected failure")
 local failures = capabilities.ListRuntimeFailures()
 assert(#failures == 1 and failures[1].owner == "Wheel"

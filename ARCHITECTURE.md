@@ -6,11 +6,17 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 
 - `EventRouter`: event frame and isolated subscribers
 - `ClientCapabilities`: exact-interface `classicEra`/`tbcAnniversary` identity, volatile API-family detection, feature support, metadata fallbacks, and isolated startup diagnostics
-- `DungeonBoardCatalog`: private English Classic Era and TBC Anniversary five-player dungeon definitions, level ranges, aliases, and deterministic client-filtered order
-- `DungeonBoardClassifier`: pure request-intent, heroic, dungeon, service-noise, and ambiguous wing classification for the future Dungeon Board runtime
-- `DungeonBoardRuntime`: session-only one-record-per-sender request collection, refresh/replacement semantics, expiration, and immutable newest-first snapshots
-- `DungeonBoardUI`: read-only, session-positioned request window; highlighted leading guild section; catalog-ordered channel-request groups; one non-duplicating ambiguous/multiple group; and age/expiry refresh
-- `RuntimeDungeonBoardEvents`: authoritative `CHAT_MSG_CHANNEL`/`CHAT_MSG_GUILD` payload adaptation, direct event subscriptions, and login initialization for Dungeon Board collection
+- `DungeonBoardCatalog`: private English Classic Era and TBC Anniversary dungeon definitions, level and heroic requirements, group sizes, aliases, and deterministic client-filtered order; UBRS is the sole board-visible non-five-player exception
+- `DungeonBoardActivityData`: private client-filtered mapping from Blizzard normal/heroic five-player activity IDs to stable catalog keys
+- `DungeonBoardClassifier`: pure recruiting/joining direction, request-intent, explicit needed-role, heroic, dungeon, service-noise, and ambiguous wing classification
+- `DungeonBoardEligibility`: shared exact Tank/Healer role, active-profile level-window, activity-range, five-player, and UBRS-exception policy for the board and mini-feed
+- `DungeonBoardRuntime`: unified session-only chat, guild, and Blizzard records; one-record-per-chat-sender replacement; chat expiration; official snapshot replacement; and immutable newest-first reads
+- `DungeonBoardGroupFinder`: optional volatile-API adapter for hardware-click-only Blizzard searches, configured suggested-level-window filtering, result/role ingestion, refresh state, failures, updates, and delists
+- `DungeonBoardActions`: manual player interaction boundary for Chat-origin Who queries and empty native whisper composition without automatically sending or retaining player information
+- `DungeonBoardSettings`: profile-owned watched role, alert sound, level-window offsets, and mini-feed position
+- `DungeonBoardFeed`: display-only three-entry chat/guild opportunity feed with 30-second lifetime, final-five-second fade, material-change deduplication, guild emphasis, and throttled optional sound
+- `DungeonBoardUI`: beginner-facing request explanations, full-name and level-range presentation, labeled original slang, plain-language role controls, an opaque high-contrast panel, adaptive compact request cards, manual official refresh state, source/member presentation, highlighted guild requests, dungeon-first catalog grouping, and age refresh
+- `RuntimeDungeonBoardEvents`: authoritative chat/guild payload adaptation plus Group Finder result/failure/update routing and login initialization
 - `PlayerContext`: normalized class, race, level, active talent group/tree/ranks, form/stance, and stealth state shared by context-sensitive features
 - `RuntimeLifecycleEvents`: login/bootstrap, world and roster changes, combat transitions, and combat-log fan-out
 - `RuntimeUnitEvents`: tracked-unit aura invalidation, shield synchronization, health/power update policy, targets, threat, and raid-marker refreshes
@@ -61,6 +67,10 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `ProfileConfig`: compact profile selection, management, and copy sections plus export/import preview and confirmation workflows
 - `MacroData`, `MacroLibrary`, `MacroConfig`: generated-template and syntax documentation, immutable current-class combat recipes, unified topic validation/filtering, and read-only copy support
 
+## Dungeon Board TOC Order
+
+The data and pure-policy chain loads as `DungeonBoardCatalog` → `DungeonBoardActivityData` → `DungeonBoardClassifier` → `DungeonBoardEligibility` → `DungeonBoardRuntime` → `DungeonBoardGroupFinder` → `DungeonBoardActions`. After shared `UIHelpers` and `Sounds` are available, `DungeonBoardSettings` → `DungeonBoardFeed` → `DungeonBoardUI` load in that order. `RuntimeDungeonBoardEvents` loads with the other event subscribers, and `ApogeePartyHealthBars.lua` remains the final composition root.
+
 ## Invariants
 
 - Preserve TOC dependency order and Lua 5.1 compatibility.
@@ -68,8 +78,14 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - Prefer player and pet Spellbook discovery for expansion-specific content. Preserve unavailable saved actions and preferences so profiles remain portable between supported clients.
 - Keep saved feature preferences separate from client support; unsupported features compute an effective disabled state without rewriting portable profile intent.
 - Keep volatile client APIs inside their domain adapters and capability detection; ordinary frame construction and widget methods remain direct.
-- Keep Dungeon Board catalog and classification independent from chat events, saved variables, UI, localization, and Blizzard Group Finder APIs; the session-only runtime consumes classifier results, the event adapter alone owns chat payload knowledge, and the UI consumes only immutable runtime snapshots.
+- Keep Dungeon Board catalog, activity mapping, classification, and eligibility independent from chat events, saved variables, and UI; keep search/result ingestion inside `DungeonBoardGroupFinder`, manual native player interactions inside `DungeonBoardActions`, chat payload knowledge inside the event adapter, and UI reads on immutable runtime snapshots.
 - Give Dungeon Board service/noise classifications precedence over dungeon requests, and preserve unresolved `DM`, Dire Maul, and Scarlet Monastery candidates instead of guessing or duplicating requests.
+- Preserve the original message alongside every plain-language Dungeon Board explanation; presentation may clarify known intent and catalog facts but must not invent an unstated role or resolve ambiguous slang.
+- Call `C_LFGList.Search` only from the board Refresh button's hardware event. Official listings may update the full board but must never enter the real-time mini-feed or sound path.
+- Treat mapped Blizzard activity IDs as authoritative structured choices. Place a multi-activity official group under every selected dungeon; it must never enter the chat classifier's ambiguous/clarification presentation or a separate catch-all section.
+- Apply the active profile's inclusive level window to every full-board view, mini-feed opportunity, and official activity search. A Normal dungeon is eligible when its recommended range overlaps that window; Heroic eligibility still uses the character's actual level requirement. Keep the mini-feed limited to new, explicit-role chat/guild opportunities for eligible five-player dungeons. UBRS remains visible on the full chat board but is excluded from official searches and alerts.
+- Treat Dungeon Board choices as exact single remaining-role states: Tank excludes requests that also need a Healer, and Healer excludes requests that also need a Tank. Generic and dual-role requests remain hidden while still superseding older chat from the same sender.
+- Persist only the Dungeon Board watched role, sound choice, level-window offsets, and feed position in the active character-owned profile; requests, official results, and notification history remain session-only.
 - Treat basic unit health and frame construction as the required baseline while aura, range, prediction, threat, markers, assignment, bindings, state layouts, and profile sharing degrade independently.
 - Never mutate secure attributes, position, visibility, or mouse state during combat.
 - Keep every displayed unit inside `UnitTopology`; event routing, trackers, and layout must not grow independent token-pattern rules.

@@ -2,10 +2,11 @@
 
 ## LFG Bulletin Board
 
-The English Dungeon Board dungeon aliases and chat-classification vocabulary are
-derived from LFG Bulletin Board version 3.51. The imported data was normalized
-for Apogee Party Health Bars and excludes the upstream runtime, interface,
-localization system, custom categories, and Group Finder implementation.
+The English Dungeon Board dungeon aliases, chat-classification vocabulary, and
+Classic/TBC Blizzard activity-ID mapping are derived from LFG Bulletin Board
+version 3.51. The imported data was normalized for Apogee Party Health Bars and
+excludes the upstream runtime, interface, localization system, custom
+categories, and Group Finder implementation.
 
 ### MIT-licensed portions
 

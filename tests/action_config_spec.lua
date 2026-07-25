@@ -79,7 +79,8 @@ config.Initialize(widget(), function() end)
 
 local list = config.CreateActionList(widget(), "TestActionList")
 assert(list.scroll.template == "UIPanelScrollFrameTemplate" and list.rowWidth == 372
-        and list.hint:GetText() == "Drag a spell or bag item onto a row."
+        and list.hint:GetText()
+            == "Drop spell/item on a row. Shift-drop preserves spell rank."
         and not list.scroll.ScrollBar:IsShown(),
     "shared action list did not create the compact native-scroll scaffold")
 local actionRow = config.CreateActionRow(list.content, list.rowWidth)

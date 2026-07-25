@@ -322,7 +322,12 @@ local function CreateIcon(parent)
         local info = button.shortcutInfo
         if not info then return end
         local showTooltip = info.kind == "item" and UIH.ShowItemTooltip or UIH.ShowSpellTooltip
-        local contextLines = {}
+        local contextLines = {
+            {
+                text = "Drop a spell for highest rank; Shift-drop for this rank",
+                r = 1, g = 0.82, b = 0,
+            },
+        }
         local controlLabel = CrowdControl.GetControlLabel(info.crowdControl)
         if controlLabel then
             contextLines[#contextLines + 1] = {
@@ -359,7 +364,9 @@ local function CreateDropIcon(parent)
     button:SetScript("OnEnter", function(self)
         if not GameTooltip then return end
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText("Drop a Spellbook spell or usable bag item", 1, 0.82, 0)
+        GameTooltip:SetText("Drop a spell for highest rank", 1, 0.82, 0)
+        GameTooltip:AddLine("Shift-drop to preserve the selected rank", 0.8, 0.8, 0.8)
+        GameTooltip:AddLine("Usable bag items can also be dropped here", 0.8, 0.8, 0.8)
         GameTooltip:Show()
     end)
     button:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)

@@ -100,7 +100,7 @@ local function ResolveSpellBookSlotSpell(slot, spellBank)
     return nil, nil
 end
 
-local function GetSpellFromCursor(slot, bookType, cursorSpellID)
+local function GetSpellFromCursor(slot, bookType, cursorSpellID, preserveRank)
     if ClientCapabilities
         and not ClientCapabilities.IsFeatureAvailable("spellAssignment") then
         return nil, nil
@@ -112,6 +112,14 @@ local function GetSpellFromCursor(slot, bookType, cursorSpellID)
     if type(cursorSpellID) == "number" and cursorSpellID > 0 then
         spellID = cursorSpellID
         if not castName then castName = GetSpellNameById(cursorSpellID) end
+    end
+    if not preserveRank and castName then
+        local baseName
+        if tonumber(slot) then
+            local _, resolvedBaseName = GetSpellBookCastNameFromSlot(tonumber(slot), spellBank)
+            baseName = resolvedBaseName
+        end
+        castName = baseName or GetSpellNameById(spellID) or castName
     end
     return spellID, castName
 end

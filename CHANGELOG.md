@@ -20,6 +20,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Every new Warrior spell macro now starts attacking the current target, including stances, shouts, interrupts, Charge, and defensive abilities; reviewed melee families for other classes retain narrower coverage, and standalone Attack plus ranged auto-attacks retain conditional enemy acquisition.
+- New spell assignments now cast the highest learned rank by default across Healing, Shortcuts, Keys, Wheel, and Buttons; hold Shift while dropping a spell to preserve its selected Spellbook rank.
 - Keys, Wheel, and Buttons now show the current stance or form as a read-only configuration label and edit only that state; state changes remain under the player's normal WoW controls.
 - Automatic consumable buttons are now enabled by default for new profiles, and the General setting has been renamed from "Automatic consumables HUD beside Buttons."
 - Compacted Cleanse Watch so three debuff categories now fit within the previous two-category height while retaining complete adaptive-size descriptions, Ignore actions, and fixed bottom cleanse buttons.

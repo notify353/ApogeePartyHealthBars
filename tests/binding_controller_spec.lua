@@ -53,10 +53,12 @@ ApogeePartyHealthBars_ShortcutItems = {
 local inCombat = false
 function InCombatLockdown() return inCombat end
 local cursorInfo, clearedCursorCount = nil, 0
+local shiftDown = false
 function GetCursorInfo()
     if not cursorInfo then return nil end
     return cursorInfo[1], cursorInfo[2], cursorInfo[3], cursorInfo[4]
 end
+function IsShiftKeyDown() return shiftDown end
 function ClearCursor()
     cursorInfo = nil
     clearedCursorCount = clearedCursorCount + 1
@@ -88,9 +90,9 @@ controller.Initialize({
     ForceRefresh = function() refreshes = refreshes + 1 end,
     Print = function() end,
     SyncVisualTicker = function() end,
-    GetSpellFromCursor = function(slot, bookType, spellId)
+    GetSpellFromCursor = function(slot, bookType, spellId, preserveRank)
         assert(slot == 7 and bookType == "spell" and spellId == 133)
-        return 133, "Fireball(Rank 1)"
+        return 133, preserveRank and "Fireball(Rank 1)" or "Fireball"
     end,
     GetConfigUI = function()
         return {
@@ -107,12 +109,20 @@ assert(controller.HookSpellbook == nil and controller.HookContainerItems == nil,
 cursorInfo = { "spell", 7, "spell", 133 }
 assert(controller.AssignCursor("keys", "keyR", "base")
     and assignedKeySpell.layout == "base" and assignedKeySpell.slot == "keyR"
-    and assignedKeySpell.spellId == 133 and assignedKeySpell.spellName == "Fireball(Rank 1)",
-    "spell cursor did not assign directly to a Keys destination")
+    and assignedKeySpell.spellId == 133 and assignedKeySpell.spellName == "Fireball",
+    "ordinary spell cursor did not assign the highest-rank name to Keys")
 assert(refreshedKeySlot == "keyR",
     "Keys spell drop did not refresh its destination")
 assert(clearedCursorCount == 1 and cursorInfo == nil,
     "successful spell drop did not clear the cursor")
+
+shiftDown = 1
+cursorInfo = { "spell", 7, "spell", 133 }
+assert(controller.AssignCursor("keys", "keyG", "base")
+    and assignedKeySpell.spellId == 133
+    and assignedKeySpell.spellName == "Fireball(Rank 1)",
+    "Shift-drop did not preserve the selected spell rank")
+shiftDown = false
 
 cursorInfo = { "item", 1251 }
 assert(controller.AssignCursor("keys", "keyG", "removed-layout")

@@ -52,7 +52,8 @@ function ApogeePartyHealthBars_ActionConfig.CreateActionList()
     actionList = {
         content = widget(), hint = widget(), status = widget(), scroll = widget(), rowWidth = 372,
     }
-    actionList.hint:SetText("Drag a spell or bag item onto a row.")
+    actionList.hint:SetText(
+        "Drop spell/item on a row. Shift-drop preserves spell rank.")
     return actionList
 end
 function ApogeePartyHealthBars_ActionConfig.CreateActionRow()
@@ -160,7 +161,8 @@ local rows = config.GetRows()
 assert(#createdRows == 15 and #actionList.visibleRows == 15
         and actionList.layoutControl:GetText() == "Current state: Base",
     "Keys did not expose all 15 destinations through the shared scroll list")
-assert(actionList.hint:GetText() == "Drag a spell or bag item onto a row.",
+assert(actionList.hint:GetText()
+        == "Drop spell/item on a row. Shift-drop preserves spell rank.",
     "Keys did not use the shared minimal instruction")
 assert(rows.key1.primary:GetText() == "Fireball"
         and rows.key1.secondary:GetText() == "Key 1 — Spell"

@@ -178,7 +178,9 @@ function B.AssignCursor(feature, slot, layoutKey)
             D.Print(D.ClientCapabilities.GetFeatureReason("spellAssignment"))
             return false
         end
-        local spellID, spellName = D.GetSpellFromCursor(cursorValue, bookType, cursorSpellID)
+        local preserveRank = type(IsShiftKeyDown) == "function" and not not IsShiftKeyDown()
+        local spellID, spellName = D.GetSpellFromCursor(
+            cursorValue, bookType, cursorSpellID, preserveRank)
         if not spellID and not spellName then
             D.Print("could not read that spell — try dragging it again.")
             return false

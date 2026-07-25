@@ -47,7 +47,8 @@ function ApogeePartyHealthBars_ActionConfig.CreateActionList()
     actionList = {
         content = widget(), hint = widget(), status = widget(), scroll = widget(), rowWidth = 372,
     }
-    actionList.hint:SetText("Drag a spell or bag item onto a row.")
+    actionList.hint:SetText(
+        "Drop spell/item on a row. Shift-drop preserves spell rank.")
     return actionList
 end
 function ApogeePartyHealthBars_ActionConfig.CreateActionRow()
@@ -130,7 +131,8 @@ assert(#rows == 12 and #actionList.visibleRows == 3
         and rows[1]:IsShown() and rows[2]:IsShown() and rows[3]:IsShown()
         and not rows[4]:IsShown(),
     "Shortcuts did not show assigned rows plus exactly one empty add row")
-assert(actionList.hint:GetText() == "Drag a spell or bag item onto a row.",
+assert(actionList.hint:GetText()
+        == "Drop spell/item on a row. Shift-drop preserves spell rank.",
     "Shortcuts did not use the shared minimal instruction")
 assert(rows[1].secondary:GetText() == "Shortcut 1 — Spell"
         and rows[2].secondary:GetText() == "Shortcut 2 — Item"

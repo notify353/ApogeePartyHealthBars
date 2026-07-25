@@ -401,11 +401,11 @@ local dotHudAnchor = ApogeePartyHealthBars_DotHud.GetAnchor()
 assert(dotHudAnchor and dotHudAnchor.frameType == "Frame" and dotHudAnchor.template == nil
         and dotHudAnchor.scripts.OnClick == nil,
     "DoT reminder HUD was not created as a passive non-secure frame")
-assert(ApogeePartyHealthBarsPanel.point[1] == "RIGHT"
-        and ApogeePartyHealthBarsPanel.point[3] == "RIGHT"
-        and ApogeePartyHealthBarsPanel.point[4] == -8
-        and ApogeePartyHealthBarsPanel.point[5] == -24,
-    "party bars did not use the right-side non-overlapping default")
+assert(ApogeePartyHealthBarsPanel.point[1] == "TOPRIGHT"
+        and ApogeePartyHealthBarsPanel.point[3] == "TOPRIGHT"
+        and ApogeePartyHealthBarsPanel.point[4] == 0
+        and ApogeePartyHealthBarsPanel.point[5] == -252,
+    "party bars did not default flush right beneath the debuff preview")
 assert(ApogeePartyHealthBarsBindPanel.point[1] == "CENTER"
         and ApogeePartyHealthBarsBindPanel.point[3] == "CENTER"
         and ApogeePartyHealthBarsBindPanel.point[4] == -96
@@ -491,6 +491,9 @@ RunFrameUpdates()
 assert(ApogeePartyHealthBars_ConfigSurfaces.Get("party").chrome.foundation:IsShown()
         and ApogeePartyHealthBars_ConfigSurfaces.Get("party").chrome.foundation.color[4] == 1,
     "Party Health configuration preview did not use its solid background")
+assert(ApogeePartyHealthBars_ConfigSurfaces.Get("party").chrome.header == nil
+        and ApogeePartyHealthBars_ConfigSurfaces.Get("party").chrome.accent == nil,
+    "Party Health configuration preview retained its empty header chrome")
 local positionedRows = {}
 for _, frame in ipairs(frames) do
     if frame.frameType == "Button"
@@ -765,15 +768,16 @@ for _, key in ipairs(expectedConfigSurfaceKeys) do
             and surface.chrome.foundation.color[3] == 0
             and surface.chrome.foundation.color[4] == 1,
         "configuration surface lacked an opaque black foundation: " .. key)
-    assert(surface.frame.topLevel and surface.frame.frameStrata == "MEDIUM",
+    assert(surface.frame.topLevel and surface.frame.frameStrata == "DIALOG",
         "configuration surface did not join native active-window stacking: " .. key)
 end
-assert(configSurfaces.Get("dot").chrome.title:IsShown()
-        and configSurfaces.Get("feed").chrome.title:IsShown(),
-    "labeled compact configuration anchors did not expose their chrome")
+assert(configSurfaces.Get("dot").chrome.title:IsShown(),
+    "labeled DoT configuration anchor did not expose its chrome")
 assert(configSurfaces.Get("cleanse").chrome.title == nil
-        and configSurfaces.Get("cleanse").chrome.header == nil,
-    "headerless Cleanse Watch recreated configuration header chrome")
+        and configSurfaces.Get("cleanse").chrome.header == nil
+        and configSurfaces.Get("feed").chrome.title == nil
+        and configSurfaces.Get("feed").chrome.header == nil,
+    "a lean configuration preview recreated header chrome")
 assert(ApogeePartyHealthBars_ConfigUI.factoryResetButton,
     "General settings did not create the factory reset control")
 assert(ApogeePartyHealthBars_ConfigUI.factoryResetButton
@@ -939,7 +943,7 @@ assert(existingPreferences.lowHealthThreshold == 65, "saved low-health threshold
 assert(existingPreferences.dungeonBoardRole == "tank"
         and existingPreferences.dungeonBoardMode == nil
         and existingPreferences.dungeonBoardFeedEnabled == false,
-    "legacy Tank mode or saved mini-feed preference was not migrated correctly")
+    "legacy Tank mode or saved LFG Alerts preference was not migrated correctly")
 local removedDungeonRolePreferences = { dungeonBoardMode = "both" }
 ApogeePartyHealthBars_Effects.InitializeSavedVariables(removedDungeonRolePreferences, {})
 assert(removedDungeonRolePreferences.dungeonBoardRole == "healer"

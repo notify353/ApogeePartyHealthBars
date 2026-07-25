@@ -8,18 +8,30 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
+- Added an in-window Dungeon Board control for showing or hiding LFG Alerts and their configured sound.
+- Added level-window controls to the full Dungeon Board so its levels-below and levels-above profile settings can be adjusted without opening configuration.
+- Added position resets for LFG Alerts and Dungeon Board under General → Positions.
+- Added compact Who and Whisper actions to real LFG Alert cards; configuration previews show the same actions disabled.
 - Added a session-only Ignore action to Cleanse Watch debuff cards; ignored debuffs remain hidden for every party member until `/reload` and are never saved to profiles.
 - Added a movable, profile-owned Cleanse Watch that discovers learned player and pet cleansing spells, groups active Magic, Curse, Disease, and Poison effects with their Blizzard descriptions shown inline, exposes combat-safe cleanse buttons only for affected members, and previews representative real-game debuffs while configuring its position.
 - Added profile-specific player-name mention alerts across social chat, with a configurable sound and optional in-message highlighting.
 - Added a lean, English-only Dungeon Board window for recent Classic Era and TBC Anniversary dungeon requests from joined chat channels and guild chat. Guild requests remain prominently green inside their dungeon sections. Open it with middle-click on the minimap button or `/aphb board`; requests remain session-only and expire automatically.
 - Added mutually exclusive Need Tank and Need Healer views that also select the always-active live watch role. Each requires the opposite support role to be covered; generic requests and groups needing both support roles are excluded. The role is saved per active character profile and defaults to Need Healer.
-- Added a movable, display-only three-entry mini-feed for new five-player chat and guild opportunities, with a compact one-line idle status, two-line alerts, 30-second expiry, guild emphasis, an optional profile sound that defaults to None, and unobtrusive deduplication and throttling. A per-profile General setting can hide and silence the feed without disabling the full board.
+- Added movable, display-only three-entry LFG Alerts for new five-player chat and guild opportunities, with a compact one-line idle status, two-line alerts, 30-second expiry, guild emphasis, an optional profile sound that defaults to None, and unobtrusive deduplication and throttling. A per-profile General setting can hide and silence LFG Alerts without disabling the full board.
 - Added manual Blizzard Group Finder refresh to the full board for level-appropriate normal and heroic five-player listings. Official results show source/member details, never trigger alerts, and remain snapshots until another user or add-on search completes.
 - Presented Dungeon Board opportunities in a fixed 540×380 window with full dungeon names, level ranges, compact source/member details, one-line chat or note previews, and complete hover text. Heroic and ambiguous requests remain clearly marked without repeated role or dungeon wording.
 - Added compact icon actions for Who and Whisper to every Dungeon Board request. Who returns Blizzard's native lookup in chat, while Whisper opens an empty composer and never sends automatically.
 
 ### Changed
 
+- Made LFG Alerts hide while idle during normal gameplay and show a representative preview alert for positioning while add-on Settings is open.
+- Removed the LFG Alerts header strip so runtime alerts and configuration previews use only the compact alert cards.
+- Centered the default LFG Alerts position on screen and moved the profile-owned Dungeon Board default to the horizontal center along the top edge.
+- Kept LFG Alerts in normal gameplay mode while the full Dungeon Board is open; only add-on Settings exposes its preview and drag behavior.
+- Removed the Party Health header, yellow divider, and reserved header space from the configuration preview.
+- Moved the default and Reset Bars position flush to the upper-right, directly beneath the default Cleanse Watch preview.
+- Kept Cleanse Watch and the other configuration previews above Blizzard action-bar buttons while settings are open.
+- Simplified Keys, Wheel, Buttons, Shortcuts, and Automatic Consumables hover details to Blizzard's native spell and item tooltips, keeping assignment guidance in configuration and on the empty Spellbook drop target.
 - Every new Warrior spell macro now starts attacking the current target, including stances, shouts, interrupts, Charge, and defensive abilities; reviewed melee families for other classes retain narrower coverage, and standalone Attack plus ranged auto-attacks retain conditional enemy acquisition.
 - New spell assignments now cast the highest learned rank by default across Healing, Shortcuts, Keys, Wheel, and Buttons; hold Shift while dropping a spell to preserve its selected Spellbook rank.
 - Keys, Wheel, and Buttons now show the current stance or form as a read-only configuration label and edit only that state; state changes remain under the player's normal WoW controls.
@@ -27,10 +39,11 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 - Compacted Cleanse Watch so three debuff categories now fit within the previous two-category height while retaining complete adaptive-size descriptions, Ignore actions, and fixed bottom cleanse buttons.
 - Cleanse Watch now hides clean debuff categories during normal gameplay while retaining complete category previews in configuration mode.
 - Cleanse Watch now defaults and resets flush against the top-right of the screen.
-- Rebuilt configuration-mode presentation around shared opaque-black panel chrome, compact labeled anchors, and click-to-front window stacking for settings, Party Health, DoT reminders, and the Dungeon Board mini-feed. Windows remain freely positionable and normal gameplay surfaces retain their existing appearance.
+- Rebuilt configuration-mode presentation around shared opaque-black panel chrome, compact labeled anchors, and click-to-front window stacking for settings, Party Health, DoT reminders, and LFG Alerts. Windows remain freely positionable and normal gameplay surfaces retain their existing appearance.
 
 ### Fixed
 
+- Kept stale or unavailable spell and item assignments informative by falling back to their stored names when Blizzard cannot build a native tooltip.
 - Made new profiles and character resets initialize Cleanse Watch at its intended flush top-right default instead of the obsolete centered position.
 - Prevented inactive Cleanse Watch slots from casting invisible cleanse actions when clicked.
 - Corrected Classic Era client detection and TOC metadata to live interface `11509`, allowing Dungeon Board to classify requests instead of rejecting every message as unsupported.
@@ -39,9 +52,9 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 - Fixed official Group Finder groups with multiple selected dungeons being mislabeled as unclear chat slang; they now appear under every selected dungeon and show a clear group-note label.
 - Made the entire Dungeon Board, including its header, fully opaque and retuned section, card, tab, and supporting-text colors for clear contrast on the solid background.
 - Made the full Dungeon Board participate in the same click-to-front stacking behavior as the configuration surfaces.
-- Kept the enabled mini-feed visible with a plain-language watching state, and allowed matching reposts first seen under the other watched role to be reconsidered without producing duplicate alerts.
+- Allowed matching reposts first seen under the other watched role to be reconsidered without producing duplicate alerts.
 - Sorted every Dungeon Board view by the latest update so the newest dungeon sections and requests appear at the top.
-- Applied an active-profile dungeon level window to every Dungeon Board view, mini-feed opportunity, and official refresh. It defaults to 10 levels below through 3 above the character, is adjustable under General → Dungeon Board, appears at the top of the board, and never bypasses the character's actual Heroic requirement.
+- Applied an active-profile dungeon level window to every Dungeon Board view, LFG Alert opportunity, and official refresh. It defaults to 10 levels below through 3 above the character, is adjustable under General → Dungeon Board, appears at the top of the board, and never bypasses the character's actual Heroic requirement.
 - Made the main settings window and Party Health configuration preview fully opaque for the same clear contrast as Dungeon Board.
 
 ## [0.44.0] - 2026-07-21

@@ -150,7 +150,7 @@ assert(store.SetActive(created.id)
         and ApogeePartyHealthBars_S.sv.dungeonBoardFeedEnabled == true
         and store.SetActive(active.id)
         and ApogeePartyHealthBars_S.sv.dungeonBoardFeedEnabled == false,
-    "profile switching did not restore each Dungeon Board mini-feed preference")
+    "profile switching did not restore each LFG Alerts preference")
 assert(not store.Create(" copy "), "profile names were not unique case-insensitively")
 assert(not store.Create(string.rep("x", 41)), "oversized profile name was accepted")
 assert(store.Rename(duplicate.id, "Raid"), "profile rename failed")

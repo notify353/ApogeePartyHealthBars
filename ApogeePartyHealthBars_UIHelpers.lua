@@ -113,6 +113,27 @@ end
 
 -- Keep spell-icon tooltips compact and consistent without modifying Blizzard's
 -- shared tooltip frame styling or protected UI state.
+local function showNativeTooltip(anchor, identifier, title, setterName, fallbackTitle)
+    if not GameTooltip then return end
+    if GameTooltip.ClearLines then GameTooltip:ClearLines() end
+    GameTooltip:SetOwner(anchor, "ANCHOR_TOP")
+    local setter = GameTooltip[setterName]
+    local rendered = identifier and setter
+        and setter(GameTooltip, identifier) == true
+    if not rendered then
+        GameTooltip:SetText(title or fallbackTitle, 1, 0.82, 0.15)
+    end
+    GameTooltip:Show()
+end
+
+function H.ShowNativeSpellTooltip(anchor, spellId, title)
+    showNativeTooltip(anchor, spellId, title, "SetSpellByID", "Spell")
+end
+
+function H.ShowNativeItemTooltip(anchor, itemId, title)
+    showNativeTooltip(anchor, itemId, title, "SetItemByID", "Item")
+end
+
 function H.ShowSpellTooltip(anchor, spellId, title, stateLabel, reason, contextLines)
     if not GameTooltip then return end
     if GameTooltip.ClearLines then GameTooltip:ClearLines() end

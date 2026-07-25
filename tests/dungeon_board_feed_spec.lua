@@ -18,7 +18,7 @@ local function widget(parent, name)
     end
     function value:ClearAllPoints() self.point = nil end
     function value:GetPoint()
-        local point = self.point or { "CENTER", UIParent, "CENTER", 0, 180 }
+        local point = self.point or { "CENTER", UIParent, "CENTER", 0, 0 }
         return unpack(point)
     end
     function value:CreateTexture()
@@ -26,6 +26,8 @@ local function widget(parent, name)
         self.children[#self.children + 1] = child
         function child:SetAllPoints() end
         function child:SetColorTexture(...) self.color = { ... } end
+        function child:SetTexture(texture) self.texture = texture end
+        function child:SetVertexColor(...) self.vertexColor = { ... } end
         return child
     end
     function value:CreateFontString()
@@ -42,6 +44,8 @@ local function widget(parent, name)
     function value:Hide() self.shown = false end
     function value:SetAlpha(alpha) self.alpha = alpha end
     function value:EnableMouse(enabled) self.mouseEnabled = enabled end
+    function value:Enable() self.enabled = true end
+    function value:Disable() self.enabled = false end
     function value:RegisterForDrag() end
     function value:StartMoving() end
     function value:StopMovingOrSizing() end
@@ -63,16 +67,14 @@ local role = "healer"
 local feedEnabled = false
 local soundKey = "none"
 local played = {}
+local actionCalls = {}
 local opportunityCallback
 local settingsListener
 local configActive = false
-local configTitle, configTitleShown
 local savedFeedPosition
 local configSurface = {
     Register = function() end,
     SetSurfaceChromeShown = function(_, value) configActive = value == true end,
-    SetTitle = function(_, value) configTitle = value end,
-    SetTitleShown = function(_, value) configTitleShown = value == true end,
 }
 
 Feed.Initialize({
@@ -88,7 +90,7 @@ Feed.Initialize({
                 level, levelsBelow, levelsAbove)
         end,
         Subscribe = function(callback) settingsListener = callback end,
-        GetFeedPosition = function() return "CENTER", "CENTER", 0, 180 end,
+        GetFeedPosition = function() return "CENTER", "CENTER", 0, 0 end,
         SetFeedPosition = function(...)
             savedFeedPosition = { ... }
         end,
@@ -103,53 +105,63 @@ Feed.Initialize({
     },
     Helpers = { EscapeText = tostring },
     ConfigSurfaces = configSurface,
+    Actions = {
+        CanQueryWho = function(name) return name ~= nil, "Who unavailable." end,
+        QueryWho = function(name)
+            actionCalls[#actionCalls + 1] = "who:" .. name
+            return true
+        end,
+        CanWhisper = function(name) return name ~= nil, "Whisper unavailable." end,
+        OpenWhisper = function(name)
+            actionCalls[#actionCalls + 1] = "whisper:" .. name
+            return true
+        end,
+    },
     GetPlayerLevel = function() return playerLevel end,
     Now = function() return now end,
 })
 Feed.Build()
 
 assert(type(opportunityCallback) == "function" and type(settingsListener) == "function",
-    "mini-feed did not attach to live chat and settings changes")
+    "LFG Alerts did not attach to live chat and settings changes")
 local feedFrame = ApogeePartyHealthBarsDungeonBoardFeed
 local firstRow = createdFrames[2]
-local statusLabel = feedFrame.children[2]
-assert(not feedFrame.shown and feedFrame.width == 340 and feedFrame.height == 24
-        and not firstRow.shown
-        and statusLabel.text:find("alerts off", 1, true),
-    "profile-disabled mini-feed did not begin hidden")
+assert(not feedFrame.shown and feedFrame.width == 340 and feedFrame.height == 34
+        and not firstRow.shown,
+    "profile-disabled LFG Alerts did not begin hidden")
 Feed.SetUnlocked(true)
 assert(Feed.IsUnlocked() and feedFrame.mouseEnabled
-        and feedFrame.shown and configActive and configTitleShown
-        and not statusLabel.shown
-        and configTitle:find("alerts off", 1, true),
-    "disabled mini-feed did not expose its drag anchor in configuration mode")
+        and feedFrame.shown and configActive
+        and feedFrame.height == 34 and firstRow.shown
+        and firstRow.title.text:find("PREVIEW", 1, true)
+        and firstRow.detail.text
+            == "ExamplePlayer  •  LFM Wailing Caverns - need healer"
+        and not firstRow.who.enabled and not firstRow.whisper.enabled,
+    "disabled LFG Alerts did not expose its example and drag anchor")
 feedFrame.scripts.OnDragStop(feedFrame)
 assert(savedFeedPosition and savedFeedPosition[1] == "CENTER"
         and savedFeedPosition[2] == "CENTER"
-        and savedFeedPosition[3] == 0 and savedFeedPosition[4] == 180,
-    "mini-feed drag stop did not preserve the released position directly")
+        and savedFeedPosition[3] == 0 and savedFeedPosition[4] == 0,
+    "LFG Alerts drag stop did not preserve the released position directly")
 Feed.SetUnlocked(false)
-assert(not feedFrame.shown and not configActive and not configTitleShown and statusLabel.shown,
-    "disabled mini-feed remained visible after configuration mode closed")
+assert(not feedFrame.shown and not configActive and not firstRow.shown,
+    "disabled LFG Alerts remained visible after configuration mode closed")
 feedEnabled = true
 settingsListener("feedEnabled")
-assert(feedFrame.shown and feedFrame.height == 24 and not firstRow.shown
-        and statusLabel.text:find("Watching Healer", 1, true)
-        and statusLabel.text:find("Lv 10-23", 1, true),
-    "enabling the mini-feed did not begin in the compact Healer watch state")
+assert(not feedFrame.shown and feedFrame.height == 34 and not firstRow.shown,
+    "enabled idle LFG Alerts did not remain hidden")
 Feed.SetUnlocked(true)
-assert(configActive and configTitleShown and not statusLabel.shown,
-    "empty enabled mini-feed did not expose its drag anchor in configuration mode")
+assert(configActive and feedFrame.shown and firstRow.shown
+        and firstRow.title.text:find("PREVIEW", 1, true),
+    "empty enabled LFG Alerts did not expose its preview and drag anchor")
 Feed.SetUnlocked(false)
-assert(not configActive and not configTitleShown and statusLabel.shown,
-    "enabled mini-feed drag anchor remained visible after configuration mode closed")
+assert(not configActive and not feedFrame.shown,
+    "enabled LFG Alerts drag anchor remained visible after configuration mode closed")
 role = "tank"
 settingsListener("role")
 Feed.RestorePosition()
-assert(feedFrame.shown and feedFrame.height == 24 and not firstRow.shown
-        and statusLabel.text:find("Watching Tank", 1, true)
-        and statusLabel.text:find("Lv 10-23", 1, true),
-    "PLAYER_LOGIN restore left the compact Tank watch blank or misleading")
+assert(not feedFrame.shown and feedFrame.height == 34 and not firstRow.shown,
+    "PLAYER_LOGIN restore made idle LFG Alerts visible")
 
 local function opportunity(id, source, key, roles)
     local neededRoles = roles or { "tank" }
@@ -168,13 +180,22 @@ end
 opportunityCallback(opportunity("one"))
 assert(#Feed.GetEntries() == 1 and played[1] == "none",
     "eligible live chat opportunity did not enter the feed silently by default")
-assert(feedFrame.height == 58 and firstRow.shown,
-    "single mini-feed opportunity did not use the compact active height")
+assert(feedFrame.height == 34 and firstRow.shown,
+    "single LFG Alert opportunity did not use the compact active height")
 assert(firstRow.title.text:find("|cff8aa4bdCHAT|r", 1, true)
         and firstRow.title.text:find("Wailing Caverns • 17-25", 1, true),
-    "compact mini-feed title did not show source, full dungeon, and range")
+    "compact LFG Alert title did not show source, full dungeon, and range")
 assert(firstRow.detail.text == "one  •  Need tank",
-    "compact mini-feed preview did not show sender and original chat")
+    "compact LFG Alert preview did not show sender and original chat")
+assert(firstRow.who.enabled and firstRow.whisper.enabled
+        and firstRow.who.icon.texture == "Interface\\Common\\UI-Searchbox-Icon"
+        and firstRow.whisper.icon.texture
+            == "Interface\\ChatFrame\\UI-ChatIcon-Chat-Up",
+    "real LFG Alert did not expose compact Who and Whisper actions")
+firstRow.who.scripts.OnClick()
+firstRow.whisper.scripts.OnClick()
+assert(actionCalls[1] == "who:one" and actionCalls[2] == "whisper:one",
+    "LFG Alert actions did not preserve the requesting player")
 
 soundKey = "alarm_soft"
 now = 1
@@ -184,17 +205,17 @@ assert(#Feed.GetEntries() == 2 and #played == 2 and played[2] == "alarm_soft",
 
 now = 2
 opportunityCallback(opportunity("three"))
-assert(#played == 2, "mini-feed sound was not throttled")
+assert(#played == 2, "LFG Alerts sound was not throttled")
 now = 4
 opportunityCallback(opportunity("four"))
 local entries = Feed.GetEntries()
 assert(#entries == 3 and entries[1].id == "four" and entries[3].id == "two"
-        and #played == 3 and feedFrame.height == 130,
+        and #played == 3 and feedFrame.height == 106,
     "newest-three ordering or sound throttle recovery changed")
 assert(Feed.GetEntryAlpha(entries[1], 28) == 1
         and Feed.GetEntryAlpha(entries[1], 31.5) == 0.5
         and Feed.GetEntryAlpha(entries[1], 34) == 0,
-    "mini-feed final-five-second fade changed")
+    "LFG Alerts final-five-second fade changed")
 
 assert(not Feed.IngestOpportunity(opportunity("official", "blizzard"), 5),
     "official listing entered the real-time feed")
@@ -222,9 +243,8 @@ role = "healer"
 settingsListener("role")
 assert(#Feed.GetEntries() == 0,
     "switching watched role replayed or retained prior opportunities")
-assert(feedFrame.shown and feedFrame.height == 24 and not firstRow.shown
-        and statusLabel.text:find("Watching Healer", 1, true),
-    "Healer watch did not render its compact idle state")
+assert(not feedFrame.shown and feedFrame.height == 34 and not firstRow.shown,
+    "switching roles made idle LFG Alerts visible")
 assert(Feed.IngestOpportunity(deferred, 41)
         and not Feed.IngestOpportunity(deferred, 42),
     "a repost first seen under the other role was lost or re-alerted twice")
@@ -235,11 +255,10 @@ assert(not Feed.IngestOpportunity(
     "both-role opportunity entered the Healer-only feed")
 playerLevel, levelsBelow, levelsAbove = 26, 0, 0
 settingsListener("levelRange")
-assert(#Feed.GetEntries() == 0
-        and statusLabel.text:find("Lv 26-26", 1, true),
-    "changing the profile level window did not prune or refresh the mini-feed")
-assert(feedFrame.shown,
-    "always-active mini-feed disappeared after its current entries were filtered")
+assert(#Feed.GetEntries() == 0,
+    "changing the profile level window did not prune or refresh LFG Alerts")
+assert(not feedFrame.shown,
+    "LFG Alerts remained visible after current entries were filtered")
 
 playerLevel, levelsBelow, levelsAbove = 20, 10, 3
 role = "healer"
@@ -248,28 +267,27 @@ settingsListener("role")
 now = 50
 assert(Feed.IngestOpportunity(
         opportunity("before-disable", "channel", "WC", { "healer" }), now),
-    "eligible opportunity did not appear before disabling the mini-feed")
+    "eligible opportunity did not appear before disabling LFG Alerts")
 local playedBeforeDisable = #played
 feedEnabled = false
 settingsListener("feedEnabled")
 assert(#Feed.GetEntries() == 0 and not feedFrame.shown,
-    "disabling an active mini-feed did not clear and hide it immediately")
+    "disabling active LFG Alerts did not clear and hide them immediately")
 role = "tank"
 settingsListener("role")
 assert(not feedFrame.shown,
-    "role switching made a disabled mini-feed visible")
+    "role switching made disabled LFG Alerts visible")
 assert(not Feed.IngestOpportunity(
         opportunity("while-disabled", "guild", "WC", { "tank" }), now + 1)
         and #played == playedBeforeDisable,
-    "disabled mini-feed retained an opportunity or played its alert sound")
+    "disabled LFG Alerts retained an opportunity or played their sound")
 feedEnabled = true
 settingsListener("feedEnabled")
-assert(feedFrame.shown and #Feed.GetEntries() == 0
-        and statusLabel.text:find("Watching Tank", 1, true),
-    "re-enabling the mini-feed replayed hidden requests or lost the selected role")
+assert(not feedFrame.shown and #Feed.GetEntries() == 0,
+    "re-enabling LFG Alerts replayed hidden requests or lost the selected role")
 now = 55
 assert(Feed.IngestOpportunity(
         opportunity("after-enable", "guild", "WC", { "tank" }), now),
-    "new live opportunity was not accepted after re-enabling the mini-feed")
+    "new live opportunity was not accepted after re-enabling LFG Alerts")
 
-print("PASS Dungeon Board real-time mini-feed policy")
+print("PASS Dungeon Board real-time LFG Alerts policy")

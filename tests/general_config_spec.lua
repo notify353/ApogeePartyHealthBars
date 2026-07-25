@@ -117,6 +117,7 @@ local calls = {
     refresh = 0, secure = 0, threat = 0, ticker = 0, hotInit = 0,
     hotTrack = 0, barReset = 0, force = 0, settingsReset = 0,
     minimapReset = 0, factoryReset = 0, soundPreview = 0,
+    lfgAlertsReset = 0, dungeonBoardReset = 0,
     dungeonSoundPreview = 0, mentionSoundPreview = 0,
     messages = {}, feedbackClear = 0, consumablesEnabled = nil,
 }
@@ -196,6 +197,16 @@ local deps = {
         end,
         PreviewSound = function()
             calls.dungeonSoundPreview = calls.dungeonSoundPreview + 1
+        end,
+    },
+    DungeonBoardFeed = {
+        ResetPosition = function()
+            calls.lfgAlertsReset = calls.lfgAlertsReset + 1
+        end,
+    },
+    DungeonBoardUI = {
+        ResetPosition = function()
+            calls.dungeonBoardReset = calls.dungeonBoardReset + 1
         end,
     },
     InitHotSpells = function() calls.hotInit = calls.hotInit + 1 end,
@@ -296,7 +307,7 @@ dungeonFeed:SetChecked(false)
 Click(dungeonFeed)
 assert(saved.dungeonBoardFeedEnabled == false
         and calls.dungeonFeedEnabled == false,
-    "Dungeon Board mini-feed checkbox did not persist its immediate state")
+    "LFG Alerts checkbox did not persist its immediate state")
 
 local combatFade = config.GetRow("combatUIAutoHide").check
 combatFade:SetChecked(false)
@@ -372,8 +383,10 @@ assert(calls.selfPreference == "any", "right-click self-buff cycling changed ord
 
 local resets = config.GetResetButtons()
 Click(resets.bar); Click(resets.settings); Click(resets.minimap)
+Click(resets.lfgAlerts); Click(resets.dungeonBoard)
 assert(calls.barReset == 1 and calls.force == 1 and calls.settingsReset == 1
-        and calls.minimapReset == 1,
+        and calls.minimapReset == 1 and calls.lfgAlertsReset == 1
+        and calls.dungeonBoardReset == 1,
     "General reset controls changed their callbacks")
 Click(resets.prepareDisable)
 assert(calls.addonEnabled == nil

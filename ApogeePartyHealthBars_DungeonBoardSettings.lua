@@ -4,6 +4,8 @@ local Eligibility = ApogeePartyHealthBars_DungeonBoardEligibility
 
 local D
 local listeners = {}
+local FEED_POINT, FEED_X, FEED_Y = "CENTER", 0, 0
+local BOARD_POINT, BOARD_X, BOARD_Y = "TOP", 0, -20
 
 local function saved()
     return D and D.GetSavedVariables and D.GetSavedVariables() or nil
@@ -115,10 +117,35 @@ end
 
 function Settings.GetFeedPosition()
     local values = saved() or {}
-    return values.dungeonBoardFeedPoint or "CENTER",
-        values.dungeonBoardFeedRelPoint or "CENTER",
-        tonumber(values.dungeonBoardFeedX) or 0,
-        tonumber(values.dungeonBoardFeedY) or 180
+    return values.dungeonBoardFeedPoint or FEED_POINT,
+        values.dungeonBoardFeedRelPoint or FEED_POINT,
+        tonumber(values.dungeonBoardFeedX) or FEED_X,
+        tonumber(values.dungeonBoardFeedY) or FEED_Y
+end
+
+function Settings.ResetFeedPosition()
+    Settings.SetFeedPosition(FEED_POINT, FEED_POINT, FEED_X, FEED_Y)
+end
+
+function Settings.GetBoardPosition()
+    local values = saved() or {}
+    return values.dungeonBoardPoint or BOARD_POINT,
+        values.dungeonBoardRelPoint or BOARD_POINT,
+        tonumber(values.dungeonBoardX) or BOARD_X,
+        tonumber(values.dungeonBoardY) or BOARD_Y
+end
+
+function Settings.SetBoardPosition(point, relativePoint, x, y)
+    local values = saved()
+    if not values then return end
+    values.dungeonBoardPoint = point or BOARD_POINT
+    values.dungeonBoardRelPoint = relativePoint or point or BOARD_POINT
+    values.dungeonBoardX = tonumber(x) or BOARD_X
+    values.dungeonBoardY = tonumber(y) or BOARD_Y
+end
+
+function Settings.ResetBoardPosition()
+    Settings.SetBoardPosition(BOARD_POINT, BOARD_POINT, BOARD_X, BOARD_Y)
 end
 
 function Settings.SetFeedPosition(point, relativePoint, x, y)

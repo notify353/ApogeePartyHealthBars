@@ -128,7 +128,7 @@ function AC.CreateActionRow(parent, width, options)
     sound:SetShown(showSound)
     if showSound then
         UIH.SetTooltip(sound, "Cooldown alert",
-            "Plays when a real cooldown longer than 1.5 seconds finishes, or when an action recovers from zero charges. Global cooldown, range, target, resource, usability, and restocking changes do not trigger it. Actions without a cooldown stay silent.")
+            "Plays when this action becomes ready after a meaningful cooldown or depleted charges.")
     end
     macro:SetShown(showMacro)
 

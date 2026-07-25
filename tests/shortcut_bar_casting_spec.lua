@@ -150,6 +150,8 @@ GameTooltip.SetOwner = function() end
 GameTooltip.SetSpellByID = function() end
 local tooltipItemId
 GameTooltip.SetItemByID = function(_, itemId) tooltipItemId = itemId end
+local tooltipFallbackTitle
+GameTooltip.SetText = function(_, title) tooltipFallbackTitle = title end
 GameTooltip.AddLine = function(_, line) tooltipLines[#tooltipLines + 1] = line end
 GameTooltip.Show = function() tooltipShows = tooltipShows + 1 end
 GameTooltip.Hide = function() tooltipHides = tooltipHides + 1 end
@@ -165,6 +167,9 @@ dofile("ApogeePartyHealthBars_CrowdControl.lua")
 dofile("ApogeePartyHealthBars_PlayerSpells.lua")
 dofile("ApogeePartyHealthBars_ShortcutBar.lua")
 local shortcuts = ApogeePartyHealthBars_ShortcutBar
+ApogeePartyHealthBars_UIHelpers.ShowNativeSpellTooltip(widget(), nil, "Unknown Spell")
+assert(tooltipFallbackTitle == "Unknown Spell",
+    "native spell tooltip did not provide a safe title fallback for a missing ID")
 local deferred = 0
 local layoutRequests = 0
 local geometryNeedsLayout = false
@@ -445,9 +450,7 @@ assert(firstVisualButton.alpha == 0.35 and firstVisualButton.border[1].color[1] 
     "out-of-range Shortcut spell did not retain only the faded range styling")
 tooltipLines = {}
 castButton.scripts.OnEnter()
-for _, line in ipairs(tooltipLines) do
-    assert(line ~= "Out of range", "out-of-range Shortcut tooltip retained its status line")
-end
+assert(#tooltipLines == 0, "Shortcut tooltip appended Apogee status or instruction lines")
 tooltipShows = 1
 inRange = 1
 shortcuts.Refresh()

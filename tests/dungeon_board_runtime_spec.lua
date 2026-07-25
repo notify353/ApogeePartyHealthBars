@@ -62,7 +62,7 @@ snapshot = Runtime.GetSnapshot()
 assert(snapshot[1].firstSeen == 100 and snapshot[1].lastSeen == 110,
     "repeated request did not refresh while preserving firstSeen")
 assert(opportunityCount == 2,
-    "identical repost was not forwarded for mini-feed-level deduplication")
+    "identical repost was not forwarded for LFG Alerts deduplication")
 
 now = 120
 Runtime.Ingest({

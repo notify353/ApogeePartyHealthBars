@@ -69,7 +69,7 @@ local ubrs = {
 }
 assert(Eligibility.IsBoardVisible(ubrs, "tank", 60)
         and not Eligibility.IsFeedOpportunity(ubrs, "tank", 60),
-    "UBRS board exception or mini-feed exclusion changed")
+    "UBRS board exception or LFG Alerts exclusion changed")
 
 local official = {
     source = "blizzard",
@@ -87,6 +87,6 @@ assert(Eligibility.IsBoardVisible(official, "tank", 17)
         and not Eligibility.IsBoardVisible(official, "tank", 35),
     "official configured-window or role filtering changed")
 assert(not Eligibility.IsFeedOpportunity(official, "tank", 20),
-    "official listing entered the real-time mini-feed")
+    "official listing entered real-time LFG Alerts")
 
 print("PASS Dungeon Board eligibility")

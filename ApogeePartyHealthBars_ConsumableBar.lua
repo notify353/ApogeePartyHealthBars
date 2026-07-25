@@ -111,11 +111,7 @@ local function CreateIcon(parent)
         end
         local info = icon.consumableInfo
         if not info then return end
-        UIH.ShowItemTooltip(self, info.itemId, info.itemName or "Consumable",
-            STATE_LABELS[icon.consumableState], icon.consumableReason, {
-                { text = "Automatic bag consumable", r = 0.45, g = 0.78, b = 1 },
-                { text = "Click to use", r = 0.3, g = 1, b = 0.3 },
-            })
+        UIH.ShowNativeItemTooltip(self, info.itemId, info.itemName or "Consumable")
     end)
     castButton:SetScript("OnLeave", function()
         if GameTooltip then GameTooltip:Hide() end

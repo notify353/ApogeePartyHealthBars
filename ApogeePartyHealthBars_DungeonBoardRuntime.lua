@@ -191,7 +191,7 @@ function Runtime.Ingest(data)
         lastSeen = currentTime,
     }
     notifyChanged()
-    -- Forward each accepted, non-duplicate chat line. The mini-feed owns alert
+    -- Forward each accepted, non-duplicate chat line. LFG Alerts owns alert
     -- deduplication so a repost first seen under the other watched role can
     -- still be considered after the player changes roles.
     if opportunityCallback then

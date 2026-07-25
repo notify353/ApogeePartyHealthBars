@@ -74,9 +74,7 @@ function F.Build(D)
     panel:SetClampedToScreen(true)
     panel:SetFrameStrata("MEDIUM")
     panel:SetPoint(C.DEFAULT_ANCHOR, UIParent, C.DEFAULT_REL, C.DEFAULT_X, C.DEFAULT_Y)
-    D.ConfigSurfaces.Register("party", panel, {
-        headerHeight = C.HEADER_H,
-    })
+    D.ConfigSurfaces.Register("party", panel)
     ApplyPanelChrome()
     panel:Hide()
     

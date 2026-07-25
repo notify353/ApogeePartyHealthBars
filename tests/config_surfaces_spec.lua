@@ -70,7 +70,7 @@ M.Register("party", party, {
 })
 M.Register("feed", feed, {
     headerHeight = 24,
-    title = "Dungeon Board mini-feed",
+    title = "LFG Alerts",
 })
 local dotChrome = M.Register("dot", dot, {
     headerHeight = 20,
@@ -89,8 +89,8 @@ assert(M.SetActive == nil and M.SetSurfaceActive == nil,
 M.SetConfigurationActive(true)
 assert(M.IsConfigurationActive(),
     "configuration surface manager did not report its active lifecycle")
-assert(settings.strata == "MEDIUM" and party.strata == "MEDIUM"
-        and feed.strata == "MEDIUM" and dot.strata == "MEDIUM",
+assert(settings.strata == "DIALOG" and party.strata == "DIALOG"
+        and feed.strata == "DIALOG" and dot.strata == "DIALOG",
     "active configuration surfaces did not share one native stacking strata")
 assert(settings.pointWrites == 0 and party.pointWrites == 0
         and feed.pointWrites == 0 and dot.pointWrites == 0,
@@ -116,7 +116,7 @@ assert(not settingsChrome.foundation.shown and not dotChrome.title.shown,
 M.SetConfigurationActive(true)
 inCombat = true
 M.SetConfigurationActive(false)
-assert(settings.strata == "MEDIUM" and feed.strata == "MEDIUM",
+assert(settings.strata == "DIALOG" and feed.strata == "DIALOG",
     "combat-locked close attempted a protected strata restoration")
 local eventFrame = createdFrames[#createdFrames]
 assert(eventFrame.events.PLAYER_REGEN_ENABLED and eventFrame.scripts.OnEvent,

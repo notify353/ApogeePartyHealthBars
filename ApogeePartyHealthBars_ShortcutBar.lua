@@ -321,23 +321,16 @@ local function CreateIcon(parent)
         end
         local info = button.shortcutInfo
         if not info then return end
-        local showTooltip = info.kind == "item" and UIH.ShowItemTooltip or UIH.ShowSpellTooltip
-        local contextLines = {
-            {
-                text = "Drop a spell for highest rank; Shift-drop for this rank",
-                r = 1, g = 0.82, b = 0,
-            },
-        }
         local controlLabel = CrowdControl.GetControlLabel(info.crowdControl)
-        if controlLabel then
-            contextLines[#contextLines + 1] = {
-                text = "Control: " .. controlLabel,
-                r = 0.45, g = 0.78, b = 1,
-            }
+        if info.kind ~= "item" and controlLabel then
+            UIH.ShowSpellTooltip(castButton, info.id, info.name or "Shortcut", nil, nil, {
+                { text = "Control: " .. controlLabel, r = 0.45, g = 0.78, b = 1 },
+            })
+        else
+            local showTooltip = info.kind == "item"
+                and UIH.ShowNativeItemTooltip or UIH.ShowNativeSpellTooltip
+            showTooltip(castButton, info.id, info.name or "Shortcut")
         end
-        contextLines[#contextLines + 1] = { text = "Click to use", r = 0.3, g = 1, b = 0.3 }
-        showTooltip(castButton, info.id, info.name or "Shortcut", STATE_LABELS[button.shortcutState],
-            button.shortcutReason, contextLines)
     end)
     castButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
     castButton:SetScript("OnReceiveDrag", function()

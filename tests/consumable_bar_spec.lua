@@ -61,7 +61,12 @@ function GetTime() return 10 end
 local inCombat = false
 function InCombatLockdown() return inCombat end
 
-ApogeePartyHealthBars_UIHelpers = { ShowItemTooltip = function() end }
+local nativeTooltip
+ApogeePartyHealthBars_UIHelpers = {
+    ShowNativeItemTooltip = function(anchor, itemId, title)
+        nativeTooltip = { anchor, itemId, title }
+    end,
+}
 ApogeePartyHealthBars_AccessoryLayout = {
     CreateBorder = function()
         return { widget(), widget(), widget(), widget() }
@@ -119,6 +124,10 @@ assert(icons[1].points[1][4] == 0 and icons[1].points[1][5] == 0
 assert(icons[1].castButton:GetAttribute("macrotext") == "/use item:101"
         and icons[1].castButton.mouseEnabled,
     "automatic consumable did not receive a clickable secure item action")
+icons[1].castButton.scripts.OnEnter(icons[1].castButton)
+assert(nativeTooltip and nativeTooltip[1] == icons[1].castButton
+        and nativeTooltip[2] == 101 and nativeTooltip[3] == "Item 101",
+    "automatic consumable did not request a native-only item tooltip")
 local shown, total, omitted = bar.GetStatus()
 assert(shown == 8 and total == 8 and omitted == 0,
     "consumable status counts were incorrect")

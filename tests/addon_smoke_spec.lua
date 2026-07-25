@@ -945,6 +945,11 @@ ApogeePartyHealthBars_Effects.InitializeSavedVariables(removedDungeonRolePrefere
 assert(removedDungeonRolePreferences.dungeonBoardRole == "healer"
         and removedDungeonRolePreferences.dungeonBoardMode == nil,
     "removed Dungeon Board mode did not migrate to the Healer fallback")
+assert(removedDungeonRolePreferences.cleanseWatchPoint == "TOPRIGHT"
+        and removedDungeonRolePreferences.cleanseWatchRelPoint == "TOPRIGHT"
+        and removedDungeonRolePreferences.cleanseWatchX == 0
+        and removedDungeonRolePreferences.cleanseWatchY == 0,
+    "new saved variables did not default Cleanse Watch to the top-right")
 local fractionalDotPreferences = {
     dotRefreshThreshold = 4.6,
     dotThresholds = { corruption = 6.4, immolate = 30.8, invalid = 0 / 0 },

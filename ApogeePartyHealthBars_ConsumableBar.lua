@@ -87,7 +87,7 @@ local function CreateIcon(parent)
     local castButton = CreateFrame(
         "Button", "ApogeePartyHealthBarsConsumableCast" .. S.castBtnSerial, UIParent,
         "SecureActionButtonTemplate")
-    castButton:SetFrameStrata("TOOLTIP")
+    castButton:SetFrameStrata(C.SECURE_OVERLAY_STRATA)
     castButton:SetFrameLevel(103)
     castButton:SetAttribute("useOnKeyDown", false)
     castButton:RegisterForClicks("AnyUp")

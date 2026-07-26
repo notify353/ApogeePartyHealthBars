@@ -119,8 +119,8 @@ function DC.Build(parent, deps)
     tab:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -C.BIND_PAD, C.BIND_PAD)
     tab:Hide()
     form = UIH.CreateFormScaffold(tab, "ApogeePartyHealthBarsDotConfigScroll",
-        "Show passive reminders for usable DoTs missing from your hostile target.", false)
-    enabledRow = checkboxRow(form.content, "Enable DoT reminders")
+        "Show passive reminders for usable DoTs and maintained debuffs missing from your hostile target.", false)
+    enabledRow = checkboxRow(form.content, "Enable DoT & Debuff reminders")
     defaultRow = stepperRow(form.content, "Default refresh threshold")
     defaultRow.decrease:SetScript("OnClick", function() D.DotTracker.AdjustDefaultThreshold(-1); DC.Refresh() end)
     defaultRow.increase:SetScript("OnClick", function() D.DotTracker.AdjustDefaultThreshold(1); DC.Refresh() end)
@@ -134,7 +134,8 @@ function DC.Build(parent, deps)
     reset:SetScript("OnClick", function() D.DotHud.ResetPosition() end)
     local hint = resetRow:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     hint:SetPoint("LEFT", reset, "RIGHT", 8, 0); hint:SetText("Drag while settings are open")
-    spellSection = UIH.CreateFormSection(form.content, form.rowWidth, "Known DoTs — priority and threshold")
+    spellSection = UIH.CreateFormSection(form.content, form.rowWidth,
+        "Known DoTs & Debuffs — priority and threshold")
     DC.Refresh()
     return tab
 end

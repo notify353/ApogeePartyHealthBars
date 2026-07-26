@@ -1,8 +1,16 @@
 ApogeePartyHealthBars_C = {
     MAX_ROWS = 2,
     PARTY_BUFF_ICON_TEXTURE = "party-fallback",
+    PARTY_BUFF_TRACKS = { "primary", "spirit" },
     SELF_BUFF_ICON_TEXTURE = "self-fallback",
-    PARTY_BUFF_DEFINITIONS = { { canonical = "Fortitude" } },
+    PARTY_BUFF_DEFINITIONS = {
+        { canonical = "Fortitude", track = "primary" },
+        {
+            canonical = "Divine Spirit",
+            track = "spirit",
+            eligibleClasses = { PRIEST = true, MAGE = true, DRUID = true },
+        },
+    },
     SELF_BUFF_FAMILIES = {},
     SELF_BUFF_SPELL_DEFINITIONS = {
         {
@@ -15,13 +23,16 @@ ApogeePartyHealthBars_C = {
 }
 
 local Effects = {
-    ResolveFirstKnown = function()
+    ResolveFirstKnown = function(definitions)
+        local spirit = definitions[1] and definitions[1].canonical == "Divine Spirit"
         return {
             known = true,
-            spellName = "Power Word: Fortitude",
-            icon = "party-icon",
-            auraIds = { [100] = true },
-            auraNames = { ["Power Word: Fortitude"] = true },
+            spellName = spirit and "Divine Spirit" or "Power Word: Fortitude",
+            icon = spirit and "spirit-icon" or "party-icon",
+            auraIds = spirit and { [300] = true } or { [100] = true },
+            auraNames = spirit and { ["Divine Spirit"] = true }
+                or { ["Power Word: Fortitude"] = true },
+            definition = definitions[1],
         }
     end,
     ForEachDefinition = function(definitions, callback)
@@ -38,8 +49,12 @@ local snapshots = {
 }
 local configuredMatchers
 local Auras = {
-    ConfigureBuffMatchers = function(...)
-        configuredMatchers = { ... }
+    ConfigureBuffMatchers = function(matchers, selfIds, selfNames)
+        configuredMatchers = {
+            matchers = matchers,
+            selfIds = selfIds,
+            selfNames = selfNames,
+        }
     end,
     GetUnitAuraSnapshot = function(unitId)
         return snapshots[unitId] or { auras = {} }
@@ -59,11 +74,15 @@ local dead = {}
 local assist = { player = true, party1 = true, enemy = false }
 local enemy = { player = false, party1 = false, enemy = true }
 local factions = { player = "Alliance", party1 = "Horde", enemy = "Horde" }
+local classes = { player = "PRIEST", party1 = "MAGE", enemy = "WARRIOR" }
 local featureEnabled = { partyBuffEnabled = true, selfBuffEnabled = true }
 local configMode = false
 local inCombat = false
 
-function UnitClass() return "Priest", "PRIEST" end
+function UnitClass(unitId)
+    local classToken = classes[unitId or "player"] or "PRIEST"
+    return classToken, classToken
+end
 function UnitExists(unitId) return existing[unitId] == true end
 function UnitIsDeadOrGhost(unitId) return dead[unitId] == true end
 function UnitIsConnected(unitId) return connected[unitId] == true end
@@ -80,8 +99,8 @@ local function Icon()
 end
 
 local surfaces = {
-    { partyBuffIcon = Icon() }, { partyBuffIcon = Icon() },
-    { partyBuffIcon = Icon() }, { partyBuffIcon = Icon() },
+    { partyBuffIcons = { Icon(), Icon() } }, { partyBuffIcons = { Icon(), Icon() } },
+    { partyBuffIcons = { Icon(), Icon() } }, { partyBuffIcons = { Icon(), Icon() } },
 }
 local selfBuffTexture
 local characterSaved = { selfBuffSelections = {} }
@@ -110,23 +129,35 @@ reminders.RefreshKnownSpells()
 
 assert(reminders.IsPartyKnown() and reminders.IsSelfKnown() and reminders.HasKnownReminder(),
     "known reminder state was not resolved")
-assert(reminders.GetPartyCastSpellName() == "Power Word: Fortitude"
+assert(reminders.GetPartyCastSpellName(1) == "Power Word: Fortitude"
+        and reminders.GetPartyCastSpellName(2) == "Divine Spirit"
         and reminders.GetSelfCastSpellName() == "Inner Fire",
     "secure cast names changed")
 for _, surface in ipairs(surfaces) do
-    assert(surface.partyBuffIcon.texture == "party-icon",
-        "resolved party reminder texture was not propagated")
+    assert(surface.partyBuffIcons[1].texture == "party-icon"
+            and surface.partyBuffIcons[2].texture == "spirit-icon",
+        "resolved party reminder textures were not propagated")
 end
 assert(selfBuffTexture == "self-icon", "resolved self reminder texture was not delegated")
-assert(configuredMatchers[1][100] and configuredMatchers[2]["Power Word: Fortitude"]
-        and configuredMatchers[3][200] and configuredMatchers[4]["Inner Fire"],
+assert(configuredMatchers.matchers[1].auraIds[100]
+        and configuredMatchers.matchers[1].auraNames["Power Word: Fortitude"]
+        and configuredMatchers.matchers[2].auraIds[300]
+        and configuredMatchers.matchers[2].auraNames["Divine Spirit"]
+        and configuredMatchers.selfIds[200] and configuredMatchers.selfNames["Inner Fire"],
     "resolved aura matchers were not forwarded")
 
-assert(reminders.ShouldShowPartyIcon("party1"),
+assert(reminders.ShouldShowPartyIcon("party1", 1)
+        and reminders.ShouldShowPartyIcon("party1", 2),
     "missing party buff did not show its reminder")
 snapshots.party1.auras = { { spellId = 100, name = "Power Word: Fortitude" } }
-assert(not reminders.ShouldShowPartyIcon("party1"),
-    "active party buff left its reminder visible")
+assert(not reminders.ShouldShowPartyIcon("party1", 1)
+        and reminders.ShouldShowPartyIcon("party1", 2),
+    "party reminders did not track Fortitude and Spirit independently")
+snapshots.party1.auras[2] = { spellId = 300, name = "Divine Spirit" }
+assert(not reminders.ShouldShowPartyIcon("party1", 2),
+    "active Divine Spirit left its reminder visible")
+assert(not reminders.ShouldShowPartyIcon("enemy", 2),
+    "Divine Spirit reminder appeared for an ineligible class")
 
 assert(reminders.ShouldShowSelfIcon("player"),
     "missing self buff did not show its reminder")
@@ -139,19 +170,22 @@ assert(not reminders.ShouldShowSelfIcon("party1"),
 inCombat = true
 snapshots.party1.auras = {}
 snapshots.player.auras = {}
-assert(reminders.ShouldShowPartyIcon("party1") == nil
+assert(reminders.ShouldShowPartyIcon("party1", 1) == nil
+        and reminders.ShouldShowPartyIcon("party1", 2) == nil
         and reminders.ShouldShowSelfIcon("player") == nil,
     "combat did not freeze buff reminder visibility")
 inCombat = false
 configMode = true
-assert(not reminders.ShouldShowPartyIcon("party1")
+assert(not reminders.ShouldShowPartyIcon("party1", 1)
+        and not reminders.ShouldShowPartyIcon("party1", 2)
         and not reminders.ShouldShowSelfIcon("player"),
     "buff reminders remained visible in configuration mode")
 configMode = false
 
 featureEnabled.partyBuffEnabled = false
 featureEnabled.selfBuffEnabled = false
-assert(not reminders.ShouldShowPartyIcon("party1")
+assert(not reminders.ShouldShowPartyIcon("party1", 1)
+        and not reminders.ShouldShowPartyIcon("party1", 2)
         and not reminders.ShouldShowSelfIcon("player"),
     "disabled reminders remained visible")
 featureEnabled.partyBuffEnabled = true

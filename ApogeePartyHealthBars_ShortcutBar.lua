@@ -268,7 +268,7 @@ local function CreateIcon(parent)
     local castButton = CreateFrame(
         "Button", "ApogeePartyHealthBarsShortcutCast" .. S.castBtnSerial, UIParent,
         "SecureActionButtonTemplate")
-    castButton:SetFrameStrata("TOOLTIP")
+    castButton:SetFrameStrata(C.SECURE_OVERLAY_STRATA)
     castButton:SetFrameLevel(103)
     castButton:SetAttribute("useOnKeyDown", false)
     castButton:RegisterForClicks("AnyUp")
@@ -314,6 +314,12 @@ local function CreateIcon(parent)
     end
     button:Hide()
 
+    button:SetScript("OnReceiveDrag", function()
+        local info = button.shortcutInfo
+        if S.configMode and info and info.slot and handleCursorDrop then
+            handleCursorDrop("shortcuts", info.slot)
+        end
+    end)
     castButton:SetScript("OnEnter", function()
         if InCombatLockdown and InCombatLockdown() then
             if GameTooltip then GameTooltip:Hide() end
@@ -335,7 +341,7 @@ local function CreateIcon(parent)
     castButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
     castButton:SetScript("OnReceiveDrag", function()
         local info = button.shortcutInfo
-        if info and info.slot and handleCursorDrop then
+        if S.configMode and info and info.slot and handleCursorDrop then
             handleCursorDrop("shortcuts", info.slot)
         end
     end)
@@ -352,7 +358,9 @@ local function CreateDropIcon(parent)
     button.border = Accessory.CreateBorder(button, 0)
     for _, edge in ipairs(button.border) do edge:SetColorTexture(0.45, 0.45, 0.48, 1) end
     button:SetScript("OnReceiveDrag", function()
-        if handleCursorDrop then handleCursorDrop("shortcuts", T.FindFirstEmptySlot()) end
+        if S.configMode and handleCursorDrop then
+            handleCursorDrop("shortcuts", T.FindFirstEmptySlot())
+        end
     end)
     button:SetScript("OnEnter", function(self)
         if not GameTooltip then return end
@@ -384,10 +392,12 @@ local function SyncSecureAction(icon, info)
     castButton:SetAttribute("macrotext1", nil)
 
     if not IsEnabled() or not info or not icon:IsShown() then
+        icon:EnableMouse(false)
         setSecureMouseEnabled(castButton, false)
         hideSecureFrame(castButton)
         return
     end
+    icon:EnableMouse(S.configMode == true)
 
     local macroText = info.macroText
     if not macroText then
@@ -401,7 +411,7 @@ local function SyncSecureAction(icon, info)
     castButton:SetAttribute("macrotext1", macroText)
     if positionSecureOverlay(castButton, icon) then
         showSecureFrame(castButton)
-        setSecureMouseEnabled(castButton, true)
+        setSecureMouseEnabled(castButton, not S.configMode)
     else
         setSecureMouseEnabled(castButton, false)
         hideSecureFrame(castButton)
@@ -581,7 +591,7 @@ end
 
 local function ShouldShowDropTarget()
     local inCombat = InCombatLockdown and InCombatLockdown()
-    return IsEnabled() and (S.configMode or spellbookOpen)
+    return IsEnabled() and S.configMode
         and not inCombat and T.FindFirstEmptySlot() ~= nil
 end
 

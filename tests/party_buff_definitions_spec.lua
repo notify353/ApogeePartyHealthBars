@@ -14,6 +14,7 @@ local definitions = ApogeePartyHealthBars_C.PARTY_BUFF_DEFINITIONS
 local byCanonical = {}
 for _, definition in ipairs(definitions) do
     assert(type(definition.canonical) == "string" and definition.canonical ~= "")
+    assert(definition.track == "primary" or definition.track == "spirit")
     assert(type(definition.pattern) == "string" and definition.pattern ~= "")
     assert(type(definition.icon) == "string" and definition.icon ~= "")
     assert(type(definition.auraIds) == "table" and next(definition.auraIds))
@@ -72,6 +73,24 @@ end
 local intellect = byCanonical["Arcane Intellect"]
 for _, spellId in ipairs({ 1459, 1460, 1461, 10156, 10157, 27126, 23028, 27127 }) do
     assert(intellect.auraIds[spellId], "missing Mage intellect aura ID " .. spellId)
+end
+
+local spirit = byCanonical["Divine Spirit"]
+assert(spirit and spirit.track == "spirit", "Divine Spirit reminder definition is missing")
+assert(spirit.auraNames["Divine Spirit"] and spirit.auraNames["Prayer of Spirit"],
+    "Divine Spirit single-target or group aura name is missing")
+for _, spellId in ipairs({ 14752, 14818, 14819, 27841, 25312, 27681, 32999 }) do
+    assert(spirit.auraIds[spellId], "missing Divine Spirit aura ID " .. spellId)
+end
+for _, classToken in ipairs({ "PRIEST", "MAGE", "DRUID" }) do
+    assert(spirit.eligibleClasses[classToken],
+        classToken .. " was not eligible for Divine Spirit reminders")
+end
+for _, classToken in ipairs({
+    "WARRIOR", "ROGUE", "HUNTER", "WARLOCK", "PALADIN", "SHAMAN",
+}) do
+    assert(not spirit.eligibleClasses[classToken],
+        classToken .. " was unexpectedly eligible for Divine Spirit reminders")
 end
 
 print("PASS party buff definitions")

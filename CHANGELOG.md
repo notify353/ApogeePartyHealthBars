@@ -10,6 +10,9 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
+- Added Battle Shout to the reminder catalog as a maintained player buff that can appear without a hostile target.
+- Expanded passive DoT reminders into DoT & Debuff reminders for core maintained class debuffs, including equivalent-effect coverage from other players.
+- Added a second Priest party-buff reminder for Divine Spirit and Prayer of Spirit, limited to Priest, Mage, and Druid targets that meaningfully benefit from Spirit.
 - Added an in-window Dungeon Board control for showing or hiding LFG Alerts and their configured sound.
 - Added level-window controls to the full Dungeon Board so its levels-below and levels-above profile settings can be adjusted without opening configuration.
 - Added position resets for LFG Alerts and Dungeon Board under General → Positions.
@@ -26,6 +29,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Replaced the DoT & Debuff reminder configuration header with representative learned-effect preview icons, matching the headerless Cleanse Watch and LFG Alerts preview pattern.
+- Limited party-frame HUD spell and item drops to periods when add-on Settings is open, preventing normal bag interaction from changing Keys, Wheel, Buttons, or Shortcut assignments.
 - Made LFG Alerts hide while idle during normal gameplay and show a representative preview alert for positioning while add-on Settings is open.
 - Removed the LFG Alerts header strip so runtime alerts and configuration previews use only the compact alert cards.
 - Centered the default LFG Alerts position on screen and moved the profile-owned Dungeon Board default to the horizontal center along the top edge.
@@ -45,6 +50,12 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Fixed
 
+- Forwarded drag gestures from headerless DoT & Debuff configuration example icons to their HUD anchor while retaining icon tooltips.
+- Gave the empty DoT & Debuff reminder HUD nonzero preview geometry immediately when configuration opens instead of waiting for a later target or aura event to trigger layout.
+- Restored the DoT & Debuff reminder HUD once profile settings become available after early pre-login refreshes, while preventing later aura and usability refreshes from snapping it back during dragging.
+- Allowed caster-centered Demoralizing Shout, Demoralizing Roar, and Thunder Clap reminders when WoW correctly reports no target-range result for those abilities.
+- Made Left Click and Shift + Left Click use one modifier-aware secure action so Shift + Left healing cannot silently stop while other modified clicks continue working.
+- Prevented health bars and their attached action HUDs from intercepting clicks on bag slots or other Blizzard panels drawn above them.
 - Kept stale or unavailable spell and item assignments informative by falling back to their stored names when Blizzard cannot build a native tooltip.
 - Made new profiles and character resets initialize Cleanse Watch at its intended flush top-right default instead of the obsolete centered position.
 - Prevented inactive Cleanse Watch slots from casting invisible cleanse actions when clicked.

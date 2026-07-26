@@ -11,6 +11,7 @@ ApogeePartyHealthBars_S = {
 local auras = {
     { name = "Power Word: Fortitude", spellId = 100, sourceUnit = "player" },
     { name = "Inner Fire", spellId = 200, sourceUnit = "player" },
+    { name = "Divine Spirit", spellId = 300, sourceUnit = "player" },
     { name = "Renew", spellId = 139, sourceUnit = "party1", duration = 15, expirationTime = 20 },
     { name = "Renew", spellId = 139, sourceUnit = "player", duration = 15, expirationTime = 20 },
 }
@@ -29,8 +30,16 @@ dofile("ApogeePartyHealthBars_Auras.lua")
 local scanner = ApogeePartyHealthBars_Auras
 
 scanner.ConfigureBuffMatchers(
-    { [100] = true },
-    { ["Power Word: Fortitude"] = true },
+    {
+        {
+            auraIds = { [100] = true },
+            auraNames = { ["Power Word: Fortitude"] = true },
+        },
+        {
+            auraIds = { [300] = true },
+            auraNames = { ["Divine Spirit"] = true },
+        },
+    },
     { [200] = true },
     { ["Inner Fire"] = true }
 )
@@ -42,9 +51,11 @@ assert(snapshot.partyBuff and snapshot.selfBuff,
     "configured buff matchers were not applied during aura scanning")
 assert(scanner.SnapshotHasAura(snapshot, { [100] = true }, nil),
     "snapshot lost configured party-buff aura data")
+assert(scanner.SnapshotHasAura(snapshot, { [300] = true }, nil),
+    "snapshot stopped before the second configured party buff")
 assert(scanner.SnapshotHasAura(snapshot, nil, { ["Inner Fire"] = true }),
     "snapshot lost configured self-buff aura data")
-assert(snapshot.playerHots[1] == auras[4],
+assert(snapshot.playerHots[1] == auras[5],
     "HoT matcher did not isolate the player's aura source")
 
 auras[1].name = "Power Word: Shield"
@@ -55,7 +66,7 @@ local shieldSnapshot = scanner.ScanUnitHelpfulAuras("player")
 assert(scanner.GetShieldPointsFromSnapshot(shieldSnapshot) == 321,
     "Classic Era AuraData points were not normalized for shield tracking")
 
-scanner.ConfigureBuffMatchers(nil, nil, nil, nil)
+scanner.ConfigureBuffMatchers(nil, nil, nil)
 scanner.ConfigureHotMatchers(nil)
 local clearedSnapshot = scanner.ScanUnitHelpfulAuras("player")
 assert(not clearedSnapshot.selfBuff,

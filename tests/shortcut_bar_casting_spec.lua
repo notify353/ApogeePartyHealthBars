@@ -44,6 +44,7 @@ local function widget(shown)
     function value:SetAlpha(alpha) self.alpha = alpha end
     function value:SetColorTexture(r, g, b, a) self.color = { r, g, b, a } end
     function value:SetDesaturated(desaturated) self.desaturated = desaturated end
+    function value:EnableMouse(enabled) self.mouseEnabled = enabled end
     function value:CreateTexture() return widget() end
     function value:CreateFontString() return widget() end
     function value:SetScript(name, callback) self.scripts[name] = callback end
@@ -266,9 +267,22 @@ assert(castButton.attributes.macrotext
 assert(castButton.attributes.type1 == "macro")
 assert(castButton.attributes.macrotext1 == castButton.attributes.macrotext)
 assert(castButton.shown and castButton.mouseEnabled, "Shortcut cast button is not clickable")
+droppedFeature, droppedSlot = nil, nil
+ApogeePartyHealthBars_S.configMode = false
 castButton.scripts.OnReceiveDrag()
+assert(droppedFeature == nil and droppedSlot == nil,
+    "Shortcut HUD routed a cursor drop while configuration was closed")
+ApogeePartyHealthBars_S.configMode = true
+shortcuts.RefreshSecureActions()
+assert(visualButtons[1].mouseEnabled and not castButton.mouseEnabled,
+    "Shortcut configuration did not move mouse handling onto the visible HUD icon")
+visualButtons[1].scripts.OnReceiveDrag()
 assert(droppedFeature == "shortcuts" and droppedSlot == 1,
-    "Shortcut HUD icon did not route a cursor drop to its assigned slot")
+    "Shortcut HUD icon did not route a configuration cursor drop to its assigned slot")
+ApogeePartyHealthBars_S.configMode = false
+shortcuts.RefreshSecureActions()
+assert(not visualButtons[1].mouseEnabled and castButton.mouseEnabled,
+    "Shortcut runtime did not restore mouse handling to its secure cast overlay")
 
 geometryNeedsLayout = true
 local beforeAssignmentLayout = layoutRequests
@@ -414,17 +428,24 @@ assert(shortcuts.SetSpellbookOpen(true)
         and layoutRequests == layoutRequestsBeforeSource + 1,
     "opening the Spellbook did not request a Shortcut footer layout")
 shortcuts.Layout()
-assert(dropButton.shown, "open Spellbook did not show the Shortcut HUD add target")
+assert(not dropButton.shown,
+    "open Spellbook showed the Shortcut HUD add target while configuration was closed")
+droppedFeature, droppedSlot = nil, nil
+dropButton.scripts.OnReceiveDrag()
+assert(droppedFeature == nil and droppedSlot == nil,
+    "hidden Shortcut add target routed a drop while configuration was closed")
 shortcuts.SetSpellbookOpen(false)
 shortcuts.Layout()
 assert(not dropButton.shown, "closing the Spellbook did not hide the add target")
 shortcuts.SetSpellbookOpen(true)
+ApogeePartyHealthBars_S.configMode = true
 inCombat = true
 shortcuts.Layout()
 assert(not dropButton.shown, "Shortcut HUD add target remained visible in combat")
 inCombat = false
 shortcuts.Layout()
 assert(dropButton.shown, "Shortcut HUD add target did not return after combat")
+ApogeePartyHealthBars_S.configMode = false
 shortcuts.SetSpellbookOpen(false)
 shortcuts.Layout()
 local expectedCastNames = {

@@ -39,7 +39,11 @@ local function widget()
 end
 
 UIParent = widget()
-function CreateFrame() return widget() end
+function CreateFrame(_, _, _, template)
+    local frame = widget()
+    frame.template = template
+    return frame
+end
 ApogeePartyHealthBars_S = { castBtnSerial = 0, GetBinding = function() return nil end }
 ApogeePartyHealthBars_ActionData = { Normalize = function(value) return value end }
 RAID_CLASS_COLORS = { PRIEST = { r = 1, g = 1, b = 1 } }
@@ -69,12 +73,12 @@ function UnitIsEnemy() return false end
 dofile("ApogeePartyHealthBars_UnitAPI.lua")
 dofile("ApogeePartyHealthBars_UnitBar.lua")
 local bars = ApogeePartyHealthBars_UnitBar
-local partyBuffState = false
+local partyBuffState = { false, false }
 bars.Initialize({
     GetHotStripHeight = function() return 0 end,
     GetActiveHotTrackCount = function() return 0 end,
     IsUnitInPrimaryActionRange = function() return true end,
-    ShouldShowPartyBuffIcon = function() return partyBuffState end,
+    ShouldShowPartyBuffIcon = function(_, index) return partyBuffState[index] end,
     IsShieldEnabled = function() return false end,
     ShouldTrackShieldUnit = function() return false end,
     GetUnitShieldRemaining = function() return 0 end,
@@ -85,7 +89,15 @@ bars.Initialize({
 })
 
 local first, second = bars.Create(widget()), bars.Create(widget())
-for _, overlay in ipairs({ first.castBtn, first.partyBuffCastBtn, second.castBtn, second.partyBuffCastBtn }) do
+local overlays = { first.castBtn, second.castBtn }
+for _, surface in ipairs({ first, second }) do
+    for _, overlay in ipairs(surface.partyBuffCastBtns) do
+        overlays[#overlays + 1] = overlay
+    end
+end
+for _, overlay in ipairs(overlays) do
+    assert(overlay.template == "SecureActionButtonTemplate",
+        "unit-bar secure overlay inherited Blizzard native Click Casting behavior")
     assert(#overlay.registeredClicks == 1 and overlay.registeredClicks[1] == "AnyUp",
         "unit-bar secure overlay was not restricted to one release phase")
 end
@@ -108,15 +120,20 @@ assert(first:GetAccessoryAnchor() == first.accessoryAnchor
         and first.accessoryAnchor.width == ApogeePartyHealthBars_C.UNIT_BAR_W
         and first.accessoryAnchor.height == ApogeePartyHealthBars_C.ROW_H,
     "shared accessory anchor did not preserve the full health-section geometry")
-assert(first.partyBuffIcon.parent == first.accessoryAnchor
+assert(first.partyBuffIcons[1].parent == first.accessoryAnchor
+        and first.partyBuffIcons[2].parent == first.accessoryAnchor
         and first.accessoryAnchor:GetFrameLevel() > first.bar:GetFrameLevel(),
     "party-buff texture was not raised above the health StatusBar")
 
-partyBuffState = true
+partyBuffState = { true, true }
 first:RefreshValues()
-partyBuffState = nil
+first:RefreshLayout(0)
+assert(first:GetInternalRightInset() == 2 * ApogeePartyHealthBars_C.BUFF_SLOT_STEP
+        and first.partyBuffIcons[1].shown and first.partyBuffIcons[2].shown,
+    "two party buffs did not reserve and render two compact icon slots")
+partyBuffState = { nil, nil }
 first:RefreshValues()
-assert(first.partyBuffVisible == true,
+assert(first.partyBuffVisible[1] == true and first.partyBuffVisible[2] == true,
     "indeterminate combat reminder state cleared existing bar geometry")
 
 assert(second.barBg.vertexColor[1] == ApogeePartyHealthBars_C.ENEMY_TARGET_BG_COLOR[1])

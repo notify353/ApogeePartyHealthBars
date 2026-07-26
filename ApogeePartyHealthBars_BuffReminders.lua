@@ -5,11 +5,7 @@ ApogeePartyHealthBars_BuffReminders = {}
 local B = ApogeePartyHealthBars_BuffReminders
 local D
 
-local partyBuffSpellKnown = false
-local partyBuffCastSpellName
-local partyBuffIconTexture
-local partyBuffAuraIds
-local partyBuffAuraNames
+local partyBuffs = {}
 
 local selfBuffSpellKnown = false
 local selfBuffCastSpellName
@@ -31,30 +27,30 @@ function B.Initialize(deps)
     D = deps
 end
 
-local function ApplyPartyBuffIconTexture(texture)
-    if not texture then return end
+local function ApplyPartyBuffIconTexture(index, texture)
+    if not index or not texture then return end
     for _, surface in ipairs(D.GetSurfaces()) do
-        if surface.partyBuffIcon then surface.partyBuffIcon:SetTexture(texture) end
+        local icon = surface.partyBuffIcons and surface.partyBuffIcons[index]
+        if icon then icon:SetTexture(texture) end
     end
 end
 
 local function InitPartyBuffSpell()
-    partyBuffSpellKnown = false
-    partyBuffCastSpellName = nil
-    partyBuffIconTexture = C.PARTY_BUFF_ICON_TEXTURE
-    partyBuffAuraIds = nil
-    partyBuffAuraNames = nil
-
-    local selection = D.Effects.ResolveFirstKnown(
-        C.PARTY_BUFF_DEFINITIONS,
-        C.PARTY_BUFF_ICON_TEXTURE
-    )
-    partyBuffSpellKnown = selection.known
-    partyBuffCastSpellName = selection.spellName
-    partyBuffIconTexture = selection.icon
-    partyBuffAuraIds = selection.auraIds
-    partyBuffAuraNames = selection.auraNames
-    ApplyPartyBuffIconTexture(partyBuffIconTexture)
+    partyBuffs = {}
+    for index, track in ipairs(C.PARTY_BUFF_TRACKS or {}) do
+        local definitions = {}
+        for _, definition in ipairs(C.PARTY_BUFF_DEFINITIONS or {}) do
+            if (definition.track or "primary") == track then
+                definitions[#definitions + 1] = definition
+            end
+        end
+        local selection = D.Effects.ResolveFirstKnown(
+            definitions,
+            C.PARTY_BUFF_ICON_TEXTURE
+        )
+        partyBuffs[index] = selection
+        ApplyPartyBuffIconTexture(index, selection.icon)
+    end
 end
 
 local function InitSelfBuffSpell()
@@ -145,9 +141,17 @@ local function InitSelfBuffSpell()
 end
 
 local function ConfigureAuraMatchers()
+    local matchers = {}
+    for index, selection in ipairs(partyBuffs) do
+        if selection.known then
+            matchers[index] = {
+                auraIds = selection.auraIds,
+                auraNames = selection.auraNames,
+            }
+        end
+    end
     D.Auras.ConfigureBuffMatchers(
-        partyBuffAuraIds,
-        partyBuffAuraNames,
+        matchers,
         selfBuffAuraIds,
         selfBuffAuraNames
     )
@@ -185,23 +189,33 @@ function B.SetSelfPreference(preferenceKey)
     return true
 end
 
-function B.IsPartyKnown() return partyBuffSpellKnown end
+function B.IsPartyKnown()
+    for _, selection in ipairs(partyBuffs) do
+        if selection.known then return true end
+    end
+    return false
+end
 function B.IsSelfKnown() return selfBuffSpellKnown end
-function B.HasKnownReminder() return partyBuffSpellKnown or selfBuffSpellKnown end
-function B.GetPartyCastSpellName() return partyBuffCastSpellName end
+function B.HasKnownReminder() return B.IsPartyKnown() or selfBuffSpellKnown end
+function B.GetPartyCastSpellName(index)
+    local selection = partyBuffs[index]
+    return selection and selection.spellName or nil
+end
 function B.GetSelfCastSpellName() return selfBuffCastSpellName end
 
-local function IsPartyEnabled()
-    return partyBuffSpellKnown and D.IsSavedFeatureEnabled("partyBuffEnabled")
+local function IsPartyEnabled(index)
+    local selection = partyBuffs[index]
+    return selection and selection.known and D.IsSavedFeatureEnabled("partyBuffEnabled")
 end
 
-local function HasPartyBuff(unitId)
-    if not partyBuffAuraIds or not partyBuffAuraNames then return true end
+local function HasPartyBuff(unitId, index)
+    local selection = partyBuffs[index]
+    if not selection or not selection.auraIds or not selection.auraNames then return true end
     if not UnitExists(unitId) then return true end
     return D.Auras.SnapshotHasAura(
         D.Auras.GetUnitAuraSnapshot(unitId),
-        partyBuffAuraIds,
-        partyBuffAuraNames
+        selection.auraIds,
+        selection.auraNames
     )
 end
 
@@ -224,11 +238,17 @@ local function ShouldShowIcons()
     return true
 end
 
-function B.ShouldShowPartyIcon(unitId)
+function B.ShouldShowPartyIcon(unitId, index)
     if ShouldShowIcons() == nil then return nil end
-    if not IsPartyEnabled() or D.IsConfigMode() then return false end
+    if not IsPartyEnabled(index) or D.IsConfigMode() then return false end
     if not CanPartyBuffUnit(unitId) then return false end
-    return not HasPartyBuff(unitId)
+    local definition = partyBuffs[index] and partyBuffs[index].definition
+    local eligibleClasses = definition and definition.eligibleClasses
+    if eligibleClasses then
+        local classToken = API.GetIdentity(unitId).classToken
+        if not classToken or not eligibleClasses[classToken] then return false end
+    end
+    return not HasPartyBuff(unitId, index)
 end
 
 local function IsSelfEnabled()

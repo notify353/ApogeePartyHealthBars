@@ -446,7 +446,7 @@ function Factory.Create(options)
     local function createHudCastButton(icon, slot)
         local castButton = CreateFrame("Button", slot.buttonName .. "Hud", UIParent,
             "SecureActionButtonTemplate,SecureHandlerStateTemplate")
-        castButton:SetFrameStrata("TOOLTIP")
+        castButton:SetFrameStrata(C.SECURE_OVERLAY_STRATA)
         castButton:SetFrameLevel(103)
         -- Physical bindings use the off-screen button. This overlay is mouse-only
         -- and executes exactly once on release on every supported client.
@@ -458,7 +458,7 @@ function Factory.Create(options)
             if hasMacro(entry) then showActivationFeedback(slot) end
         end)
         castButton:SetScript("OnReceiveDrag", function()
-            if D and D.AssignCursorDrop then
+            if S.configMode and D and D.AssignCursorDrop then
                 D.AssignCursorDrop(options.featureId, slot.id, W.GetActiveLayoutKey())
             end
         end)
@@ -497,6 +497,11 @@ function Factory.Create(options)
             options.hud.positionIcon(icon, container, slot, hudPosition[slot.id])
             icon:SetScript("OnEnter", function(self) showActionTooltip(boundSlot, self) end)
             icon:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
+            icon:SetScript("OnReceiveDrag", function()
+                if S.configMode and D and D.AssignCursorDrop then
+                    D.AssignCursorDrop(options.featureId, boundSlot.id, W.GetActiveLayoutKey())
+                end
+            end)
             createHudCastButton(icon, boundSlot)
             hudIcons[slot.id] = icon
         end
@@ -770,13 +775,14 @@ function Factory.Create(options)
             local button = secureButtons[slot.id]
             local icon = hudIcons[slot.id]
             local castButton = icon and icon.castButton
+            if icon then icon:EnableMouse(S.configMode == true) end
             registerPhysicalClicks(button)
             configureSecureAction(button, slot)
             configureSecureAction(castButton, slot)
             if castButton and container and container:IsShown()
                 and D and D.PositionSecureOverlay and D.PositionSecureOverlay(castButton, icon) then
                 D.ShowSecureFrame(castButton)
-                D.SetSecureMouseEnabled(castButton, true)
+                D.SetSecureMouseEnabled(castButton, not S.configMode)
             elseif castButton then
                 D.SetSecureMouseEnabled(castButton, false)
                 D.HideSecureFrame(castButton)

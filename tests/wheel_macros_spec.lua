@@ -600,9 +600,23 @@ for _, slot in ipairs(data.SLOTS) do
         "combat-end refresh did not apply the deferred physical click phase")
 end
 
+ApogeePartyHealthBars_S.configMode = false
 wheel.GetHudCastButton("normalUp").scripts.OnReceiveDrag()
+assert(droppedFeature == nil and droppedSlot == nil and droppedLayout == nil,
+    "Wheel HUD routed a cursor drop while configuration was closed")
+ApogeePartyHealthBars_S.configMode = true
+wheel.RefreshSecureActions()
+assert(wheel.GetHudIcon("normalUp").mouseEnabled
+        and not wheel.GetHudCastButton("normalUp").mouseEnabled,
+    "Wheel configuration did not move mouse handling onto the visible HUD icon")
+wheel.GetHudIcon("normalUp").scripts.OnReceiveDrag()
 assert(droppedFeature == "wheel" and droppedSlot == "normalUp" and droppedLayout == PRIMARY,
-    "Wheel HUD icon did not route a cursor drop to its active layout")
+    "Wheel HUD icon did not route a configuration cursor drop to its active layout")
+ApogeePartyHealthBars_S.configMode = false
+wheel.RefreshSecureActions()
+assert(not wheel.GetHudIcon("normalUp").mouseEnabled
+        and wheel.GetHudCastButton("normalUp").mouseEnabled,
+    "Wheel runtime did not restore mouse handling to its secure cast overlay")
 
 normalUpIcon.castButton.scripts.OnMouseDown(normalUpIcon.castButton)
 local clickedSlot, clickedFeedbackEnd = wheel.GetLastActivation()

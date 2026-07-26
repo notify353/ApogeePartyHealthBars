@@ -203,7 +203,7 @@ function UI.Build(deps)
     macrosTab = MC.Build(configPanel, D)
 
     RegisterTab({ key = "general", label = "General", frame = generalTab, refresh = RefreshConfigPanel })
-    RegisterTab({ key = "dots", label = "DoTs", frame = dotsTab, refresh = DC.Refresh,
+    RegisterTab({ key = "dots", label = "Debuffs", frame = dotsTab, refresh = DC.Refresh,
         featureKey = "dotReminders" })
     RegisterTab({ key = "healing", label = "Healing", frame = healingTab, refresh = HC.Refresh })
     RegisterTab({ key = "keys", label = "Keys", frame = keysTab, refresh = KC.Refresh,

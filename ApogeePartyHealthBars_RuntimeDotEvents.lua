@@ -17,8 +17,8 @@ function D.Register(eventRouter, deps)
         protect("DoT target", function() Tracker.Refresh(true) end)
     end)
     eventRouter.Subscribe("UNIT_AURA", "DoTReminders", function(_, unit)
-        if unit ~= "target" then return end
-        Auras.InvalidateUnitAuraCache("target")
+        if unit ~= "target" and unit ~= "player" then return end
+        Auras.InvalidateUnitAuraCache(unit)
         protect("DoT aura", function() Tracker.Refresh(false) end)
     end)
     for _, event in ipairs({
@@ -43,4 +43,3 @@ function D.Register(eventRouter, deps)
         if unit == "player" then protect("DoT power", function() Tracker.Refresh(false) end) end
     end)
 end
-

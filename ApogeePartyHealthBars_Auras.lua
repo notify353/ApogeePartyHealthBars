@@ -5,16 +5,14 @@ local S = ApogeePartyHealthBars_S
 ApogeePartyHealthBars_Auras = {}
 
 local A = ApogeePartyHealthBars_Auras
-local partyBuffAuraIds
-local partyBuffAuraNames
+local partyBuffMatchers = {}
 local selfBuffAuraIds
 local selfBuffAuraNames
 local hotMatchers = {}
 local harmfulCache = {}
 
-function A.ConfigureBuffMatchers(partyIds, partyNames, selfIds, selfNames)
-    partyBuffAuraIds = partyIds
-    partyBuffAuraNames = partyNames
+function A.ConfigureBuffMatchers(partyMatchers, selfIds, selfNames)
+    partyBuffMatchers = partyMatchers or {}
     selfBuffAuraIds = selfIds
     selfBuffAuraNames = selfNames
 end
@@ -95,8 +93,13 @@ local function MatchesHotTrack(aura, track)
 end
 
 local function MatchesAnyPartyBuff(aura)
-    if partyBuffAuraIds or partyBuffAuraNames then
-        return AuraMatchesTables(aura, partyBuffAuraIds, partyBuffAuraNames, false)
+    if next(partyBuffMatchers) then
+        for _, matcher in pairs(partyBuffMatchers) do
+            if AuraMatchesTables(aura, matcher.auraIds, matcher.auraNames, false) then
+                return true
+            end
+        end
+        return false
     end
     for _, def in ipairs(C.PARTY_BUFF_DEFINITIONS) do
         if def.auraIds and def.auraNames
@@ -135,6 +138,9 @@ function A.ScanUnitHelpfulAuras(unitId)
     local snapshot = BuildEmptySnapshot()
     local trackCount = #hotMatchers
     local hotMatched = 0
+    local partyMatched, partyMatchCount = {}, 0
+    local configuredPartyCount = 0
+    for _ in pairs(partyBuffMatchers) do configuredPartyCount = configuredPartyCount + 1 end
 
     for i = 1, 40 do
         local aura = AuraFromIndex(unitId, i)
@@ -144,6 +150,13 @@ function A.ScanUnitHelpfulAuras(unitId)
 
         if not snapshot.partyBuff and MatchesAnyPartyBuff(aura) then
             snapshot.partyBuff = true
+        end
+        for index, matcher in pairs(partyBuffMatchers) do
+            if not partyMatched[index]
+                and AuraMatchesTables(aura, matcher.auraIds, matcher.auraNames, false) then
+                partyMatched[index] = true
+                partyMatchCount = partyMatchCount + 1
+            end
         end
 
         if not snapshot.selfBuff
@@ -173,7 +186,9 @@ function A.ScanUnitHelpfulAuras(unitId)
             end
         end
 
-        if snapshot.partyBuff and snapshot.selfBuff and snapshot.pwShield
+        local allPartyMatched = configuredPartyCount > 0
+            and partyMatchCount >= configuredPartyCount
+        if allPartyMatched and snapshot.selfBuff and snapshot.pwShield
             and hotMatched >= trackCount then
             break
         end
@@ -194,12 +209,20 @@ function A.InvalidateUnitAuraCache(unitId)
 end
 
 function A.ScanUnitHarmfulAuras(unitId)
-    local snapshot = { auras = {}, playerBySpellId = {} }
+    local snapshot = { auras = {}, playerBySpellId = {}, bySpellId = {} }
     if not unitId or not UnitExists or not UnitExists(unitId) then return snapshot end
     for index = 1, 40 do
         local aura = HarmfulAuraFromIndex(unitId, index)
         if not aura then break end
         snapshot.auras[#snapshot.auras + 1] = aura
+        if aura.spellId then
+            local matches = snapshot.bySpellId[aura.spellId]
+            if not matches then
+                matches = {}
+                snapshot.bySpellId[aura.spellId] = matches
+            end
+            matches[#matches + 1] = aura
+        end
         local sourceUnit = aura.sourceUnit
         if aura.spellId and sourceUnit and UnitIsUnit and UnitIsUnit(sourceUnit, "player") then
             snapshot.playerBySpellId[aura.spellId] = aura
@@ -209,7 +232,7 @@ function A.ScanUnitHarmfulAuras(unitId)
 end
 
 function A.GetUnitHarmfulAuraSnapshot(unitId)
-    if not unitId then return { auras = {}, playerBySpellId = {} } end
+    if not unitId then return { auras = {}, playerBySpellId = {}, bySpellId = {} } end
     local cached = harmfulCache[unitId]
     if cached then return cached end
     cached = A.ScanUnitHarmfulAuras(unitId)

@@ -29,16 +29,18 @@ local function ClearSimpleSpellAttributes(button)
     button:SetAttribute("macrotext1", nil)
 end
 
-local function ApplyPartyBuffBinding(surface)
-    local button = surface and surface.partyBuffCastBtn
+local function ApplyPartyBuffBinding(surface, index)
+    local button = surface and surface.partyBuffCastBtns
+        and surface.partyBuffCastBtns[index]
     if not button or InCombatLockdown() then
         D.DeferSecureUpdate()
         return
     end
     ClearSimpleSpellAttributes(button)
-    local active = surface.visible and surface.partyBuffIcon:IsShown()
+    local icon = surface.partyBuffIcons and surface.partyBuffIcons[index]
+    local active = surface.visible and icon and icon:IsShown()
         and API.Exists(surface.unitId) and D.IsSavedFeatureEnabled("clickableBuffIcons")
-    local spellName = active and D.GetPartyBuffCastSpellName() or nil
+    local spellName = active and D.GetPartyBuffCastSpellName(index) or nil
     if not spellName then
         D.SetSecureMouseEnabled(button, false)
         D.HideSecureFrame(button)
@@ -50,7 +52,7 @@ local function ApplyPartyBuffBinding(surface)
     button:SetAttribute("macrotext", macroText)
     button:SetAttribute("type1", "macro")
     button:SetAttribute("macrotext1", macroText)
-    D.PositionSecureOverlay(button, surface.partyBuffIcon)
+    D.PositionSecureOverlay(button, icon)
     D.ShowSecureFrame(button)
     D.SetSecureMouseEnabled(button, true)
 end
@@ -61,7 +63,11 @@ function L.ApplyAllPartyBuffBindings()
         return
     end
     for _, row in ipairs(D.rows) do
-        for _, surface in ipairs(row.surfaces) do ApplyPartyBuffBinding(surface) end
+        for _, surface in ipairs(row.surfaces) do
+            for index = 1, C.MAX_PARTY_BUFF_SLOTS do
+                ApplyPartyBuffBinding(surface, index)
+            end
+        end
     end
 end
 
@@ -73,7 +79,9 @@ function L.HideAllSecureOverlays()
     for _, row in ipairs(D.rows) do
         for _, surface in ipairs(row.surfaces) do
             D.HideSecureFrame(surface.castBtn)
-            D.HideSecureFrame(surface.partyBuffCastBtn)
+            for _, button in ipairs(surface.partyBuffCastBtns or {}) do
+                D.HideSecureFrame(button)
+            end
         end
     end
     if D.PlayerUtility then D.PlayerUtility.HideSecureOverlay() end

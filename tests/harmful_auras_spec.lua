@@ -18,6 +18,10 @@ local A = ApogeePartyHealthBars_Auras
 local snapshot = A.GetUnitHarmfulAuraSnapshot("target")
 assert(#snapshot.auras == 2 and snapshot.playerBySpellId[172] == modern[1],
     "modern harmful scan did not distinguish the player caster")
+assert(#snapshot.bySpellId[172] == 2
+        and snapshot.bySpellId[172][1] == modern[1]
+        and snapshot.bySpellId[172][2] == modern[2],
+    "modern harmful scan did not index every caster by spell ID")
 assert(snapshot.auras[1].name == "Mine"
         and snapshot.auras[1].icon == 136118
         and snapshot.auras[1].applications == 3
@@ -41,5 +45,7 @@ assert(snapshot.playerBySpellId[589]
         and snapshot.playerBySpellId[589].duration == 12
         and snapshot.playerBySpellId[589].expirationTime == 50,
     "legacy harmful scan did not normalize aura fields")
+assert(#snapshot.bySpellId[589] == 1 and snapshot.bySpellId[589][1].name == "Legacy",
+    "legacy harmful scan did not populate the all-caster spell index")
 
 print("PASS player-owned harmful aura snapshots")

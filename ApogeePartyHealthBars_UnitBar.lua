@@ -71,8 +71,8 @@ local function CreateSecureOverlay(namePrefix, frameLevel)
     S.castBtnSerial = S.castBtnSerial + 1
     local button = CreateFrame(
         "Button", namePrefix .. S.castBtnSerial, UIParent,
-        "SecureUnitButtonTemplate, SecureActionButtonTemplate")
-    button:SetFrameStrata("TOOLTIP")
+        "SecureActionButtonTemplate")
+    button:SetFrameStrata(C.SECURE_OVERLAY_STRATA)
     button:SetFrameLevel(frameLevel)
     button:SetAttribute("useOnKeyDown", false)
     button:SetAttribute("checkselfcast", false)
@@ -110,7 +110,11 @@ function methods:GetAccessoryAnchor()
 end
 
 function methods:GetInternalRightInset()
-    return self.partyBuffVisible and C.BUFF_SLOT_STEP or 0
+    local count = 0
+    for _, visible in ipairs(self.partyBuffVisible or {}) do
+        if visible then count = count + 1 end
+    end
+    return count * C.BUFF_SLOT_STEP
 end
 
 function methods:SetRightInset(owner, width)
@@ -133,10 +137,15 @@ function methods:GetHeight()
 end
 
 function methods:GetLayoutKey()
+    local partyBuffState = {}
+    for index = 1, C.MAX_PARTY_BUFF_SLOTS do
+        partyBuffState[index] = tostring(
+            self.partyBuffVisible and self.partyBuffVisible[index] == true)
+    end
     return table.concat({
         tostring(#(self.powerChannels or {})),
         tostring(D.GetHotStripHeight()),
-        tostring(self.partyBuffVisible == true),
+        table.concat(partyBuffState, ","),
         tostring(self:GetExternalRightInset()),
     }, "|")
 end
@@ -177,14 +186,19 @@ function methods:RefreshLayout(topOffset, containerHeight)
     self.bar:SetAllPoints(self.barBg)
     self.nameFS:SetWidth(math.max(20, C.UNIT_BAR_W - 12 - rightInset))
 
-    if self.partyBuffVisible then
-        self.partyBuffIcon:ClearAllPoints()
-        self.partyBuffIcon:SetPoint(
-            "RIGHT", self.accessoryAnchor, "RIGHT",
-            -self:GetExternalRightInset() - C.BUFF_EDGE_INSET, 0)
-        self.partyBuffIcon:Show()
-    else
-        self.partyBuffIcon:Hide()
+    local visibleIndex = 0
+    for index, icon in ipairs(self.partyBuffIcons) do
+        if self.partyBuffVisible[index] then
+            icon:ClearAllPoints()
+            icon:SetPoint(
+                "RIGHT", self.accessoryAnchor, "RIGHT",
+                -self:GetExternalRightInset() - C.BUFF_EDGE_INSET
+                    - visibleIndex * C.BUFF_SLOT_STEP, 0)
+            icon:Show()
+            visibleIndex = visibleIndex + 1
+        else
+            icon:Hide()
+        end
     end
 
     local y = topOffset + C.ROW_H
@@ -232,8 +246,12 @@ function methods:RefreshValues()
     local oldLayoutKey = self:GetLayoutKey()
     local connected = API.IsConnected(unitId)
     self.powerChannels = connected and API.GetPowerChannels(unitId) or {}
-    local showPartyBuff = D.ShouldShowPartyBuffIcon(unitId)
-    if showPartyBuff ~= nil then self.partyBuffVisible = showPartyBuff == true end
+    for index = 1, C.MAX_PARTY_BUFF_SLOTS do
+        local showPartyBuff = D.ShouldShowPartyBuffIcon(unitId, index)
+        if showPartyBuff ~= nil then
+            self.partyBuffVisible[index] = showPartyBuff == true
+        end
+    end
 
     local identity = API.GetIdentity(unitId)
     local hostilePlayer = identity.oppositeFactionPlayer
@@ -294,7 +312,9 @@ end
 
 function methods:ShowPlaceholder(label)
     self.powerChannels = {}
-    self.partyBuffVisible = false
+    for index = 1, C.MAX_PARTY_BUFF_SLOTS do
+        self.partyBuffVisible[index] = false
+    end
     self.nameFS:SetText("|cff888888" .. label .. "|r")
     self.nameFS:SetTextColor(0.55, 0.55, 0.55, 1)
     self.bar:SetMinMaxValues(0, 1)
@@ -384,9 +404,15 @@ function B.Create(parent)
         self.hotBg[index], self.hotBars[index] = hotBg, hotBar
     end
 
-    self.partyBuffIcon = CreateBuffIcon(accessoryAnchor)
+    self.partyBuffIcons = {}
+    self.partyBuffCastBtns = {}
+    self.partyBuffVisible = {}
+    for index = 1, C.MAX_PARTY_BUFF_SLOTS do
+        self.partyBuffIcons[index] = CreateBuffIcon(accessoryAnchor)
+        self.partyBuffCastBtns[index] = CreateSecureOverlay(
+            "ApogeePartyHealthBarsPartyBuff", 100 + index)
+    end
     self.castBtn = CreateSecureOverlay("ApogeePartyHealthBarsCast", 100)
-    self.partyBuffCastBtn = CreateSecureOverlay("ApogeePartyHealthBarsPartyBuff", 101)
     button:Hide()
     return self
 end

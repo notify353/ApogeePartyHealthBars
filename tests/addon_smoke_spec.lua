@@ -16,7 +16,10 @@ local function widget()
         GetScript = function(self, name) return self.scripts[name] end,
         HookScript = function(self, name, callback) self.scripts[name] = callback end,
         RegisterEvent = function() end, RegisterForClicks = function() end,
-        RegisterForDrag = function() end, RegisterUnitEvent = function() end,
+        RegisterForDrag = function(self, ...)
+            self.dragButtons = { ... }
+        end,
+        RegisterUnitEvent = function() end,
         CreateTexture = function() return widget() end,
         CreateFontString = function() return widget() end,
         CreateAnimationGroup = function() return widget() end,
@@ -391,16 +394,45 @@ assert(ApogeePartyHealthBars_EffectsTracker == nil,
     "retired EffectsTracker runtime was still loaded")
 
 local router = ApogeePartyHealthBars_EventRouter
+assert(ApogeePartyHealthBars_DotHud.GetAnchor() == nil,
+    "DoT reminder HUD was unexpectedly created before its first use")
+ApogeePartyHealthBars_DotHud.SetUnlocked(true)
+local preLoginConfigDotAnchor = ApogeePartyHealthBars_DotHud.GetAnchor()
+assert(preLoginConfigDotAnchor and preLoginConfigDotAnchor.shown
+        and preLoginConfigDotAnchor.width == 140
+        and preLoginConfigDotAnchor.height == 24,
+    "opening configuration did not create a visible, nonzero reminder HUD preview")
+ApogeePartyHealthBars_DotHud.SetConfigurationPreview({
+    { key = "preview", label = "Preview", spellId = 1160, icon = 132154, preview = true },
+})
+local previewDotIcon = ApogeePartyHealthBars_DotHud.GetIcons()[1]
+assert(previewDotIcon and previewDotIcon.dragButtons[1] == "LeftButton"
+        and type(previewDotIcon.scripts.OnDragStart) == "function"
+        and type(previewDotIcon.scripts.OnDragStop) == "function",
+    "configuration example icon did not forward dragging to the reminder HUD")
+ApogeePartyHealthBars_DotHud.SetUnlocked(false)
+assert(#previewDotIcon.dragButtons == 0,
+    "reminder example icon remained draggable after configuration closed")
 local earlyDotRefreshOk, earlyDotRefreshError = pcall(
     ApogeePartyHealthBars_DotHud.SetSuggestions, {})
 assert(earlyDotRefreshOk,
     "pre-login DoT context refresh failed before HUD initialization: "
         .. tostring(earlyDotRefreshError))
+local earlyDotAnchor = ApogeePartyHealthBars_DotHud.GetAnchor()
+assert(earlyDotAnchor == preLoginConfigDotAnchor,
+    "pre-login configuration and reminder refresh created different HUD anchors")
+local earlyDotPointWrites = earlyDotAnchor.pointWrites
 router.Dispatch("PLAYER_LOGIN")
 local dotHudAnchor = ApogeePartyHealthBars_DotHud.GetAnchor()
 assert(dotHudAnchor and dotHudAnchor.frameType == "Frame" and dotHudAnchor.template == nil
         and dotHudAnchor.scripts.OnClick == nil,
     "DoT reminder HUD was not created as a passive non-secure frame")
+assert(dotHudAnchor == earlyDotAnchor and dotHudAnchor.pointWrites > earlyDotPointWrites,
+    "pre-login reminder HUD did not restore its position after profile loading")
+local dotPointWrites = dotHudAnchor.pointWrites
+ApogeePartyHealthBars_DotHud.SetSuggestions({})
+assert(dotHudAnchor.pointWrites == dotPointWrites,
+    "routine reminder refresh reapplied the saved HUD position during dragging")
 assert(ApogeePartyHealthBarsPanel.point[1] == "TOPRIGHT"
         and ApogeePartyHealthBarsPanel.point[3] == "TOPRIGHT"
         and ApogeePartyHealthBarsPanel.point[4] == 0
@@ -771,9 +803,9 @@ for _, key in ipairs(expectedConfigSurfaceKeys) do
     assert(surface.frame.topLevel and surface.frame.frameStrata == "DIALOG",
         "configuration surface did not join native active-window stacking: " .. key)
 end
-assert(configSurfaces.Get("dot").chrome.title:IsShown(),
-    "labeled DoT configuration anchor did not expose its chrome")
-assert(configSurfaces.Get("cleanse").chrome.title == nil
+assert(configSurfaces.Get("dot").chrome.title == nil
+        and configSurfaces.Get("dot").chrome.header == nil
+        and configSurfaces.Get("cleanse").chrome.title == nil
         and configSurfaces.Get("cleanse").chrome.header == nil
         and configSurfaces.Get("feed").chrome.title == nil
         and configSurfaces.Get("feed").chrome.header == nil,

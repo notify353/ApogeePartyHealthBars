@@ -15,6 +15,7 @@ ApogeePartyHealthBars_C = {
     PAD_H                = 8,
     PAD_BOT              = 6,
     FLAT_BAR_TEXTURE     = "Interface\\Buttons\\WHITE8x8",
+    SECURE_OVERLAY_STRATA = "LOW",
     UPDATE_RATE          = 0.1,
     RANGE_UPDATE_RATE    = 0.2,
     OUT_OF_RANGE_ALPHA   = 0.35,
@@ -74,13 +75,16 @@ ApogeePartyHealthBars_C = {
     ACCESSORY_EDGE_INSET = 2,
     ACCESSORY_BOTTOM_GAP = 4,
     PARTY_BUFF_ICON_TEXTURE    = "Interface\\Icons\\Spell_Holy_WordFortitude",
+    PARTY_BUFF_TRACKS          = { "primary", "spirit" },
     SELF_BUFF_ICON_TEXTURE      = "Interface\\Icons\\Spell_Holy_InnerFire",
-    -- First entry the player knows in spellbook wins. Keep this list limited to
-    -- long-duration buffs that can be cast directly on a friendly unit. Shouts,
-    -- totems, passive auras, pet auras, and self-only effects need different UX.
+    -- The first spell the player knows on each track wins. Keep this list limited
+    -- to long-duration buffs that can be cast directly on a friendly unit.
+    -- Shouts, totems, passive auras, pet auras, and self-only effects need
+    -- different UX.
     PARTY_BUFF_DEFINITIONS = {
         {
             canonical = "Power Word: Fortitude",
+            track     = "primary",
             pattern   = "^Power Word: Fortitude",
             icon      = "Interface\\Icons\\Spell_Holy_WordFortitude",
             auraIds = {
@@ -95,6 +99,7 @@ ApogeePartyHealthBars_C = {
         },
         {
             canonical = "Arcane Intellect",
+            track     = "primary",
             pattern   = "^Arcane Intellect",
             icon      = "Interface\\Icons\\Spell_Holy_MagicalSentry",
             auraIds = {
@@ -109,6 +114,7 @@ ApogeePartyHealthBars_C = {
         },
         {
             canonical = "Mark of the Wild",
+            track     = "primary",
             pattern   = "^Mark of the Wild",
             icon      = "Interface\\Icons\\Spell_Nature_Regeneration",
             auraIds = {
@@ -123,6 +129,7 @@ ApogeePartyHealthBars_C = {
         },
         {
             canonical = "Blessing of Might",
+            track     = "primary",
             pattern   = "^Blessing of Might",
             icon      = "Interface\\Icons\\Spell_Holy_FistOfJustice",
             auraIds = {
@@ -137,6 +144,7 @@ ApogeePartyHealthBars_C = {
         },
         {
             canonical = "Blessing of Light",
+            track     = "primary",
             pattern   = "^Blessing of Light",
             icon      = "Interface\\Icons\\Spell_Holy_PrayerOfHealing02",
             auraIds = {
@@ -150,6 +158,7 @@ ApogeePartyHealthBars_C = {
         },
         {
             canonical = "Blessing of Kings",
+            track     = "primary",
             pattern   = "^Blessing of Kings",
             icon      = "Interface\\Icons\\Spell_Magic_MageArmor",
             auraIds = {
@@ -158,6 +167,26 @@ ApogeePartyHealthBars_C = {
             auraNames = {
                 ["Blessing of Kings"]         = true,
                 ["Greater Blessing of Kings"] = true,
+            },
+        },
+        {
+            canonical = "Divine Spirit",
+            track     = "spirit",
+            pattern   = "^Divine Spirit",
+            icon      = "Interface\\Icons\\Spell_Holy_DivineSpirit",
+            eligibleClasses = {
+                PRIEST = true,
+                MAGE   = true,
+                DRUID  = true,
+            },
+            auraIds = {
+                [14752] = true, [14818] = true, [14819] = true,
+                [27841] = true, [25312] = true,
+                [27681] = true, [32999] = true,
+            },
+            auraNames = {
+                ["Divine Spirit"]    = true,
+                ["Prayer of Spirit"] = true,
             },
         },
     },
@@ -387,6 +416,7 @@ for spellId in pairs(C.PW_SHIELD_RANKS) do
     C.PW_SHIELD_SPELL_IDS[spellId] = true
 end
 C.MAX_HOT_SLOTS  = #C.HOT_SPELL_DEFINITIONS
+C.MAX_PARTY_BUFF_SLOTS = #C.PARTY_BUFF_TRACKS
 C.ROW_CONTENT_W  = C.FRAME_W - C.PAD_H * 2
 C.UNIT_BAR_W     = C.ROW_CONTENT_W
 C.BUFF_SLOT_STEP = C.BUFF_ICON_SIZE + C.BUFF_SLOT_GAP

@@ -17,7 +17,8 @@ local scheduledWakeAt
 
 local function settings() return S.sv or {} end
 local function enabled(definition)
-    return settings().dotDisabled[definition.key] ~= true
+    local disabled = settings().dotDisabled
+    return type(disabled) ~= "table" or disabled[definition.key] ~= true
 end
 
 local function spellTexture(spellId)
@@ -46,6 +47,23 @@ local function orderedKnown()
     return result
 end
 
+local function updateConfigurationPreview()
+    local preview = {}
+    for _, entry in ipairs(orderedKnown()) do
+        if enabled(entry.definition) then
+            preview[#preview + 1] = {
+                key = entry.definition.key,
+                label = entry.label,
+                spellId = entry.knownSpellId,
+                icon = entry.icon,
+                preview = true,
+            }
+            if #preview >= 3 then break end
+        end
+    end
+    Hud.SetConfigurationPreview(preview)
+end
+
 function T.ResolveKnown()
     known = {}
     local context = Context.GetSnapshot()
@@ -56,11 +74,13 @@ function T.ResolveKnown()
         local spellId = allowedRace and allowedLevel and resolveHighestKnown(definition) or nil
         if spellId then
             known[#known + 1] = {
-                definition = definition, spellId = spellId,
+                definition = definition, knownSpellId = spellId,
+                spellId = definition.actionSpellId or spellId,
                 label = definition.label, icon = spellTexture(spellId),
             }
         end
     end
+    updateConfigurationPreview()
     return known
 end
 
@@ -75,6 +95,10 @@ local function contextAllows(entry, context)
     if definition.formSpellIds and not definition.formSpellIds[context.formSpellId] then return false end
     if definition.requiresStealth and not context.stealthed then return false end
     if definition.nonPlayerTarget and UnitIsPlayer and UnitIsPlayer("target") then return false end
+    if definition.requiredPlayerAuraIdSet then
+        local snapshot = Auras.GetUnitAuraSnapshot("player")
+        if not Auras.SnapshotHasAura(snapshot, definition.requiredPlayerAuraIdSet) then return false end
+    end
     return true
 end
 
@@ -96,22 +120,79 @@ local function usable(entry, context, now)
     elseif IsSpellInRange then
         inRange = IsSpellInRange(entry.spellId, "target")
     end
+    if entry.definition.casterCentered and inRange == nil then return true end
     -- Both supported API families return nil when the range check is invalid
     -- (for example, for an invalid spell/target pairing).  A passive reminder
     -- must only claim target eligibility when the client confirms it.
     return inRange == true or inRange == 1
 end
 
-local function playerAura(entry, snapshot)
+local function auraStrength(definition, spellId, aura)
+    local rank = definition.auraStrengths and definition.auraStrengths[spellId] or 1
+    if definition.strengthFromApplications then
+        return ((tonumber(aura and aura.applications) or 1) * 1000) + rank
+    end
+    return rank
+end
+
+local function strongestHelpfulAura(entry, snapshot)
+    local definition = entry.definition
     local selected
-    for spellId in pairs(entry.definition.auraIdSet) do
-        local aura = snapshot.playerBySpellId[spellId]
-        if aura and (not selected
-            or (tonumber(aura.expirationTime) or 0) > (tonumber(selected.expirationTime) or 0)) then
-            selected = aura
+    local selectedStrength = -1
+    for _, aura in ipairs(snapshot and snapshot.auras or {}) do
+        if aura.spellId and definition.auraIdSet[aura.spellId] then
+            local strength = auraStrength(definition, aura.spellId, aura)
+            if strength > selectedStrength
+                or (strength == selectedStrength and (tonumber(aura.expirationTime) or 0)
+                    > (tonumber(selected and selected.expirationTime) or 0)) then
+                selected, selectedStrength = aura, strength
+            end
         end
     end
-    return selected
+    return selected, selectedStrength
+end
+
+local function strongestAura(entry, harmfulSnapshot, helpfulSnapshot)
+    local definition = entry.definition
+    if definition.auraUnit == "player" then
+        return strongestHelpfulAura(entry, helpfulSnapshot)
+    end
+    local selected
+    local selectedStrength = -1
+    local families = definition.coverageGroup
+        and Data.GetCoverageGroup(definition.coverageGroup) or { definition }
+    for _, coveredDefinition in ipairs(families) do
+        for spellId in pairs(coveredDefinition.auraIdSet) do
+            local matches
+            if definition.ownerPolicy == "any" then
+                matches = harmfulSnapshot.bySpellId and harmfulSnapshot.bySpellId[spellId]
+            else
+                local owned = harmfulSnapshot.playerBySpellId[spellId]
+                matches = owned and { owned } or nil
+            end
+            for _, aura in ipairs(matches or {}) do
+                local strength = auraStrength(coveredDefinition, spellId, aura)
+                if strength > selectedStrength
+                    or (strength == selectedStrength and (tonumber(aura.expirationTime) or 0)
+                        > (tonumber(selected and selected.expirationTime) or 0)) then
+                    selected, selectedStrength = aura, strength
+                end
+            end
+        end
+    end
+    return selected, selectedStrength
+end
+
+local function requiredStrength(entry)
+    local definition = entry.definition
+    local castStrength = definition.castStrengths
+        and definition.castStrengths[entry.knownSpellId]
+    if castStrength then
+        return (definition.strengthFromApplications and 5000 or 0) + castStrength
+    end
+    return auraStrength(definition, entry.knownSpellId, {
+        applications = definition.strengthFromApplications and 5 or 1,
+    })
 end
 
 local function threshold(definition)
@@ -137,19 +218,25 @@ end
 
 function T.Refresh(invalidate)
     if not S.sv or S.sv.enabled ~= true or S.sv.dotRemindersEnabled ~= true
-        or not Capabilities.IsFeatureAvailable("dotReminders") or not targetValid() then
+        or not Capabilities.IsFeatureAvailable("dotReminders") then
         schedule(nil)
         Hud.SetSuggestions({})
         return {}
     end
-    if invalidate then Auras.InvalidateUnitAuraCache("target") end
-    local snapshot = Auras.GetUnitHarmfulAuraSnapshot("target")
+    local hostileTargetValid = targetValid()
+    if invalidate and hostileTargetValid then Auras.InvalidateUnitAuraCache("target") end
+    local harmfulSnapshot = hostileTargetValid
+        and Auras.GetUnitHarmfulAuraSnapshot("target")
+        or { auras = {}, playerBySpellId = {}, bySpellId = {} }
+    local helpfulSnapshot = Auras.GetUnitAuraSnapshot("player")
     local context, now = playerContext or Context.GetSnapshot(), (GetTime and GetTime()) or 0
     local ordered = orderedKnown()
     local groupChoice = {}
     for _, entry in ipairs(ordered) do
         local group = entry.definition.exclusiveGroup
-        if group and not groupChoice[group] and enabled(entry.definition) and usable(entry, context, now) then
+        local validUnit = entry.definition.auraUnit == "player" or hostileTargetValid
+        if group and not groupChoice[group] and validUnit
+            and enabled(entry.definition) and usable(entry, context, now) then
             groupChoice[group] = entry
         end
     end
@@ -158,9 +245,11 @@ function T.Refresh(invalidate)
     for _, entry in ipairs(ordered) do
         local definition = entry.definition
         local group = definition.exclusiveGroup
-        if enabled(definition) and (not group or groupChoice[group] == entry)
+        local validUnit = definition.auraUnit == "player" or hostileTargetValid
+        if validUnit and enabled(definition) and (not group or groupChoice[group] == entry)
             and usable(entry, context, now) then
-            local aura = playerAura(entry, snapshot)
+            local aura, strength = strongestAura(entry, harmfulSnapshot, helpfulSnapshot)
+            if aura and strength < requiredStrength(entry) then aura = nil end
             local remaining = aura and math.max(0, (tonumber(aura.expirationTime) or 0) - now) or 0
             local due = not aura or remaining <= threshold(definition)
             if due then
@@ -188,6 +277,7 @@ function T.GetKnownFamilies() return orderedKnown() end
 function T.IsEnabled(key) return settings().dotDisabled[key] ~= true end
 function T.SetEnabled(key, value)
     if value then settings().dotDisabled[key] = nil else settings().dotDisabled[key] = true end
+    updateConfigurationPreview()
     T.Refresh(false)
 end
 function T.GetThreshold(key)
@@ -226,6 +316,7 @@ function T.Move(key, direction)
     end
     priority[leftPosition], priority[rightPosition] = priority[rightPosition], priority[leftPosition]
     settings().dotPriority = priority
+    updateConfigurationPreview()
     T.Refresh(false)
     return true
 end

@@ -8,6 +8,21 @@ local function family(key, classToken, label, ids, options)
     return options
 end
 
+local function ranked(ids, firstStrength)
+    local result = {}
+    for index, spellId in ipairs(ids) do result[spellId] = (firstStrength or 1) + index - 1 end
+    return result
+end
+
+local function maintained(key, classToken, label, ids, options)
+    options = options or {}
+    options.maintainedDebuff = true
+    options.ownerPolicy = options.ownerPolicy or "any"
+    options.castStrengths = options.castStrengths or ranked(ids)
+    options.auraStrengths = options.auraStrengths or ranked(options.auraIds or ids)
+    return family(key, classToken, label, ids, options)
+end
+
 -- Rank and replacement IDs were checked against the supported Classic Era and
 -- TBC Anniversary client spellbooks. Runtime matching is deliberately ID-only.
 D.FAMILIES = {
@@ -38,17 +53,107 @@ D.FAMILIES = {
     family("unstableAffliction", "WARLOCK", "Unstable Affliction", { 30108,30404,30405 }),
     family("seedOfCorruption", "WARLOCK", "Seed of Corruption", { 27243 }),
     family("rend", "WARRIOR", "Rend", { 772,6546,6547,6548,11572,11573,11574,25208 }),
+    maintained("battleShout", "WARRIOR", "Battle Shout",
+        { 6673,5242,6192,11549,11550,11551,25289 }, {
+            auraUnit = "player", casterCentered = true,
+        }),
+
+    maintained("demoralizingShout", "WARRIOR", "Demoralizing Shout",
+        { 1160,6190,11554,11555,11556,25202 }, {
+            coverageGroup = "attackPowerReduction", casterCentered = true,
+        }),
+    maintained("thunderClap", "WARRIOR", "Thunder Clap",
+        { 6343,8198,8204,8205,11580,11581,25264 }, { casterCentered = true }),
+    maintained("sunderArmor", "WARRIOR", "Sunder Armor",
+        { 7386,7405,8380,11596,11597,25225 }, {
+            -- Sunder strength comes primarily from applications; rank remains
+            -- relevant when comparing otherwise equal stacks.
+            strengthFromApplications = true,
+        }),
+
+    maintained("demoralizingRoar", "DRUID", "Demoralizing Roar",
+        { 99,1735,9490,9747,9898,26998 }, {
+            coverageGroup = "attackPowerReduction",
+            formSpellIds = { [5487]=true, [9634]=true },
+            casterCentered = true,
+        }),
+    maintained("faerieFire", "DRUID", "Faerie Fire",
+        { 770,778,9749,9907,26993 }, { exclusiveGroup = "faerieFire" }),
+    maintained("faerieFireFeral", "DRUID", "Faerie Fire (Feral)",
+        { 16857,17390,17391,17392,27011 }, {
+            exclusiveGroup = "faerieFire",
+            formSpellIds = { [768]=true, [5487]=true, [9634]=true },
+        }),
+
+    maintained("huntersMark", "HUNTER", "Hunter's Mark", { 1130,14323,14324,14325 }),
+    maintained("scorpidSting", "HUNTER", "Scorpid Sting", { 3043 }),
+
+    maintained("exposeArmor", "ROGUE", "Expose Armor",
+        { 8647,8649,8650,11197,11198,26866 }),
+
+    maintained("curseOfWeakness", "WARLOCK", "Curse of Weakness",
+        { 702,1108,6205,7646,11707,11708,27224 }, {
+            coverageGroup = "attackPowerReduction", exclusiveGroup = "curse",
+        }),
+    maintained("curseOfRecklessness", "WARLOCK", "Curse of Recklessness",
+        { 704,7658,7659,11717,27226 }, { exclusiveGroup = "curse" }),
+    maintained("curseOfElements", "WARLOCK", "Curse of the Elements",
+        { 1490,11721,11722,27228 }, { exclusiveGroup = "curse" }),
+    maintained("curseOfShadow", "WARLOCK", "Curse of Shadow",
+        { 17862,17937,27229 }, { exclusiveGroup = "curse" }),
+    maintained("curseOfTongues", "WARLOCK", "Curse of Tongues",
+        { 1714,11719 }, { exclusiveGroup = "curse" }),
+
+    maintained("judgementOfLight", "PALADIN", "Judgement of Light",
+        { 20165,20347,20348,20349,27160 }, {
+            auraIds = { 20185,20344,20345,20346,27162 },
+            actionSpellId = 20271, exclusiveGroup = "judgement",
+            requiredPlayerAuraIds = { 20165,20347,20348,20349,27160 },
+        }),
+    maintained("judgementOfWisdom", "PALADIN", "Judgement of Wisdom",
+        { 20166,20356,20357,27166 }, {
+            auraIds = { 20186,20354,20355,27164 },
+            actionSpellId = 20271, exclusiveGroup = "judgement",
+            requiredPlayerAuraIds = { 20166,20356,20357,27166 },
+        }),
+    maintained("judgementOfCrusader", "PALADIN", "Judgement of the Crusader",
+        { 21082,20162,20305,20306,20307,20308,27158 }, {
+            auraIds = { 21183,20188,20300,20301,20302,20303,27159 },
+            actionSpellId = 20271, exclusiveGroup = "judgement",
+            requiredPlayerAuraIds = { 21082,20162,20305,20306,20307,20308,27158 },
+        }),
+    maintained("judgementOfJustice", "PALADIN", "Judgement of Justice",
+        { 20164 }, {
+            auraIds = { 20184 }, actionSpellId = 20271, exclusiveGroup = "judgement",
+            requiredPlayerAuraIds = { 20164 },
+        }),
+
+    maintained("stormstrike", "SHAMAN", "Stormstrike", { 17364 }, {
+        auraIds = { 17364,32175,32176 },
+    }),
 }
 
 local byKey = {}
+local coverageGroups = {}
 for index, definition in ipairs(D.FAMILIES) do
     definition.defaultPriority = index
     definition.auraIdSet = {}
     for _, spellId in ipairs(definition.auraIds) do definition.auraIdSet[spellId] = true end
+    if definition.requiredPlayerAuraIds then
+        definition.requiredPlayerAuraIdSet = {}
+        for _, spellId in ipairs(definition.requiredPlayerAuraIds) do
+            definition.requiredPlayerAuraIdSet[spellId] = true
+        end
+    end
     byKey[definition.key] = definition
+    if definition.coverageGroup then
+        coverageGroups[definition.coverageGroup] = coverageGroups[definition.coverageGroup] or {}
+        coverageGroups[definition.coverageGroup][#coverageGroups[definition.coverageGroup] + 1] = definition
+    end
 end
 
 function D.Get(key) return byKey[key] end
+function D.GetCoverageGroup(key) return coverageGroups[key] or {} end
 function D.ForClass(classToken)
     local result = {}
     for _, definition in ipairs(D.FAMILIES) do

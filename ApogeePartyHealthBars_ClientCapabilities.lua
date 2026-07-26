@@ -176,7 +176,7 @@ local FEATURES = {
         requires = { "groupFinderListings" },
     },
     dotReminders = {
-        label = "DoT reminders",
+        label = "DoT & Debuff reminders",
         requires = { "harmfulAuras", "spellbook", "dotActionState" },
     },
 }

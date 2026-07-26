@@ -72,11 +72,7 @@ M.Register("feed", feed, {
     headerHeight = 24,
     title = "LFG Alerts",
 })
-local dotChrome = M.Register("dot", dot, {
-    headerHeight = 20,
-    title = "DoT reminders",
-    insets = { left = 6, right = 6, top = 22, bottom = 6 },
-})
+local dotChrome = M.Register("dot", dot)
 
 assert(settings.topLevel and party.topLevel and feed.topLevel and dot.topLevel,
     "registered configuration surfaces were not native top-level frames")
@@ -103,14 +99,15 @@ assert(settingsChrome.foundation.shown and settingsChrome.foundation.color[1] ==
 assert(settingsChrome.body.color[4] == 1 and settingsChrome.header.color[4] == 1
         and settingsChrome.accent.color[4] == 1 and #settingsChrome.border == 4,
     "configuration chrome omitted its opaque hierarchy, accent, or border")
-assert(dotChrome.title.shown and dotChrome.title.text == "DoT reminders",
-    "compact configuration chrome omitted its label")
+assert(dotChrome.title == nil and dotChrome.header == nil
+        and dotChrome.foundation.shown,
+    "headerless reminder preview recreated title chrome or lost its background")
 
 M.SetConfigurationActive(false)
 assert(settings.strata == "DIALOG" and party.strata == "MEDIUM"
         and feed.strata == "DIALOG" and dot.strata == "MEDIUM",
     "configuration close did not restore original runtime strata")
-assert(not settingsChrome.foundation.shown and not dotChrome.title.shown,
+assert(not settingsChrome.foundation.shown and not dotChrome.foundation.shown,
     "configuration chrome leaked after configuration closed")
 
 M.SetConfigurationActive(true)

@@ -38,7 +38,7 @@ local configuredSelfAuraNames
 ApogeePartyHealthBars_Auras = {
     GetUnitAuraSnapshot = function() return { auras = {} } end,
     SnapshotHasAura = snapshotHasAura,
-    ConfigureBuffMatchers = function(_, _, _, selfNames)
+    ConfigureBuffMatchers = function(_, _, selfNames)
         configuredSelfAuraNames = selfNames
     end,
 }

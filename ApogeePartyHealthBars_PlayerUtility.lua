@@ -14,7 +14,7 @@ local function CreateSecureButton()
     local button = CreateFrame(
         "Button", "ApogeePartyHealthBarsSelfBuff" .. S.castBtnSerial, UIParent,
         "SecureUnitButtonTemplate, SecureActionButtonTemplate")
-    button:SetFrameStrata("TOOLTIP")
+    button:SetFrameStrata(C.SECURE_OVERLAY_STRATA)
     button:SetFrameLevel(102)
     button:SetAttribute("useOnKeyDown", false)
     button:SetAttribute("checkselfcast", false)

@@ -1,4 +1,4 @@
-ApogeePartyHealthBars_C = { MAX_ROWS = 1 }
+ApogeePartyHealthBars_C = { MAX_ROWS = 1, MAX_PARTY_BUFF_SLOTS = 2 }
 ApogeePartyHealthBars_S = {}
 ApogeePartyHealthBars_UnitAPI = { Exists = function() return true end }
 
@@ -17,11 +17,13 @@ end
 
 local primary = {
     unitId = "player", visible = true, btn = frame(true),
-    partyBuffIcon = frame(true), partyBuffCastBtn = frame(false),
+    partyBuffIcons = { frame(true), frame(true) },
+    partyBuffCastBtns = { frame(false), frame(false) },
 }
 local target = {
     unitId = "target", visible = true, btn = frame(true),
-    partyBuffIcon = frame(true), partyBuffCastBtn = frame(false),
+    partyBuffIcons = { frame(true), frame(true) },
+    partyBuffCastBtns = { frame(false), frame(false) },
 }
 local row = { btn = primary.btn, surfaces = { primary, target } }
 
@@ -39,7 +41,9 @@ layout.Register({
     ShowSecureFrame = function(value) value:Show() end,
     SetSecureMouseEnabled = function(value, enabled) value:EnableMouse(enabled) end,
     PositionSecureOverlay = function() return true end,
-    GetPartyBuffCastSpellName = function() return "Power Word: Fortitude" end,
+    GetPartyBuffCastSpellName = function(index)
+        return index == 1 and "Power Word: Fortitude" or "Divine Spirit"
+    end,
     PlayerUtility = {
         ApplyBinding = function() selfBindings = selfBindings + 1 end,
         HideSecureOverlay = function() end,
@@ -48,28 +52,45 @@ layout.Register({
 
 layout.ApplyAllPartyBuffBindings()
 layout.ApplyAllSelfBuffBindings()
-assert(primary.partyBuffCastBtn.attributes.unit == "player")
-assert(target.partyBuffCastBtn.attributes.unit == "target")
-assert(primary.partyBuffCastBtn.attributes.macrotext
+assert(primary.partyBuffCastBtns[1].attributes.unit == "player")
+assert(target.partyBuffCastBtns[1].attributes.unit == "target")
+assert(primary.partyBuffCastBtns[1].attributes.macrotext
     == "/cast [@player,help,nodead] Power Word: Fortitude")
-assert(target.partyBuffCastBtn.attributes.macrotext
+assert(target.partyBuffCastBtns[1].attributes.macrotext
     == "/cast [@target,help,nodead] Power Word: Fortitude")
-assert(primary.partyBuffCastBtn.shown and target.partyBuffCastBtn.shown)
+assert(primary.partyBuffCastBtns[2].attributes.macrotext
+    == "/cast [@player,help,nodead] Divine Spirit")
+assert(primary.partyBuffCastBtns[1].shown and primary.partyBuffCastBtns[2].shown
+        and target.partyBuffCastBtns[1].shown and target.partyBuffCastBtns[2].shown)
 assert(selfBindings == 1, "self-buff binding was not delegated")
 
 clickable = false
 layout.ApplyAllPartyBuffBindings()
 for _, surface in ipairs(row.surfaces) do
-    assert(surface.partyBuffCastBtn.attributes.unit == nil)
-    assert(not surface.partyBuffCastBtn.shown and not surface.partyBuffCastBtn.mouseEnabled)
-    assert(surface.partyBuffIcon.shown, "disabling clickability hid a reminder texture")
+    for index, button in ipairs(surface.partyBuffCastBtns) do
+        assert(button.attributes.unit == nil)
+        assert(not button.shown and not button.mouseEnabled)
+        assert(surface.partyBuffIcons[index].shown,
+            "disabling clickability hid a reminder texture")
+    end
 end
 
-local mutationCount = primary.partyBuffCastBtn.mutations + target.partyBuffCastBtn.mutations
+local mutationCount = 0
+for _, surface in ipairs(row.surfaces) do
+    for _, button in ipairs(surface.partyBuffCastBtns) do
+        mutationCount = mutationCount + button.mutations
+    end
+end
 clickable = true
 inCombat = true
 layout.ApplyAllPartyBuffBindings()
-assert(primary.partyBuffCastBtn.mutations + target.partyBuffCastBtn.mutations == mutationCount)
+local combatMutationCount = 0
+for _, surface in ipairs(row.surfaces) do
+    for _, button in ipairs(surface.partyBuffCastBtns) do
+        combatMutationCount = combatMutationCount + button.mutations
+    end
+end
+assert(combatMutationCount == mutationCount)
 assert(deferred == 1, "protected buff bindings did not defer as one transaction")
 
 print("PASS clickable buff reminders")

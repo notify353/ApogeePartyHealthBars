@@ -35,12 +35,6 @@ local function GetStatusColor(status)
     return color[1], color[2], color[3]
 end
 
-local function StyleText(fontString)
-    fontString:SetFontObject("GameFontHighlightSmall")
-    local fontPath, size = fontString:GetFont()
-    if fontPath and size then fontString:SetFont(fontPath, size, "OUTLINE") end
-end
-
 local function CreateVisuals(row)
     local rail = row.btn:CreateTexture(nil, "OVERLAY")
     rail:SetWidth(C.THREAT_RAIL_W)
@@ -60,24 +54,31 @@ local function CreateVisuals(row)
     fadeIn:SetDuration(0.20)
     fadeIn:SetOrder(2)
 
-    local text = row.bar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    text:SetPoint("RIGHT", row.barBg, "LEFT",
+    local barBg = row.btn:CreateTexture(nil, "BACKGROUND")
+    barBg:SetColorTexture(0.04, 0.04, 0.04, 0.80)
+    barBg:SetPoint("TOPRIGHT", row.barBg, "TOPLEFT",
         -(C.THREAT_RAIL_GAP + C.THREAT_RAIL_W + C.THREAT_TEXT_GAP), 0)
-    text:SetWidth(C.THREAT_TEXT_W)
-    text:SetJustifyH("RIGHT")
-    text:SetWordWrap(false)
-    text:SetMaxLines(1)
-    StyleText(text)
-    text:Hide()
+    barBg:SetPoint("BOTTOMRIGHT", row.barBg, "BOTTOMLEFT",
+        -(C.THREAT_RAIL_GAP + C.THREAT_RAIL_W + C.THREAT_TEXT_GAP), 0)
+    barBg:SetWidth(C.THREAT_TEXT_W)
+    barBg:Hide()
+
+    local fill = row.btn:CreateTexture(nil, "OVERLAY")
+    fill:SetPoint("TOPRIGHT", barBg, "TOPRIGHT", 0, 0)
+    fill:SetPoint("BOTTOMRIGHT", barBg, "BOTTOMRIGHT", 0, 0)
+    fill:SetWidth(0)
+    fill:Hide()
 
     row.threatRail = rail
     row.threatPulse = pulse
-    row.threatText = text
+    row.threatBarBg = barBg
+    row.threatBarFill = fill
 end
 
 local function HideRow(row, clearStatus)
     row.threatRail:Hide()
-    row.threatText:Hide()
+    row.threatBarBg:Hide()
+    row.threatBarFill:Hide()
     if clearStatus then row._threatStatus = nil end
 end
 
@@ -110,21 +111,20 @@ local function GetClosestChallenger(snapshot, tankUnit)
     return closest
 end
 
-local function SetMarginText(row, detail, snapshot)
+local function SetMarginBar(row, detail, snapshot)
     if not IsMarginEnabled() or not detail then
-        row.threatText:Hide()
+        row.threatBarBg:Hide()
+        row.threatBarFill:Hide()
         return
     end
 
     local displayPercent = detail.scaledPercent
-    local prefix = ""
     if detail.isTanking then
         displayPercent = math.max(0, 100 - GetClosestChallenger(snapshot, row.unitId))
-        prefix = "+"
     end
 
     local rounded = math.floor(displayPercent + 0.5)
-    row.threatText:SetText(string.format("%s%d%%", prefix, rounded))
+    local clamped = math.max(0, math.min(100, rounded))
 
     local r, g, b
     if detail.isTanking then
@@ -142,8 +142,10 @@ local function SetMarginText(row, detail, snapshot)
     else
         r, g, b = 0.85, 0.85, 0.85
     end
-    row.threatText:SetTextColor(r, g, b, 1)
-    row.threatText:Show()
+    row.threatBarFill:SetColorTexture(r, g, b, 1)
+    row.threatBarFill:SetWidth(C.THREAT_TEXT_W * clamped / 100)
+    row.threatBarBg:Show()
+    row.threatBarFill:Show()
 end
 
 local function RenderRow(row, snapshot)
@@ -166,7 +168,7 @@ local function RenderRow(row, snapshot)
         row.threatRail:Hide()
     end
 
-    SetMarginText(row, snapshot.details[row.unitId], snapshot)
+    SetMarginBar(row, snapshot.details[row.unitId], snapshot)
     row._threatStatus = status
 end
 

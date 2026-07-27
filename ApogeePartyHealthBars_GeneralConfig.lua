@@ -562,7 +562,7 @@ function G.Build(parent, deps)
         D.SyncVisualTicker()
     end
     AddCheckbox("Threat indicators", "threatEnabled", refreshThreatSetting)
-    AddCheckbox("Threat margin (current target)", "threatPercentEnabled", refreshThreatSetting)
+    AddCheckbox("Threat bar (current target)", "threatPercentEnabled", refreshThreatSetting)
     AddCheckbox("Unit target bars", "showUnitTargets")
     AddCheckbox("HoT duration bars", "hotEnabled", D.InitHotSpells)
 

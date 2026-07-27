@@ -84,6 +84,15 @@ local function dungeonNames(entry)
     return table.concat(result, "; ")
 end
 
+local function whisperDungeonNames(entry)
+    local result = {}
+    for _, key in ipairs(entry.dungeonKeys or {}) do
+        local dungeon = D.Catalog.GetDungeon(key)
+        result[#result + 1] = dungeon and dungeon.name or key
+    end
+    return table.concat(result, " / ")
+end
+
 local function previewEntry(role)
     local neededRole = role == "tank" and "tank" or "healer"
     return {
@@ -195,10 +204,12 @@ local function render()
                     end)
                 local canWhisper, whisperReason = D.Actions.CanWhisper(entry.sender)
                 configureAction(row.whisper, canWhisper,
-                    canWhisper and ("Open an empty whisper to " .. entry.sender .. ".")
+                    canWhisper and ("Open a prefilled, editable whisper to "
+                        .. entry.sender .. ".")
                         or whisperReason,
                     function()
-                        reportAction(D.Actions.OpenWhisper(entry.sender))
+                        reportAction(D.Actions.OpenWhisper(
+                            entry.sender, role, whisperDungeonNames(entry)))
                     end)
             end
             if entry.source == "guild" then

@@ -223,6 +223,7 @@ function UI.BuildEntries(snapshot, clientFlavor, atTime, role, playerLevel, leve
                 isGuild = request.source == "guild",
                 isBlizzard = request.source == "blizzard",
                 playerName = playerName,
+                dungeonName = dungeon.name,
             }
         end
     end
@@ -364,10 +365,12 @@ local function renderEntryActions(entryFrame, entry)
     local canWhisper, whisperReason = D.Actions.CanWhisper(entry.playerName)
     configureEntryAction(entryFrame.actions.whisper, canWhisper,
         canWhisper
-            and ("Open an empty whisper to " .. entry.playerName .. ".")
+            and ("Open a prefilled, editable whisper to "
+                .. entry.playerName .. ".")
             or whisperReason,
         function()
-            reportActionResult(D.Actions.OpenWhisper(entry.playerName))
+            reportActionResult(D.Actions.OpenWhisper(
+                entry.playerName, currentRole(), entry.dungeonName))
         end)
     actions[#actions + 1] = entryFrame.actions.whisper
 

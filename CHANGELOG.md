@@ -8,6 +8,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Replaced current-target threat percentages with compact, color-coded threat bars that grow from right to left.
 - Automatic Consumables now omits items already assigned to active Shortcuts, Keys, Wheel, or Buttons actions.
 - Dungeon Board and LFG Alert Whisper actions now open an editable message prefilled with the selected role and relevant dungeon; sending still requires the player to press Enter.
 

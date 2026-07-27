@@ -438,6 +438,20 @@ CB.Configure({
             + C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP
     end,
     IsAddonEnabled = IsEnabled,
+    IsItemAssigned = function(itemId)
+        for _, entry in pairs(T.GetSlots() or {}) do
+            if type(entry) == "table" and entry.kind == "item"
+                and entry.itemId == itemId then return true end
+        end
+        for _, feature in ipairs({ W, K, B }) do
+            local layoutKey = feature.GetActiveLayoutKey()
+            for _, entry in pairs(feature.GetSlots(layoutKey) or {}) do
+                if type(entry) == "table" and entry.kind == "item"
+                    and entry.itemId == itemId then return true end
+            end
+        end
+        return false
+    end,
     PositionSecureOverlay = PositionSecureOverlay,
     ShowSecureFrame = ShowSecureFrame,
     HideSecureFrame = HideSecureFrame,

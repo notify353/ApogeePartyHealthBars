@@ -42,7 +42,7 @@ local initialized = false
 local rebuildPending = false
 local totalCandidates = 0
 local layoutOffset = 0
-local requestLayout, syncTicker, getLeftOffset, isAddonEnabled
+local requestLayout, syncTicker, getLeftOffset, isAddonEnabled, isItemAssigned
 local positionSecureOverlay, showSecureFrame, hideSecureFrame, setSecureMouseEnabled, deferSecureUpdate
 
 local GRID_HEIGHT = C.SHORTCUT_ICON_SIZE * C.CONSUMABLE_ROWS
@@ -167,6 +167,7 @@ function B.Configure(deps)
     syncTicker = deps.SyncTicker
     getLeftOffset = assert(deps.GetLeftOffset)
     isAddonEnabled = deps.IsAddonEnabled
+    isItemAssigned = deps.IsItemAssigned
     positionSecureOverlay = assert(deps.PositionSecureOverlay)
     showSecureFrame = assert(deps.ShowSecureFrame)
     hideSecureFrame = assert(deps.HideSecureFrame)
@@ -194,7 +195,7 @@ function B.Rebuild(force)
     effectiveEnabled = PreferenceEnabled()
     local candidates, total = {}, 0
     if effectiveEnabled then
-        candidates, total = Items.ScanConsumables(C.CONSUMABLE_MAX_SLOTS)
+        candidates, total = Items.ScanConsumables(C.CONSUMABLE_MAX_SLOTS, isItemAssigned)
     end
     local changed = force == true or not SameCandidates(candidates)
         or totalCandidates ~= total
@@ -249,6 +250,10 @@ function B.OnBagUpdate()
         B.Refresh(false)
         return false
     end
+    return B.Rebuild(false)
+end
+
+function B.OnAssignmentsChanged()
     return B.Rebuild(false)
 end
 

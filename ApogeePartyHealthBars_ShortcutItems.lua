@@ -163,7 +163,7 @@ function I.IsConsumable(itemInfo)
     return false
 end
 
-function I.ScanConsumables(limit)
+function I.ScanConsumables(limit, excludeItem)
     limit = math.max(0, math.floor(tonumber(limit) or 0))
     local candidates, seen = {}, {}
     local firstBag = BACKPACK_CONTAINER or 0
@@ -174,6 +174,7 @@ function I.ScanConsumables(limit)
             local itemInfo = hyperlink or itemId
             local useEffectName = getUseEffect(itemInfo)
             if itemId and not seen[itemId] and not isQuestItem(bag, slot)
+                and (not excludeItem or not excludeItem(itemId))
                 and I.IsConsumable(itemInfo) and useEffectName ~= nil then
                 seen[itemId] = true
                 local name, icon = I.GetInfo(itemId)

@@ -1,5 +1,8 @@
 local whoCalls = {}
 local whisperCalls = {}
+SendChatMessage = function()
+    error("whisper action must not send chat automatically")
+end
 
 Enum = {
     SocialWhoOrigin = { Chat = 7 },
@@ -17,8 +20,8 @@ C_FriendList = {
     end,
 }
 ChatFrameUtil = {
-    SendTell = function(playerName)
-        whisperCalls[#whisperCalls + 1] = playerName
+    SendTellWithMessage = function(playerName, message)
+        whisperCalls[#whisperCalls + 1] = { playerName, message }
     end,
 }
 
@@ -40,19 +43,23 @@ assert(not available and reason:find("unavailable", 1, true),
     "Who ignored Blizzard's disabled Who-list rule")
 C_GameRules.IsGameRuleActive = function() return false end
 
-assert(Actions.OpenWhisper("Player-Realm"),
+assert(Actions.OpenWhisper("Player-Realm", "healer", "Wailing Caverns"),
     "whisper rejected a supported realm-qualified player")
-assert(#whisperCalls == 1 and whisperCalls[1] == "Player-Realm",
-    "whisper did not open the native composer for the exact name")
+assert(#whisperCalls == 1 and whisperCalls[1][1] == "Player-Realm"
+        and whisperCalls[1][2]
+            == "Hi, do you still need a Healer for Wailing Caverns?",
+    "whisper did not prefill the native composer for the exact player and dungeon")
 
 ChatFrameUtil = nil
-ChatFrame_SendTell = function(playerName)
-    whisperCalls[#whisperCalls + 1] = "legacy:" .. playerName
+ChatFrame_SendTellWithMessage = function(playerName, message)
+    whisperCalls[#whisperCalls + 1] = { "legacy:" .. playerName, message }
 end
-assert(Actions.OpenWhisper("Legacy-Realm")
-        and whisperCalls[2] == "legacy:Legacy-Realm",
-    "whisper did not fall back to the Classic legacy composer")
-ChatFrame_SendTell = nil
+assert(Actions.OpenWhisper("Legacy-Realm", "tank", "Blackrock Depths")
+        and whisperCalls[2][1] == "legacy:Legacy-Realm"
+        and whisperCalls[2][2]
+            == "Hi, do you still need a Tank for Blackrock Depths?",
+    "whisper did not prefill the Classic legacy composer")
+ChatFrame_SendTellWithMessage = nil
 available, reason = Actions.CanWhisper("Player-Realm")
 assert(not available and reason:find("unavailable", 1, true),
     "whisper accepted a missing native composer")
@@ -64,6 +71,16 @@ C_FriendList.SendWho = function() error("expected who failure") end
 local queried, queryFailure = Actions.QueryWho("Player-Realm")
 assert(not queried and queryFailure:find("expected who failure", 1, true),
     "Who API failure was not returned to the UI")
+
+ChatFrameUtil = {
+    SendTellWithMessage = function() error("expected whisper failure") end,
+}
+local whispered, whisperFailure = Actions.OpenWhisper(
+    "Player-Realm", "healer", "Wailing Caverns")
+assert(not whispered and whisperFailure:find("expected whisper failure", 1, true),
+    "whisper API failure was not returned to the UI")
+assert(#whisperCalls == 2,
+    "whisper action unexpectedly sent or recorded an additional message")
 
 assert(C_FriendList ~= nil,
     "action tests unexpectedly persisted Dungeon Board data")

@@ -6,6 +6,10 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Changed
+
+- Dungeon Board and LFG Alert Whisper actions now open an editable message prefilled with the selected role and relevant dungeon; sending still requires the player to press Enter.
+
 ## [0.45.0] - 2026-07-25
 
 ### Added

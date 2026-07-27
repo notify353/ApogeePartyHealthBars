@@ -150,8 +150,10 @@ UI.Build({
         CanWhisper = function(playerName)
             return playerName ~= nil, playerName and nil or "Player name is unavailable."
         end,
-        OpenWhisper = function(playerName)
-            actionCalls[#actionCalls + 1] = "whisper:" .. tostring(playerName)
+        OpenWhisper = function(playerName, whisperRole, dungeonText)
+            actionCalls[#actionCalls + 1] = table.concat({
+                "whisper", tostring(playerName), whisperRole, dungeonText,
+            }, ":")
             return true
         end,
     },
@@ -225,8 +227,9 @@ assert(countEntries(entries, function(entry)
 assert(countEntries(entries, function(entry)
         return entry.kind == "request" and entry.sourceText == "Feralas • 5s ago"
             and entry.detail == "Possible match"
+            and type(entry.dungeonName) == "string"
     end) == 4,
-    "ambiguous chat candidates were not placed under every possible dungeon")
+    "ambiguous chat candidates did not retain each enclosing dungeon")
 assert(countEntries(entries, function(entry)
         return entry.kind == "section"
             and (entry.text:find("Multiple dungeon options", 1, true)
@@ -483,9 +486,10 @@ assert(tooltipArguments
 guildWho.scripts.OnLeave()
 guildWho.scripts.OnClick()
 guildWhisper.scripts.OnClick()
-assert(actionCalls[1] == "who:Guildie" and actionCalls[2] == "whisper:Guildie"
+assert(actionCalls[1] == "who:Guildie"
+        and actionCalls[2] == "whisper:Guildie:healer:Blackrock Depths"
         and UI.IsShown(),
-    "Who or Whisper did not preserve the sender or unexpectedly close the board")
+    "Who or Whisper did not preserve its context or unexpectedly close the board")
 
 snapshot = {
     {
@@ -525,7 +529,7 @@ assert(guildWho.enabled and guildWhisper.enabled
         and guildWho.tooltip
             == "Search Who for OfficialLeader-Realm. Results appear in chat."
         and guildWhisper.tooltip
-            == "Open an empty whisper to OfficialLeader-Realm.",
+            == "Open a prefilled, editable whisper to OfficialLeader-Realm.",
     "official request did not retain Who and Whisper actions")
 
 snapshot[1].name = nil

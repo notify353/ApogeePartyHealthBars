@@ -26,10 +26,12 @@ local function whoIsDisabled()
 end
 
 local function getWhisperFunction()
-    if ChatFrameUtil and isFunction(ChatFrameUtil.SendTell) then
-        return ChatFrameUtil.SendTell
+    if ChatFrameUtil and isFunction(ChatFrameUtil.SendTellWithMessage) then
+        return ChatFrameUtil.SendTellWithMessage
     end
-    if isFunction(ChatFrame_SendTell) then return ChatFrame_SendTell end
+    if isFunction(ChatFrame_SendTellWithMessage) then
+        return ChatFrame_SendTellWithMessage
+    end
     return nil
 end
 
@@ -62,10 +64,15 @@ function Actions.CanWhisper(playerName)
     return true
 end
 
-function Actions.OpenWhisper(playerName)
+function Actions.OpenWhisper(playerName, role, dungeonText)
     local available, reason = Actions.CanWhisper(playerName)
     if not available then return false, reason end
-    local ok, failure = pcall(getWhisperFunction(), playerName)
+    local roleText = role == "tank" and "Tank" or "Healer"
+    local destination = type(dungeonText) == "string"
+        and dungeonText:find("%S") and dungeonText or "this dungeon"
+    local message = "Hi, do you still need a " .. roleText
+        .. " for " .. destination .. "?"
+    local ok, failure = pcall(getWhisperFunction(), playerName, message)
     if not ok then
         return false, "Could not open whisper: " .. tostring(failure)
     end

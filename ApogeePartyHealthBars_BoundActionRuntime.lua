@@ -166,6 +166,13 @@ function Factory.Create(options)
         if D and D.SyncTicker then D.SyncTicker() end
     end
 
+    local function notifyConsumableAssignmentsChanged()
+        local consumables = ApogeePartyHealthBars_ConsumableBar
+        if consumables and consumables.OnAssignmentsChanged then
+            consumables.OnAssignmentsChanged()
+        end
+    end
+
     local function clearSlotFeedback(slotId)
         previousStates[slotId], lastSoundAt[slotId], cooldownAlertArmed[slotId] = nil, nil, nil
         local icon = hudIcons[slotId]
@@ -599,6 +606,7 @@ function Factory.Create(options)
         -- Editing an action must never claim or repair physical bindings.
         -- Startup and lifecycle reconciliation own that state.
         W.RefreshSecureActions(); W.Refresh(); requestLayout()
+        notifyConsumableAssignmentsChanged()
         return true, "assigned |cff00ff00" .. spellName .. "|r to " .. slot.label .. ".", slotId
     end
 
@@ -623,6 +631,7 @@ function Factory.Create(options)
         WL.SetSlot(layoutKey, slotId, entry)
         clearSlotFeedback(slotId)
         W.RefreshSecureActions(); W.Refresh(); requestLayout()
+        notifyConsumableAssignmentsChanged()
         return true, "assigned |cff00ff00" .. itemName .. "|r to " .. slot.label .. ".", slotId
     end
 
@@ -716,6 +725,7 @@ function Factory.Create(options)
         WL.SetSlot(layoutKey, slotId, nil)
         clearSlotFeedback(slotId)
         W.RefreshSecureActions(); W.Refresh(); requestLayout()
+        notifyConsumableAssignmentsChanged()
         return true, slot.label .. " cleared."
     end
 
@@ -830,12 +840,14 @@ function Factory.Create(options)
     function W.OnActiveSpecChanged()
         local changed = WL.RefreshActiveContext()
         if changed then refreshActiveContext() end
+        notifyConsumableAssignmentsChanged()
         return changed
     end
 
     function W.OnStateChanged()
         rebaselineFeedback()
         W.Refresh()
+        notifyConsumableAssignmentsChanged()
     end
 
     function W.RefreshItemInfo()

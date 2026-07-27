@@ -125,6 +125,13 @@ local function IsSoundsEnabled()
     return true
 end
 
+local function NotifyConsumableAssignmentsChanged()
+    local consumables = ApogeePartyHealthBars_ConsumableBar
+    if consumables and consumables.OnAssignmentsChanged then
+        consumables.OnAssignmentsChanged()
+    end
+end
+
 local function GetSpellNameAndIcon(identifier)
     if C_Spell and C_Spell.GetSpellInfo then
         local info = C_Spell.GetSpellInfo(identifier)
@@ -853,6 +860,7 @@ function T.AssignSpell(slot, spellID, spellName)
     if not entry then return false, "could not store that spell." end
     entries[slot] = entry
     T.ResolveAndRefresh()
+    NotifyConsumableAssignmentsChanged()
     return true, "assigned |cff00ff00" .. (spellName or "spell") .. "|r to Shortcuts.", slot
 end
 
@@ -881,6 +889,7 @@ function T.AssignItem(slot, itemID, itemName)
     if not entry then return false, "could not store that item." end
     entries[slot] = entry
     T.ResolveAndRefresh()
+    NotifyConsumableAssignmentsChanged()
     return true, "assigned |cff00ff00" .. (itemName or "item") .. "|r to Shortcuts.", slot
 end
 
@@ -892,6 +901,7 @@ function T.ClearSlot(slot)
     if not entries or not entries[slot] then return false, "Unknown Shortcut slot." end
     table.remove(entries, slot)
     T.ResolveAndRefresh()
+    NotifyConsumableAssignmentsChanged()
     return true, "Shortcut cleared."
 end
 
@@ -909,6 +919,7 @@ function T.ResetDefaults()
     end
     S.charSv.shortcutDefaultsVersion = C.SHORTCUT_DEFAULTS_VERSION
     T.ResolveAndRefresh()
+    NotifyConsumableAssignmentsChanged()
     return true
 end
 

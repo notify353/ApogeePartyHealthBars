@@ -74,14 +74,20 @@ ApogeePartyHealthBars_AccessoryLayout = {
 }
 
 local bagIds = { 101, 102, 103, 104, 105, 106, 107, 108 }
+local assignedIds = {}
 ApogeePartyHealthBars_ShortcutItems = {
-    ScanConsumables = function(limit)
+    ScanConsumables = function(limit, excludeItem)
         local result = {}
-        for index, itemId in ipairs(bagIds) do
-            if index > limit then break end
-            result[index] = { itemId = itemId, itemName = "Item " .. itemId, icon = itemId * 10 }
+        for _, itemId in ipairs(bagIds) do
+            if not excludeItem or not excludeItem(itemId) then
+                result[#result + 1] = {
+                    itemId = itemId, itemName = "Item " .. itemId, icon = itemId * 10,
+                }
+            end
         end
-        return result, #bagIds
+        local total = #result
+        while #result > limit do table.remove(result) end
+        return result, total
     end,
     GetInfo = function(itemId) return "Item " .. itemId, itemId * 10 end,
     Evaluate = function(entry)
@@ -97,6 +103,7 @@ bar.Configure({
     SyncTicker = function() end,
     GetLeftOffset = function() return 300 end,
     IsAddonEnabled = function() return ApogeePartyHealthBars_S.sv.enabled end,
+    IsItemAssigned = function(itemId) return assignedIds[itemId] == true end,
     PositionSecureOverlay = function() return true end,
     ShowSecureFrame = function(frame) frame:Show() end,
     HideSecureFrame = function(frame) frame:Hide() end,
@@ -131,6 +138,16 @@ assert(nativeTooltip and nativeTooltip[1] == icons[1].castButton
 local shown, total, omitted = bar.GetStatus()
 assert(shown == 8 and total == 8 and omitted == 0,
     "consumable status counts were incorrect")
+
+assignedIds[102] = true
+bar.OnAssignmentsChanged()
+assert(#bar.GetEntries() == 7 and bar.GetEntries()[1].itemId == 101
+        and bar.GetEntries()[2].itemId == 103,
+    "manual addon assignments were not removed from automatic consumables")
+assignedIds[102] = nil
+bar.OnAssignmentsChanged()
+assert(#bar.GetEntries() == 8 and bar.GetEntries()[2].itemId == 102,
+    "cleared addon assignments did not return to automatic consumables")
 
 assert(bar.SetEnabled(false))
 assert(bar.GetWidth("player") == 0 and not icons[1]:IsShown()

@@ -12,7 +12,7 @@ ApogeePartyHealthBars_KeyActions = Factory.Create({
     layouts = Layouts,
     stateKey = "keyActions",
     featureId = "keys",
-    featureLabel = "Keys",
+    featureLabel = "Keyboard",
     slotNoun = "key",
     feedbackGlobal = "ApogeeKeysFeedback",
     feedbackLabel = function(slot) return slot.displayKey end,
@@ -29,9 +29,9 @@ ApogeePartyHealthBars_KeyActions = Factory.Create({
         end,
     },
     bindings = {
-        label = "Keys bindings",
-        claimedMessage = "Keys bindings claimed.",
-        releasedMessage = "Keys bindings restored.",
+        label = "Keyboard bindings",
+        claimedMessage = "Keyboard bindings claimed.",
+        releasedMessage = "Keyboard bindings restored.",
     },
-    allSlotsMessage = "All 15 Keys are assigned. Drop onto a key to replace it or clear one.",
+    allSlotsMessage = "All 15 Keyboard actions are assigned. Drop onto a key to replace it or clear one.",
 })

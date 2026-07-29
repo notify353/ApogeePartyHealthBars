@@ -252,7 +252,7 @@ for _, value in ipairs(calls) do
     if value == "minimap" then sawMinimap = true end
     if value:find("print:Compatibility:", 1, true) then sawCompatibility = true end
 end
-assert(sawKeys and sawMinimap and sawCompatibility and runtimeFailures.Wheel,
+assert(sawKeys and sawMinimap and sawCompatibility and runtimeFailures["Mouse Wheel"],
     "optional startup failure blocked later features or was not reported")
 ApogeePartyHealthBars_WheelMacros.InitializeSaved = originalWheelInitialize
 

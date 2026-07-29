@@ -31,7 +31,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `ActionMacros`: shared action-intent template rendering and documentation metadata, direct spell/item defaults, localized curated melee and stealth-safe families, dedicated repeating ranged-attack quality-of-life behavior, sound/macro extensions, custom-text detection, and 255-byte validation for Shortcuts, Keys, Wheel, and Buttons
 - `ActionConfig`: shared scrollable action-list scaffold and compact row state used by Healing, Shortcuts, Keys, Wheel, and Buttons, plus the focused macro editor used by the macro-capable features
 - `UIHelpers`: common buttons, dropdowns, tabs, scrolling, shared panel backdrops, and the non-action form scaffold used by Profiles, General, and Macros
-- `ConfigSurfaces`: opaque-black configuration chrome, compact anchor labels, native top-level interaction stacking, shared configuration strata, and combat-safe runtime-strata restoration
+- `ConfigSurfaces`: opt-in opaque-black configuration chrome, native top-level interaction stacking, shared configuration strata, and combat-safe runtime-strata restoration
 - `BoundActionLayouts`: shared per-spec class-state catalog and typed-action layout engine for native forms, secure stealth fallbacks, and composite Cat/Prowl state
 - `BoundActionBindings`: permanent binding-set-specific transactional claiming, reconciliation, conflict detection, restoration, and cross-feature rollback
 - `BoundActionRuntime`: per-instance Keys/Wheel/Buttons action evaluation, secure execution, HUD state, and feedback
@@ -61,9 +61,9 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `RaidMarkers`: compact right-aligned target marker controls with stable external height reporting
 - `Threat`: primary player/party threat
 - `BindingStore`, `BindingController`, `ClickBindings`: typed Healing spell/item persistence, adjacent gesture swaps, cursor-based destination assignment, and native unit-targeted secure actions
-- `GeneralConfig`: grouped General-tab visibility, feature toggles, alert preferences, HoT controls, compact position resets, and destructive reset confirmation
+- `GeneralConfig`: focused Frames, Action Display, Health & Chat, Buffs & Cleansing, Dungeon Board, and Maintenance pages; feature toggles, alert preferences, HoT controls, compact position resets, and destructive reset confirmation
 - `HealingConfig`: fixed-gesture Healing action rows, inline movement and clearing, display refresh, and right-click clearing compatibility
-- `ConfigUI`: settings-window shell, tab registry, activation, and cross-tab refresh routing
+- `ConfigUI`: compact fixed-size settings-window shell, five task-group navigation, contextual page registry, multi-page selectors, single-page headings, page-specific preview activation, and cross-page refresh routing
 - `ConfigController`, `MinimapController`: settings-mode, minimap lifecycle, and the Dungeon Board minimap access gesture
 - `ProfileStore`: character-owned named profiles, read-only account-profile migration, portable payload normalization, stable identity, and CRUD/copy/import mutations
 - `ProfileCodec`: native CBOR, Deflate, and URL-safe Base64 profile sharing with versioned metadata and bounded decoding
@@ -81,7 +81,9 @@ The data and pure-policy chain loads as `DungeonBoardCatalog` → `DungeonBoardA
 - Prefer player and pet Spellbook discovery for expansion-specific content. Preserve unavailable saved actions and preferences so profiles remain portable between supported clients.
 - Keep saved feature preferences separate from client support; unsupported features compute an effective disabled state without rewriting portable profile intent.
 - Keep volatile client APIs inside their domain adapters and capability detection; ordinary frame construction and widget methods remain direct.
-- Keep configuration-only chrome and cross-surface stacking inside `ConfigSurfaces`; feature modules own their content and direct position persistence, configuration must never reposition another surface, and normal gameplay must not retain configuration backing or elevation.
+- Keep configuration-only chrome and cross-surface stacking inside `ConfigSurfaces`; surfaces may opt out of automatic backing when their native content is sufficient. Feature modules own their content and direct position persistence, configuration must never reposition another surface, and normal gameplay must not retain configuration backing or elevation.
+- Keep Settings at its compact 480×460 footprint and preserve the simultaneous Spellbook, Settings, and live party-frame configuration workflow; add configuration depth through grouped pages and scrolling rather than a wider window.
+- Keep the party-frame preview visible throughout Settings, but activate Cleanse Watch, Target Effects, and LFG Alert samples only on the page that configures each surface.
 - Keep Dungeon Board catalog, activity mapping, classification, and eligibility independent from chat events, saved variables, and UI; keep search/result ingestion inside `DungeonBoardGroupFinder`, manual native player interactions inside `DungeonBoardActions`, chat payload knowledge inside the event adapter, and UI reads on immutable runtime snapshots.
 - Give Dungeon Board service/noise classifications precedence over dungeon requests, and preserve unresolved `DM`, Dire Maul, and Scarlet Monastery candidates instead of guessing or duplicating requests.
 - Preserve the original message alongside every plain-language Dungeon Board explanation; presentation may clarify known intent and catalog facts but must not invent an unstated role or resolve ambiguous slang.

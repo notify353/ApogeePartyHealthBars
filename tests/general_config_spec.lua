@@ -173,6 +173,12 @@ local deps = {
         end,
     },
     DungeonBoardSettings = {
+        GetRole = function() return saved.dungeonBoardRole or "healer" end,
+        SetRole = function(role)
+            saved.dungeonBoardRole = role
+            calls.dungeonRole = role
+            return true
+        end,
         GetFeedEnabled = function() return saved.dungeonBoardFeedEnabled ~= false end,
         SetFeedEnabled = function(enabled)
             saved.dungeonBoardFeedEnabled = enabled == true
@@ -257,18 +263,20 @@ assert(not valid and tostring(validationError):find("ApplyAllSecureBindings", 1,
 config.Build(Widget(), deps)
 config.Refresh()
 
-assert(config.GetForm().hint:GetText() == "Choose what the party bars show and how they behave."
+assert(config.GetPage() == "frames"
+        and config.GetForm().hint:GetText()
+            == "Choose party-frame visibility and behavior."
         and #config.GetForm().entries > 10 and not config.GetForm().status:IsShown(),
-    "General did not use the shared form hierarchy")
+    "Frames did not use the shared focused-page hierarchy")
 
 assert(config.GetRow("showAllSlots").check:GetChecked() == false
         and config.GetRow("combatUIAutoHide").check:GetChecked() == true
-        and config.GetRow("automaticConsumablesEnabled").check:GetChecked() == false
-        and config.GetRow("automaticConsumablesEnabled").label:GetText()
-            == "Automatic consumable buttons",
-    "saved General checkboxes did not refresh")
+        and config.GetRow("showAllSlots").label:GetText()
+            == "Show all 5 party frames while solo",
+    "saved frame checkboxes did not refresh")
 assert(config.GetRow("enabled") == nil,
     "General still exposed the redundant add-on enable checkbox")
+config.SetPage("buffsCleanse")
 assert(config.GetRow("partyBuffEnabled"):IsShown()
         and not config.GetRow("selfBuffEnabled"):IsShown()
         and config.GetRow("clickableBuffIcons"):IsShown(),
@@ -276,16 +284,21 @@ assert(config.GetRow("partyBuffEnabled"):IsShown()
 assert(config.GetRow("selfBuffPreference"):IsShown()
         and config.GetRow("selfBuffPreference").value.label:GetText():find("Inner Fire", 1, true),
     "self-buff preference did not display the active family")
+config.SetPage("healthChat")
 assert(config.GetRow("lowHealthSoundKey").value.selectedKey == "alarm_soft"
         and config.GetRow("lowHealthThreshold").value:GetText() == "50%"
         and config.GetRow("mentionAlertsEnabled").check:GetChecked()
         and config.GetRow("mentionSoundKey").value.selectedKey == "toast"
-        and config.GetRow("mentionHighlightEnabled").check:GetChecked()
+        and config.GetRow("mentionHighlightEnabled").check:GetChecked(),
+    "health and chat preferences did not refresh")
+config.SetPage("dungeon")
+assert(config.GetRow("dungeonBoardRole").value.selectedKey == "healer"
         and config.GetRow("dungeonBoardFeedEnabled").check:GetChecked()
         and config.GetRow("dungeonBoardSoundKey").value.selectedKey == "none"
         and config.GetRow("dungeonBoardLevelsBelow").value:GetText() == "10"
         and config.GetRow("dungeonBoardLevelsAbove").value:GetText() == "3",
-    "health-alert preferences did not refresh")
+    "Dungeon Board preferences did not refresh")
+config.SetPage("frames")
 assert(config.GetHotRow("renew"):IsShown()
         and not config.GetHotRow("renew").check:GetChecked()
         and not config.GetHotRow("rejuv"):IsShown(),
@@ -368,6 +381,7 @@ assert(calls.mentionSoundKey == "glass" and calls.mentionSoundPreview == 1,
 config.GetRow("dungeonBoardSoundKey").value.onSelect("alarm_soft")
 assert(calls.dungeonSoundKey == "alarm_soft" and calls.dungeonSoundPreview == 1,
     "Dungeon Board sound selection did not persist and preview")
+config.SetPage("dungeon")
 Click(config.GetRow("dungeonBoardLevelsBelow").decrease)
 Click(config.GetRow("dungeonBoardLevelsAbove").increase)
 config.Refresh()
@@ -390,10 +404,10 @@ assert(calls.barReset == 1 and calls.force == 1 and calls.settingsReset == 1
     "General reset controls changed their callbacks")
 Click(resets.prepareDisable)
 assert(calls.addonEnabled == nil
-        and resets.prepareDisable.label:GetText() == "Confirm Release",
+        and resets.prepareDisable.label:GetText() == "Confirm Restore",
     "prepare-to-disable action lost its confirmation arm")
 timerCallback()
-assert(resets.prepareDisable.label:GetText() == "Prepare to Disable",
+assert(resets.prepareDisable.label:GetText() == "Restore All",
     "prepare-to-disable timeout did not disarm")
 Click(resets.prepareDisable); Click(resets.prepareDisable)
 assert(calls.addonEnabled == false
@@ -412,6 +426,7 @@ assert(calls.factoryReset == 1 and resets.factory.label:GetText() == "Reset Char
 
 saved.threatEnabled = true
 unsupportedFeatures.threat = true
+config.SetPage("frames")
 config.Refresh()
 assert(config.GetRow("threatEnabled").check:GetChecked()
         and not config.GetRow("threatEnabled").check:IsEnabled()
@@ -422,6 +437,7 @@ unsupportedFeatures.threat = nil
 
 known.party, known.self, known.reminder = false, true, false
 selfOptions = { selfOptions[1], selfOptions[2] }
+config.SetPage("buffsCleanse")
 config.Refresh()
 assert(not config.GetRow("partyBuffEnabled"):IsShown()
         and config.GetRow("selfBuffEnabled"):IsShown()

@@ -4,17 +4,17 @@
     "classicEra": {
       "product": "wow_classic_era",
       "clientDirectory": "_classic_era_",
-      "clientVersion": "1.15.9.68808",
+      "clientVersion": "1.15.9.68940",
       "interface": 11509,
-      "exportedOn": "2026-07-21",
+      "exportedOn": "2026-07-29",
       "generatedDocumentationPath": "BlizzardInterfaceCode/Interface/AddOns/Blizzard_APIDocumentationGenerated"
     },
     "tbcAnniversary": {
       "product": "wow_anniversary",
       "clientDirectory": "_anniversary_",
-      "clientVersion": "2.5.6.68775",
+      "clientVersion": "2.5.6.68941",
       "interface": 20506,
-      "exportedOn": "2026-07-21",
+      "exportedOn": "2026-07-29",
       "generatedDocumentationPath": "BlizzardInterfaceCode/Interface/AddOns/Blizzard_APIDocumentationGenerated"
     }
   }

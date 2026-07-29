@@ -110,20 +110,21 @@ config.Refresh()
 assert(form.hint:GetText() == "Profiles belong to this character. Use Export and Import to share them."
         and #form.entries == 7,
     "Profiles did not use the shared compact form scaffold")
-assert(form.entries[1].frame.label:GetText() == "Current profile"
-        and form.entries[4].frame.label:GetText() == "Copy setup"
+assert(form.entries[1].frame.label:GetText() == "Selected profile"
+        and form.entries[4].frame.label:GetText()
+            == "Replace active setup from another profile"
         and form.entries[6].frame.label:GetText() == "Share",
     "Profiles did not preserve the intended three-part hierarchy")
-assert(buttons["Use"] and buttons["New"] and buttons["Duplicate"]
+assert(buttons["Activate Profile"] and buttons["Create"] and buttons["Duplicate"]
         and buttons["Rename"] and buttons["Delete"]
-        and buttons["Copy to Active"] and buttons["Export"] and buttons["Import"],
+        and buttons["Replace Active"] and buttons["Export"] and buttons["Import"],
     "Profiles compact controls were incomplete")
-assert(dropdowns[1].selectedKey == "default" and not buttons["Use"]:IsEnabled(),
+assert(dropdowns[1].selectedKey == "default" and not buttons["Activate Profile"]:IsEnabled(),
     "active profile selection did not refresh the compact controls")
 
 dropdowns[1].onSelect("raid")
-assert(buttons["Use"]:IsEnabled(),
-    "selecting an inactive profile did not enable Use")
+assert(buttons["Activate Profile"]:IsEnabled(),
+    "selecting an inactive profile did not enable profile activation")
 
 sharingSupported = false
 config.Refresh()

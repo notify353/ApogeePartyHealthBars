@@ -98,11 +98,11 @@ config.SetActionRowState(actionRow, {
 assert(actionRow.primary:GetText() == "Fireball"
         and actionRow.icon.texture == "Interface\\Icons\\Spell_Fire_FlameBolt"
         and actionRow.sound.selectedKey == "toast"
-        and actionRow.sound.tooltipTitle == "Cooldown alert"
+        and actionRow.sound.tooltipTitle == "Ready sound"
         and actionRow.sound.tooltipBody
             == "Plays when this action becomes ready after a meaningful cooldown or depleted charges."
         and actionRow.sound:IsEnabled() and actionRow.macro:IsEnabled()
-        and actionRow.macro.label:GetText() == "Macro*" and actionRow.up:IsEnabled()
+        and actionRow.macro.label:GetText() == "Custom" and actionRow.up:IsEnabled()
         and not actionRow.down:IsEnabled() and actionRow.clear:IsEnabled(),
     "shared action row did not render consistent filled controls")
 local healingRow = config.CreateActionRow(list.content, list.rowWidth, {

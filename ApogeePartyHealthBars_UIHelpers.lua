@@ -190,6 +190,7 @@ function H.CreateDropdown(parent, width, height, popupWidth)
     dismiss:SetAllPoints(UIParent)
     dismiss:SetFrameStrata("DIALOG")
     dismiss:SetFrameLevel(100)
+    if dismiss.SetToplevel then dismiss:SetToplevel(true) end
     dismiss:EnableMouse(true)
     dismiss:Hide()
 
@@ -197,6 +198,7 @@ function H.CreateDropdown(parent, width, height, popupWidth)
     popup:SetWidth(popupWidth)
     popup:SetFrameStrata("DIALOG")
     popup:SetFrameLevel(101)
+    if popup.SetToplevel then popup:SetToplevel(true) end
     popup:SetClampedToScreen(true)
     popup:EnableMouse(true)
     popup:Hide()
@@ -297,6 +299,11 @@ function H.CreateDropdown(parent, width, height, popupWidth)
             local optionButton = self.optionButtons[index]
             if not optionButton then
                 optionButton = H.CreateButton(popup, "", popupWidth - 4, height)
+                -- Classic Era does not consistently inherit a parent's raised
+                -- frame level for newly-created child frames. Keep menu choices
+                -- explicitly above both the popup backdrop and dismissal layer.
+                optionButton:SetFrameStrata("DIALOG")
+                optionButton:SetFrameLevel(102)
                 optionButton:SetPoint("TOPLEFT", popup, "TOPLEFT", 2, -(2 + (index - 1) * height))
                 optionButton.label:ClearAllPoints()
                 optionButton.label:SetPoint("LEFT", optionButton, "LEFT", 6, 0)
@@ -335,7 +342,9 @@ function H.CreateDropdown(parent, width, height, popupWidth)
             dismiss:EnableKeyboard(true)
         end
         dismiss:Show()
+        if dismiss.Raise then dismiss:Raise() end
         popup:Show()
+        if popup.Raise then popup:Raise() end
         arrow:SetText("^")
     end
 

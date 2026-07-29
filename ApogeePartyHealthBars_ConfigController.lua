@@ -145,9 +145,6 @@ function C.SetMode(active)
     end
     if active then
         S.configMode = true
-        if D.DotHud then D.DotHud.SetUnlocked(true) end
-        if D.DungeonBoardFeed then D.DungeonBoardFeed.SetUnlocked(true) end
-        if D.CleanseWatch then D.CleanseWatch.SetUnlocked(true) end
         S.configTab = S.configTab or "general"
         D.panel:EnableMouse(true)
         D.panel:RegisterForDrag("LeftButton")

@@ -166,7 +166,16 @@ local function render()
 
     if not enabled then entries = {} end
 
-    local displayEntries = unlocked and { previewEntry(role) } or entries
+    local configurationActive = D.ConfigSurfaces.IsConfigurationActive
+        and D.ConfigSurfaces.IsConfigurationActive() or false
+    local displayEntries
+    if unlocked then
+        displayEntries = { previewEntry(role) }
+    elseif configurationActive then
+        displayEntries = {}
+    else
+        displayEntries = entries
+    end
     if #displayEntries == 0 then
         for index = 1, MAX_ENTRIES do rows[index]:Hide() end
         frame:SetHeight(ROW_HEIGHT)

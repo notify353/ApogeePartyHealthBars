@@ -38,6 +38,10 @@ local function Widget(name)
         SetBackdrop = function(self, value) self.backdrop = value end,
         SetBackdropColor = function(self, ...) self.backdropColor = { ... } end,
         SetBackdropBorderColor = function(self, ...) self.backdropBorderColor = { ... } end,
+        SetFrameStrata = function(self, value) self.frameStrata = value end,
+        SetFrameLevel = function(self, value) self.frameLevel = value end,
+        SetToplevel = function(self, value) self.toplevel = value end,
+        Raise = function(self) self.raiseCount = (self.raiseCount or 0) + 1 end,
         SetHeight = function(self, value) self.height = value end,
         SetWidth = function(self, value) self.width = value end,
         SetSize = function(self, width, height) self.width, self.height = width, height end,
@@ -55,7 +59,7 @@ local function Widget(name)
     }
     local noops = {
         "SetPoint", "ClearAllPoints", "SetAllPoints",
-        "SetFrameStrata", "SetFrameLevel", "SetClampedToScreen", "EnableMouse",
+        "SetClampedToScreen", "EnableMouse",
         "SetJustifyH", "SetJustifyV", "SetWordWrap", "SetOwner",
     }
     for _, method in ipairs(noops) do methods[method] = function() end end
@@ -83,6 +87,13 @@ dropdown:SetOptions({
     { key = "one", label = "Option One" },
     { key = "two", label = "Option Two" },
 })
+assert(dropdown.dismiss.frameStrata == "DIALOG" and dropdown.dismiss.frameLevel == 100
+        and dropdown.dismiss.toplevel == true
+        and dropdown.popup.frameStrata == "DIALOG" and dropdown.popup.frameLevel == 101
+        and dropdown.popup.toplevel == true
+        and dropdown.optionButtons[1].frameStrata == "DIALOG"
+        and dropdown.optionButtons[1].frameLevel == 102,
+    "dropdown layers could be obscured by a top-level settings panel")
 dropdown:SetSelectionCallback(function(key) selected = key end)
 dropdown:SetArrowShown(false)
 assert(not dropdown.arrow:IsShown() and dropdown.arrowShown == false,
@@ -95,6 +106,8 @@ assert(dropdown:SetSelectedKey("two") == "two" and dropdown.label.text == "Optio
 dropdown.scripts.OnClick(dropdown)
 assert(dropdown.popup:IsShown() and dropdown.dismiss:IsShown() and dropdown.arrow.text == "^",
     "dropdown did not open its menu and dismissal layer")
+assert(dropdown.popup.raiseCount == 1 and dropdown.dismiss.raiseCount == 1,
+    "dropdown did not raise its menu and dismissal layer when opened")
 assert(dropdown.dismiss.keyboardEnabled, "dropdown did not enable its local Escape handler")
 dropdown.optionButtons[1].scripts.OnClick(dropdown.optionButtons[1])
 assert(selected == "one" and dropdown.selectedKey == "one" and dropdown.label.text == "Option One",

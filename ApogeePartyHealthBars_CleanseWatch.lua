@@ -38,7 +38,9 @@ local function isEnabled()
 end
 
 local function shouldShowFrame()
-    return isEnabled() or (unlocked and hasCapabilities())
+    if unlocked then return hasCapabilities() end
+    if S.configMode then return false end
+    return isEnabled()
 end
 
 local function formatTime(remaining)
@@ -600,6 +602,7 @@ function Watch.GetUnavailableReason()
     return hasCapabilities() and nil or "No supported cleanse spell learned."
 end
 function Watch.IsEnabled() return isEnabled() end
+function Watch.IsUnlocked() return unlocked end
 
 function Watch.SetUnlocked(value)
     local requested = value == true

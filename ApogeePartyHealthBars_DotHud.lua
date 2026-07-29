@@ -95,8 +95,14 @@ local function CreateIcon(index)
 end
 
 local function displayedSuggestions()
-    if unlocked and #configurationPreview > 0 then return configurationPreview end
+    if unlocked then return configurationPreview end
     return suggestions
+end
+
+local function ShouldShow()
+    if unlocked then return #configurationPreview > 0 end
+    if S.configMode then return false end
+    return #suggestions > 0
 end
 
 local function Layout()
@@ -143,11 +149,11 @@ function H.SetSuggestions(nextSuggestions)
     suggestions = nextSuggestions
     if unchanged then
         H.Tick()
-        anchor:SetShown(#suggestions > 0 or S.configMode == true)
+        anchor:SetShown(ShouldShow())
         return
     end
     Layout()
-    anchor:SetShown(#suggestions > 0 or S.configMode == true)
+    anchor:SetShown(ShouldShow())
 end
 
 function H.Tick()
@@ -169,7 +175,7 @@ function H.SetUnlocked(value)
     CS.SetSurfaceChromeShown("dot", nextUnlocked)
     if wasUnlocked ~= nextUnlocked then Layout() end
     for _, icon in ipairs(icons) do SetIconDraggable(icon) end
-    anchor:SetShown(nextUnlocked or #suggestions > 0)
+    anchor:SetShown(ShouldShow())
 end
 
 function H.IsUnlocked() return unlocked end
@@ -178,7 +184,7 @@ function H.SetConfigurationPreview(items)
     configurationPreview = items or {}
     if anchor and unlocked then
         Layout()
-        anchor:Show()
+        anchor:SetShown(ShouldShow())
     end
 end
 

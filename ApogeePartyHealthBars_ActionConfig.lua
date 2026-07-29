@@ -116,9 +116,9 @@ function AC.CreateActionRow(parent, width, options)
 
     local clear = UIH.CreateButton(row, "Clear", 40, 22)
     clear:SetPoint("RIGHT", row, "RIGHT", -4, 0)
-    local down = UIH.CreateButton(row, "Dn", 26, 22)
+    local down = UIH.CreateButton(row, "v", 26, 22)
     down:SetPoint("RIGHT", clear, "LEFT", -2, 0)
-    local up = UIH.CreateButton(row, "Up", 26, 22)
+    local up = UIH.CreateButton(row, "^", 26, 22)
     up:SetPoint("RIGHT", down, "LEFT", -2, 0)
     local macro = UIH.CreateButton(row, "Macro", 48, 22)
     macro:SetPoint("RIGHT", up, "LEFT", -2, 0)
@@ -127,8 +127,18 @@ function AC.CreateActionRow(parent, width, options)
     sound:SetPoint("RIGHT", macro, "LEFT", -2, 0)
     sound:SetShown(showSound)
     if showSound then
-        UIH.SetTooltip(sound, "Cooldown alert",
+        UIH.SetTooltip(sound, "Ready sound",
             "Plays when this action becomes ready after a meaningful cooldown or depleted charges.")
+    end
+    UIH.SetTooltip(up, "Previous trigger",
+        "Swap this complete assignment with the previous trigger.")
+    UIH.SetTooltip(down, "Next trigger",
+        "Swap this complete assignment with the next trigger.")
+    UIH.SetTooltip(clear, "Clear assignment",
+        "Remove this spell or item from the trigger.")
+    if showMacro then
+        UIH.SetTooltip(macro, "Edit macro",
+            "Review or customize the macro text used by this action.")
     end
     macro:SetShown(showMacro)
 
@@ -172,7 +182,7 @@ function AC.SetActionRowState(row, options)
     UIH.SetButtonEnabled(row.clear, active)
     UIH.SetButtonEnabled(row.up, active and options.canMoveUp == true)
     UIH.SetButtonEnabled(row.down, active and options.canMoveDown == true)
-    row.macro.label:SetText(active and options.macroCustomized and "Macro*" or "Macro")
+    row.macro.label:SetText(active and options.macroCustomized and "Custom" or "Macro")
 end
 
 function AC.CreateActionList(parent, frameName)

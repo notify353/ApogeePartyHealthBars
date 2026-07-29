@@ -11,7 +11,7 @@ ApogeePartyHealthBars_MouseButtonActions = Factory.Create({
     layouts = Layouts,
     stateKey = "mouseActions",
     featureId = "mouseButtons",
-    featureLabel = "Buttons",
+    featureLabel = "Mouse Buttons",
     slotNoun = "mouse button",
     feedbackGlobal = "ApogeeMouseButtonsFeedback",
     feedbackLabel = function(slot) return slot.label end,
@@ -30,9 +30,9 @@ ApogeePartyHealthBars_MouseButtonActions = Factory.Create({
     },
     bindings = {
         reclaimPreviousBindings = true,
-        label = "Buttons bindings",
-        claimedMessage = "Buttons bindings claimed.",
-        releasedMessage = "Buttons bindings restored.",
+        label = "Mouse Buttons bindings",
+        claimedMessage = "Mouse Buttons bindings claimed.",
+        releasedMessage = "Mouse Buttons bindings restored.",
     },
-    allSlotsMessage = "All 9 Buttons are assigned. Drop onto a button to replace it or clear one.",
+    allSlotsMessage = "All 9 Mouse Buttons actions are assigned. Drop onto a button to replace it or clear one.",
 })

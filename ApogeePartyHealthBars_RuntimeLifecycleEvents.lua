@@ -78,11 +78,11 @@ function L.Register(eventRouter, deps)
                         end
                     end
                 end)
-                RunStep("Healing bindings", S.InitializeClassDefaultBindings)
+                RunStep("Party Frame Clicks", S.InitializeClassDefaultBindings)
                 RunStep("Shortcuts", T.Initialize)
-                RunStep("Wheel", W.InitializeSaved)
-                RunStep("Keys", K.InitializeSaved)
-                RunStep("Buttons", B.InitializeSaved)
+                RunStep("Mouse Wheel", W.InitializeSaved)
+                RunStep("Keyboard", K.InitializeSaved)
+                RunStep("Mouse Buttons", B.InitializeSaved)
                 RunStep("Consumables", CB.Initialize)
                 RunStep("Physical bindings", function()
                     local bindingsOk, bindingsCode, bindingsDetail
@@ -109,7 +109,7 @@ function L.Register(eventRouter, deps)
                     if #unavailable > 0 or #failures > 0 then
                         deps.Print("Compatibility: " .. tostring(#unavailable)
                             .. " optional feature(s) unavailable and " .. tostring(#failures)
-                            .. " initialization failure(s) isolated. See General > Client compatibility.")
+                            .. " initialization failure(s) isolated. See Manage > Maintenance.")
                     end
                 end
 
@@ -121,9 +121,9 @@ function L.Register(eventRouter, deps)
 
             elseif event == "PLAYER_REGEN_DISABLED" then
                 RunStep("Combat UI fading", U.OnCombatStart)
-                RunStep("Wheel", W.OnCombatStarted)
-                RunStep("Keys", K.OnCombatStarted)
-                RunStep("Buttons", B.OnCombatStarted)
+                RunStep("Mouse Wheel", W.OnCombatStarted)
+                RunStep("Keyboard", K.OnCombatStarted)
+                RunStep("Mouse Buttons", B.OnCombatStarted)
                 if S.configMode then
                     deps.Print("config closed - combat started.")
                     deps.SetConfigMode(false)
@@ -134,9 +134,9 @@ function L.Register(eventRouter, deps)
                 RunStep("Combat UI fading", U.OnCombatEnd)
                 RunStep("Secure frames", F.FlushDeferredUpdates)
                 RunStep("Shortcuts", T.RefreshSecureActions)
-                RunStep("Wheel", W.OnCombatEnded)
-                RunStep("Keys", K.OnCombatEnded)
-                RunStep("Buttons", B.OnCombatEnded)
+                RunStep("Mouse Wheel", W.OnCombatEnded)
+                RunStep("Keyboard", K.OnCombatEnded)
+                RunStep("Mouse Buttons", B.OnCombatEnded)
                 RunStep("Consumables", CB.OnCombatEnded)
                 RunStep("Physical bindings", ReconcilePhysicalBindings)
                 RunStep("Threat", H.Refresh)
@@ -144,9 +144,9 @@ function L.Register(eventRouter, deps)
 
             elseif event == "PLAYER_TARGET_CHANGED" then
                 RunStep("Shortcuts", T.Rebaseline)
-                RunStep("Wheel", W.Refresh)
-                RunStep("Keys", K.Refresh)
-                RunStep("Buttons", B.Refresh)
+                RunStep("Mouse Wheel", W.Refresh)
+                RunStep("Keyboard", K.Refresh)
+                RunStep("Mouse Buttons", B.Refresh)
                 RunStep("Threat", H.Refresh)
                 S.RequestUpdate()
 

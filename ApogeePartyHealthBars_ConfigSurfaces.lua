@@ -144,11 +144,13 @@ function M.Register(key, frame, options)
         key = key,
         frame = frame,
         originalStrata = frame.GetFrameStrata and frame:GetFrameStrata() or nil,
+        automaticChrome = options.automaticChrome ~= false,
     }
     if frame.SetToplevel then frame:SetToplevel(true) end
     surface.chrome = createChrome(frame, options)
     surfaces[key] = surface
-    setChromeActive(surface.chrome, configurationActive)
+    setChromeActive(surface.chrome,
+        configurationActive and surface.automaticChrome)
     return surface.chrome
 end
 
@@ -202,7 +204,8 @@ function M.SetConfigurationActive(value)
     configurationActive = value == true
     if configurationActive then ensureRestoreFrame() end
     for _, surface in pairs(surfaces) do
-        setChromeActive(surface.chrome, configurationActive)
+        setChromeActive(surface.chrome,
+            configurationActive and surface.automaticChrome)
         if configurationActive and surface.frame.SetFrameStrata then
             surface.frame:SetFrameStrata("DIALOG")
         end

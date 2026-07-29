@@ -166,7 +166,7 @@ local FEATURES = {
     raidMarkers = { label = "Raid-marker controls", requires = { "raidMarkers" } },
     spellAssignment = { label = "Spellbook assignment", requires = { "spellbook" } },
     itemAssignment = { label = "Item assignment", requires = { "items" } },
-    boundActions = { label = "Keys, Wheel, and Buttons", requires = { "bindings" } },
+    boundActions = { label = "Keyboard, Mouse Wheel, and Mouse Buttons", requires = { "bindings" } },
     multiSpecLayouts = { label = "Per-specialization layouts", requires = { "specialization" } },
     formLayouts = { label = "Form and stance layouts", requires = { "forms" } },
     combatLogTracking = { label = "Combat-log tracking", requires = { "combatLog" } },

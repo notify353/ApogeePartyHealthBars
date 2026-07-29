@@ -21,6 +21,16 @@ local compatibilityRow, compatibilityLabel, prepareDisableRow, factoryRow
 local prepareDisableArmed, prepareDisableToken = false, 0
 local factoryResetArmed, factoryResetToken = false, 0
 local refreshing = false
+local activePage = "frames"
+
+local PAGE_HINTS = {
+    frames = "Choose party-frame visibility and behavior.",
+    actionDisplay = "Configure action feedback and consumable displays.",
+    healthChat = "Configure low-health and name-mention alerts.",
+    buffsCleanse = "Configure buff and cleansing reminders.",
+    dungeon = "Configure LFG results and alerts.",
+    maintenance = "Restore bindings or reset this character.",
+}
 
 local SUPPORT_FEATURE_BY_SETTING = {
     partyBuffEnabled = "auraReminders",
@@ -111,16 +121,25 @@ end
 local function DisarmPrepareDisable()
     prepareDisableArmed = false
     prepareDisableToken = prepareDisableToken + 1
-    if prepareDisableBtn then prepareDisableBtn.label:SetText("Prepare to Disable") end
+    if prepareDisableBtn then prepareDisableBtn.label:SetText("Restore All") end
 end
 
 local function Layout()
     local saved = D.GetSavedVariables() or {}
     local hotGlobal = D.IsHotEnabled()
     local disabled = saved.hotDisabled or {}
-    local entries = {
-        { frame = behaviorSection, height = 16, gap = 9 },
-    }
+    local entries = {}
+
+    for _, entry in ipairs(generalRows) do entry.frame:Hide() end
+    for _, entry in ipairs(hotRows) do entry.row:Hide() end
+    for _, frame in ipairs({
+        behaviorSection, alertsSection, dungeonBoardSection, displaySection,
+        hotSection, compatibilitySection, positionsSection, dangerSection,
+        resetRow, cleanseResetRow, lfgAlertsResetRow, dungeonBoardResetRow,
+        compatibilityRow, prepareDisableRow, factoryRow,
+    }) do
+        if frame then frame:Hide() end
+    end
 
     local function addSetting(svKey)
         local row = generalRowsByKey[svKey]
@@ -141,6 +160,8 @@ local function Layout()
             elseif row.svKey == "dungeonBoardFeedEnabled" then
                 SetCheckboxChecked(
                     row.frame.check, D.DungeonBoardSettings.GetFeedEnabled())
+            elseif row.svKey == "dungeonBoardRole" then
+                row.frame.value:SetSelectedKey(D.DungeonBoardSettings.GetRole())
             elseif row.svKey == "dungeonBoardSoundKey" then
                 row.frame.value:SetSelectedKey(D.DungeonBoardSettings.GetSoundKey())
             elseif row.svKey == "dungeonBoardLevelsBelow"
@@ -186,75 +207,9 @@ local function Layout()
         end
     end
 
-    addSetting("showAllSlots")
-    addSetting("combatUIAutoHide")
-    addSetting("actionFeedbackEnabled")
-    addSetting("automaticConsumablesEnabled")
-
-    entries[#entries + 1] = { frame = alertsSection, height = 16, gap = 10 }
-    addSetting("lowHealthThreshold")
-    addSetting("lowHealthSoundKey")
-    addSetting("mentionAlertsEnabled")
-    addSetting("mentionSoundKey")
-    addSetting("mentionHighlightEnabled")
-    addSetting("cleanseWatchEnabled")
-    addSetting("partyBuffEnabled")
-    addSetting("selfBuffEnabled")
-    addSetting("selfBuffPreference")
-    addSetting("clickableBuffIcons")
-
-    entries[#entries + 1] = { frame = dungeonBoardSection, height = 16, gap = 10 }
-    addSetting("dungeonBoardFeedEnabled")
-    addSetting("dungeonBoardSoundKey")
-    addSetting("dungeonBoardLevelsBelow")
-    addSetting("dungeonBoardLevelsAbove")
-
-    entries[#entries + 1] = { frame = displaySection, height = 16, gap = 10 }
-    addSetting("shieldEnabled")
-    addSetting("incomingHealEnabled")
-    addSetting("rangeCheckEnabled")
-    addSetting("threatEnabled")
-    addSetting("threatPercentEnabled")
-    addSetting("showUnitTargets")
-    addSetting("hotEnabled")
-
-    local knownHotCount = 0
-    for _, entry in ipairs(hotRows) do
-        if D.IsHotTrackKnown(entry.def.key) then knownHotCount = knownHotCount + 1 end
-    end
-    entries[#entries + 1] = {
-        frame = hotSection, height = 16, gap = 10, visible = knownHotCount > 0,
-    }
-    for _, entry in ipairs(hotRows) do
-        local visible = D.IsHotTrackKnown(entry.def.key)
-        entries[#entries + 1] = {
-            frame = entry.row, height = 32, indent = 12, visible = visible,
-        }
-        if visible then
-            SetCheckboxChecked(entry.row.check, not disabled[entry.def.key])
-            local supported, reason = GetSettingSupport("hotEnabled")
-            if hotGlobal and supported then
-                entry.row.check:Enable()
-                entry.row.label:SetTextColor(0.9, 0.9, 0.9)
-            else
-                entry.row.check:Disable()
-                entry.row.label:SetTextColor(0.45, 0.45, 0.45)
-            end
-            if UIH.SetUnavailableTooltip then
-                UIH.SetUnavailableTooltip(entry.row, supported and nil or reason)
-            end
-        end
-    end
-
     local unavailable = D.ClientCapabilities and D.ClientCapabilities.ListUnavailableFeatures() or {}
     local failures = D.ClientCapabilities and D.ClientCapabilities.ListRuntimeFailures() or {}
     local compatibilityVisible = #unavailable > 0 or #failures > 0
-    entries[#entries + 1] = {
-        frame = compatibilitySection, height = 16, gap = 10, visible = compatibilityVisible,
-    }
-    entries[#entries + 1] = {
-        frame = compatibilityRow, height = 42, visible = compatibilityVisible,
-    }
     if compatibilityVisible then
         local summary = {}
         if #unavailable > 0 then
@@ -278,14 +233,102 @@ local function Layout()
         end
     end
 
-    entries[#entries + 1] = { frame = positionsSection, height = 16, gap = 10 }
-    entries[#entries + 1] = { frame = resetRow, height = 32 }
-    entries[#entries + 1] = { frame = cleanseResetRow, height = 32 }
-    entries[#entries + 1] = { frame = lfgAlertsResetRow, height = 32 }
-    entries[#entries + 1] = { frame = dungeonBoardResetRow, height = 32 }
-    entries[#entries + 1] = { frame = dangerSection, height = 16, gap = 10 }
-    entries[#entries + 1] = { frame = prepareDisableRow, height = 32 }
-    entries[#entries + 1] = { frame = factoryRow, height = 32 }
+    if activePage == "frames" then
+        entries[#entries + 1] = { frame = behaviorSection, height = 16, gap = 9 }
+        addSetting("showAllSlots")
+        addSetting("combatUIAutoHide")
+        entries[#entries + 1] = { frame = displaySection, height = 16, gap = 10 }
+        addSetting("shieldEnabled")
+        addSetting("incomingHealEnabled")
+        addSetting("rangeCheckEnabled")
+        addSetting("threatEnabled")
+        addSetting("threatPercentEnabled")
+        local threatMargin = generalRowsByKey.threatPercentEnabled
+        local threatEnabled = D.IsSavedFeatureEnabled("threatEnabled")
+        if threatMargin and GetSettingSupport("threatPercentEnabled") then
+            if threatEnabled then
+                threatMargin.frame.check:Enable()
+                threatMargin.frame.label:SetTextColor(0.9, 0.9, 0.9)
+            else
+                threatMargin.frame.check:Disable()
+                threatMargin.frame.label:SetTextColor(0.45, 0.45, 0.45)
+            end
+        end
+        addSetting("showUnitTargets")
+        addSetting("hotEnabled")
+
+        local knownHotCount = 0
+        for _, entry in ipairs(hotRows) do
+            if D.IsHotTrackKnown(entry.def.key) then knownHotCount = knownHotCount + 1 end
+        end
+        entries[#entries + 1] = {
+            frame = hotSection, height = 16, gap = 10, visible = knownHotCount > 0,
+        }
+        for _, entry in ipairs(hotRows) do
+            local visible = D.IsHotTrackKnown(entry.def.key)
+            entries[#entries + 1] = {
+                frame = entry.row, height = 32, indent = 12, visible = visible,
+            }
+            if visible then
+                SetCheckboxChecked(entry.row.check, not disabled[entry.def.key])
+                local supported, reason = GetSettingSupport("hotEnabled")
+                if hotGlobal and supported then
+                    entry.row.check:Enable()
+                    entry.row.label:SetTextColor(0.9, 0.9, 0.9)
+                else
+                    entry.row.check:Disable()
+                    entry.row.label:SetTextColor(0.45, 0.45, 0.45)
+                end
+                if UIH.SetUnavailableTooltip then
+                    UIH.SetUnavailableTooltip(entry.row, supported and nil or reason)
+                end
+            end
+        end
+        entries[#entries + 1] = { frame = positionsSection, height = 16, gap = 10 }
+        entries[#entries + 1] = { frame = resetRow, height = 32 }
+    elseif activePage == "actionDisplay" then
+        entries[#entries + 1] = { frame = behaviorSection, height = 16, gap = 9 }
+        addSetting("actionFeedbackEnabled")
+        addSetting("automaticConsumablesEnabled")
+    elseif activePage == "healthChat" then
+        entries[#entries + 1] = { frame = alertsSection, height = 16, gap = 9 }
+        addSetting("lowHealthThreshold")
+        addSetting("lowHealthSoundKey")
+        addSetting("mentionAlertsEnabled")
+        addSetting("mentionSoundKey")
+        addSetting("mentionHighlightEnabled")
+    elseif activePage == "buffsCleanse" then
+        entries[#entries + 1] = { frame = alertsSection, height = 16, gap = 9 }
+        addSetting("cleanseWatchEnabled")
+        addSetting("partyBuffEnabled")
+        addSetting("selfBuffEnabled")
+        addSetting("selfBuffPreference")
+        addSetting("clickableBuffIcons")
+        entries[#entries + 1] = { frame = positionsSection, height = 16, gap = 10 }
+        entries[#entries + 1] = { frame = cleanseResetRow, height = 32 }
+    elseif activePage == "dungeon" then
+        entries[#entries + 1] = { frame = dungeonBoardSection, height = 16, gap = 9 }
+        addSetting("dungeonBoardRole")
+        addSetting("dungeonBoardFeedEnabled")
+        addSetting("dungeonBoardSoundKey")
+        addSetting("dungeonBoardLevelsBelow")
+        addSetting("dungeonBoardLevelsAbove")
+        entries[#entries + 1] = { frame = positionsSection, height = 16, gap = 10 }
+        entries[#entries + 1] = { frame = lfgAlertsResetRow, height = 32 }
+        entries[#entries + 1] = { frame = dungeonBoardResetRow, height = 32 }
+    else
+        entries[#entries + 1] = {
+            frame = compatibilitySection, height = 16, gap = 9,
+            visible = compatibilityVisible,
+        }
+        entries[#entries + 1] = {
+            frame = compatibilityRow, height = 42, visible = compatibilityVisible,
+        }
+        entries[#entries + 1] = { frame = dangerSection, height = 16, gap = 10 }
+        entries[#entries + 1] = { frame = prepareDisableRow, height = 32 }
+        entries[#entries + 1] = { frame = factoryRow, height = 32 }
+    end
+    form.hint:SetText(PAGE_HINTS[activePage] or PAGE_HINTS.frames)
     UIH.LayoutForm(form, entries)
 end
 
@@ -308,13 +351,38 @@ end
 
 local function AddDungeonBoardFeedPreference()
     local frame = CreateCheckboxRow(
-        form.content, "Show LFG Alerts", 0)
+        form.content, "Show looking-for-group alerts", 0)
     AddGeneralRow(frame, "dungeonBoardFeedEnabled")
     frame.check:SetScript("OnClick", function(self)
         if refreshing then return end
         D.DungeonBoardSettings.SetFeedEnabled(self:GetChecked())
         D.RequestConfigRefresh()
     end)
+end
+
+local function AddDungeonBoardRolePreference()
+    local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    label:SetPoint("LEFT", frame, "LEFT", 8, 0)
+    label:SetWidth(155)
+    label:SetJustifyH("LEFT")
+    label:SetText("Watch for groups needing")
+
+    local value = UIH.CreateDropdown(frame, 220, 22)
+    value:SetOptions({
+        { key = "healer", label = "Healer" },
+        { key = "tank", label = "Tank" },
+    })
+    value:SetPoint("RIGHT", frame, "RIGHT", -5, 0)
+    value:SetSelectionCallback(function(role)
+        if refreshing then return end
+        D.DungeonBoardSettings.SetRole(role)
+        D.RequestConfigRefresh()
+    end)
+
+    frame.value = value
+    frame.label = label
+    AddGeneralRow(frame, "dungeonBoardRole")
 end
 
 local function AddSelfBuffPreference()
@@ -515,56 +583,57 @@ function G.Build(parent, deps)
     behaviorSection = UIH.CreateFormSection(form.content, form.rowWidth, "Behavior")
     alertsSection = UIH.CreateFormSection(form.content, form.rowWidth, "Alerts and reminders")
     dungeonBoardSection = UIH.CreateFormSection(form.content, form.rowWidth, "Dungeon Board")
-    displaySection = UIH.CreateFormSection(form.content, form.rowWidth, "Bar display")
-    hotSection = UIH.CreateFormSection(form.content, form.rowWidth, "Tracked HoTs")
+    displaySection = UIH.CreateFormSection(form.content, form.rowWidth, "Frame details")
+    hotSection = UIH.CreateFormSection(form.content, form.rowWidth, "Tracked heal-over-time effects")
     compatibilitySection = UIH.CreateFormSection(form.content, form.rowWidth,
         "Client compatibility")
     positionsSection = UIH.CreateFormSection(form.content, form.rowWidth, "Positions")
     dangerSection = UIH.CreateFormSection(form.content, form.rowWidth, "Danger")
 
-    AddCheckbox("Show all 5 slots when solo", "showAllSlots")
-    AddCheckbox("Auto-hide Blizzard UI in combat", "combatUIAutoHide", function()
+    AddCheckbox("Show all 5 party frames while solo", "showAllSlots")
+    AddCheckbox("Fade selected Blizzard HUD elements in combat", "combatUIAutoHide", function()
         local saved = D.GetSavedVariables()
         D.CombatUIFader.ApplyEnabledState(saved and saved.combatUIAutoHide)
     end)
-    AddCheckbox("Show action feedback text", "actionFeedbackEnabled", function()
+    AddCheckbox("Show brief action feedback text", "actionFeedbackEnabled", function()
         D.ActionHud.Clear()
     end)
-    AddCheckbox("Automatic consumable buttons", "automaticConsumablesEnabled", function()
+    AddCheckbox("Show automatic consumables from carried bags", "automaticConsumablesEnabled", function()
         local saved = D.GetSavedVariables()
         D.ConsumableBar.SetEnabled(saved and saved.automaticConsumablesEnabled)
     end)
     AddLowHealthThresholdPreference()
     AddLowHealthSoundPreference()
-    AddCheckbox("Player name mention alerts", "mentionAlertsEnabled")
+    AddCheckbox("Alert when chat mentions my character", "mentionAlertsEnabled")
     AddMentionSoundPreference()
-    AddCheckbox("Highlight my name in chat", "mentionHighlightEnabled")
-    AddCheckbox("Show movable Cleanse Watch", "cleanseWatchEnabled", function()
+    AddCheckbox("Highlight my character name in chat", "mentionHighlightEnabled")
+    AddCheckbox("Show Cleanse Watch for removable party debuffs", "cleanseWatchEnabled", function()
         D.CleanseWatch.RefreshCapabilities()
     end)
+    AddDungeonBoardRolePreference()
     AddDungeonBoardFeedPreference()
     AddDungeonBoardSoundPreference()
     AddDungeonBoardLevelOffsetPreference(
         "dungeonBoardLevelsBelow", "Levels below your character", "below")
     AddDungeonBoardLevelOffsetPreference(
         "dungeonBoardLevelsAbove", "Levels above your character", "above")
-    AddCheckbox("Missing party buff icons", "partyBuffEnabled")
-    AddCheckbox("Missing self-buff or aura icon", "selfBuffEnabled")
+    AddCheckbox("Show missing party-buff reminders", "partyBuffEnabled")
+    AddCheckbox("Show missing self-buff or aura reminder", "selfBuffEnabled")
     AddSelfBuffPreference()
-    AddCheckbox("Clickable buff reminder icons", "clickableBuffIcons", function()
+    AddCheckbox("Click a buff reminder to cast it", "clickableBuffIcons", function()
         D.ApplyAllSecureBindings()
     end)
-    AddCheckbox("Shield overlay", "shieldEnabled")
-    AddCheckbox("Incoming heal overlay", "incomingHealEnabled")
+    AddCheckbox("Show shield amount", "shieldEnabled")
+    AddCheckbox("Show incoming healing", "incomingHealEnabled")
     AddCheckbox("Fade out-of-range party members", "rangeCheckEnabled")
     local function refreshThreatSetting()
         D.Threat.Refresh()
         D.SyncVisualTicker()
     end
-    AddCheckbox("Threat indicators", "threatEnabled", refreshThreatSetting)
-    AddCheckbox("Threat bar (current target)", "threatPercentEnabled", refreshThreatSetting)
-    AddCheckbox("Unit target bars", "showUnitTargets")
-    AddCheckbox("HoT duration bars", "hotEnabled", D.InitHotSpells)
+    AddCheckbox("Show party threat status", "threatEnabled", refreshThreatSetting)
+    AddCheckbox("Show threat margin for the current target", "threatPercentEnabled", refreshThreatSetting)
+    AddCheckbox("Show each party member's target and target-of-target", "showUnitTargets")
+    AddCheckbox("Show heal-over-time duration bars", "hotEnabled", D.InitHotSpells)
 
     for _, def in ipairs(C.HOT_SPELL_DEFINITIONS) do
         local frame = CreateCheckboxRow(form.content, def.canonical, 4)
@@ -589,18 +658,18 @@ function G.Build(parent, deps)
 
     resetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local resetWidth = (form.rowWidth - 22) / 3
-    resetBarBtn = UIH.CreateButton(resetRow, "Reset Bars", resetWidth, 22)
+    resetBarBtn = UIH.CreateButton(resetRow, "Party Frames", resetWidth, 22)
     resetBarBtn:SetPoint("LEFT", resetRow, "LEFT", 5, 0)
     resetBarBtn:SetScript("OnClick", function()
         D.ApplyDefaultPosition()
         D.ForceRefresh()
     end)
 
-    resetSettingsBtn = UIH.CreateButton(resetRow, "Reset Settings", resetWidth, 22)
+    resetSettingsBtn = UIH.CreateButton(resetRow, "Settings Window", resetWidth, 22)
     resetSettingsBtn:SetPoint("LEFT", resetBarBtn, "RIGHT", 6, 0)
     resetSettingsBtn:SetScript("OnClick", D.ApplyDefaultConfigPosition)
 
-    resetMinimapBtn = UIH.CreateButton(resetRow, "Reset Minimap", resetWidth, 22)
+    resetMinimapBtn = UIH.CreateButton(resetRow, "Minimap Button", resetWidth, 22)
     resetMinimapBtn:SetPoint("LEFT", resetSettingsBtn, "RIGHT", 6, 0)
     resetMinimapBtn:SetScript("OnClick", D.ApplyDefaultMinimapPosition)
 
@@ -640,8 +709,8 @@ function G.Build(parent, deps)
     prepareDisableRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local prepareDisableLabel = prepareDisableRow:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     prepareDisableLabel:SetPoint("LEFT", prepareDisableRow, "LEFT", 8, 0)
-    prepareDisableLabel:SetText("Restore Keys & Wheel bindings first")
-    prepareDisableBtn = UIH.CreateButton(prepareDisableRow, "Prepare to Disable", 142, 22)
+    prepareDisableLabel:SetText("Restore keyboard, wheel, and mouse button bindings")
+    prepareDisableBtn = UIH.CreateButton(prepareDisableRow, "Restore All", 118, 22)
     prepareDisableBtn:SetPoint("RIGHT", prepareDisableRow, "RIGHT", -5, 0)
     prepareDisableLabel:SetPoint("RIGHT", prepareDisableBtn, "LEFT", -8, 0)
     prepareDisableLabel:SetJustifyH("LEFT")
@@ -651,7 +720,7 @@ function G.Build(parent, deps)
             prepareDisableArmed = true
             prepareDisableToken = prepareDisableToken + 1
             local token = prepareDisableToken
-            prepareDisableBtn.label:SetText("Confirm Release")
+            prepareDisableBtn.label:SetText("Confirm Restore")
             if C_Timer and C_Timer.After then
                 C_Timer.After(5, function()
                     if prepareDisableToken == token then DisarmPrepareDisable() end
@@ -662,7 +731,7 @@ function G.Build(parent, deps)
 
         DisarmPrepareDisable()
         if D.SetAddonEnabled(false) then
-            D.Print("Keys, Wheel, and Buttons bindings restored. You can now disable the addon in WoW's AddOns manager.")
+            D.Print("Keyboard, Mouse Wheel, and Mouse Buttons bindings restored. You can now disable the addon in WoW's AddOns manager.")
         end
     end)
 
@@ -698,6 +767,16 @@ function G.Refresh()
     refreshing = true
     Layout()
     refreshing = false
+end
+
+function G.SetPage(pageKey)
+    if not PAGE_HINTS[pageKey] then pageKey = "frames" end
+    activePage = pageKey
+    G.Refresh()
+end
+
+function G.GetPage()
+    return activePage
 end
 
 function G.GetRow(svKey)

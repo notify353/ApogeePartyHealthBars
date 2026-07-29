@@ -398,15 +398,16 @@ assert(ApogeePartyHealthBars_DotHud.GetAnchor() == nil,
     "DoT reminder HUD was unexpectedly created before its first use")
 ApogeePartyHealthBars_DotHud.SetUnlocked(true)
 local preLoginConfigDotAnchor = ApogeePartyHealthBars_DotHud.GetAnchor()
-assert(preLoginConfigDotAnchor and preLoginConfigDotAnchor.shown
+assert(preLoginConfigDotAnchor and not preLoginConfigDotAnchor.shown
         and preLoginConfigDotAnchor.width == 140
         and preLoginConfigDotAnchor.height == 24,
-    "opening configuration did not create a visible, nonzero reminder HUD preview")
+    "opening configuration exposed a blank reminder HUD before samples were available")
 ApogeePartyHealthBars_DotHud.SetConfigurationPreview({
     { key = "preview", label = "Preview", spellId = 1160, icon = 132154, preview = true },
 })
 local previewDotIcon = ApogeePartyHealthBars_DotHud.GetIcons()[1]
-assert(previewDotIcon and previewDotIcon.dragButtons[1] == "LeftButton"
+assert(preLoginConfigDotAnchor.shown
+        and previewDotIcon and previewDotIcon.dragButtons[1] == "LeftButton"
         and type(previewDotIcon.scripts.OnDragStart) == "function"
         and type(previewDotIcon.scripts.OnDragStop) == "function",
     "configuration example icon did not forward dragging to the reminder HUD")
@@ -520,9 +521,8 @@ assert(geometry.GetRowTotalHeight("player")
 ApogeePartyHealthBars_S.configMode = true
 ApogeePartyHealthBars_S.RequestLayoutUpdate()
 RunFrameUpdates()
-assert(ApogeePartyHealthBars_ConfigSurfaces.Get("party").chrome.foundation:IsShown()
-        and ApogeePartyHealthBars_ConfigSurfaces.Get("party").chrome.foundation.color[4] == 1,
-    "Party Health configuration preview did not use its solid background")
+assert(not ApogeePartyHealthBars_ConfigSurfaces.Get("party").chrome.foundation:IsShown(),
+    "Party Health configuration preview retained its oversized solid background")
 assert(ApogeePartyHealthBars_ConfigSurfaces.Get("party").chrome.header == nil
         and ApogeePartyHealthBars_ConfigSurfaces.Get("party").chrome.accent == nil,
     "Party Health configuration preview retained its empty header chrome")
@@ -794,12 +794,14 @@ local configSurfaces = ApogeePartyHealthBars_ConfigSurfaces
 local expectedConfigSurfaceKeys = { "settings", "party", "feed", "dot", "cleanse" }
 for _, key in ipairs(expectedConfigSurfaceKeys) do
     local surface = assert(configSurfaces.Get(key), "missing configuration surface: " .. key)
-    assert(surface.chrome.active and surface.chrome.foundation:IsShown()
+    local shouldShowChrome = key == "settings"
+    assert(surface.chrome.active == shouldShowChrome
+            and surface.chrome.foundation:IsShown() == shouldShowChrome
             and surface.chrome.foundation.color[1] == 0
             and surface.chrome.foundation.color[2] == 0
             and surface.chrome.foundation.color[3] == 0
             and surface.chrome.foundation.color[4] == 1,
-        "configuration surface lacked an opaque black foundation: " .. key)
+        "configuration surface chrome did not match the active settings page: " .. key)
     assert(surface.frame.topLevel and surface.frame.frameStrata == "DIALOG",
         "configuration surface did not join native active-window stacking: " .. key)
 end
@@ -819,8 +821,12 @@ assert(ApogeePartyHealthBars_ConfigUI.prepareDisableButton
         == ApogeePartyHealthBars_GeneralConfig.GetPrepareDisableButton(),
     "ConfigUI did not bridge the binding-safe disable preparation control")
 assert(table.concat(ApogeePartyHealthBars_ConfigUI.tabOrder, ",")
-        == "general,dots,healing,keys,wheel,buttons,shortcuts,macros,profiles",
-    "settings tabs did not follow the core-to-advanced order")
+        == "frames,actions,reminders,dungeon,manage",
+    "settings groups did not follow the compact task order")
+assert(table.concat(ApogeePartyHealthBars_ConfigUI.pageOrder, ",")
+        == "frames,healing,shortcuts,actionDisplay,keys,wheel,buttons,"
+            .. "healthChat,buffsCleanse,dots,dungeon,profiles,macros,maintenance",
+    "settings pages did not retain every configuration workflow")
 assert(SpellBookFrame:IsShown(), "opening settings did not open the spellbook")
 assert(spellbookOpenCount == 1, "spellbook did not open exactly once")
 assert(directSpellbookToggleCount == 0, "add-on called ToggleSpellBook directly")
@@ -892,9 +898,31 @@ assert(existingShortcutButton.shown and existingShortcutButton.mouseEnabled
 SpellBookFrame:Hide()
 
 ApogeePartyHealthBars_S.configMode = true
-for _, key in ipairs({ "profiles", "general", "healing", "shortcuts", "keys", "wheel", "macros" }) do
+for _, key in ipairs({
+    "frames", "healing", "shortcuts", "actionDisplay", "keys", "wheel",
+    "buttons", "healthChat", "buffsCleanse", "dots", "dungeon",
+    "profiles", "macros", "maintenance",
+}) do
     ApogeePartyHealthBars_ConfigUI.ActivateTab(key)
     assert(ApogeePartyHealthBars_S.configTab == key, "could not activate settings tab: " .. key)
+    assert(ApogeePartyHealthBars_DotHud.IsUnlocked() == (key == "dots")
+            and ApogeePartyHealthBars_CleanseWatch.IsUnlocked()
+                == (key == "buffsCleanse")
+            and ApogeePartyHealthBars_DungeonBoardFeed.IsUnlocked()
+                == (key == "dungeon"),
+        "settings tab exposed an unrelated configuration preview: " .. key)
+    assert((key == "dots" or not ApogeePartyHealthBars_DotHud.GetAnchor():IsShown())
+            and (key == "buffsCleanse"
+                or not ApogeePartyHealthBars_CleanseWatch.GetFrame():IsShown())
+            and (key == "dungeon"
+                or not ApogeePartyHealthBars_DungeonBoardFeed.GetFrame():IsShown()),
+        "settings tab left an unrelated auxiliary surface visible: " .. key)
+    local singlePageGroup = key == "frames" or key == "dungeon"
+    assert(ApogeePartyHealthBars_ConfigUI.pageDropdown:IsShown()
+            == not singlePageGroup
+            and ApogeePartyHealthBars_ConfigUI.pageTitle:IsShown()
+                == singlePageGroup,
+        "single-page settings group did not use a static page heading: " .. key)
     ApogeePartyHealthBars_ConfigUI.RefreshTab(key, true)
 end
 ApogeePartyHealthBars_ConfigUI.ActivateTab("profiles")

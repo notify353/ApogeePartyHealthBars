@@ -96,7 +96,7 @@ function P.Refresh()
     copyArmed = false
     importArmed = nil
     deleteButton.label:SetText("Delete")
-    copyButton.label:SetText("Copy to Active")
+    copyButton.label:SetText("Replace Active")
     updateControls()
 end
 
@@ -171,15 +171,15 @@ function P.Build(parent, deps)
         "Profiles belong to this character. Use Export and Import to share them.")
     statusText = form.status
 
-    currentSection = UIH.CreateFormSection(form.content, form.rowWidth, "Current profile")
+    currentSection = UIH.CreateFormSection(form.content, form.rowWidth, "Selected profile")
     profileRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
-    profileDropdown = UIH.CreateDropdown(profileRow, form.rowWidth - 111, 22,
-        form.rowWidth - 111)
+    profileDropdown = UIH.CreateDropdown(profileRow, form.rowWidth - 135, 22,
+        form.rowWidth - 135)
     profileDropdown:SetPoint("LEFT", profileRow, "LEFT", 5, 0)
     profileDropdown:SetSelectionCallback(function(id)
         selectedProfileId = id; deleteArmed = false; deleteButton.label:SetText("Delete"); updateControls()
     end)
-    useButton = UIH.CreateButton(profileRow, "Use", 96, 22)
+    useButton = UIH.CreateButton(profileRow, "Activate Profile", 120, 22)
     useButton:SetPoint("LEFT", profileDropdown, "RIGHT", 5, 0)
     useButton:SetScript("OnClick", function()
         local ok, message = D.ActivateProfile(selectedProfileId)
@@ -188,7 +188,7 @@ function P.Build(parent, deps)
 
     actionsRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local actionWidth = (form.rowWidth - 28) / 4
-    newButton = UIH.CreateButton(actionsRow, "New", actionWidth, 22)
+    newButton = UIH.CreateButton(actionsRow, "Create", actionWidth, 22)
     newButton:SetPoint("LEFT", actionsRow, "LEFT", 5, 0)
     duplicateButton = UIH.CreateButton(actionsRow, "Duplicate", actionWidth, 22)
     duplicateButton:SetPoint("LEFT", newButton, "RIGHT", 6, 0)
@@ -229,21 +229,22 @@ function P.Build(parent, deps)
         selectedProfileId = D.ProfileStore.GetActiveId(); P.Refresh(); setStatus("Profile deleted.", true)
     end)
 
-    copySection = UIH.CreateFormSection(form.content, form.rowWidth, "Copy setup")
+    copySection = UIH.CreateFormSection(form.content, form.rowWidth,
+        "Replace active setup from another profile")
     copyRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     copyDropdown = UIH.CreateDropdown(copyRow, form.rowWidth - 142, 22,
         form.rowWidth - 142)
     copyDropdown:SetPoint("LEFT", copyRow, "LEFT", 5, 0)
     copyDropdown:SetSelectionCallback(function(id)
-        copySourceId = id; copyArmed = false; copyButton.label:SetText("Copy to Active"); updateControls()
+        copySourceId = id; copyArmed = false; copyButton.label:SetText("Replace Active"); updateControls()
     end)
-    copyButton = UIH.CreateButton(copyRow, "Copy to Active", 126, 22)
+    copyButton = UIH.CreateButton(copyRow, "Replace Active", 126, 22)
     copyButton:SetPoint("LEFT", copyDropdown, "RIGHT", 6, 0)
     copyButton:SetScript("OnClick", function()
         if not copyArmed then
             copyArmed = true
-            copyButton.label:SetText("Confirm Copy")
-            setStatus("Copying replaces the active profile's current setup. Click again to confirm.")
+            copyButton.label:SetText("Confirm Replace")
+            setStatus("This replaces the active profile with the selected source. Click again to confirm.")
             return
         end
         local ok, message = D.MutateActiveProfile(function()
@@ -319,10 +320,16 @@ function P.Build(parent, deps)
     shareCancel:SetPoint("BOTTOMRIGHT", shareFrame, "BOTTOMRIGHT", -10, 10)
     sharePrimary = UIH.CreateButton(shareFrame, "Review Import", 108, 22)
     sharePrimary:SetPoint("RIGHT", shareCancel, "LEFT", -8, 0)
-    shareMerge = UIH.CreateButton(shareFrame, "Merge", 72, 22)
+    shareMerge = UIH.CreateButton(shareFrame, "Merge Selected", 96, 22)
     shareMerge:SetPoint("RIGHT", sharePrimary, "LEFT", -8, 0); shareMerge:Hide()
-    shareReplace = UIH.CreateButton(shareFrame, "Replace", 72, 22)
+    shareReplace = UIH.CreateButton(shareFrame, "Replace Selected", 104, 22)
     shareReplace:SetPoint("RIGHT", shareMerge, "LEFT", -8, 0); shareReplace:Hide()
+    if UIH.SetTooltip then
+        UIH.SetTooltip(shareMerge, "Merge into selected profile",
+            "Apply imported values while keeping settings that are absent from the import.")
+        UIH.SetTooltip(shareReplace, "Replace selected profile",
+            "Rebuild the selected profile from the imported setup.")
+    end
     shareCancel:SetScript("OnClick", closeShare)
     sharePrimary:SetScript("OnClick", function()
         if sharePrimary.mode == "create" then commitImport("create") else showImportPreview() end

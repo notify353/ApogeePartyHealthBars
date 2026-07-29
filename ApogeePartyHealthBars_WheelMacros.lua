@@ -17,7 +17,7 @@ ApogeePartyHealthBars_WheelMacros = Factory.Create({
     layouts = Layouts,
     stateKey = "wheelMacros",
     featureId = "wheel",
-    featureLabel = "Wheel",
+    featureLabel = "Mouse Wheel",
     slotNoun = "wheel gesture",
     feedbackGlobal = "ApogeeWheelFeedback",
     feedbackLabel = function(slot) return slot.label end,
@@ -35,9 +35,9 @@ ApogeePartyHealthBars_WheelMacros = Factory.Create({
     bindings = {
         defaultPreviousAction = defaultPreviousAction,
         reclaimPreviousBindings = true,
-        label = "Wheel bindings",
-        claimedMessage = "Wheel bindings claimed.",
-        releasedMessage = "Wheel bindings restored.",
+        label = "Mouse Wheel bindings",
+        claimedMessage = "Mouse Wheel bindings claimed.",
+        releasedMessage = "Mouse Wheel bindings restored.",
     },
     allSlotsMessage = "All wheel gestures are assigned. Drop onto a gesture to replace it or clear one.",
 })

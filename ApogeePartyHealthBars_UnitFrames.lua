@@ -54,12 +54,8 @@ function F.Build(D)
         ApplyDefaultPosition()
     end
     
-    local panelBackdropMode = nil
-    
     local function ApplyPanelChrome()
-        if panelBackdropMode == S.configMode then return end
-        panelBackdropMode = S.configMode
-        D.ConfigSurfaces.SetSurfaceChromeShown("party", S.configMode)
+        D.ConfigSurfaces.SetSurfaceChromeShown("party", false)
     end
     
     
@@ -74,7 +70,9 @@ function F.Build(D)
     panel:SetClampedToScreen(true)
     panel:SetFrameStrata("MEDIUM")
     panel:SetPoint(C.DEFAULT_ANCHOR, UIParent, C.DEFAULT_REL, C.DEFAULT_X, C.DEFAULT_Y)
-    D.ConfigSurfaces.Register("party", panel)
+    D.ConfigSurfaces.Register("party", panel, {
+        automaticChrome = false,
+    })
     ApplyPanelChrome()
     panel:Hide()
     

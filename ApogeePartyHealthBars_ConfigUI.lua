@@ -13,15 +13,19 @@ local AC = ApogeePartyHealthBars_ActionConfig
 local UIH = ApogeePartyHealthBars_UIHelpers
 
 ApogeePartyHealthBars_ConfigUI = {}
-
 local UI = ApogeePartyHealthBars_ConfigUI
+
 local built = false
 local D
+local configPanel, profileLabel, pageDropdown, pageTitle
+local profilesTab, generalTab, dotsTab, healingTab, shortcutsTab
+local keysTab, wheelTab, buttonsTab, macrosTab
+local pages, groups, allFrames = {}, {}, {}
+local pageOrder, groupOrder = {}, { "frames", "actions", "reminders", "dungeon", "manage" }
 
-local configPanel
-local profilesTab, generalTab, dotsTab, healingTab, shortcutsTab, keysTab, wheelTab, buttonsTab, macrosTab
-local profileLabel
-local tabs, tabOrder = {}, {}
+local LEGACY_PAGE_KEYS = {
+    general = "frames",
+}
 
 local function SaveConfigPosition()
     if not S.sv or not configPanel then return end
@@ -50,8 +54,7 @@ local function RestoreConfigPosition()
     configPanel:ClearAllPoints()
     if S.sv and type(S.sv.configX) == "number" and type(S.sv.configY) == "number" then
         local ok = pcall(
-            configPanel.SetPoint,
-            configPanel,
+            configPanel.SetPoint, configPanel,
             S.sv.configPoint or C.CONFIG_DEFAULT_ANCHOR,
             UIParent,
             S.sv.configRelPoint or C.CONFIG_DEFAULT_REL,
@@ -65,9 +68,7 @@ end
 
 local function AttachConfigDragHandle(frame)
     frame:RegisterForDrag("LeftButton")
-    frame:SetScript("OnDragStart", function()
-        configPanel:StartMoving()
-    end)
+    frame:SetScript("OnDragStart", function() configPanel:StartMoving() end)
     frame:SetScript("OnDragStop", function()
         configPanel:StopMovingOrSizing()
         SaveConfigPosition()
@@ -79,43 +80,21 @@ local function IsFeatureSupported(featureKey)
         or D.ClientCapabilities.IsFeatureAvailable(featureKey)
 end
 
-local function StyleTabButton(btn, active, supported)
-    UIH.StyleTabButton(btn, active, supported)
+local function NormalizePageKey(key)
+    key = LEGACY_PAGE_KEYS[key] or key
+    return pages[key] and key or "frames"
 end
 
-local function CreateTabButton(parent, text, xOffset, width)
-    return UIH.CreateTabButton(parent, text, xOffset, width)
-end
-
-local function SetConfigTab(tabName)
-    UIH.CloseActiveDropdown()
-    if not tabs[tabName] or not IsFeatureSupported(tabs[tabName].featureKey) then
-        tabName = "general"
-    end
-    AC.CloseEditor()
-    S.configTab = tabName
-    for _, key in ipairs(tabOrder) do
-        local spec = tabs[key]
-        local active = key == tabName
-        spec.frame:SetShown(active)
-        StyleTabButton(spec.button, active, IsFeatureSupported(spec.featureKey))
-    end
-end
-
-local function RegisterTab(spec)
-    assert(type(spec) == "table" and type(spec.key) == "string", "invalid config tab")
-    assert(not tabs[spec.key], "duplicate config tab: " .. spec.key)
-    tabs[spec.key] = spec
-    tabOrder[#tabOrder + 1] = spec.key
-end
-
-local function RefreshTab(key, ...)
-    local spec = tabs[key]
-    if spec and spec.refresh then spec.refresh(...) end
-end
-
-local function RefreshActiveTab(...)
-    RefreshTab(S.configTab or "general", ...)
+local function RegisterPage(spec)
+    assert(type(spec) == "table" and type(spec.key) == "string"
+        and type(spec.group) == "string" and spec.frame, "invalid configuration page")
+    assert(not pages[spec.key], "duplicate configuration page: " .. spec.key)
+    pages[spec.key] = spec
+    pageOrder[#pageOrder + 1] = spec.key
+    local group = groups[spec.group]
+    assert(group, "unknown configuration group: " .. spec.group)
+    group.pages[#group.pages + 1] = spec.key
+    allFrames[spec.frame] = true
 end
 
 local function RefreshProfileLabel()
@@ -126,14 +105,104 @@ local function RefreshProfileLabel()
     end
 end
 
+local function ConfigurePage(spec)
+    if spec.configure then spec.configure() end
+    if spec.hint then
+        spec.hint:SetText(spec.summary or "")
+        spec.hint:SetWidth(252)
+    end
+end
+
+local function PageOptions(group)
+    local options = {}
+    for _, key in ipairs(group.pages) do
+        local spec = pages[key]
+        local label = spec.label
+        if not IsFeatureSupported(spec.featureKey) then
+            label = label .. "  |cff777777(unavailable)|r"
+        end
+        options[#options + 1] = { key = key, label = label }
+    end
+    return options
+end
+
+local function StyleNavigation(activeGroup)
+    for _, key in ipairs(groupOrder) do
+        local group = groups[key]
+        UIH.StyleTabButton(group.button, key == activeGroup, true)
+    end
+end
+
+local function SetContextualPreviews(pageKey)
+    local active = S.configMode == true
+    if not active then return end
+    if D.DotHud then D.DotHud.SetUnlocked(active and pageKey == "dots") end
+    if D.CleanseWatch then
+        D.CleanseWatch.SetUnlocked(active and pageKey == "buffsCleanse")
+    end
+    if D.DungeonBoardFeed then
+        D.DungeonBoardFeed.SetUnlocked(active and pageKey == "dungeon")
+    end
+end
+
+local function SetConfigPage(pageKey)
+    UIH.CloseActiveDropdown()
+    pageKey = NormalizePageKey(pageKey)
+    local spec = pages[pageKey]
+    if not IsFeatureSupported(spec.featureKey) then
+        pageKey = groups[spec.group].pages[1]
+        spec = pages[pageKey]
+        if not IsFeatureSupported(spec.featureKey) then
+            pageKey, spec = "frames", pages.frames
+        end
+    end
+
+    AC.CloseEditor()
+    for frame in pairs(allFrames) do frame:Hide() end
+    ConfigurePage(spec)
+    spec.frame:Show()
+    S.configTab = pageKey
+    S.configGroup = spec.group
+    SetContextualPreviews(pageKey)
+
+    local group = groups[spec.group]
+    StyleNavigation(spec.group)
+    local hasPageChoices = #group.pages > 1
+    pageDropdown:SetShown(hasPageChoices)
+    pageTitle:SetShown(not hasPageChoices)
+    if hasPageChoices then
+        pageDropdown:SetOptions(PageOptions(group))
+        pageDropdown:SetSelectedKey(pageKey)
+    else
+        pageTitle:SetText(spec.label)
+    end
+    if spec.refresh then spec.refresh() end
+    return true
+end
+
+local function SetConfigGroup(groupKey)
+    local group = groups[groupKey] or groups.frames
+    local selected = S.configTab and pages[S.configTab]
+    local pageKey = selected and selected.group == group.key and selected.key or group.pages[1]
+    return SetConfigPage(pageKey)
+end
+
+local function RefreshTab(key, ...)
+    key = NormalizePageKey(key)
+    local spec = pages[key]
+    if not spec then return end
+    if spec.configure then spec.configure() end
+    if spec.refresh then spec.refresh(...) end
+end
+
+local function RefreshActivePage(...)
+    RefreshProfileLabel()
+    RefreshTab(S.configTab or "frames", ...)
+end
+
 local function RefreshConfigPanel()
     if not S.configMode or not configPanel:IsShown() then return end
-
-    RefreshProfileLabel()
-
-    GC.Refresh()
-
-    if S.configTab ~= "general" then RefreshActiveTab() end
+    RefreshActivePage()
 end
 
 local function BuildGeneralConfigDeps()
@@ -150,7 +219,8 @@ function UI.Build(deps)
     built = true
     D = deps
 
-    configPanel = CreateFrame("Frame", "ApogeePartyHealthBarsBindPanel", UIParent, "BackdropTemplate")
+    configPanel = CreateFrame("Frame", "ApogeePartyHealthBarsBindPanel",
+        UIParent, "BackdropTemplate")
     configPanel:SetSize(C.BIND_PANEL_W, C.BIND_PANEL_H)
     configPanel:SetPoint(C.CONFIG_DEFAULT_ANCHOR, UIParent, C.CONFIG_DEFAULT_REL,
         C.CONFIG_DEFAULT_X, C.CONFIG_DEFAULT_Y)
@@ -177,7 +247,9 @@ function UI.Build(deps)
 
     profileLabel = header:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     profileLabel:SetPoint("BOTTOMLEFT", header, "BOTTOMLEFT", 2, 3)
-    profileLabel:SetWidth(300); profileLabel:SetJustifyH("LEFT"); profileLabel:SetWordWrap(false)
+    profileLabel:SetWidth(300)
+    profileLabel:SetJustifyH("LEFT")
+    profileLabel:SetWordWrap(false)
     profileLabel:SetText("Profile: Loading...")
 
     local versionLabel = header:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
@@ -190,8 +262,8 @@ function UI.Build(deps)
     closeButton:SetScript("OnClick", function() D.SetConfigMode(false) end)
 
     AC.Initialize(configPanel, D.ApplyBackdrop)
-
     D.RefreshProfileLabel = RefreshProfileLabel
+
     profilesTab = PC.Build(configPanel, D)
     generalTab = GC.Build(configPanel, BuildGeneralConfigDeps())
     dotsTab = DC.Build(configPanel, D)
@@ -202,36 +274,123 @@ function UI.Build(deps)
     buttonsTab = BC.Build(configPanel, D)
     macrosTab = MC.Build(configPanel, D)
 
-    RegisterTab({ key = "general", label = "General", frame = generalTab, refresh = RefreshConfigPanel })
-    RegisterTab({ key = "dots", label = "Debuffs", frame = dotsTab, refresh = DC.Refresh,
-        featureKey = "dotReminders" })
-    RegisterTab({ key = "healing", label = "Healing", frame = healingTab, refresh = HC.Refresh })
-    RegisterTab({ key = "keys", label = "Keys", frame = keysTab, refresh = KC.Refresh,
-        featureKey = "boundActions" })
-    RegisterTab({ key = "wheel", label = "Wheel", frame = wheelTab, refresh = WC.Refresh,
-        featureKey = "boundActions" })
-    RegisterTab({ key = "buttons", label = "Buttons", frame = buttonsTab, refresh = BC.Refresh,
-        featureKey = "boundActions" })
-    RegisterTab({ key = "shortcuts", label = "Shortcuts", frame = shortcutsTab, refresh = SC.Refresh })
-    RegisterTab({ key = "macros", label = "Macros", frame = macrosTab, refresh = MC.Refresh })
-    RegisterTab({ key = "profiles", label = "Profiles", frame = profilesTab, refresh = PC.Refresh })
-
-    local tabWidth = (C.BIND_PANEL_W - C.BIND_PAD * 2 - (#tabOrder - 1) * 4) / #tabOrder
-    for index, key in ipairs(tabOrder) do
-        local spec = tabs[key]
-        spec.button = CreateTabButton(configPanel, spec.label,
-            C.BIND_PAD + (index - 1) * (tabWidth + 4), tabWidth)
-        AttachConfigDragHandle(spec.button)
-        local supported = IsFeatureSupported(spec.featureKey)
-        local reason = not supported and D.ClientCapabilities.GetFeatureReason(spec.featureKey) or nil
-        if UIH.SetUnavailableTooltip then UIH.SetUnavailableTooltip(spec.button, reason) end
-        spec.button:SetScript("OnClick", function()
-            if not IsFeatureSupported(spec.featureKey) then return end
-            SetConfigTab(key)
-            RefreshTab(key)
-        end)
+    local groupLabels = {
+        frames = "Frames",
+        actions = "Actions",
+        reminders = "Reminders",
+        dungeon = "Dungeon",
+        manage = "Manage",
+    }
+    for _, key in ipairs(groupOrder) do
+        groups[key] = { key = key, label = groupLabels[key], pages = {} }
     end
-    SetConfigTab(S.configTab)
+
+    RegisterPage({
+        key = "frames", group = "frames", label = "Party Frames",
+        frame = generalTab, configure = function() GC.SetPage("frames") end,
+        refresh = GC.Refresh, hint = GC.GetForm().hint,
+        summary = "Choose party-frame visibility and behavior.",
+    })
+    RegisterPage({
+        key = "healing", group = "actions", label = "Party Frame Clicks",
+        frame = healingTab, refresh = HC.Refresh, hint = HC.GetHint(),
+        summary = "Assign clicks used on Apogee unit frames.",
+    })
+    RegisterPage({
+        key = "shortcuts", group = "actions", label = "Shortcut Bar",
+        frame = shortcutsTab, refresh = SC.Refresh, hint = SC.GetList().hint,
+        summary = "Configure actions below the party frame.",
+    })
+    RegisterPage({
+        key = "actionDisplay", group = "actions", label = "Action Display",
+        frame = generalTab, configure = function() GC.SetPage("actionDisplay") end,
+        refresh = GC.Refresh, hint = GC.GetForm().hint,
+        summary = "Configure action feedback and consumable displays.",
+    })
+    RegisterPage({
+        key = "keys", group = "actions", label = "Keyboard",
+        frame = keysTab, refresh = KC.Refresh, hint = KC.GetList().hint,
+        featureKey = "boundActions",
+        summary = "Assign fixed keys for your character state.",
+    })
+    RegisterPage({
+        key = "wheel", group = "actions", label = "Mouse Wheel",
+        frame = wheelTab, refresh = WC.Refresh, hint = WC.GetList().hint,
+        featureKey = "boundActions",
+        summary = "Assign six wheel gestures for your character state.",
+    })
+    RegisterPage({
+        key = "buttons", group = "actions", label = "Mouse Buttons",
+        frame = buttonsTab, refresh = BC.Refresh, hint = BC.GetList().hint,
+        featureKey = "boundActions",
+        summary = "Assign Mouse 3–5 outside Apogee frames.",
+    })
+    RegisterPage({
+        key = "healthChat", group = "reminders", label = "Health & Chat",
+        frame = generalTab, configure = function() GC.SetPage("healthChat") end,
+        refresh = GC.Refresh, hint = GC.GetForm().hint,
+        summary = "Configure low-health and name-mention alerts.",
+    })
+    RegisterPage({
+        key = "buffsCleanse", group = "reminders", label = "Buffs & Cleansing",
+        frame = generalTab, configure = function() GC.SetPage("buffsCleanse") end,
+        refresh = GC.Refresh, hint = GC.GetForm().hint,
+        summary = "Configure buff and cleansing reminders.",
+    })
+    RegisterPage({
+        key = "dots", group = "reminders", label = "Target Effects",
+        frame = dotsTab, refresh = DC.Refresh, hint = DC.GetForm().hint,
+        featureKey = "dotReminders",
+        summary = "Remind you about target effects.",
+    })
+    RegisterPage({
+        key = "dungeon", group = "dungeon", label = "Dungeon Board",
+        frame = generalTab, configure = function() GC.SetPage("dungeon") end,
+        refresh = GC.Refresh, hint = GC.GetForm().hint,
+        summary = "Configure LFG results and alerts.",
+    })
+    RegisterPage({
+        key = "profiles", group = "manage", label = "Profiles",
+        frame = profilesTab, refresh = PC.Refresh, hint = PC.GetForm().hint,
+        summary = "Manage, export, and import character profiles.",
+    })
+    RegisterPage({
+        key = "macros", group = "manage", label = "Macro Library",
+        frame = macrosTab, refresh = MC.Refresh, hint = MC.GetForm().hint,
+        summary = "Browse macro templates and reference examples.",
+    })
+    RegisterPage({
+        key = "maintenance", group = "manage", label = "Maintenance",
+        frame = generalTab, configure = function() GC.SetPage("maintenance") end,
+        refresh = GC.Refresh, hint = GC.GetForm().hint,
+        summary = "Restore bindings or reset this character.",
+    })
+
+    local tabWidth = (C.BIND_PANEL_W - C.BIND_PAD * 2
+        - (#groupOrder - 1) * 4) / #groupOrder
+    for index, key in ipairs(groupOrder) do
+        local group = groups[key]
+        group.button = UIH.CreateTabButton(configPanel, group.label,
+            C.BIND_PAD + (index - 1) * (tabWidth + 4), tabWidth)
+        AttachConfigDragHandle(group.button)
+        group.button:SetScript("OnClick", function() SetConfigGroup(key) end)
+    end
+
+    pageDropdown = UIH.CreateDropdown(configPanel, 174, 22, 240)
+    pageDropdown:SetPoint("TOPRIGHT", configPanel, "TOPRIGHT", -32,
+        -(C.CONFIG_HEADER_H + C.BIND_PAD + C.CONFIG_TAB_H + 4))
+    pageDropdown:SetFrameLevel(configPanel:GetFrameLevel() + 12)
+    pageDropdown:SetSelectionCallback(function(key) SetConfigPage(key) end)
+
+    pageTitle = configPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    pageTitle:SetSize(174, 22)
+    pageTitle:SetPoint("TOPRIGHT", configPanel, "TOPRIGHT", -32,
+        -(C.CONFIG_HEADER_H + C.BIND_PAD + C.CONFIG_TAB_H + 4))
+    pageTitle:SetJustifyH("RIGHT")
+    pageTitle:SetTextColor(1, 0.82, 0)
+    pageTitle:Hide()
+
+    SetConfigPage(S.configTab)
 
     UI.configPanel = configPanel
     UI.RefreshConfigPanel = RefreshConfigPanel
@@ -243,21 +402,26 @@ function UI.Build(deps)
     UI.RefreshMouseButtonPanel = BC.Refresh
     UI.RefreshMacroPanel = MC.Refresh
     UI.RefreshProfilePanel = PC.Refresh
-    UI.RegisterTab = RegisterTab
-    UI.ActivateTab = SetConfigTab
+    UI.RegisterTab = RegisterPage
+    UI.ActivateTab = SetConfigPage
+    UI.ActivateGroup = SetConfigGroup
     UI.RefreshTab = RefreshTab
-    UI.RefreshActiveTab = RefreshActiveTab
-    UI.tabOrder = tabOrder
+    UI.RefreshActiveTab = RefreshActivePage
+    UI.tabOrder = groupOrder
+    UI.pageOrder = pageOrder
+    UI.groups = groups
+    UI.pages = pages
+    UI.pageDropdown = pageDropdown
+    UI.pageTitle = pageTitle
     UI.factoryResetButton = GC.GetFactoryResetButton()
     UI.prepareDisableButton = GC.GetPrepareDisableButton()
     UI.versionLabel = versionLabel
     UI.profileLabel = profileLabel
     UI.Show = function()
         RestoreConfigPosition()
-        SetConfigTab(S.configTab)
+        SetConfigPage(S.configTab)
         configPanel:Show()
-        RefreshConfigPanel()
-        RefreshActiveTab()
+        RefreshActivePage()
     end
     UI.Hide = function()
         UIH.CloseActiveDropdown()

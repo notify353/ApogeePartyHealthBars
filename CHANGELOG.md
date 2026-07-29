@@ -8,6 +8,9 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Reorganized the compact Settings window into Frames, Actions, Reminders, Dungeon, and Manage groups with focused page selection, clearer action and reminder terminology, and no increase to the window footprint.
+- Kept the live party-frame preview visible without its oversized black backing, limited Cleanse Watch, Target Effects, and LFG Alert samples to their relevant settings pages, and replaced selectors with static headings for single-page groups.
+- Clarified profile activation, replacement, import choices, position resets, threat options, buff reminders, target-effect timing, and binding-restoration wording throughout Settings.
 - Replaced current-target threat percentages with compact, color-coded threat bars that grow from right to left.
 - Automatic Consumables now omits items already assigned to active Shortcuts, Keys, Wheel, or Buttons actions.
 - Dungeon Board and LFG Alert Whisper actions now open an editable message prefilled with the selected role and relevant dungeon; sending still requires the player to press Enter.

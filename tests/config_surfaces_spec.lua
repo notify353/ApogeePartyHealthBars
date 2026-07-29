@@ -67,6 +67,7 @@ local settingsChrome = M.Register("settings", settings, {
 })
 M.Register("party", party, {
     headerHeight = 22,
+    automaticChrome = false,
 })
 M.Register("feed", feed, {
     headerHeight = 24,
@@ -102,6 +103,8 @@ assert(settingsChrome.body.color[4] == 1 and settingsChrome.header.color[4] == 1
 assert(dotChrome.title == nil and dotChrome.header == nil
         and dotChrome.foundation.shown,
     "headerless reminder preview recreated title chrome or lost its background")
+assert(not M.Get("party").chrome.foundation.shown,
+    "surface that opted out of automatic chrome gained configuration backing")
 
 M.SetConfigurationActive(false)
 assert(settings.strata == "DIALOG" and party.strata == "MEDIUM"

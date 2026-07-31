@@ -8,7 +8,7 @@ function reconcileDriver:Show() self.shown = true end
 function reconcileDriver:Hide() self.shown = false end
 function CreateFrame() return reconcileDriver end
 
-dofile("ApogeePartyHealthBars_SecureFrames.lua")
+dofile("PartyFrames/SecureFrames.lua")
 local F = ApogeePartyHealthBars_SecureFrames
 local calls = {}
 local frame = {

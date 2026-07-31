@@ -1,5 +1,5 @@
-dofile("ApogeePartyHealthBars_DungeonBoardCatalog.lua")
-dofile("ApogeePartyHealthBars_DungeonBoardActivityData.lua")
+dofile("DungeonBoard/DungeonBoardCatalog.lua")
+dofile("DungeonBoard/DungeonBoardActivityData.lua")
 local Catalog = ApogeePartyHealthBars_DungeonBoardCatalog
 local ActivityData = ApogeePartyHealthBars_DungeonBoardActivityData
 

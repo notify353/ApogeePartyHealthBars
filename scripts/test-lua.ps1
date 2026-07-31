@@ -49,11 +49,16 @@ if ($LASTEXITCODE -ne 0 -or $luacVersion -notmatch 'Lua 5\.1') {
 
 Push-Location $repoRoot
 try {
-    $sourceFiles = @(Get-ChildItem -LiteralPath $repoRoot -File -Filter '*.lua' | Sort-Object Name)
+    $sourceFiles = @(Get-ChildItem -LiteralPath $repoRoot -File -Recurse -Filter '*.lua' |
+        Where-Object { $_.DirectoryName -notlike (Join-Path $repoRoot 'tests*') } |
+        Sort-Object FullName)
     if ($sourceFiles.Count -eq 0) { throw 'No add-on Lua source files were found.' }
     foreach ($file in $sourceFiles) {
         & $luac -p $file.FullName
-        if ($LASTEXITCODE -ne 0) { throw "Lua parsing failed: $($file.Name)." }
+        if ($LASTEXITCODE -ne 0) {
+            $relativePath = $file.FullName.Substring($repoRoot.Length + 1)
+            throw "Lua parsing failed: $relativePath."
+        }
     }
 
     $specFiles = @(Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tests') -File -Filter '*_spec.lua' | Sort-Object Name)

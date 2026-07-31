@@ -46,8 +46,8 @@ local consumableFeature = {
     GetIconHeight = PlayerOnlyHeight(function() return consumableHeight end),
 }
 
-dofile("ApogeePartyHealthBars_UnitAPI.lua")
-dofile("ApogeePartyHealthBars_RowGeometry.lua")
+dofile("Core/UnitAPI.lua")
+dofile("PartyFrames/RowGeometry.lua")
 local geometry = ApogeePartyHealthBars_RowGeometry
 
 local valid, validationError = pcall(geometry.Initialize, {})
@@ -59,12 +59,12 @@ local invalidAction, invalidActionError = pcall(geometry.Initialize, {
     PlayerUtility = { GetHeight = function() return 0 end },
     ShortcutBar = { GetLaneHeight = function() return 0 end },
     RaidMarkers = { GetHeight = function() return 0 end },
-    WheelMacros = { GetHeight = function() return 0 end },
-    KeyActions = keyFeature,
+    MouseWheelActions = { GetHeight = function() return 0 end },
+    KeyboardActions = keyFeature,
     MouseButtonActions = mouseFeature,
     ConsumableBar = consumableFeature,
 })
-assert(not invalidAction and tostring(invalidActionError):find("WheelMacros.GetIconHeight", 1, true),
+assert(not invalidAction and tostring(invalidActionError):find("MouseWheelActions.GetIconHeight", 1, true),
     "RowGeometry accepted an action dependency without its geometry contract")
 
 geometry.Initialize({
@@ -78,8 +78,8 @@ geometry.Initialize({
         end,
     },
     RaidMarkers = { GetHeight = PlayerOnlyHeight(function() return raidMarkerHeight end) },
-    WheelMacros = wheelFeature,
-    KeyActions = keyFeature,
+    MouseWheelActions = wheelFeature,
+    KeyboardActions = keyFeature,
     MouseButtonActions = mouseFeature,
     ConsumableBar = consumableFeature,
 })
@@ -118,9 +118,9 @@ keyHeight, keyIconHeight = 136, 105
 mouseHeight, mouseIconHeight = 78, 78
 consumableHeight = 51
 local actionGeometry = geometry.GetActionHudGeometry("player")
-assert(actionGeometry.offsets.wheel == 0
-        and actionGeometry.offsets.keys == 54
-        and actionGeometry.offsets.buttons == 81
+assert(actionGeometry.offsets.mouseWheel == 0
+        and actionGeometry.offsets.keyboard == 54
+        and actionGeometry.offsets.mouseButtons == 81
         and actionGeometry.offsets.consumables == 108
         and actionGeometry.iconHeight == 159
         and actionGeometry.height == 190

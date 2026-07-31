@@ -17,7 +17,7 @@ C_Spell = {
     end,
 }
 
-dofile("ApogeePartyHealthBars_ActionCooldowns.lua")
+dofile("Actions/ActionCooldowns.lua")
 local cooldowns = ApogeePartyHealthBars_ActionCooldowns
 
 local start, duration, enabled, reportedGCD = cooldowns.GetSpellCooldown(8092)

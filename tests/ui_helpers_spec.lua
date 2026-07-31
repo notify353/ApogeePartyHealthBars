@@ -34,6 +34,9 @@ local function Widget(name)
         IsEnabled = function(self) return self.enabled end,
         SetText = function(self, text) self.text = text end,
         SetTextColor = function(self, ...) self.textColor = { ... } end,
+        SetTexture = function(self, texture) self.texture = texture end,
+        SetTexCoord = function(self, ...) self.texCoord = { ... } end,
+        SetVertexColor = function(self, ...) self.vertexColor = { ... } end,
         SetColorTexture = function(self, ...) self.color = { ... } end,
         SetBackdrop = function(self, value) self.backdrop = value end,
         SetBackdropColor = function(self, ...) self.backdropColor = { ... } end,
@@ -73,7 +76,7 @@ function CreateFrame(_, name, _, template)
     return frame
 end
 
-dofile("ApogeePartyHealthBars_UIHelpers.lua")
+dofile("Core/UIHelpers.lua")
 local helpers = ApogeePartyHealthBars_UIHelpers
 local panel = Widget()
 helpers.ApplyBackdrop(panel, 1, { 1, 0.8, 0, 1 })
@@ -82,6 +85,15 @@ assert(panel.backdrop == ApogeePartyHealthBars_C.BACKDROP
         and panel.backdropBorderColor[1] == 1,
     "shared panel backdrop lost its explicit opacity or border")
 local selected
+local upArrowButton = helpers.CreateArrowButton(UIParent, "up", 26, 22)
+local downArrowButton = helpers.CreateArrowButton(UIParent, "down", 26, 22)
+assert(upArrowButton.arrow.direction == "up"
+        and downArrowButton.arrow.direction == "down"
+        and upArrowButton.arrow.texture:find("ScrollUpButton", 1, true)
+        and downArrowButton.arrow.texture:find("ScrollDownButton", 1, true)
+        and upArrowButton.arrow.texCoord[1] == downArrowButton.arrow.texCoord[1]
+        and upArrowButton.arrow.texCoord[4] == downArrowButton.arrow.texCoord[4],
+    "shared arrow buttons did not use matched native artwork")
 local dropdown = helpers.CreateDropdown(UIParent, 100, 20, 140)
 dropdown:SetOptions({
     { key = "one", label = "Option One" },
@@ -104,7 +116,8 @@ assert(#UISpecialFrames == 0, "dropdown tainted Blizzard's shared special-frame 
 assert(dropdown:SetSelectedKey("two") == "two" and dropdown.label.text == "Option Two",
     "dropdown did not display its selected option")
 dropdown.scripts.OnClick(dropdown)
-assert(dropdown.popup:IsShown() and dropdown.dismiss:IsShown() and dropdown.arrow.text == "^",
+assert(dropdown.popup:IsShown() and dropdown.dismiss:IsShown()
+        and dropdown.arrow.direction == "up",
     "dropdown did not open its menu and dismissal layer")
 assert(dropdown.popup.raiseCount == 1 and dropdown.dismiss.raiseCount == 1,
     "dropdown did not raise its menu and dismissal layer when opened")
@@ -112,7 +125,8 @@ assert(dropdown.dismiss.keyboardEnabled, "dropdown did not enable its local Esca
 dropdown.optionButtons[1].scripts.OnClick(dropdown.optionButtons[1])
 assert(selected == "one" and dropdown.selectedKey == "one" and dropdown.label.text == "Option One",
     "dropdown option did not invoke the selection callback")
-assert(not dropdown.popup:IsShown() and not dropdown.dismiss:IsShown() and dropdown.arrow.text == "v",
+assert(not dropdown.popup:IsShown() and not dropdown.dismiss:IsShown()
+        and dropdown.arrow.direction == "down",
     "dropdown did not close after selection")
 
 dropdown.scripts.OnClick(dropdown)
@@ -121,7 +135,7 @@ assert(not dropdown.popup:IsShown(), "outside click did not close the dropdown")
 
 dropdown.scripts.OnClick(dropdown)
 dropdown.dismiss.scripts.OnKeyDown(dropdown.dismiss, "ESCAPE")
-assert(not dropdown.dismiss:IsShown() and dropdown.arrow.text == "v",
+assert(not dropdown.dismiss:IsShown() and dropdown.arrow.direction == "down",
     "local Escape dismissal did not clean up the dropdown")
 assert(dropdown.dismiss.propagateKeyboard == false,
     "dropdown propagated Escape into Blizzard's panel manager")

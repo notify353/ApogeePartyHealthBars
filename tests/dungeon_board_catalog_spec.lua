@@ -1,4 +1,4 @@
-dofile("ApogeePartyHealthBars_DungeonBoardCatalog.lua")
+dofile("DungeonBoard/DungeonBoardCatalog.lua")
 local Catalog = ApogeePartyHealthBars_DungeonBoardCatalog
 
 local expectedClassic = {

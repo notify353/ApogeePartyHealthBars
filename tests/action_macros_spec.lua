@@ -78,8 +78,8 @@ ApogeePartyHealthBars_PlayerContext = {
     GetClassToken = function() return playerClassToken end,
 }
 
-dofile("ApogeePartyHealthBars_ActionData.lua")
-dofile("ApogeePartyHealthBars_ActionMacros.lua")
+dofile("Actions/ActionData.lua")
+dofile("Actions/ActionMacros.lua")
 local actions = ApogeePartyHealthBars_ActionMacros
 
 local expected = "/cast Fireball(Rank 1)"

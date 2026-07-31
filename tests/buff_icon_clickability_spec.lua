@@ -28,7 +28,7 @@ local target = {
 local row = { btn = primary.btn, surfaces = { primary, target } }
 
 local clickable, deferred, selfBindings = true, 0, 0
-dofile("ApogeePartyHealthBars_Layout.lua")
+dofile("PartyFrames/Layout.lua")
 local layout = ApogeePartyHealthBars_Layout
 layout.Register({
     rows = { row },

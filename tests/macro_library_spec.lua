@@ -1,7 +1,7 @@
-dofile("ApogeePartyHealthBars_ActionData.lua")
-dofile("ApogeePartyHealthBars_ActionMacros.lua")
-dofile("ApogeePartyHealthBars_MacroData.lua")
-dofile("ApogeePartyHealthBars_MacroLibrary.lua")
+dofile("Actions/ActionData.lua")
+dofile("Actions/ActionMacros.lua")
+dofile("Actions/MacroData.lua")
+dofile("Actions/MacroLibrary.lua")
 
 local L = ApogeePartyHealthBars_MacroLibrary
 local classes = { "DRUID", "HUNTER", "MAGE", "PALADIN", "PRIEST", "ROGUE", "SHAMAN", "WARLOCK", "WARRIOR" }
@@ -58,7 +58,7 @@ BOOKTYPE_PET = "pet"
 local petSpells = {}
 function HasPetSpells() return #petSpells end
 function GetSpellBookItemName(slot, bookType) if bookType == BOOKTYPE_PET then return petSpells[slot] end end
-dofile("ApogeePartyHealthBars_PlayerSpells.lua")
+dofile("Core/PlayerSpells.lua")
 local spellLock = L.GetRecipe("warlock-stop-spell-lock")
 assert(L.GetUnavailableReason(spellLock):find("Summon a pet", 1, true), "missing pet spell was not reported")
 petSpells[1] = "Spell Lock"

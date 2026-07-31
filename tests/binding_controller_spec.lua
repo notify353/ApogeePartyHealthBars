@@ -21,7 +21,7 @@ ApogeePartyHealthBars_ShortcutBar = {
     end,
 }
 local assignedWheelSpell, assignedWheelItem
-ApogeePartyHealthBars_WheelMacros = {
+ApogeePartyHealthBars_MouseWheelActions = {
     GetActiveLayoutKey = function() return "base" end,
     IsKnownLayout = function(layout) return layout == "base" end,
     AssignSpell = function(layout, slot, spellId, spellName)
@@ -34,7 +34,7 @@ ApogeePartyHealthBars_WheelMacros = {
     end,
 }
 local assignedKeySpell, assignedKeyItem
-ApogeePartyHealthBars_KeyActions = {
+ApogeePartyHealthBars_KeyboardActions = {
     GetActiveLayoutKey = function() return "base" end,
     IsKnownLayout = function(layout) return layout == "base" end,
     AssignSpell = function(layout, slot, spellId, spellName)
@@ -64,7 +64,7 @@ function ClearCursor()
     clearedCursorCount = clearedCursorCount + 1
 end
 
-dofile("ApogeePartyHealthBars_BindingController.lua")
+dofile("Actions/BindingController.lua")
 local controller = ApogeePartyHealthBars_BindingController
 local bindings = {}
 local refreshes = 0
@@ -86,7 +86,7 @@ controller.Initialize({
         bindings[slot], bindings[other] = bindings[other], bindings[slot]
         return true, "moved"
     end,
-    RefreshBindPanel = function() refreshes = refreshes + 1 end,
+    RefreshPartyFrameClicksPage = function() refreshes = refreshes + 1 end,
     ForceRefresh = function() refreshes = refreshes + 1 end,
     Print = function() end,
     SyncVisualTicker = function() end,
@@ -94,11 +94,11 @@ controller.Initialize({
         assert(slot == 7 and bookType == "spell" and spellId == 133)
         return 133, preserveRank and "Fireball(Rank 1)" or "Fireball"
     end,
-    GetConfigUI = function()
+    GetSettingsUI = function()
         return {
             RefreshShortcutPanel = function(slot) refreshedShortcutSlot = slot end,
-            RefreshKeyPanel = function(slot) refreshedKeySlot = slot end,
-            RefreshWheelPanel = function(slot) refreshedWheelSlot = slot end,
+            RefreshKeyboardPage = function(slot) refreshedKeySlot = slot end,
+            RefreshMouseWheelPage = function(slot) refreshedWheelSlot = slot end,
         }
     end,
 })
@@ -107,7 +107,7 @@ assert(controller.HookSpellbook == nil and controller.HookContainerItems == nil,
     "binding controller still exposes modified-click hooks")
 
 cursorInfo = { "spell", 7, "spell", 133 }
-assert(controller.AssignCursor("keys", "keyR", "base")
+assert(controller.AssignCursor("keyboard", "keyR", "base")
     and assignedKeySpell.layout == "base" and assignedKeySpell.slot == "keyR"
     and assignedKeySpell.spellId == 133 and assignedKeySpell.spellName == "Fireball",
     "ordinary spell cursor did not assign the highest-rank name to Keys")
@@ -118,20 +118,20 @@ assert(clearedCursorCount == 1 and cursorInfo == nil,
 
 shiftDown = 1
 cursorInfo = { "spell", 7, "spell", 133 }
-assert(controller.AssignCursor("keys", "keyG", "base")
+assert(controller.AssignCursor("keyboard", "keyG", "base")
     and assignedKeySpell.spellId == 133
     and assignedKeySpell.spellName == "Fireball(Rank 1)",
     "Shift-drop did not preserve the selected spell rank")
 shiftDown = false
 
 cursorInfo = { "item", 1251 }
-assert(controller.AssignCursor("keys", "keyG", "removed-layout")
+assert(controller.AssignCursor("keyboard", "keyG", "removed-layout")
     and assignedKeyItem.layout == "base" and assignedKeyItem.slot == "keyG"
     and assignedKeyItem.itemId == 1251 and refreshedKeySlot == "keyG",
     "item cursor did not assign to Keys with an active-layout fallback")
 
 cursorInfo = { "item", 1251 }
-assert(controller.AssignCursor("wheel", "ctrlDown", "base")
+assert(controller.AssignCursor("mouseWheel", "ctrlDown", "base")
     and assignedWheelItem.layout == "base" and assignedWheelItem.slot == "ctrlDown"
     and assignedWheelItem.itemId == 1251,
     "item cursor did not assign directly to a Wheel destination")
@@ -149,12 +149,12 @@ assert(controller.AssignCursor("shortcuts", 2)
     "item cursor did not replace a Shortcut destination")
 
 cursorInfo = { "spell", 7, "spell", 133 }
-assert(controller.AssignCursor("healing", "2")
+assert(controller.AssignCursor("partyFrameClicks", "2")
     and bindings["2"] and bindings["2"].kind == "spell" and bindings["2"].spellId == 133,
     "spell cursor did not assign directly to a Healing click row")
 
 cursorInfo = { "item", 1251 }
-assert(controller.AssignCursor("healing", "1")
+assert(controller.AssignCursor("partyFrameClicks", "1")
     and bindings["1"] and bindings["1"].kind == "item" and bindings["1"].itemId == 1251,
     "item cursor did not assign directly to a Healing click row")
 assert(refreshes == 4, "Healing cursor assignments did not refresh settings and secure frames")
@@ -171,19 +171,19 @@ assert(not controller.AssignCursor("shortcuts", 1)
     and clearedCursorCount == beforeRejectedDrop and cursorInfo ~= nil,
     "unsupported cursor payload was consumed")
 
-local assignKeySpell = ApogeePartyHealthBars_KeyActions.AssignSpell
-ApogeePartyHealthBars_KeyActions.AssignSpell = function()
+local assignKeySpell = ApogeePartyHealthBars_KeyboardActions.AssignSpell
+ApogeePartyHealthBars_KeyboardActions.AssignSpell = function()
     return false, "that key position is unavailable."
 end
 cursorInfo = { "spell", 7, "spell", 133 }
-assert(not controller.AssignCursor("keys", "keyQ", "base")
+assert(not controller.AssignCursor("keyboard", "keyQ", "base")
     and clearedCursorCount == beforeRejectedDrop and cursorInfo ~= nil,
     "destination-rejected cursor payload was consumed")
-ApogeePartyHealthBars_KeyActions.AssignSpell = assignKeySpell
+ApogeePartyHealthBars_KeyboardActions.AssignSpell = assignKeySpell
 
 inCombat = true
 cursorInfo = { "spell", 7, "spell", 133 }
-assert(not controller.AssignCursor("keys", "keyQ", "base")
+assert(not controller.AssignCursor("keyboard", "keyQ", "base")
     and clearedCursorCount == beforeRejectedDrop and cursorInfo ~= nil,
     "combat cursor drop changed an action or consumed the cursor")
 

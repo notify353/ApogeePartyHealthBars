@@ -31,8 +31,8 @@ local function PredictionBar()
     return bar
 end
 
-dofile("ApogeePartyHealthBars_UnitAPI.lua")
-dofile("ApogeePartyHealthBars_IncomingHeals.lua")
+dofile("Core/UnitAPI.lua")
+dofile("PartyFrames/IncomingHeals.lua")
 local incomingHeals = ApogeePartyHealthBars_IncomingHeals
 
 local valid, validationError = pcall(incomingHeals.Initialize, {})

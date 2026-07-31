@@ -49,9 +49,9 @@ local function Dispatch(event, unitId)
     for _, callback in ipairs(callbacks[event] or {}) do callback(event, unitId) end
 end
 
-dofile("ApogeePartyHealthBars_Sounds.lua")
-dofile("ApogeePartyHealthBars_UnitAPI.lua")
-dofile("ApogeePartyHealthBars_HealthAlerts.lua")
+dofile("Core/Sounds.lua")
+dofile("Core/UnitAPI.lua")
+dofile("Reminders/HealthAlerts.lua")
 local H = ApogeePartyHealthBars_HealthAlerts
 H.Register(router)
 Dispatch("PLAYER_LOGIN")

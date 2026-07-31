@@ -1,10 +1,10 @@
 ApogeePartyHealthBars_ClientCapabilities = {
     GetClientInfo = function() return { flavor = "classicEra" } end,
 }
-dofile("ApogeePartyHealthBars_DungeonBoardCatalog.lua")
-dofile("ApogeePartyHealthBars_DungeonBoardClassifier.lua")
-dofile("ApogeePartyHealthBars_DungeonBoardEligibility.lua")
-dofile("ApogeePartyHealthBars_DungeonBoardRuntime.lua")
+dofile("DungeonBoard/DungeonBoardCatalog.lua")
+dofile("DungeonBoard/DungeonBoardClassifier.lua")
+dofile("DungeonBoard/DungeonBoardEligibility.lua")
+dofile("DungeonBoard/DungeonBoardRuntime.lua")
 local Runtime = ApogeePartyHealthBars_DungeonBoardRuntime
 local Eligibility = ApogeePartyHealthBars_DungeonBoardEligibility
 

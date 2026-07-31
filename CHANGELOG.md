@@ -8,6 +8,10 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Moved action feedback and Automatic Consumables into Frames → Party Frames and removed the undersized two-option Action Display page.
+- Replaced mismatched text-character arrows in Settings with shared, paired Blizzard arrow artwork for reorder controls and dropdown indicators.
+- Dock Target Effects and Dungeon Board samples above Settings while configuring them, preventing saved gameplay positions from covering page controls without changing those positions unless the sample is dragged.
+- Reorganized the Lua codebase into domain folders, standardized internal settings and action terminology, added automatic migration for renamed profile fields, and documented the module and naming conventions for contributors.
 - Reorganized the compact Settings window into Frames, Actions, Reminders, Dungeon, and Manage groups with focused page selection, clearer action and reminder terminology, and no increase to the window footprint.
 - Kept the live party-frame preview visible without its oversized black backing, limited Cleanse Watch, Target Effects, and LFG Alert samples to their relevant settings pages, and replaced selectors with static headings for single-page groups.
 - Clarified profile activation, replacement, import choices, position resets, threat options, buff reminders, target-effect timing, and binding-restoration wording throughout Settings.
@@ -254,7 +258,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 ### Changed
 
 - Split runtime event policy into lifecycle, unit/visual, and action/binding subscribers, leaving `RuntimeEvents` as a thin registration coordinator.
-- Split General settings and Healing binding controls into focused configuration modules, leaving `ConfigUI` as the settings-window and tab-lifecycle shell.
+- Split General settings and Healing binding controls into focused configuration modules, leaving `SettingsUI` as the settings-window and tab-lifecycle shell.
 - Completed the effect-domain split by extracting player-cast HoT tracking into a private runtime and retiring the former `EffectsTracker` coordinator.
 - Extracted party and self-buff reminders from `EffectsTracker` into a focused runtime with private spell, aura-matcher, icon, secure-cast, and family-preference state.
 - Extracted shield tracking and incoming-heal prediction from `EffectsTracker` into focused health-overlay modules while preserving absorb depletion, aura fallbacks, alias handling, and visual geometry.

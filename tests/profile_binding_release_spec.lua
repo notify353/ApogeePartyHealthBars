@@ -26,7 +26,7 @@ end
 function SaveBindings() end
 function InCombatLockdown() return false end
 
-dofile("ApogeePartyHealthBars_BoundActionBindings.lua")
+dofile("Actions/BoundActionBindings.lua")
 local factory = ApogeePartyHealthBars_BoundActionBindings
 local wheelManager = factory.Create({
     slots = { { id = "w", key = "W", label = "Key W" } },

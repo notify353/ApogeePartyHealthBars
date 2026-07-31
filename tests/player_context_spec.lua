@@ -18,7 +18,7 @@ function GetShapeshiftForm() return activeForm end
 function GetShapeshiftFormInfo() return 132115, "Cat Form", true, 768 end
 function IsStealthed() return stealthed end
 
-dofile("ApogeePartyHealthBars_PlayerContext.lua")
+dofile("Core/PlayerContext.lua")
 local context = ApogeePartyHealthBars_PlayerContext.GetSnapshot()
 assert(context.classToken == "DRUID" and context.raceToken == "NightElf"
         and context.level == 60 and context.talentGroup == 2,

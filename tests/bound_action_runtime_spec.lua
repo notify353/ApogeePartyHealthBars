@@ -128,8 +128,8 @@ local function makeCompositeLayouts(slotId)
     }
 end
 
-dofile("ApogeePartyHealthBars_ActionCooldowns.lua")
-dofile("ApogeePartyHealthBars_BoundActionRuntime.lua")
+dofile("Actions/ActionCooldowns.lua")
+dofile("Actions/BoundActionRuntime.lua")
 local Factory = ApogeePartyHealthBars_BoundActionRuntime
 
 local valid, validationError = pcall(Factory.Create, {})

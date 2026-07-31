@@ -30,7 +30,7 @@ local inCombat = false
 function InCombatLockdown() return inCombat end
 function UnitClass() return "Paladin", "PALADIN" end
 
-dofile("ApogeePartyHealthBars_ActionData.lua")
+dofile("Actions/ActionData.lua")
 local actions = ApogeePartyHealthBars_ActionData
 ApogeePartyHealthBars_Effects = {
     SeedClassBindings = function(bindings, classToken)
@@ -39,7 +39,7 @@ ApogeePartyHealthBars_Effects = {
         return true, 1
     end,
 }
-dofile("ApogeePartyHealthBars_BindingStore.lua")
+dofile("Actions/BindingStore.lua")
 local store = ApogeePartyHealthBars_BindingStore
 local state = ApogeePartyHealthBars_S
 

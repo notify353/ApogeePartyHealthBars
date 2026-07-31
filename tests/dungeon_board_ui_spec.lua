@@ -85,9 +85,9 @@ function CreateFrame(_, name, parent)
     return result
 end
 
-dofile("ApogeePartyHealthBars_DungeonBoardCatalog.lua")
-dofile("ApogeePartyHealthBars_DungeonBoardEligibility.lua")
-dofile("ApogeePartyHealthBars_DungeonBoardUI.lua")
+dofile("DungeonBoard/DungeonBoardCatalog.lua")
+dofile("DungeonBoard/DungeonBoardEligibility.lua")
+dofile("DungeonBoard/DungeonBoardUI.lua")
 local UI = ApogeePartyHealthBars_DungeonBoardUI
 
 local snapshot = {}

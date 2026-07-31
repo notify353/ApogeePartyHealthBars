@@ -1,5 +1,5 @@
-dofile("ApogeePartyHealthBars_Data.lua")
-dofile("ApogeePartyHealthBars_AccessoryLayout.lua")
+dofile("Core/Data.lua")
+dofile("PartyFrames/AccessoryLayout.lua")
 
 local layout = ApogeePartyHealthBars_AccessoryLayout
 local function region()

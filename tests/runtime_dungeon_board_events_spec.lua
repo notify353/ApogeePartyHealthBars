@@ -20,8 +20,8 @@ ApogeePartyHealthBars_DungeonBoardGroupFinder = {
     end,
 }
 
-dofile("ApogeePartyHealthBars_RuntimeDungeonBoardEvents.lua")
-local Events = ApogeePartyHealthBars_RuntimeDungeonBoardEvents
+dofile("Runtime/DungeonBoardEvents.lua")
+local Events = ApogeePartyHealthBars_DungeonBoardEvents
 
 local valid, validationError = pcall(Events.Register, {})
 assert(not valid and tostring(validationError):find("event router", 1, true),

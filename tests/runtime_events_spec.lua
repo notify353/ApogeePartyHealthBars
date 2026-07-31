@@ -1,30 +1,30 @@
 local calls = {}
-ApogeePartyHealthBars_RuntimeLifecycleEvents = {
+ApogeePartyHealthBars_LifecycleEvents = {
     Register = function(router, deps)
         calls[#calls + 1] = "lifecycle"
         assert(router.name == "router" and deps.name == "deps")
     end,
 }
-ApogeePartyHealthBars_RuntimeUnitEvents = {
+ApogeePartyHealthBars_UnitEvents = {
     Register = function(router, deps)
         calls[#calls + 1] = "unit"
         assert(router.name == "router" and deps.name == "deps")
     end,
 }
-ApogeePartyHealthBars_RuntimeActionEvents = {
+ApogeePartyHealthBars_ActionEvents = {
     Register = function(router, deps)
         calls[#calls + 1] = "action"
         assert(router.name == "router" and deps.name == "deps")
     end,
 }
-ApogeePartyHealthBars_RuntimeDungeonBoardEvents = {
+ApogeePartyHealthBars_DungeonBoardEvents = {
     Register = function(router, deps)
         calls[#calls + 1] = "dungeon"
         assert(router.name == "router" and deps.name == "deps")
     end,
 }
 
-dofile("ApogeePartyHealthBars_RuntimeEvents.lua")
+dofile("Runtime/RuntimeEvents.lua")
 local events = ApogeePartyHealthBars_RuntimeEvents
 
 local valid, validationError = pcall(events.Register, nil, {})

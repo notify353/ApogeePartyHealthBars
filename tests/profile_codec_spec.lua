@@ -1,4 +1,4 @@
-ApogeePartyHealthBars_C = { PROFILE_PAYLOAD_VERSION = 2 }
+ApogeePartyHealthBars_C = { PROFILE_PAYLOAD_VERSION = 3 }
 Enum = {
     CompressionMethod = { Deflate = 1 },
     CompressionLevel = { OptimizeForSize = 2 },
@@ -23,13 +23,13 @@ C_EncodingUtil = {
     DeserializeCBOR = function(value) assert(value == "serialized"); return serializedValue end,
 }
 
-dofile("ApogeePartyHealthBars_ProfileCodec.lua")
+dofile("Profiles/ProfileCodec.lua")
 local codec = ApogeePartyHealthBars_ProfileCodec
 local profile = {
     name = "Raid",
     classToken = "PRIEST",
     payload = {
-        schemaVersion = 2,
+        schemaVersion = 3,
         settings = { enabled = true },
         actions = { shortcuts = { {
             kind = "spell", spellName = "Flash Heal(Rank 7)",
@@ -57,9 +57,9 @@ assert(not codec.Decode("not-a-profile"), "invalid prefix was accepted")
 assert(not codec.Decode("APHB1:" .. string.rep("x", codec.MAX_ENCODED_BYTES)),
     "oversized share string was accepted")
 
-serializedValue.profileSchemaVersion = 3
+serializedValue.profileSchemaVersion = 4
 assert(not codec.Decode(text), "future payload schema was accepted")
-serializedValue.profileSchemaVersion = 2
+serializedValue.profileSchemaVersion = 3
 serializedValue.classToken = "PRIEST|TInterface\\Icons\\INV_Misc_QuestionMark:64|t"
 assert(not codec.Decode(text), "invalid class metadata reached the import preview")
 serializedValue.classToken = "PRIEST"
@@ -69,9 +69,9 @@ serializedValue.profileName = "Raid"
 serializedValue.author = "Bad\nAuthor"
 assert(not codec.Decode(text), "control characters in author metadata were accepted")
 serializedValue.author = "Healer - Realm"
-serializedValue.payload.schemaVersion = 3
+serializedValue.payload.schemaVersion = 4
 assert(not codec.Decode(text), "future internal payload schema bypassed envelope validation")
-serializedValue.payload.schemaVersion = 2
+serializedValue.payload.schemaVersion = 3
 C_EncodingUtil.DecodeBase64 = function() error("bad data") end
 assert(not codec.Decode(text), "damaged encoded data was accepted")
 

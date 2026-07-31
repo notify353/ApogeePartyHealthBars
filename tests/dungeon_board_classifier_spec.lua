@@ -1,5 +1,5 @@
-dofile("ApogeePartyHealthBars_DungeonBoardCatalog.lua")
-dofile("ApogeePartyHealthBars_DungeonBoardClassifier.lua")
+dofile("DungeonBoard/DungeonBoardCatalog.lua")
+dofile("DungeonBoard/DungeonBoardClassifier.lua")
 local Classifier = ApogeePartyHealthBars_DungeonBoardClassifier
 
 local function classify(message, clientFlavor, senderLevel)

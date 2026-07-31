@@ -25,7 +25,7 @@ ChatFrameUtil = {
     end,
 }
 
-dofile("ApogeePartyHealthBars_DungeonBoardActions.lua")
+dofile("DungeonBoard/DungeonBoardActions.lua")
 local Actions = ApogeePartyHealthBars_DungeonBoardActions
 
 local available, reason = Actions.CanQueryWho(nil)

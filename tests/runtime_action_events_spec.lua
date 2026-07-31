@@ -29,7 +29,7 @@ ApogeePartyHealthBars_ShortcutBar = {
         record("spellbook-open:" .. tostring(active))
     end,
 }
-ApogeePartyHealthBars_WheelMacros = {
+ApogeePartyHealthBars_MouseWheelActions = {
     Refresh = function() record("wheel-refresh") end,
     RefreshItemInfo = function() record("wheel-item-info") end,
     OnActiveSpecChanged = function() record("wheel-spec") end,
@@ -41,7 +41,7 @@ ApogeePartyHealthBars_WheelMacros = {
     OnStateChanged = function() record("wheel-state") end,
     RefreshPhysicalClickRegistration = function() record("wheel-click-phase") end,
 }
-ApogeePartyHealthBars_KeyActions = {
+ApogeePartyHealthBars_KeyboardActions = {
     Refresh = function() record("keys-refresh") end,
     RefreshItemInfo = function() record("keys-item-info") end,
     OnActiveSpecChanged = function() record("keys-spec") end,
@@ -72,10 +72,10 @@ ApogeePartyHealthBars_ConsumableBar = {
 
 local ui = {
     RefreshShortcutPanel = function() record("ui-shortcuts") end,
-    RefreshKeyPanel = function() record("ui-keys") end,
-    RefreshWheelPanel = function() record("ui-wheel") end,
-    RefreshMouseButtonPanel = function() record("ui-buttons") end,
-    RefreshBindPanel = function() record("ui-healing") end,
+    RefreshKeyboardPage = function() record("ui-keys") end,
+    RefreshMouseWheelPage = function() record("ui-wheel") end,
+    RefreshMouseButtonsPage = function() record("ui-buttons") end,
+    RefreshPartyFrameClicksPage = function() record("ui-healing") end,
     RefreshMacroPanel = function() record("ui-macros") end,
 }
 
@@ -98,12 +98,12 @@ end
 local deps = {
     Print = function(message) record("print:" .. message) end,
     InitPlayerSpells = function() record("player-spells") end,
-    GetConfigUI = function() return ui end,
+    GetSettingsUI = function() return ui end,
     ReconcileBoundActionBindings = function() record("bindings-reconcile"); return true end,
 }
 
-dofile("ApogeePartyHealthBars_RuntimeActionEvents.lua")
-local events = ApogeePartyHealthBars_RuntimeActionEvents
+dofile("Runtime/ActionEvents.lua")
+local events = ApogeePartyHealthBars_ActionEvents
 
 local valid, validationError = pcall(events.Register, router, {})
 assert(not valid and tostring(validationError):find("Print", 1, true),
@@ -160,13 +160,13 @@ expect({ "shortcut-refresh:false", "wheel-refresh", "keys-refresh", "buttons-ref
 
 reset()
 scheduledTimers = {}
-local refreshWheel = ApogeePartyHealthBars_WheelMacros.Refresh
-ApogeePartyHealthBars_WheelMacros.Refresh = function()
+local refreshWheel = ApogeePartyHealthBars_MouseWheelActions.Refresh
+ApogeePartyHealthBars_MouseWheelActions.Refresh = function()
     error("delayed refresh failure")
 end
 dispatch("UNIT_SPELLCAST_SUCCEEDED", "player", "cast-guid", 8092)
 local callbackSucceeded = pcall(scheduledTimers[1].callback)
-ApogeePartyHealthBars_WheelMacros.Refresh = refreshWheel
+ApogeePartyHealthBars_MouseWheelActions.Refresh = refreshWheel
 assert(callbackSucceeded, "delayed cooldown sampling leaked an asynchronous error")
 assert(calls[1] == "shortcut-refresh:false"
         and calls[2]
@@ -261,13 +261,13 @@ expect({ "wheel-layouts", "keys-layouts", "buttons-layouts", "ui-keys", "ui-whee
     "form-state registry refresh order changed")
 
 reset()
-local originalSpecChanged = ApogeePartyHealthBars_WheelMacros.OnActiveSpecChanged
-ApogeePartyHealthBars_WheelMacros.OnActiveSpecChanged = function()
+local originalSpecChanged = ApogeePartyHealthBars_MouseWheelActions.OnActiveSpecChanged
+ApogeePartyHealthBars_MouseWheelActions.OnActiveSpecChanged = function()
     error("expected action failure")
 end
 dispatch("ACTIVE_TALENT_GROUP_CHANGED")
 assert(calls[#calls]:find("print:event error (ACTIVE_TALENT_GROUP_CHANGED):", 1, true),
     "action subscriber lost its event error bridge")
-ApogeePartyHealthBars_WheelMacros.OnActiveSpecChanged = originalSpecChanged
+ApogeePartyHealthBars_MouseWheelActions.OnActiveSpecChanged = originalSpecChanged
 
 print("PASS runtime action events")

@@ -34,7 +34,7 @@ local calls = {
     consumableRefreshes = 0,
 }
 
-dofile("ApogeePartyHealthBars_VisualTicker.lua")
+dofile("PartyFrames/VisualTicker.lua")
 local ticker = ApogeePartyHealthBars_VisualTicker
 
 local valid, validationError = pcall(ticker.Initialize, {})
@@ -53,10 +53,10 @@ ticker.Initialize({
         IsActive = function() return flags.shortcuts end,
         Tick = function() calls.shortcutTicks = calls.shortcutTicks + 1 end,
     },
-    WheelMacros = {
+    MouseWheelActions = {
         Refresh = function() calls.wheelRefreshes = calls.wheelRefreshes + 1 end,
     },
-    KeyActions = {
+    KeyboardActions = {
         Refresh = function() calls.keyRefreshes = calls.keyRefreshes + 1 end,
     },
     MouseButtonActions = {

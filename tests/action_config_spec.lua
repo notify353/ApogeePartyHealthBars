@@ -1,5 +1,5 @@
 ApogeePartyHealthBars_C = {
-    CONFIG_CONTENT_W = 396, BIND_PAD = 8, CONFIG_HEADER_H = 40, CONFIG_TAB_H = 24,
+    CONFIG_CONTENT_W = 396, BIND_PAD = 8, CONFIG_HEADER_H = 40, CONFIG_PAGE_SELECTOR_H = 24,
 }
 ApogeePartyHealthBars_ActionMacros = { MAX_BODY_BYTES = 255 }
 
@@ -60,6 +60,11 @@ function ApogeePartyHealthBars_UIHelpers.CreateButton(_, label)
     buttons[label] = button
     return button
 end
+function ApogeePartyHealthBars_UIHelpers.CreateArrowButton(_, direction)
+    local button = ApogeePartyHealthBars_UIHelpers.CreateButton(nil, "")
+    button.arrowDirection = direction
+    return button
+end
 function ApogeePartyHealthBars_UIHelpers.CreateDropdown()
     local dropdown = widget()
     function dropdown:SetArrowShown() end
@@ -73,8 +78,8 @@ function ApogeePartyHealthBars_UIHelpers.SetTooltip(frame, title, body)
     frame.tooltipTitle, frame.tooltipBody = title, body
 end
 
-dofile("ApogeePartyHealthBars_ActionConfig.lua")
-local config = ApogeePartyHealthBars_ActionConfig
+dofile("Actions/ActionSettingsComponents.lua")
+local config = ApogeePartyHealthBars_ActionSettingsComponents
 config.Initialize(widget(), function() end)
 
 local list = config.CreateActionList(widget(), "TestActionList")

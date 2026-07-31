@@ -15,7 +15,7 @@ function GetSpellInfo(spellId)
     if spellId == 139 then return "Renew", nil, 135953, nil, nil, nil, spellId end
 end
 
-dofile("ApogeePartyHealthBars_ActionData.lua")
+dofile("Actions/ActionData.lua")
 local actions = ApogeePartyHealthBars_ActionData
 
 local ranked = assert(actions.CreateSpell(2061, "Flash Heal(Rank 7)"))

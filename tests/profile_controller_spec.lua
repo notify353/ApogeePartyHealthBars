@@ -3,8 +3,8 @@ local releaseOk, rollbackOk, releases, reloads, activeId = true, nil, 0, 0, "p1"
 function InCombatLockdown() return false end
 function ReloadUI() reloads = reloads + 1 end
 
-dofile("ApogeePartyHealthBars_ConfigController.lua")
-local controller = ApogeePartyHealthBars_ConfigController
+dofile("Settings/SettingsController.lua")
+local controller = ApogeePartyHealthBars_SettingsController
 local profiles = {
     p1 = { id = "p1", classToken = "PRIEST" },
     p2 = { id = "p2", classToken = "PRIEST" },

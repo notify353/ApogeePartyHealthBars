@@ -95,7 +95,7 @@ ApogeePartyHealthBars_ShortcutItems = {
     end,
 }
 
-dofile("ApogeePartyHealthBars_ConsumableBar.lua")
+dofile("Actions/ConsumableBar.lua")
 local bar = ApogeePartyHealthBars_ConsumableBar
 local layoutRequests, deferred = 0, 0
 bar.Configure({

@@ -73,7 +73,7 @@ local featureEnabled = { enabled = true, hotEnabled = true }
 local saved = { hotDisabled = {} }
 local syncCount = 0
 
-dofile("ApogeePartyHealthBars_HotTracker.lua")
+dofile("PartyFrames/HotTracker.lua")
 local tracker = ApogeePartyHealthBars_HotTracker
 
 local valid, validationError = pcall(tracker.Initialize, {})

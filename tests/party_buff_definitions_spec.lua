@@ -1,4 +1,4 @@
-dofile("ApogeePartyHealthBars_Data.lua")
+dofile("Core/Data.lua")
 
 local spellbookSpell
 function GetNumSpellTabs() return 1 end
@@ -6,9 +6,9 @@ function GetSpellTabInfo() return nil, nil, 0, 1 end
 function GetSpellBookItemName() return spellbookSpell end
 BOOKTYPE_SPELL = "spell"
 
-dofile("ApogeePartyHealthBars_ActionData.lua")
-dofile("ApogeePartyHealthBars_PlayerSpells.lua")
-dofile("ApogeePartyHealthBars_Effects.lua")
+dofile("Actions/ActionData.lua")
+dofile("Core/PlayerSpells.lua")
+dofile("Core/Effects.lua")
 
 local definitions = ApogeePartyHealthBars_C.PARTY_BUFF_DEFINITIONS
 local byCanonical = {}

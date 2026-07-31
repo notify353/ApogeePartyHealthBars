@@ -87,7 +87,7 @@ function CreateFrame(_, name)
     return value
 end
 
-dofile("ApogeePartyHealthBars_CleanseData.lua")
+dofile("Reminders/CleanseData.lua")
 local known = {
     { id = 527, name = "Dispel Magic(Rank 2)", baseName = "Dispel Magic",
         sourceBook = "spell" },
@@ -112,7 +112,7 @@ local longDescription = string.rep(
     "This unusually long harmful effect description remains completely visible. ",
     9)
 
-dofile("ApogeePartyHealthBars_CleanseWatch.lua")
+dofile("Reminders/CleanseWatch.lua")
 local Watch = ApogeePartyHealthBars_CleanseWatch
 Watch.Initialize({
     Auras = { GetUnitHarmfulAuraSnapshot = function(unit) return harmful[unit] end },
@@ -130,7 +130,7 @@ Watch.Initialize({
         GetSpellTexture = function(spellId) return spellId + 100000 end,
     },
     SecureFrames = { RequestSecureUpdate = function() deferred = deferred + 1 end },
-    ConfigSurfaces = {
+    SettingsSurfaces = {
         Register = function(_, _, options) registeredSurfaceOptions = options end,
         SetSurfaceChromeShown = function(_, shown) cleanseChromeShown = shown end,
     },

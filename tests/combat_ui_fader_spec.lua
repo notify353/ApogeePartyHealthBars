@@ -43,7 +43,7 @@ MultiBarTopRight = newFrame()
 MICRO_BUTTONS = { "LegacyMicroButton" }
 LegacyMicroButton = newFrame()
 
-dofile("ApogeePartyHealthBars_CombatUIFader.lua")
+dofile("PartyFrames/CombatUIFader.lua")
 local fader = ApogeePartyHealthBars_CombatUIFader
 
 local resolved = fader.ResolveFrames()

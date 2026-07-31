@@ -1,8 +1,8 @@
 unpack = unpack or table.unpack
 function wipe(value) for key in pairs(value or {}) do value[key] = nil end return value end
 
-dofile("ApogeePartyHealthBars_Data.lua")
-dofile("ApogeePartyHealthBars_ActionData.lua")
+dofile("Core/Data.lua")
+dofile("Actions/ActionData.lua")
 
 local currentClass = "MAGE"
 local spellbook = { "Mage Armor", "Frost Armor" }
@@ -24,8 +24,8 @@ function UnitPowerMax() return 0 end
 function UnitPowerType() return 0, "MANA" end
 BOOKTYPE_SPELL = "spell"
 
-dofile("ApogeePartyHealthBars_PlayerSpells.lua")
-dofile("ApogeePartyHealthBars_Effects.lua")
+dofile("Core/PlayerSpells.lua")
+dofile("Core/Effects.lua")
 
 local function snapshotHasAura(_, _, auraNames)
     for name in pairs(activeAuraNames) do
@@ -47,7 +47,7 @@ local function widget()
     return setmetatable({}, { __index = function() return function() end end })
 end
 
-dofile("ApogeePartyHealthBars_BuffReminders.lua")
+dofile("Reminders/BuffReminders.lua")
 local tracker = ApogeePartyHealthBars_BuffReminders
 local secureRefreshes = 0
 

@@ -1,5 +1,5 @@
-dofile("ApogeePartyHealthBars_Data.lua")
-dofile("ApogeePartyHealthBars_UnitTopology.lua")
+dofile("Core/Data.lua")
+dofile("Core/UnitTopology.lua")
 
 local topology = ApogeePartyHealthBars_UnitTopology
 local expected = {

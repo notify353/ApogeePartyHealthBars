@@ -1,5 +1,5 @@
-dofile("ApogeePartyHealthBars_DungeonBoardEligibility.lua")
-dofile("ApogeePartyHealthBars_DungeonBoardSettings.lua")
+dofile("DungeonBoard/DungeonBoardEligibility.lua")
+dofile("DungeonBoard/DungeonBoardSettings.lua")
 local Settings = ApogeePartyHealthBars_DungeonBoardSettings
 
 local saved = {

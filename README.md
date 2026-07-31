@@ -18,7 +18,7 @@ Compact five-player healing frames for World of Warcraft Classic Era and Burning
 - Contextual Middle/Button 4/Button 5 Party Frame Clicks plus nine combat assignments
 - Missing party-buff and self-buff reminders, including targeted Divine Spirit reminders for Priests, Mages, and Druids
 - Copy-only combat macro library with universal and class-specific examples
-- Movable minimap button and tabbed settings
+- Movable minimap button and grouped, page-based settings
 - Session-only Dungeon Board for recent five-player LFG/LFM requests
 
 ## Install
@@ -90,7 +90,7 @@ Each compact action row identifies itself as a Spell or Item and has Ready sound
 
 Party Frame Clicks uses the same scrollable action-row presentation as Shortcut Bar, Keyboard, Mouse Wheel, and Mouse Buttons, but deliberately omits macro and sound controls: its native secure action is what preserves the clicked health-bar unit. Gesture labels remain fixed while `^` and `v` swap complete spell/item assignments between adjacent triggers. The Shortcut Bar and active Keyboard, Mouse Wheel, and Mouse Buttons HUDs show spell range/cooldown state plus item icons, carried quantities, usability, and cooldowns. Depleted items stay assigned in every feature, so they become available automatically when restocked. Item range prediction is intentionally omitted because normal item targeting and custom macros may behave differently.
 
-Actions → Action Display can enable Automatic Consumables. This dedicated two-row, six-column HUD sits one icon space to the right of Mouse Buttons and shows up to 12 carried consumables without creating empty placeholders or changing the Shortcut Bar. Items already assigned to the active Shortcut Bar, Keyboard, Mouse Wheel, or Mouse Buttons layout are omitted. It scans ordinary carried bags after bag updates and again after `/reload`, deduplicates stacks, and prioritizes potions, bandages, food and drink, elixirs and flasks, scrolls, item enhancements, then other usable consumables. Its secure item set remains fixed during combat and catches up after combat ends.
+Frames → Party Frames includes the Automatic Consumables setting. This dedicated two-row, six-column HUD sits one icon space to the right of Mouse Buttons and shows up to 12 carried consumables without creating empty placeholders or changing the Shortcut Bar. Items already assigned to the active Shortcut Bar, Keyboard, Mouse Wheel, or Mouse Buttons layout are omitted. It scans ordinary carried bags after bag updates and again after `/reload`, deduplicates stacks, and prioritizes potions, bandages, food and drink, elixirs and flasks, scrolls, item enhancements, then other usable consumables. Its secure item set remains fixed during combat and catches up after combat ends.
 
 Keyboard uses this fixed action order in settings and the same keyboard-shaped arrangement on the player HUD:
 
@@ -157,6 +157,10 @@ pwsh ./scripts/test-local.ps1
 The runner rejects other Lua versions, parses every add-on source file, runs every Lua specification, validates the package and release workflow, builds and inspects a local ZIP, and checks the Git diff for whitespace errors.
 
 The matching local Blizzard interface exports are the primary development references for WoW APIs and interface behavior. Read [docs/WOW_INTERFACE_EXPORT.md](docs/WOW_INTERFACE_EXPORT.md) before API-dependent work. The validation suite fails when an installed supported client is newer than its recorded export and explains how to refresh it.
+
+Internal terminology, folder ownership, module naming, and the settings-page
+contract are documented in [docs/DEVELOPMENT_GUIDE.md](docs/DEVELOPMENT_GUIDE.md).
+Read it before adding a new feature or moving a module between domains.
 
 For the supported-client audit, development install, acceptance matrix, and CurseForge procedure, read [docs/CLASSIC_ERA_SUPPORT.md](docs/CLASSIC_ERA_SUPPORT.md). To update an existing client patch or add another WoW flavor, follow [docs/ADDING_WOW_CLIENT.md](docs/ADDING_WOW_CLIENT.md), then use [docs/PORTING.md](docs/PORTING.md) for the compatibility architecture. The add-on uses capability-driven, domain-owned compatibility boundaries so optional features can degrade independently without overwriting shared profile preferences.
 

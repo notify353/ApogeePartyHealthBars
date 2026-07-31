@@ -26,7 +26,7 @@ C_UnitAuras = {
 function UnitExists() return true end
 function UnitIsUnit(left, right) return left == right end
 
-dofile("ApogeePartyHealthBars_Auras.lua")
+dofile("PartyFrames/Auras.lua")
 local scanner = ApogeePartyHealthBars_Auras
 
 scanner.ConfigureBuffMatchers(

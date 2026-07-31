@@ -27,8 +27,8 @@ local router = {
 }
 local errors = {}
 
-dofile("ApogeePartyHealthBars_RuntimeCleanseEvents.lua")
-ApogeePartyHealthBars_RuntimeCleanseEvents.Register(router, {
+dofile("Runtime/CleanseEvents.lua")
+ApogeePartyHealthBars_CleanseEvents.Register(router, {
     Print = function(message) errors[#errors + 1] = message end,
 })
 

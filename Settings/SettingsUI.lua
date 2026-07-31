@@ -7,6 +7,7 @@ local KC = ApogeePartyHealthBars_KeyboardSettingsPage
 local WC = ApogeePartyHealthBars_MouseWheelSettingsPage
 local BC = ApogeePartyHealthBars_MouseButtonsSettingsPage
 local MC = ApogeePartyHealthBars_MacroLibrarySettingsPage
+local LC = ApogeePartyHealthBars_LoadoutsSettingsPage
 local PC = ApogeePartyHealthBars_ProfilesSettingsPage
 local DC = ApogeePartyHealthBars_TargetEffectsSettingsPage
 local AC = ApogeePartyHealthBars_ActionSettingsComponents
@@ -19,7 +20,7 @@ local built = false
 local D
 local configPanel, profileLabel, pageDropdown, pageTitle
 local profilesPage, coreSettingsPagesFrame, targetEffectsPage, partyFrameClicksPage, shortcutBarPage
-local keyboardPage, mouseWheelPage, mouseButtonsPage, macroLibraryPage
+local keyboardPage, mouseWheelPage, mouseButtonsPage, macroLibraryPage, loadoutsPage
 local pages, groups, allFrames = {}, {}, {}
 local pageOrder, groupOrder = {}, { "frames", "actions", "reminders", "dungeon", "manage" }
 
@@ -268,6 +269,7 @@ function UI.Build(deps)
     mouseWheelPage = WC.Create(configPanel, D)
     mouseButtonsPage = BC.Create(configPanel, D)
     macroLibraryPage = MC.Create(configPanel, D)
+    loadoutsPage = LC.Create(configPanel, D)
 
     local groupLabels = {
         frames = "Frames",
@@ -349,6 +351,12 @@ function UI.Build(deps)
         summary = "Browse macro templates and reference examples.",
     })
     RegisterPage({
+        key = "loadouts", group = "manage", label = "Loadouts",
+        frame = loadoutsPage, refresh = LC.Refresh, hint = LC.GetForm().hint,
+        featureKey = "equipmentLoadouts",
+        summary = "Capture equipment and attach loadouts to actions.",
+    })
+    RegisterPage({
         key = "maintenance", group = "manage", label = "Maintenance",
         frame = coreSettingsPagesFrame, configure = function() GC.SetPage("maintenance") end,
         refresh = GC.Refresh, hint = GC.GetForm().hint,
@@ -390,6 +398,8 @@ function UI.Build(deps)
     UI.RefreshMouseWheelPage = WC.Refresh
     UI.RefreshMouseButtonsPage = BC.Refresh
     UI.RefreshMacroPanel = MC.Refresh
+    UI.RefreshLoadoutsPage = LC.Refresh
+    UI.RefreshLoadoutsFromInventory = LC.RefreshFromInventory
     UI.RefreshProfilePanel = PC.Refresh
     UI.RegisterPage = RegisterPage
     UI.ActivatePage = ActivatePage

@@ -20,7 +20,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `PlayerContext`: normalized class, race, level, active talent group/tree/ranks, form/stance, and stealth state shared by context-sensitive features
 - `LifecycleEvents`: login/bootstrap, world and roster changes, combat transitions, and combat-log fan-out
 - `UnitEvents`: tracked-unit aura invalidation, shield synchronization, health/power update policy, targets, threat, and raid-marker refreshes
-- `ActionEvents`: spell/spec/form transitions, binding reconciliation, action-state refreshes, item updates, and macro requirements
+- `ActionEvents`: spell/spec/form transitions, binding reconciliation, action-state refreshes, item and native equipment-set updates, and macro requirements
 - `TargetEffectEvents`: target-aura invalidation plus event-driven spell, talent, form, resource, cooldown, and usability refresh policy
 - `CleanseEvents`: party-aura, roster, spellbook, pet, and post-combat Cleanse Watch refresh policy
 - `RuntimeEvents`: thin subscriber registration coordinator
@@ -28,8 +28,9 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `CrowdControl`: class-owned active-control catalog, control categories, activation modes, automatic-display policy, and per-class allocation bounds
 - `ShortcutItems`: shared item-information, carried-count, usability, cooldown, and depletion evaluation
 - `ActionData`: macro-independent spell/item identity, legacy normalization, cloning, and display resolution shared by every configurable action feature
-- `ActionMacros`: shared action-intent template rendering and documentation metadata, direct spell/item defaults, localized curated melee and stealth-safe families, dedicated repeating ranged-attack quality-of-life behavior, sound/macro extensions, custom-text detection, and 255-byte validation for Shortcuts, Keyboard, Mouse Wheel, and Mouse Buttons
-- `ActionSettingsComponents`: shared scrollable action-list scaffold and compact row state used by Healing, Shortcuts, Keyboard, Mouse Wheel, and Mouse Buttons, plus the focused macro editor used by the macro-capable features
+- `EquipmentSets`: native character-wide equipment-set capability, capture/update mutations, ignored-slot policy, name-based action attachment, hybrid combat/out-of-combat prefix composition, and combined runtime byte validation
+- `ActionMacros`: shared action-intent template rendering and documentation metadata, direct spell/item defaults, localized curated melee and stealth-safe families, dedicated repeating ranged-attack quality-of-life behavior, sound/macro extensions, custom-text detection, equipment-prefix composition, and 255-byte validation for Shortcuts, Keyboard, Mouse Wheel, and Mouse Buttons
+- `ActionSettingsComponents`: shared scrollable action-list scaffold and compact row state used by Healing, Shortcuts, Keyboard, Mouse Wheel, and Mouse Buttons, plus the loadout picker and focused macro editor used by the macro-capable features
 - `UIHelpers`: common buttons, dropdowns, tabs, scrolling, shared panel backdrops, and the non-action form scaffold used by Profiles, General, and Macros
 - `SettingsSurfaces`: opt-in opaque-black configuration chrome, native top-level interaction stacking, shared configuration strata, and combat-safe runtime-strata restoration
 - `BoundActionLayouts`: shared per-spec class-state catalog and typed-action layout engine for native forms, secure stealth fallbacks, and composite Cat/Prowl state
@@ -63,9 +64,9 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `BindingStore`, `BindingController`, `PartyFrameClickBindings`: typed Party Frame Click spell/item persistence, adjacent gesture swaps, cursor-based destination assignment, and native unit-targeted secure actions
 - `CoreSettingsPages`: focused Frames, Health & Chat, Buffs & Cleansing, Dungeon Board, and Maintenance pages; feature toggles, HUD display preferences, alert preferences, HoT controls, compact position resets, and destructive reset confirmation
 - `PartyFrameClicksSettingsPage`: fixed-gesture Party Frame Click action rows, inline movement and clearing, display refresh, and right-click clearing compatibility
-- `SettingsUI`: compact fixed-size settings-window shell, five task-group navigation, contextual page registry, multi-page selectors, single-page headings, page-specific preview activation, and cross-page refresh routing
+- `SettingsUI`, `LoadoutsSettingsPage`: compact fixed-size settings-window shell, five task-group navigation, contextual page registry, multi-page selectors, single-page headings, native character loadout management, page-specific preview activation, and cross-page refresh routing
 - `SettingsController`, `MinimapController`: settings-mode, minimap lifecycle, and the Dungeon Board minimap access gesture
-- `ProfileStore`: character-owned named profiles, read-only account-profile migration, portable payload normalization, stable identity, and CRUD/copy/import mutations
+- `ProfileStore`: character-owned named profiles, read-only account-profile migration, portable payload normalization, stable identity, CRUD/copy/import mutations, and cross-profile equipment-set reference maintenance
 - `ProfileCodec`: native CBOR, Deflate, and URL-safe Base64 profile sharing with versioned metadata and bounded decoding
 - `ProfilesSettingsPage`: compact profile selection, management, and copy sections plus export/import preview and confirmation workflows
 - `MacroData`, `MacroLibrary`, `MacroLibrarySettingsPage`: generated-template and syntax documentation, immutable current-class combat recipes, unified topic validation/filtering, and read-only copy support
@@ -101,6 +102,9 @@ The data and pure-policy chain loads as `DungeonBoardCatalog` → `DungeonBoardA
 - Predict target eligibility and range only for default current-target actions. Self-AoE, trap, totem, ground, and custom-macro controls must not be judged against the current target.
 - Pre-create all unit surfaces and secure Party Frame Click overlays before combat; missing chained units hide their surfaces without collapsing the reserved target columns.
 - Keep Keyboard, Mouse Wheel, and Mouse Buttons activation-feedback prefixes runtime-only; persisted and edited text is the user-controlled macro body.
+- Keep native equipment sets character-wide and outside profiles. Persist only an optional set name on macro-capable actions, preserve missing names, and never export native set IDs or contents.
+- Keep equipment commands out of saved macro text. Runtime composition may equip the full native set only out of combat and may attempt only included Main Hand, Off Hand, and Ranged items in combat; actions without a loadout and Party Frame Clicks must remain unchanged.
+- Apply the existing 255-byte policy to the complete equipment-prefix and action-body macro before attachment, editing, native set update, or rename.
 - Keep every `BoundActionRuntime` instance's mutable state inside its factory closure so Keyboard, Mouse Wheel, and Mouse Buttons cannot leak buttons, feedback, cooldown state, or binding ownership into each other.
 - Keep class-state saved keys stable and runtime state values ephemeral; preload every native and composite state's secure macro before combat, with composite conditions ordered before their parent form.
 - Limit class-state layouts to secure form or stealth conditions. Ordinary Hunter Aspects, Paladin Auras, arbitrary buffs, and temporary encounter states must not become action layouts.

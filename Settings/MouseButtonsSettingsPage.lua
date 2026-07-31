@@ -2,6 +2,7 @@ local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local UIH = ApogeePartyHealthBars_UIHelpers
 local AC = ApogeePartyHealthBars_ActionSettingsComponents
+local Actions = ApogeePartyHealthBars_ActionMacros
 
 ApogeePartyHealthBars_MouseButtonsSettingsPage = {}
 local BC = ApogeePartyHealthBars_MouseButtonsSettingsPage
@@ -29,6 +30,8 @@ local function openMacroEditor(slotId)
         actionName = ApogeePartyHealthBars_ActionMacros.GetName(entry),
         macroText = B.GetMacro(layoutKey, slotId),
         resetText = B.ResetMacro(layoutKey, slotId),
+        prefixBytes = Actions.GetEquipmentPrefixBytes
+            and Actions.GetEquipmentPrefixBytes(entry) or 0,
         onSave = function(body) return B.ApplyMacro(layoutKey, slotId, body) end,
         onSaved = function(message) setStatus(message, true); BC.Refresh() end,
     })
@@ -63,6 +66,8 @@ function BC.Refresh(assignedSlot)
             name = name or "Empty",
             detail = ((slot and slot.label) or slotId) .. " — " .. kindLabel,
             soundKey = entry and B.GetSlotSoundKey(layoutKey, slotId),
+            equipmentSetName = entry and B.GetSlotEquipmentSet
+                and B.GetSlotEquipmentSet(layoutKey, slotId),
             macroCustomized = entry and B.IsMacroCustomized(layoutKey, slotId),
             canMoveUp = entry ~= nil and index > 1,
             canMoveDown = entry ~= nil and index < #order,
@@ -108,6 +113,14 @@ function BC.Create(parent, deps)
             B.PreviewSound(layoutKey, boundSlotId)
             BC.Refresh()
         end)
+        if row.gear then
+            row.gear:SetSelectionCallback(function(setName)
+                local ok, message = B.SetSlotEquipmentSet(
+                    selectedLayout(), boundSlotId, setName)
+                setStatus(message, ok)
+                BC.Refresh()
+            end)
+        end
         row.macro:SetScript("OnClick", function() openMacroEditor(boundSlotId) end)
         row.up:SetScript("OnClick", function()
             local moved, message = B.MoveSlot(selectedLayout(), boundSlotId, -1)

@@ -230,7 +230,9 @@ function Factory.Create(options)
 
     local function secureMacroText(slot, entry)
         local feedback = feedbackMacroText(slot)
-        return entry.macroText == "" and feedback or feedback .. "\n" .. entry.macroText
+        local runtimeMacro = Actions.BuildRuntimeMacro
+            and Actions.BuildRuntimeMacro(entry) or entry.macroText
+        return runtimeMacro == "" and feedback or feedback .. "\n" .. runtimeMacro
     end
 
     local function updateActivationFeedback()
@@ -663,6 +665,22 @@ function Factory.Create(options)
         entry.macroText = body
         W.RefreshSecureActions()
         return true, "Applied " .. slotById[slotId].label .. "."
+    end
+
+    function W.SetSlotEquipmentSet(layoutKey, slotId, name)
+        if InCombatLockdown and InCombatLockdown() then
+            return false, "Leave combat before changing an action loadout."
+        end
+        if not W.CanEditLayout(layoutKey) then return false, "That layout cannot be edited." end
+        local entry = W.GetSlot(layoutKey, slotId)
+        local ok, message = Actions.SetEquipmentSet(entry, name)
+        if not ok then return false, message end
+        W.RefreshSecureActions()
+        return true, message
+    end
+
+    function W.GetSlotEquipmentSet(layoutKey, slotId)
+        return Actions.GetEquipmentSetName(W.GetSlot(layoutKey, slotId))
     end
 
     function W.GetMacro(layoutKey, slotId)

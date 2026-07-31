@@ -406,7 +406,8 @@ local function SyncSecureAction(icon, info)
     end
     icon:EnableMouse(S.configMode == true)
 
-    local macroText = info.macroText
+    local macroText = info.entry and Actions.BuildRuntimeMacro
+        and Actions.BuildRuntimeMacro(info.entry) or info.macroText
     if not macroText then
         macroText = info.kind == "item"
             and Actions.BuildDefaultItemMacro(info.name)
@@ -959,6 +960,21 @@ function T.ApplyMacro(slot, body)
     GetEntries()[slot].macroText = body
     T.ResolveAndRefresh()
     return true, "Applied " .. (Actions.GetName(GetEntries()[slot]) or "Shortcut") .. "."
+end
+
+function T.SetSlotEquipmentSet(slot, name)
+    if InCombatLockdown and InCombatLockdown() then
+        return false, "Leave combat before changing an action loadout."
+    end
+    local entry = GetEntries() and GetEntries()[slot]
+    local ok, message = Actions.SetEquipmentSet(entry, name)
+    if not ok then return false, message end
+    T.ResolveAndRefresh()
+    return true, message
+end
+
+function T.GetSlotEquipmentSet(slot)
+    return Actions.GetEquipmentSetName(GetEntries() and GetEntries()[slot])
 end
 
 function T.ResetMacro(slot)

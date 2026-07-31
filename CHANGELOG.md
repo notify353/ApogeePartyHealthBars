@@ -6,6 +6,15 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Added
+
+- Added character-wide native equipment loadouts under Manage → Loadouts. Capture current gear with optional ignored slots, then explicitly attach a loadout to Shortcut Bar, Keyboard, Mouse Wheel, or Mouse Buttons actions; full sets equip out of combat while combat macros attempt only included weapon slots.
+- Generated shield-required Warrior and Paladin ability macros now wait until a shield is equipped, avoiding the invalid-cast equipment error while an attached loadout swaps weapons.
+
+### Changed
+
+- Attack-oriented generated macros and bundled recipes now acquire an enemy when needed and guard `/startattack` with `[harm,nodead]`, preventing “Nothing to attack” errors when no enemy is available; Warrior utility is no longer treated as an attack.
+
 ## [0.46.0] - 2026-07-30
 
 ### Changed

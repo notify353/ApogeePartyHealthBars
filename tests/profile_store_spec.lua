@@ -382,6 +382,21 @@ store.Initialize(legacyAccount, secondWarriorCharacter, "WARRIOR", "Bolderbear -
 assert(#store.List() == profileCountBeforeReload and store.GetActiveId() == "p2",
     "character migration was not idempotent")
 
+store.Get("p2").payload.actions.shortcuts[1].equipmentSetName = "Shield"
+store.Get("p3").payload.actions.keyboardActions = {
+    profiles = { [1] = { layouts = { base = { slots = {
+        ["1"] = { equipmentSetName = "shield" },
+    } } } } },
+}
+assert(store.CountEquipmentSetReferences("Shield") == 2,
+    "cross-profile loadout references were not counted")
+assert(store.RenameEquipmentSetReferences("Shield", "Tank") == 2
+        and store.CountEquipmentSetReferences("Tank") == 2,
+    "cross-profile loadout references were not renamed")
+assert(store.ClearEquipmentSetReferences("Tank") == 2
+        and store.CountEquipmentSetReferences("Tank") == 0,
+    "cross-profile loadout references were not cleared")
+
 local missingLegacyCharacter = { profileStateVersion = 1, activeProfileId = "p9" }
 local missingLegacyProfile = store.Initialize(
     legacyAccount, missingLegacyCharacter, "DRUID", "Crazyelfer - Dreamscythe")

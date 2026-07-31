@@ -95,6 +95,28 @@ local CAPABILITIES = {
             return (C_Item and isFunction(C_Item.GetItemInfo)) or isFunction(GetItemInfo)
         end,
     },
+    equipmentSets = {
+        reason = "This client does not provide native equipment loadouts.",
+        detect = function()
+            return C_EquipmentSet
+                and isFunction(C_EquipmentSet.CanUseEquipmentSets)
+                and isFunction(C_EquipmentSet.GetEquipmentSetIDs)
+                and isFunction(C_EquipmentSet.GetNumEquipmentSets)
+                and isFunction(C_EquipmentSet.GetEquipmentSetInfo)
+                and isFunction(C_EquipmentSet.GetItemIDs)
+                and isFunction(C_EquipmentSet.GetIgnoredSlots)
+                and isFunction(C_EquipmentSet.EquipmentSetContainsLockedItems)
+                and isFunction(C_EquipmentSet.ClearIgnoredSlotsForSave)
+                and isFunction(C_EquipmentSet.IgnoreSlotForSave)
+                and isFunction(C_EquipmentSet.CreateEquipmentSet)
+                and isFunction(C_EquipmentSet.SaveEquipmentSet)
+                and isFunction(C_EquipmentSet.ModifyEquipmentSet)
+                and isFunction(C_EquipmentSet.DeleteEquipmentSet)
+                and isFunction(C_EquipmentSet.UseEquipmentSet)
+                and isFunction(GetInventoryItemTexture)
+                and C_EquipmentSet.CanUseEquipmentSets() == true
+        end,
+    },
     bindings = {
         reason = "This client cannot safely claim and restore physical bindings.",
         detect = function()
@@ -166,6 +188,7 @@ local FEATURES = {
     raidMarkers = { label = "Raid-marker controls", requires = { "raidMarkers" } },
     spellAssignment = { label = "Spellbook assignment", requires = { "spellbook" } },
     itemAssignment = { label = "Item assignment", requires = { "items" } },
+    equipmentLoadouts = { label = "Equipment loadouts", requires = { "equipmentSets" } },
     boundActions = { label = "Keyboard, Mouse Wheel, and Mouse Buttons", requires = { "bindings" } },
     multiSpecLayouts = { label = "Per-specialization layouts", requires = { "specialization" } },
     formLayouts = { label = "Form and stance layouts", requires = { "forms" } },

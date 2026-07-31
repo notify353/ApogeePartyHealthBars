@@ -74,7 +74,8 @@ local function widget()
         GetValue = function() return 50 end,
         GetAlpha = function(self) return self.alpha end,
         SetAlpha = function(self, value) self.alpha = value end,
-        GetChecked = function() return false end,
+        GetChecked = function(self) return self.checked == true end,
+        SetChecked = function(self, value) self.checked = value == true end,
         SetText = function(self, value) self.text = value or "" end,
         GetText = function(self) return self.text or "" end,
         SetTexture = function(self, value) self.texture = value end,
@@ -91,7 +92,7 @@ local function widget()
         "SetJustifyV", "SetWidth", "SetHeight", "SetWordWrap", "SetMaxLines",
         "SetVertexColor", "SetScrollChild",
         "SetVerticalScroll", "SetMultiLine", "SetAutoFocus", "SetTextInsets",
-        "SetFocus", "ClearFocus", "HighlightText", "SetChecked", "Enable", "Disable",
+        "SetFocus", "ClearFocus", "HighlightText", "Enable", "Disable",
         "SetDesaturated", "SetCooldown", "Clear", "SetDuration", "SetFromAlpha", "SetToAlpha", "SetOrder",
         "Play", "Stop", "StartMoving", "StopMovingOrSizing",
     }
@@ -249,6 +250,24 @@ for line in io.lines("ApogeePartyHealthBars.toc") do
         dofile(line)
     end
 end
+local createLoadoutName, renameLoadoutName =
+    ApogeePartyHealthBars_LoadoutsSettingsPage.GetNameEdits()
+createLoadoutName:SetText("New Shield Set")
+renameLoadoutName:SetText("Rename Draft")
+ApogeePartyHealthBars_LoadoutsSettingsPage.RefreshFromInventory()
+assert(createLoadoutName:GetText() == "New Shield Set"
+        and renameLoadoutName:GetText() == "Rename Draft",
+    "inventory refresh discarded an unsaved loadout draft")
+local _, weaponsOnlyButton =
+    ApogeePartyHealthBars_LoadoutsSettingsPage.GetPresetButtons()
+weaponsOnlyButton.scripts.OnClick()
+local includedLoadoutSlots =
+    ApogeePartyHealthBars_LoadoutsSettingsPage.GetIncludedSlots()
+assert(not includedLoadoutSlots[1]
+        and includedLoadoutSlots[16]
+        and includedLoadoutSlots[17]
+        and includedLoadoutSlots[18],
+    "Weapons Only preset did not select exactly the weapon slots")
 assert(tocLoadOrder["Core/Sounds.lua"] < tocLoadOrder["Actions/MouseWheel/MouseWheelActions.lua"],
     "wheel runtime loaded before its shared sounds dependency")
 assert(tocLoadOrder["Actions/ActionData.lua"]
@@ -825,7 +844,7 @@ assert(table.concat(ApogeePartyHealthBars_SettingsUI.groupOrder, ",")
     "settings groups did not follow the compact task order")
 assert(table.concat(ApogeePartyHealthBars_SettingsUI.pageOrder, ",")
         == "frames,partyFrameClicks,shortcuts,keyboard,mouseWheel,mouseButtons,"
-            .. "healthChat,buffsCleanse,targetEffects,dungeon,profiles,macros,maintenance",
+            .. "healthChat,buffsCleanse,targetEffects,dungeon,profiles,macros,loadouts,maintenance",
     "settings pages did not retain every configuration workflow")
 assert(SpellBookFrame:IsShown(), "opening settings did not open the spellbook")
 assert(spellbookOpenCount == 1, "spellbook did not open exactly once")

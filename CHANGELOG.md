@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.46.0] - 2026-07-30
+
 ### Changed
 
 - Moved action feedback and Automatic Consumables into Frames → Party Frames and removed the undersized two-option Action Display page.

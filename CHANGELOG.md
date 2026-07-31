@@ -14,6 +14,11 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 ### Changed
 
 - Attack-oriented generated macros and bundled recipes now acquire an enemy when needed and guard `/startattack` with `[harm,nodead]`, preventing “Nothing to attack” errors when no enemy is available; Warrior utility is no longer treated as an attack.
+
+## [0.46.0] - 2026-07-30
+
+### Changed
+
 - Moved action feedback and Automatic Consumables into Frames → Party Frames and removed the undersized two-option Action Display page.
 - Replaced mismatched text-character arrows in Settings with shared, paired Blizzard arrow artwork for reorder controls and dropdown indicators.
 - Dock Target Effects and Dungeon Board samples above Settings while configuring them, preventing saved gameplay positions from covering page controls without changing those positions unless the sample is dragged.

@@ -45,8 +45,8 @@ local deps = {
     AuraEventNeedsLayout = function() return auraNeedsLayout end,
 }
 
-dofile("ApogeePartyHealthBars_RuntimeUnitEvents.lua")
-local events = ApogeePartyHealthBars_RuntimeUnitEvents
+dofile("Runtime/UnitEvents.lua")
+local events = ApogeePartyHealthBars_UnitEvents
 
 local valid, validationError = pcall(events.Register, router, {})
 assert(not valid and tostring(validationError):find("Print", 1, true),

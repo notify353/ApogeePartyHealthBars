@@ -23,7 +23,7 @@ function GetSpellInfo(spellID)
     if spellID == 133 then return "Fireball" end
 end
 
-dofile("ApogeePartyHealthBars_PlayerSpells.lua")
+dofile("Core/PlayerSpells.lua")
 local spells = ApogeePartyHealthBars_PlayerSpells
 
 local spellID, castName = spells.GetSpellFromCursor(7, BOOKTYPE_SPELL, 143)

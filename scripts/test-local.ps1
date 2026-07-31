@@ -16,6 +16,7 @@ try {
     & (Join-Path $PSScriptRoot 'test-dev-links.ps1')
     & (Join-Path $PSScriptRoot 'test-wow-api-export.ps1')
     & (Join-Path $PSScriptRoot 'check-wow-api-export.ps1')
+    & (Join-Path $PSScriptRoot 'check-terminology.ps1')
     & (Join-Path $PSScriptRoot 'test-lua.ps1') @luaArguments
     & (Join-Path $PSScriptRoot 'validate-package.ps1')
     & (Join-Path $PSScriptRoot 'validate-release-workflow.ps1')

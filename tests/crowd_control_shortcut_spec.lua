@@ -1,9 +1,9 @@
 unpack = unpack or table.unpack
 function wipe(value) for key in pairs(value or {}) do value[key] = nil end return value end
 
-dofile("ApogeePartyHealthBars_Data.lua")
-dofile("ApogeePartyHealthBars_CrowdControl.lua")
-dofile("ApogeePartyHealthBars_AccessoryLayout.lua")
+dofile("Core/Data.lua")
+dofile("PartyFrames/CrowdControl.lua")
+dofile("PartyFrames/AccessoryLayout.lua")
 local crowdControl = ApogeePartyHealthBars_CrowdControl
 local definitions = crowdControl.GetDefinitions("MAGE")
 local automaticDefinitions = {}
@@ -117,14 +117,14 @@ GameTooltip.SetSpellByID = function() end
 GameTooltip.ClearLines = function(self) self.lines = {} end
 GameTooltip.AddLine = function(self, line) self.lines[#self.lines + 1] = line end
 
-dofile("ApogeePartyHealthBars_Sounds.lua")
-dofile("ApogeePartyHealthBars_UIHelpers.lua")
-dofile("ApogeePartyHealthBars_ActionCooldowns.lua")
-dofile("ApogeePartyHealthBars_ShortcutItems.lua")
-dofile("ApogeePartyHealthBars_ActionData.lua")
-dofile("ApogeePartyHealthBars_ActionMacros.lua")
-dofile("ApogeePartyHealthBars_PlayerSpells.lua")
-dofile("ApogeePartyHealthBars_ShortcutBar.lua")
+dofile("Core/Sounds.lua")
+dofile("Core/UIHelpers.lua")
+dofile("Actions/ActionCooldowns.lua")
+dofile("Actions/ShortcutItems.lua")
+dofile("Actions/ActionData.lua")
+dofile("Actions/ActionMacros.lua")
+dofile("Core/PlayerSpells.lua")
+dofile("Actions/ShortcutBar.lua")
 local shortcuts = ApogeePartyHealthBars_ShortcutBar
 local playerBtn, targetBtn = widget(), widget()
 local deferred = 0

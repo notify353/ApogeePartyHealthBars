@@ -16,7 +16,7 @@ end
 local title, separator, rowAnchor, panel = widget(), widget(), widget(), widget()
 local chromeRefreshes = 0
 
-dofile("ApogeePartyHealthBars_Layout.lua")
+dofile("PartyFrames/Layout.lua")
 local layout = ApogeePartyHealthBars_Layout
 layout.Register({
     titleFS = title,

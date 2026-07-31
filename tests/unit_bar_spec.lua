@@ -1,4 +1,4 @@
-dofile("ApogeePartyHealthBars_Data.lua")
+dofile("Core/Data.lua")
 unpack = unpack or table.unpack
 
 local function widget()
@@ -70,8 +70,8 @@ function UnitFactionGroup(unit) return snapshots[unit] and snapshots[unit].facti
 function UnitCanAssist() return true end
 function UnitIsEnemy() return false end
 
-dofile("ApogeePartyHealthBars_UnitAPI.lua")
-dofile("ApogeePartyHealthBars_UnitBar.lua")
+dofile("Core/UnitAPI.lua")
+dofile("PartyFrames/UnitBar.lua")
 local bars = ApogeePartyHealthBars_UnitBar
 local partyBuffState = { false, false }
 bars.Initialize({

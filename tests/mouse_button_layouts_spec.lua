@@ -14,10 +14,10 @@ end
 function UnitClass() return "Druid", "DRUID" end
 C_Spell = { GetSpellInfo = function(id) return { name = id == 2457 and "Battle Stance" or "Defensive Stance" } end }
 
-dofile("ApogeePartyHealthBars_MouseButtonData.lua")
-dofile("ApogeePartyHealthBars_ActionData.lua")
-dofile("ApogeePartyHealthBars_ActionMacros.lua")
-dofile("ApogeePartyHealthBars_BoundActionLayouts.lua")
+dofile("Actions/MouseButtons/MouseButtonData.lua")
+dofile("Actions/ActionData.lua")
+dofile("Actions/ActionMacros.lua")
+dofile("Actions/BoundActionLayouts.lua")
 
 local factory = ApogeePartyHealthBars_BoundActionLayouts
 local createdWithoutAcceptedCurrent, missingAcceptedError = pcall(factory.Create, {
@@ -38,22 +38,22 @@ assert(not createdWithOnlyLegacyAccepted
         and tostring(legacyOnlyError):find("must accept their current schema version", 1, true),
     "bound action layouts allowed acceptance of only legacy schemas")
 
-dofile("ApogeePartyHealthBars_MouseButtonLayouts.lua")
+dofile("Actions/MouseButtons/MouseButtonLayouts.lua")
 
 local layouts = ApogeePartyHealthBars_MouseButtonLayouts
 local actions = ApogeePartyHealthBars_ActionMacros
 assert(layouts.Initialize(), "Buttons layouts did not initialize")
 assert(layouts.GetActiveSpecKey() == "1" and layouts.GetActiveKey() == "base",
     "Buttons did not initialize the base profile")
-assert(ApogeePartyHealthBars_S.charSv.mouseActions.schemaVersion == 1,
+assert(ApogeePartyHealthBars_S.charSv.mouseButtonActions.schemaVersion == 1,
     "Buttons did not create its versioned saved root")
 
 assert(layouts.SetSlot("base", "normal3", actions.CreateSpell(133, "Fireball")),
     "Buttons base assignment failed")
-local savedMouseActions = ApogeePartyHealthBars_S.charSv.mouseActions
+local savedMouseActions = ApogeePartyHealthBars_S.charSv.mouseButtonActions
 assert(not layouts.Initialize(),
     "reinitializing unchanged Buttons layouts unexpectedly changed context")
-assert(ApogeePartyHealthBars_S.charSv.mouseActions == savedMouseActions
+assert(ApogeePartyHealthBars_S.charSv.mouseButtonActions == savedMouseActions
         and layouts.GetSlot("base", "normal3").spellName == "Fireball",
     "reinitializing Buttons layouts discarded saved assignments")
 formCount = 2

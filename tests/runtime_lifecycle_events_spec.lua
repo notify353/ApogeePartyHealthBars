@@ -22,14 +22,14 @@ ApogeePartyHealthBars_ShortcutBar = {
     Rebaseline = function() record("shortcut-rebaseline") end,
     RefreshSecureActions = function() record("shortcut-secure") end,
 }
-ApogeePartyHealthBars_WheelMacros = {
+ApogeePartyHealthBars_MouseWheelActions = {
     InitializeSaved = function() record("wheel-init") end,
     OnCombatStarted = function() record("wheel-combat-start") end,
     OnCombatEnded = function() record("wheel-combat-end") end,
     ReconcileBindings = function() record("wheel-reconcile") end,
     Refresh = function() record("wheel-refresh") end,
 }
-ApogeePartyHealthBars_KeyActions = {
+ApogeePartyHealthBars_KeyboardActions = {
     InitializeSaved = function() record("keys-init") end,
     OnCombatStarted = function() record("keys-combat-start") end,
     OnCombatEnded = function() record("keys-combat-end") end,
@@ -129,8 +129,8 @@ local deps = {
     ReconcileBoundActionBindings = function() record("bindings-reconcile"); return true end,
 }
 
-dofile("ApogeePartyHealthBars_RuntimeLifecycleEvents.lua")
-local events = ApogeePartyHealthBars_RuntimeLifecycleEvents
+dofile("Runtime/LifecycleEvents.lua")
+local events = ApogeePartyHealthBars_LifecycleEvents
 
 local valid, validationError = pcall(events.Register, router, {})
 assert(not valid and tostring(validationError):find("Print", 1, true),
@@ -241,8 +241,8 @@ deps.InitPlayerSpells = originalInitPlayerSpells
 runtimeFailures = {}
 
 reset()
-local originalWheelInitialize = ApogeePartyHealthBars_WheelMacros.InitializeSaved
-ApogeePartyHealthBars_WheelMacros.InitializeSaved = function()
+local originalWheelInitialize = ApogeePartyHealthBars_MouseWheelActions.InitializeSaved
+ApogeePartyHealthBars_MouseWheelActions.InitializeSaved = function()
     error("expected optional startup failure")
 end
 dispatch("PLAYER_LOGIN")
@@ -252,9 +252,9 @@ for _, value in ipairs(calls) do
     if value == "minimap" then sawMinimap = true end
     if value:find("print:Compatibility:", 1, true) then sawCompatibility = true end
 end
-assert(sawKeys and sawMinimap and sawCompatibility and runtimeFailures.Wheel,
+assert(sawKeys and sawMinimap and sawCompatibility and runtimeFailures["Mouse Wheel"],
     "optional startup failure blocked later features or was not reported")
-ApogeePartyHealthBars_WheelMacros.InitializeSaved = originalWheelInitialize
+ApogeePartyHealthBars_MouseWheelActions.InitializeSaved = originalWheelInitialize
 
 reset()
 runtimeFailures = {}

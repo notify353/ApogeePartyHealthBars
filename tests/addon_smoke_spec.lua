@@ -249,133 +249,133 @@ for line in io.lines("ApogeePartyHealthBars.toc") do
         dofile(line)
     end
 end
-assert(tocLoadOrder["ApogeePartyHealthBars_Sounds.lua"] < tocLoadOrder["ApogeePartyHealthBars_WheelMacros.lua"],
+assert(tocLoadOrder["Core/Sounds.lua"] < tocLoadOrder["Actions/MouseWheel/MouseWheelActions.lua"],
     "wheel runtime loaded before its shared sounds dependency")
-assert(tocLoadOrder["ApogeePartyHealthBars_ActionData.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_ActionMacros.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_ActionData.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_BindingStore.lua"],
+assert(tocLoadOrder["Actions/ActionData.lua"]
+        < tocLoadOrder["Actions/ActionMacros.lua"]
+    and tocLoadOrder["Actions/ActionData.lua"]
+        < tocLoadOrder["Actions/BindingStore.lua"],
     "action consumers loaded before their shared identity dependency")
-assert(tocLoadOrder["ApogeePartyHealthBars_ActionMacros.lua"]
-    < tocLoadOrder["ApogeePartyHealthBars_ShortcutBar.lua"],
+assert(tocLoadOrder["Actions/ActionMacros.lua"]
+    < tocLoadOrder["Actions/ShortcutBar.lua"],
     "Shortcut Bar runtime loaded before its shared action dependency")
-assert(tocLoadOrder["ApogeePartyHealthBars_ActionCooldowns.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_ShortcutItems.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_ActionCooldowns.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_BoundActionRuntime.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_ActionCooldowns.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_ShortcutBar.lua"],
+assert(tocLoadOrder["Actions/ActionCooldowns.lua"]
+        < tocLoadOrder["Actions/ShortcutItems.lua"]
+    and tocLoadOrder["Actions/ActionCooldowns.lua"]
+        < tocLoadOrder["Actions/BoundActionRuntime.lua"]
+    and tocLoadOrder["Actions/ActionCooldowns.lua"]
+        < tocLoadOrder["Actions/ShortcutBar.lua"],
     "action cooldown consumers loaded before their shared classifier")
-assert(tocLoadOrder["ApogeePartyHealthBars_AccessoryLayout.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_PlayerUtility.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_AccessoryLayout.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_ShortcutBar.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_AccessoryLayout.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_RaidMarkers.lua"],
+assert(tocLoadOrder["PartyFrames/AccessoryLayout.lua"]
+        < tocLoadOrder["PartyFrames/PlayerUtility.lua"]
+    and tocLoadOrder["PartyFrames/AccessoryLayout.lua"]
+        < tocLoadOrder["Actions/ShortcutBar.lua"]
+    and tocLoadOrder["PartyFrames/AccessoryLayout.lua"]
+        < tocLoadOrder["PartyFrames/RaidMarkers.lua"],
     "compact accessory consumers loaded before their shared geometry dependency")
-assert(tocLoadOrder["ApogeePartyHealthBars_WheelLayouts.lua"]
-    < tocLoadOrder["ApogeePartyHealthBars_WheelMacros.lua"],
+assert(tocLoadOrder["Actions/MouseWheel/MouseWheelLayouts.lua"]
+    < tocLoadOrder["Actions/MouseWheel/MouseWheelActions.lua"],
     "wheel runtime loaded before its class-state layout dependency")
-assert(tocLoadOrder["ApogeePartyHealthBars_BoundActionLayouts.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_WheelLayouts.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_BoundActionBindings.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_BoundActionRuntime.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_ActionHud.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_BoundActionRuntime.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_BoundActionRuntime.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_WheelMacros.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_BoundActionRuntime.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_KeyActions.lua"],
+assert(tocLoadOrder["Actions/BoundActionLayouts.lua"]
+        < tocLoadOrder["Actions/MouseWheel/MouseWheelLayouts.lua"]
+    and tocLoadOrder["Actions/BoundActionBindings.lua"]
+        < tocLoadOrder["Actions/BoundActionRuntime.lua"]
+    and tocLoadOrder["Actions/ActionHud.lua"]
+        < tocLoadOrder["Actions/BoundActionRuntime.lua"]
+    and tocLoadOrder["Actions/BoundActionRuntime.lua"]
+        < tocLoadOrder["Actions/MouseWheel/MouseWheelActions.lua"]
+    and tocLoadOrder["Actions/BoundActionRuntime.lua"]
+        < tocLoadOrder["Actions/Keyboard/KeyboardActions.lua"],
     "bound-action runtimes loaded before their shared dependencies")
-assert(tocLoadOrder["ApogeePartyHealthBars_KeyLayouts.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_KeyActions.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_UIHelpers.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_ConfigSurfaces.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_ConfigSurfaces.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_DotHud.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_ConfigSurfaces.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_UnitFrames.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_ProfileCodec.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_ProfileConfig.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_ProfileStore.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_ProfileConfig.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_ProfileConfig.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_ConfigUI.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_KeyConfig.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_ConfigUI.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_GeneralConfig.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_ConfigUI.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_HealingConfig.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_ConfigUI.lua"],
+assert(tocLoadOrder["Actions/Keyboard/KeyboardLayouts.lua"]
+        < tocLoadOrder["Actions/Keyboard/KeyboardActions.lua"]
+    and tocLoadOrder["Core/UIHelpers.lua"]
+        < tocLoadOrder["Settings/SettingsSurfaces.lua"]
+    and tocLoadOrder["Settings/SettingsSurfaces.lua"]
+        < tocLoadOrder["Reminders/TargetEffects/TargetEffectHud.lua"]
+    and tocLoadOrder["Settings/SettingsSurfaces.lua"]
+        < tocLoadOrder["PartyFrames/UnitFrames.lua"]
+    and tocLoadOrder["Profiles/ProfileCodec.lua"]
+        < tocLoadOrder["Settings/ProfilesSettingsPage.lua"]
+    and tocLoadOrder["Profiles/ProfileStore.lua"]
+        < tocLoadOrder["Settings/ProfilesSettingsPage.lua"]
+    and tocLoadOrder["Settings/ProfilesSettingsPage.lua"]
+        < tocLoadOrder["Settings/SettingsUI.lua"]
+    and tocLoadOrder["Settings/KeyboardSettingsPage.lua"]
+        < tocLoadOrder["Settings/SettingsUI.lua"]
+    and tocLoadOrder["Settings/CoreSettingsPages.lua"]
+        < tocLoadOrder["Settings/SettingsUI.lua"]
+    and tocLoadOrder["Settings/PartyFrameClicksSettingsPage.lua"]
+        < tocLoadOrder["Settings/SettingsUI.lua"],
     "feature configuration loaded before its dependency")
-assert(tocLoadOrder["ApogeePartyHealthBars_ShortcutBar.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_RowGeometry.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_WheelMacros.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_RowGeometry.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_KeyActions.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_RowGeometry.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_RowGeometry.lua"]
+assert(tocLoadOrder["Actions/ShortcutBar.lua"]
+        < tocLoadOrder["PartyFrames/RowGeometry.lua"]
+    and tocLoadOrder["Actions/MouseWheel/MouseWheelActions.lua"]
+        < tocLoadOrder["PartyFrames/RowGeometry.lua"]
+    and tocLoadOrder["Actions/Keyboard/KeyboardActions.lua"]
+        < tocLoadOrder["PartyFrames/RowGeometry.lua"]
+    and tocLoadOrder["PartyFrames/RowGeometry.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"],
     "RowGeometry loaded outside its dependency-safe initialization order")
-assert(tocLoadOrder["ApogeePartyHealthBars_Threat.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_VisualTicker.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_VisualTicker.lua"]
+assert(tocLoadOrder["PartyFrames/Threat.lua"]
+        < tocLoadOrder["PartyFrames/VisualTicker.lua"]
+    and tocLoadOrder["PartyFrames/VisualTicker.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"],
     "VisualTicker loaded outside its dependency-safe initialization order")
-assert(tocLoadOrder["ApogeePartyHealthBars_Auras.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_BuffReminders.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_BuffReminders.lua"]
+assert(tocLoadOrder["PartyFrames/Auras.lua"]
+        < tocLoadOrder["Reminders/BuffReminders.lua"]
+    and tocLoadOrder["Reminders/BuffReminders.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_Auras.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_ShieldTracker.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_Auras.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_IncomingHeals.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_Auras.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_HotTracker.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_ShieldTracker.lua"]
+    and tocLoadOrder["PartyFrames/Auras.lua"]
+        < tocLoadOrder["PartyFrames/ShieldTracker.lua"]
+    and tocLoadOrder["PartyFrames/Auras.lua"]
+        < tocLoadOrder["PartyFrames/IncomingHeals.lua"]
+    and tocLoadOrder["PartyFrames/Auras.lua"]
+        < tocLoadOrder["PartyFrames/HotTracker.lua"]
+    and tocLoadOrder["PartyFrames/ShieldTracker.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_IncomingHeals.lua"]
+    and tocLoadOrder["PartyFrames/IncomingHeals.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_HotTracker.lua"]
+    and tocLoadOrder["PartyFrames/HotTracker.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"],
     "effect runtimes loaded outside their dependency-safe order")
-assert(tocLoadOrder["ApogeePartyHealthBars_RuntimeLifecycleEvents.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_RuntimeEvents.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_RuntimeUnitEvents.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_RuntimeEvents.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_RuntimeActionEvents.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_RuntimeEvents.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_RuntimeDungeonBoardEvents.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_RuntimeEvents.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_RuntimeEvents.lua"]
+assert(tocLoadOrder["Runtime/LifecycleEvents.lua"]
+        < tocLoadOrder["Runtime/RuntimeEvents.lua"]
+    and tocLoadOrder["Runtime/UnitEvents.lua"]
+        < tocLoadOrder["Runtime/RuntimeEvents.lua"]
+    and tocLoadOrder["Runtime/ActionEvents.lua"]
+        < tocLoadOrder["Runtime/RuntimeEvents.lua"]
+    and tocLoadOrder["Runtime/DungeonBoardEvents.lua"]
+        < tocLoadOrder["Runtime/RuntimeEvents.lua"]
+    and tocLoadOrder["Runtime/RuntimeEvents.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"],
     "runtime event subscribers loaded outside their coordinator order")
-assert(type(ApogeePartyHealthBars_RuntimeLifecycleEvents.Register) == "function"
-        and type(ApogeePartyHealthBars_RuntimeUnitEvents.Register) == "function"
-        and type(ApogeePartyHealthBars_RuntimeActionEvents.Register) == "function"
-        and type(ApogeePartyHealthBars_RuntimeDungeonBoardEvents.Register) == "function",
+assert(type(ApogeePartyHealthBars_LifecycleEvents.Register) == "function"
+        and type(ApogeePartyHealthBars_UnitEvents.Register) == "function"
+        and type(ApogeePartyHealthBars_ActionEvents.Register) == "function"
+        and type(ApogeePartyHealthBars_DungeonBoardEvents.Register) == "function",
     "runtime event subscriber API was not loaded")
 assert(type(ApogeePartyHealthBars_DungeonBoardRuntime.GetSnapshot) == "function",
     "Dungeon Board runtime API was not loaded")
-assert(tocLoadOrder["ApogeePartyHealthBars_DungeonBoardCatalog.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardActivityData.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_DungeonBoardActivityData.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardClassifier.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_DungeonBoardClassifier.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardEligibility.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_DungeonBoardEligibility.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardRuntime.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_DungeonBoardRuntime.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardGroupFinder.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_Sounds.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardSettings.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_DungeonBoardSettings.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardFeed.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_DungeonBoardFeed.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardUI.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_UIHelpers.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars_DungeonBoardUI.lua"]
-    and tocLoadOrder["ApogeePartyHealthBars_DungeonBoardUI.lua"]
+assert(tocLoadOrder["DungeonBoard/DungeonBoardCatalog.lua"]
+        < tocLoadOrder["DungeonBoard/DungeonBoardActivityData.lua"]
+    and tocLoadOrder["DungeonBoard/DungeonBoardActivityData.lua"]
+        < tocLoadOrder["DungeonBoard/DungeonBoardClassifier.lua"]
+    and tocLoadOrder["DungeonBoard/DungeonBoardClassifier.lua"]
+        < tocLoadOrder["DungeonBoard/DungeonBoardEligibility.lua"]
+    and tocLoadOrder["DungeonBoard/DungeonBoardEligibility.lua"]
+        < tocLoadOrder["DungeonBoard/DungeonBoardRuntime.lua"]
+    and tocLoadOrder["DungeonBoard/DungeonBoardRuntime.lua"]
+        < tocLoadOrder["DungeonBoard/DungeonBoardGroupFinder.lua"]
+    and tocLoadOrder["Core/Sounds.lua"]
+        < tocLoadOrder["DungeonBoard/DungeonBoardSettings.lua"]
+    and tocLoadOrder["DungeonBoard/DungeonBoardSettings.lua"]
+        < tocLoadOrder["DungeonBoard/DungeonBoardFeed.lua"]
+    and tocLoadOrder["DungeonBoard/DungeonBoardFeed.lua"]
+        < tocLoadOrder["DungeonBoard/DungeonBoardUI.lua"]
+    and tocLoadOrder["Core/UIHelpers.lua"]
+        < tocLoadOrder["DungeonBoard/DungeonBoardUI.lua"]
+    and tocLoadOrder["DungeonBoard/DungeonBoardUI.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"],
     "Dungeon Board UI loaded outside its dependency-safe order")
 assert(type(ApogeePartyHealthBars_DungeonBoardUI.Toggle) == "function"
@@ -394,43 +394,44 @@ assert(ApogeePartyHealthBars_EffectsTracker == nil,
     "retired EffectsTracker runtime was still loaded")
 
 local router = ApogeePartyHealthBars_EventRouter
-assert(ApogeePartyHealthBars_DotHud.GetAnchor() == nil,
+assert(ApogeePartyHealthBars_TargetEffectHud.GetAnchor() == nil,
     "DoT reminder HUD was unexpectedly created before its first use")
-ApogeePartyHealthBars_DotHud.SetUnlocked(true)
-local preLoginConfigDotAnchor = ApogeePartyHealthBars_DotHud.GetAnchor()
-assert(preLoginConfigDotAnchor and preLoginConfigDotAnchor.shown
+ApogeePartyHealthBars_TargetEffectHud.SetUnlocked(true)
+local preLoginConfigDotAnchor = ApogeePartyHealthBars_TargetEffectHud.GetAnchor()
+assert(preLoginConfigDotAnchor and not preLoginConfigDotAnchor.shown
         and preLoginConfigDotAnchor.width == 140
         and preLoginConfigDotAnchor.height == 24,
-    "opening configuration did not create a visible, nonzero reminder HUD preview")
-ApogeePartyHealthBars_DotHud.SetConfigurationPreview({
+    "opening configuration exposed a blank reminder HUD before samples were available")
+ApogeePartyHealthBars_TargetEffectHud.SetConfigurationPreview({
     { key = "preview", label = "Preview", spellId = 1160, icon = 132154, preview = true },
 })
-local previewDotIcon = ApogeePartyHealthBars_DotHud.GetIcons()[1]
-assert(previewDotIcon and previewDotIcon.dragButtons[1] == "LeftButton"
+local previewDotIcon = ApogeePartyHealthBars_TargetEffectHud.GetIcons()[1]
+assert(preLoginConfigDotAnchor.shown
+        and previewDotIcon and previewDotIcon.dragButtons[1] == "LeftButton"
         and type(previewDotIcon.scripts.OnDragStart) == "function"
         and type(previewDotIcon.scripts.OnDragStop) == "function",
     "configuration example icon did not forward dragging to the reminder HUD")
-ApogeePartyHealthBars_DotHud.SetUnlocked(false)
+ApogeePartyHealthBars_TargetEffectHud.SetUnlocked(false)
 assert(#previewDotIcon.dragButtons == 0,
     "reminder example icon remained draggable after configuration closed")
 local earlyDotRefreshOk, earlyDotRefreshError = pcall(
-    ApogeePartyHealthBars_DotHud.SetSuggestions, {})
+    ApogeePartyHealthBars_TargetEffectHud.SetSuggestions, {})
 assert(earlyDotRefreshOk,
     "pre-login DoT context refresh failed before HUD initialization: "
         .. tostring(earlyDotRefreshError))
-local earlyDotAnchor = ApogeePartyHealthBars_DotHud.GetAnchor()
+local earlyDotAnchor = ApogeePartyHealthBars_TargetEffectHud.GetAnchor()
 assert(earlyDotAnchor == preLoginConfigDotAnchor,
     "pre-login configuration and reminder refresh created different HUD anchors")
 local earlyDotPointWrites = earlyDotAnchor.pointWrites
 router.Dispatch("PLAYER_LOGIN")
-local dotHudAnchor = ApogeePartyHealthBars_DotHud.GetAnchor()
+local dotHudAnchor = ApogeePartyHealthBars_TargetEffectHud.GetAnchor()
 assert(dotHudAnchor and dotHudAnchor.frameType == "Frame" and dotHudAnchor.template == nil
         and dotHudAnchor.scripts.OnClick == nil,
     "DoT reminder HUD was not created as a passive non-secure frame")
 assert(dotHudAnchor == earlyDotAnchor and dotHudAnchor.pointWrites > earlyDotPointWrites,
     "pre-login reminder HUD did not restore its position after profile loading")
 local dotPointWrites = dotHudAnchor.pointWrites
-ApogeePartyHealthBars_DotHud.SetSuggestions({})
+ApogeePartyHealthBars_TargetEffectHud.SetSuggestions({})
 assert(dotHudAnchor.pointWrites == dotPointWrites,
     "routine reminder refresh reapplied the saved HUD position during dragging")
 assert(ApogeePartyHealthBarsPanel.point[1] == "TOPRIGHT"
@@ -445,8 +446,8 @@ assert(ApogeePartyHealthBarsBindPanel.point[1] == "CENTER"
     "settings did not use the Spellbook-safe center-left default")
 assert(ApogeePartyHealthBars_S.charSv.bindingSchemaVersion == 2,
     "Healing binding data was not initialized before runtime setup")
-local keysRuntime = ApogeePartyHealthBars_KeyActions
-local wheelRuntime = ApogeePartyHealthBars_WheelMacros
+local keysRuntime = ApogeePartyHealthBars_KeyboardActions
+local wheelRuntime = ApogeePartyHealthBars_MouseWheelActions
 local buttonRuntime = ApogeePartyHealthBars_MouseButtonActions
 for _, slotId in ipairs(keysRuntime.GetDisplayOrder()) do
     assert(keysRuntime.GetSlot(keysRuntime.GetActiveLayoutKey(), slotId) == nil,
@@ -499,9 +500,9 @@ assert(keysRuntime.GetHeight("player") == 136
         and buttonRuntime.GetHeight("player") == 78
         and permanentActionHeight == expectedActionHeight,
     "parallel player and target utility stacks did not reserve the taller action column")
-assert(actionHudGeometry.offsets.wheel == 0
-        and actionHudGeometry.offsets.keys == 54
-        and actionHudGeometry.offsets.buttons == 81
+assert(actionHudGeometry.offsets.mouseWheel == 0
+        and actionHudGeometry.offsets.keyboard == 54
+        and actionHudGeometry.offsets.mouseButtons == 81
         and actionHudGeometry.height == actionHudHeight
         and actionHudHeight == 190
         and wheelRuntime.GetHudContainer().point[5] == 0
@@ -520,11 +521,10 @@ assert(geometry.GetRowTotalHeight("player")
 ApogeePartyHealthBars_S.configMode = true
 ApogeePartyHealthBars_S.RequestLayoutUpdate()
 RunFrameUpdates()
-assert(ApogeePartyHealthBars_ConfigSurfaces.Get("party").chrome.foundation:IsShown()
-        and ApogeePartyHealthBars_ConfigSurfaces.Get("party").chrome.foundation.color[4] == 1,
-    "Party Health configuration preview did not use its solid background")
-assert(ApogeePartyHealthBars_ConfigSurfaces.Get("party").chrome.header == nil
-        and ApogeePartyHealthBars_ConfigSurfaces.Get("party").chrome.accent == nil,
+assert(not ApogeePartyHealthBars_SettingsSurfaces.Get("party").chrome.foundation:IsShown(),
+    "Party Health configuration preview retained its oversized solid background")
+assert(ApogeePartyHealthBars_SettingsSurfaces.Get("party").chrome.header == nil
+        and ApogeePartyHealthBars_SettingsSurfaces.Get("party").chrome.accent == nil,
     "Party Health configuration preview retained its empty header chrome")
 local positionedRows = {}
 for _, frame in ipairs(frames) do
@@ -551,7 +551,7 @@ end
 ApogeePartyHealthBars_S.configMode = false
 ApogeePartyHealthBars_S.RequestLayoutUpdate()
 RunFrameUpdates()
-assert(not ApogeePartyHealthBars_ConfigSurfaces.Get("party").chrome.foundation:IsShown(),
+assert(not ApogeePartyHealthBars_SettingsSurfaces.Get("party").chrome.foundation:IsShown(),
     "Party Health solid configuration background leaked into normal gameplay")
 assert(wheelRuntime.GetHudCastButton("ctrlUp").shown,
     "permanent Wheel HUD did not become visible at login")
@@ -562,7 +562,7 @@ assert(smokeBindings.F == "CLICK ApogeePartyHealthBarsKeyF:LeftButton"
     and smokeBindings.BUTTON3 == "CLICK ApogeePartyHealthBarsMouseNormal3:LeftButton"
     and smokeBindings["CTRL-BUTTON5"] == "CLICK ApogeePartyHealthBarsMouseCtrl5:LeftButton",
     "Keys, Wheel, and Buttons did not own their independent physical bindings")
-assert(ApogeePartyHealthBars_ConfigController.SetAddonEnabled(false),
+assert(ApogeePartyHealthBars_SettingsController.SetAddonEnabled(false),
     "global disable did not release permanent action bindings")
 assert(smokeBindings.F == "" and smokeBindings.MOUSEWHEELUP == "CAMERAZOOMIN"
         and smokeBindings.BUTTON3 == "" and smokeBindings["CTRL-BUTTON5"] == "",
@@ -570,7 +570,7 @@ assert(smokeBindings.F == "" and smokeBindings.MOUSEWHEELUP == "CAMERAZOOMIN"
 router.Dispatch("UPDATE_BINDINGS")
 assert(smokeBindings.F == "" and smokeBindings.MOUSEWHEELUP == "CAMERAZOOMIN",
     "binding reconciliation reclaimed Keys or Wheel while the add-on was disabled")
-assert(ApogeePartyHealthBars_ConfigController.SetAddonEnabled(true)
+assert(ApogeePartyHealthBars_SettingsController.SetAddonEnabled(true)
         and smokeBindings.F == "CLICK ApogeePartyHealthBarsKeyF:LeftButton"
         and smokeBindings.MOUSEWHEELUP == "CLICK ApogeePartyHealthBarsWheelNormalUp:LeftButton"
         and smokeBindings.BUTTON3 == "CLICK ApogeePartyHealthBarsMouseNormal3:LeftButton",
@@ -639,9 +639,9 @@ assert(keyGIcon.cooldown.shown and keyGIcon.count:GetText() == "3",
     "Keys item HUD did not reflect cooldown and quantity state")
 smokeItemCooldown = 0
 smokeItemName = "Heavy Linen Bandage"
-local originalHealingRefresh = ApogeePartyHealthBars_ConfigUI.RefreshBindPanel
+local originalHealingRefresh = ApogeePartyHealthBars_SettingsUI.RefreshPartyFrameClicksPage
 local healingItemInfoRefreshes = 0
-ApogeePartyHealthBars_ConfigUI.RefreshBindPanel = function(...)
+ApogeePartyHealthBars_SettingsUI.RefreshPartyFrameClicksPage = function(...)
     healingItemInfoRefreshes = healingItemInfoRefreshes + 1
     return originalHealingRefresh(...)
 end
@@ -655,7 +655,7 @@ assert(healingItemInfoRefreshes == 1,
     "item information did not refresh the open Healing assignment labels")
 smokeItemName = "Linen Bandage"
 router.Dispatch("GET_ITEM_INFO_RECEIVED", 1251, true)
-ApogeePartyHealthBars_ConfigUI.RefreshBindPanel = originalHealingRefresh
+ApogeePartyHealthBars_SettingsUI.RefreshPartyFrameClicksPage = originalHealingRefresh
 assert(savedBindingCount >= 3, "permanent bound-action features did not persist their bindings")
 assert(ApogeePartyHealthBars_ShortcutBar.AssignSpell(1, 9001, "Fireball"))
 assert(ApogeePartyHealthBars_ShortcutBar.GetSlotLane(1) == "player", "ordinary Shortcut spell did not use player lane")
@@ -697,7 +697,7 @@ router.Dispatch("ACTIONBAR_UPDATE_STATE")
 router.Dispatch("UNIT_THREAT_SITUATION_UPDATE")
 router.Dispatch("PLAYER_LEVEL_UP")
 router.Dispatch("PLAYER_TALENT_UPDATE")
-local configUI = ApogeePartyHealthBars_ConfigUI
+local configUI = ApogeePartyHealthBars_SettingsUI
 assert(configUI.versionLabel and configUI.versionLabel:GetText() == "Version 0.36.0-test",
     "configuration did not display the loaded TOC version")
 assert(configUI.profileLabel and configUI.profileLabel.justifyH == "LEFT",
@@ -708,15 +708,15 @@ assert(configUI.profileLabel.point and configUI.profileLabel.point[1] == "BOTTOM
         and configUI.profileLabel.point[5] == 3,
     "configuration profile metadata did not retain its lower header baseline")
 local originalRefreshLayouts = wheelRuntime.RefreshLayouts
-local originalRefreshWheelPanel = configUI.RefreshWheelPanel
+local originalRefreshMouseWheelPage = configUI.RefreshMouseWheelPage
 local wheelPanelRefreshCount = 0
 wheelRuntime.RefreshLayouts = function() return true end
-configUI.RefreshWheelPanel = function() wheelPanelRefreshCount = wheelPanelRefreshCount + 1 end
+configUI.RefreshMouseWheelPage = function() wheelPanelRefreshCount = wheelPanelRefreshCount + 1 end
 router.Dispatch("SPELLS_CHANGED")
 assert(wheelPanelRefreshCount == 1,
     "spell-driven Wheel layout registry change did not refresh the open configuration panel")
 wheelRuntime.RefreshLayouts = originalRefreshLayouts
-configUI.RefreshWheelPanel = originalRefreshWheelPanel
+configUI.RefreshMouseWheelPage = originalRefreshMouseWheelPage
 
 local originalRefreshMacroPanel = configUI.RefreshMacroPanel
 local macroPanelRefreshCount = 0
@@ -790,16 +790,18 @@ end
 
 ClickMinimapButton()
 assert(ApogeePartyHealthBars_S.configMode, "minimap click did not open settings")
-local configSurfaces = ApogeePartyHealthBars_ConfigSurfaces
+local configSurfaces = ApogeePartyHealthBars_SettingsSurfaces
 local expectedConfigSurfaceKeys = { "settings", "party", "feed", "dot", "cleanse" }
 for _, key in ipairs(expectedConfigSurfaceKeys) do
     local surface = assert(configSurfaces.Get(key), "missing configuration surface: " .. key)
-    assert(surface.chrome.active and surface.chrome.foundation:IsShown()
+    local shouldShowChrome = key == "settings"
+    assert(surface.chrome.active == shouldShowChrome
+            and surface.chrome.foundation:IsShown() == shouldShowChrome
             and surface.chrome.foundation.color[1] == 0
             and surface.chrome.foundation.color[2] == 0
             and surface.chrome.foundation.color[3] == 0
             and surface.chrome.foundation.color[4] == 1,
-        "configuration surface lacked an opaque black foundation: " .. key)
+        "configuration surface chrome did not match the active settings page: " .. key)
     assert(surface.frame.topLevel and surface.frame.frameStrata == "DIALOG",
         "configuration surface did not join native active-window stacking: " .. key)
 end
@@ -810,17 +812,21 @@ assert(configSurfaces.Get("dot").chrome.title == nil
         and configSurfaces.Get("feed").chrome.title == nil
         and configSurfaces.Get("feed").chrome.header == nil,
     "a lean configuration preview recreated header chrome")
-assert(ApogeePartyHealthBars_ConfigUI.factoryResetButton,
+assert(ApogeePartyHealthBars_SettingsUI.factoryResetButton,
     "General settings did not create the factory reset control")
-assert(ApogeePartyHealthBars_ConfigUI.factoryResetButton
-        == ApogeePartyHealthBars_GeneralConfig.GetFactoryResetButton(),
-    "ConfigUI did not bridge the extracted General factory-reset control")
-assert(ApogeePartyHealthBars_ConfigUI.prepareDisableButton
-        == ApogeePartyHealthBars_GeneralConfig.GetPrepareDisableButton(),
-    "ConfigUI did not bridge the binding-safe disable preparation control")
-assert(table.concat(ApogeePartyHealthBars_ConfigUI.tabOrder, ",")
-        == "general,dots,healing,keys,wheel,buttons,shortcuts,macros,profiles",
-    "settings tabs did not follow the core-to-advanced order")
+assert(ApogeePartyHealthBars_SettingsUI.factoryResetButton
+        == ApogeePartyHealthBars_CoreSettingsPages.GetFactoryResetButton(),
+    "SettingsUI did not bridge the extracted General factory-reset control")
+assert(ApogeePartyHealthBars_SettingsUI.prepareDisableButton
+        == ApogeePartyHealthBars_CoreSettingsPages.GetPrepareDisableButton(),
+    "SettingsUI did not bridge the binding-safe disable preparation control")
+assert(table.concat(ApogeePartyHealthBars_SettingsUI.groupOrder, ",")
+        == "frames,actions,reminders,dungeon,manage",
+    "settings groups did not follow the compact task order")
+assert(table.concat(ApogeePartyHealthBars_SettingsUI.pageOrder, ",")
+        == "frames,partyFrameClicks,shortcuts,keyboard,mouseWheel,mouseButtons,"
+            .. "healthChat,buffsCleanse,targetEffects,dungeon,profiles,macros,maintenance",
+    "settings pages did not retain every configuration workflow")
 assert(SpellBookFrame:IsShown(), "opening settings did not open the spellbook")
 assert(spellbookOpenCount == 1, "spellbook did not open exactly once")
 assert(directSpellbookToggleCount == 0, "add-on called ToggleSpellBook directly")
@@ -848,7 +854,7 @@ router.Dispatch("BAG_UPDATE_COOLDOWN")
 router.Dispatch("GET_ITEM_INFO_RECEIVED", 1251, true)
 assert(ApogeePartyHealthBars_ShortcutBar.GetSlotState(3) == "ready",
     "item events did not restore a restocked Shortcut")
-ApogeePartyHealthBars_ConfigController.SetMode(false)
+ApogeePartyHealthBars_SettingsController.SetMode(false)
 for _, key in ipairs(expectedConfigSurfaceKeys) do
     assert(not configSurfaces.Get(key).chrome.foundation:IsShown(),
         "configuration chrome leaked into normal gameplay: " .. key)
@@ -892,22 +898,44 @@ assert(existingShortcutButton.shown and existingShortcutButton.mouseEnabled
 SpellBookFrame:Hide()
 
 ApogeePartyHealthBars_S.configMode = true
-for _, key in ipairs({ "profiles", "general", "healing", "shortcuts", "keys", "wheel", "macros" }) do
-    ApogeePartyHealthBars_ConfigUI.ActivateTab(key)
-    assert(ApogeePartyHealthBars_S.configTab == key, "could not activate settings tab: " .. key)
-    ApogeePartyHealthBars_ConfigUI.RefreshTab(key, true)
+for _, key in ipairs({
+    "frames", "partyFrameClicks", "shortcuts", "keyboard", "mouseWheel",
+    "mouseButtons", "healthChat", "buffsCleanse", "targetEffects", "dungeon",
+    "profiles", "macros", "maintenance",
+}) do
+    ApogeePartyHealthBars_SettingsUI.ActivatePage(key)
+    assert(ApogeePartyHealthBars_S.activeSettingsPageKey == key, "could not activate settings page: " .. key)
+    assert(ApogeePartyHealthBars_TargetEffectHud.IsUnlocked() == (key == "targetEffects")
+            and ApogeePartyHealthBars_CleanseWatch.IsUnlocked()
+                == (key == "buffsCleanse")
+            and ApogeePartyHealthBars_DungeonBoardFeed.IsUnlocked()
+                == (key == "dungeon"),
+        "settings page exposed an unrelated configuration preview: " .. key)
+    assert((key == "targetEffects" or not ApogeePartyHealthBars_TargetEffectHud.GetAnchor():IsShown())
+            and (key == "buffsCleanse"
+                or not ApogeePartyHealthBars_CleanseWatch.GetFrame():IsShown())
+            and (key == "dungeon"
+                or not ApogeePartyHealthBars_DungeonBoardFeed.GetFrame():IsShown()),
+        "settings page left an unrelated auxiliary surface visible: " .. key)
+    local singlePageGroup = key == "frames" or key == "dungeon"
+    assert(ApogeePartyHealthBars_SettingsUI.pageDropdown:IsShown()
+            == not singlePageGroup
+            and ApogeePartyHealthBars_SettingsUI.pageTitle:IsShown()
+                == singlePageGroup,
+        "single-page settings group did not use a static page heading: " .. key)
+    ApogeePartyHealthBars_SettingsUI.RefreshPage(key, true)
 end
-ApogeePartyHealthBars_ConfigUI.ActivateTab("profiles")
-ApogeePartyHealthBars_ConfigUI.RefreshTab("profiles")
-assert(ApogeePartyHealthBars_ProfileConfig.GetProfileDropdown().selectedKey
+ApogeePartyHealthBars_SettingsUI.ActivatePage("profiles")
+ApogeePartyHealthBars_SettingsUI.RefreshPage("profiles")
+assert(ApogeePartyHealthBars_ProfilesSettingsPage.GetProfileDropdown().selectedKey
         == ApogeePartyHealthBars_ProfileStore.GetActiveId(),
-    "Profiles tab did not select the active class profile")
-assert(ApogeePartyHealthBars_ConfigUI.profileLabel:GetText():find("Profile:", 1, true),
+    "Profiles page did not select the active class profile")
+assert(ApogeePartyHealthBars_SettingsUI.profileLabel:GetText():find("Profile:", 1, true),
     "settings header did not expose the active profile")
-local shareTextFrame = ApogeePartyHealthBars_ProfileConfig.GetShareTextFrame()
-local shareStatusFrame = ApogeePartyHealthBars_ProfileConfig.GetShareStatusFrame()
+local shareTextFrame = ApogeePartyHealthBars_ProfilesSettingsPage.GetShareTextFrame()
+local shareStatusFrame = ApogeePartyHealthBars_ProfilesSettingsPage.GetShareStatusFrame()
 assert(shareTextFrame.template == "InputScrollFrameTemplate"
-        and ApogeePartyHealthBars_ProfileConfig.GetShareText() == shareTextFrame.EditBox,
+        and ApogeePartyHealthBars_ProfilesSettingsPage.GetShareText() == shareTextFrame.EditBox,
     "profile share text was not constrained by Blizzard's scrolling input frame")
 assert(shareStatusFrame.template == "BackdropTemplate"
         and shareStatusFrame:GetFrameLevel() > shareTextFrame:GetFrameLevel(),
@@ -915,23 +943,23 @@ assert(shareStatusFrame.template == "BackdropTemplate"
 local smokeProfile = ApogeePartyHealthBars_ProfileStore.GetActiveProfile()
 local smokeProfileName = smokeProfile.name
 assert(ApogeePartyHealthBars_ProfileStore.Rename(smokeProfile.id, "Smoke Profile"))
-ApogeePartyHealthBars_ProfileConfig.Refresh()
-assert(ApogeePartyHealthBars_ConfigUI.profileLabel:GetText() == "Profile: Smoke Profile",
+ApogeePartyHealthBars_ProfilesSettingsPage.Refresh()
+assert(ApogeePartyHealthBars_SettingsUI.profileLabel:GetText() == "Profile: Smoke Profile",
     "renaming the active profile left a stale settings header")
 assert(ApogeePartyHealthBars_ProfileStore.Rename(smokeProfile.id, smokeProfileName))
-ApogeePartyHealthBars_ProfileConfig.Refresh()
-ApogeePartyHealthBars_ConfigUI.ActivateTab("keys")
-ApogeePartyHealthBars_ConfigUI.RefreshTab("keys")
-local smokeKeyRows = ApogeePartyHealthBars_KeyConfig.GetRows()
+ApogeePartyHealthBars_ProfilesSettingsPage.Refresh()
+ApogeePartyHealthBars_SettingsUI.ActivatePage("keyboard")
+ApogeePartyHealthBars_SettingsUI.RefreshPage("keyboard")
+local smokeKeyRows = ApogeePartyHealthBars_KeyboardSettingsPage.GetRows()
 local smokeKeyRowCount = 0
 for _ in pairs(smokeKeyRows) do smokeKeyRowCount = smokeKeyRowCount + 1 end
 assert(smokeKeyRowCount == 15
         and smokeKeyRows.keyF.secondary:GetText():find("Key F", 1, true),
     "Keys configuration did not expose all fixed destinations as action rows")
-ApogeePartyHealthBars_ConfigUI.Show()
+ApogeePartyHealthBars_SettingsUI.Show()
 assert(smokeKeyRows.keyF.secondary:GetText():find("Key F", 1, true),
     "reopening settings did not refresh the active Keys row list")
-ApogeePartyHealthBars_ConfigUI.Hide()
+ApogeePartyHealthBars_SettingsUI.Hide()
 ApogeePartyHealthBars_S.configMode = false
 
 RunFrameUpdates()
@@ -987,16 +1015,16 @@ assert(removedDungeonRolePreferences.cleanseWatchPoint == "TOPRIGHT"
         and removedDungeonRolePreferences.cleanseWatchY == 0,
     "new saved variables did not default Cleanse Watch to the top-right")
 local fractionalDotPreferences = {
-    dotRefreshThreshold = 4.6,
-    dotThresholds = { corruption = 6.4, immolate = 30.8, invalid = 0 / 0 },
+    targetEffectRefreshThreshold = 4.6,
+    targetEffectThresholds = { corruption = 6.4, immolate = 30.8, invalid = 0 / 0 },
     dungeonBoardLevelsBelow = -2,
     dungeonBoardLevelsAbove = 90,
 }
 ApogeePartyHealthBars_Effects.InitializeSavedVariables(fractionalDotPreferences, {})
-assert(fractionalDotPreferences.dotRefreshThreshold == 5
-        and fractionalDotPreferences.dotThresholds.corruption == 6
-        and fractionalDotPreferences.dotThresholds.immolate == 30
-        and fractionalDotPreferences.dotThresholds.invalid == nil
+assert(fractionalDotPreferences.targetEffectRefreshThreshold == 5
+        and fractionalDotPreferences.targetEffectThresholds.corruption == 6
+        and fractionalDotPreferences.targetEffectThresholds.immolate == 30
+        and fractionalDotPreferences.targetEffectThresholds.invalid == nil
         and fractionalDotPreferences.dungeonBoardLevelsBelow == 0
         and fractionalDotPreferences.dungeonBoardLevelsAbove == 60,
     "numeric profile settings were not normalized to their supported ranges")
@@ -1012,6 +1040,36 @@ assert(legacyCharacter.shortcuts and legacyCharacter.shortcuts[1].spellName == "
     and legacyCharacter.trackedSpells == nil and legacyCharacter.trackedSpellsSchemaVersion == nil
     and legacyCharacter.trackerDefaultsVersion == nil and legacyCharacter.shortcutDefaultsVersion == 1,
     "legacy tracked spells were not moved once into clean Shortcut saved data")
+local renamedSettings = {
+    schemaVersion = 6,
+    dotRemindersEnabled = false,
+    dotRefreshThreshold = 8,
+    dotPriority = { "shadowWordPain" },
+    dotHudX = 42,
+}
+local renamedActions = {
+    keyActions = { schemaVersion = 2 },
+    wheelMacros = { schemaVersion = 6 },
+    mouseActions = { schemaVersion = 1 },
+}
+ApogeePartyHealthBars_Effects.InitializeSavedVariables(renamedSettings, renamedActions)
+assert(renamedSettings.targetEffectRemindersEnabled == false
+        and renamedSettings.targetEffectRefreshThreshold == 8
+        and renamedSettings.targetEffectPriority[1] == "shadowWordPain"
+        and renamedSettings.targetEffectHudX == 42
+        and renamedSettings.dotRemindersEnabled == nil
+        and renamedSettings.dotPriority == nil
+        and renamedActions.keyboardActions.schemaVersion == 2
+        and renamedActions.mouseWheelActions.schemaVersion == 6
+        and renamedActions.mouseButtonActions.schemaVersion == 1
+        and renamedActions.keyActions == nil
+        and renamedActions.wheelMacros == nil
+        and renamedActions.mouseActions == nil,
+    "renamed settings and action fields were not migrated to canonical terminology")
+ApogeePartyHealthBars_Effects.InitializeSavedVariables(renamedSettings, renamedActions)
+assert(renamedSettings.targetEffectPriority[1] == "shadowWordPain"
+        and renamedActions.keyboardActions.schemaVersion == 2,
+    "terminology migration was not idempotent")
 local legacyPreferences = {
     schemaVersion = 2,
     lowHealthSoundEnabled = false,

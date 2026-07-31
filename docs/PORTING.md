@@ -40,7 +40,7 @@ archives unless a future client difference makes the shared package impossible.
 
 ## Compatibility Contract
 
-`ApogeePartyHealthBars_ClientCapabilities.lua` is the session-only registry for
+`Core/ClientCapabilities.lua` is the session-only registry for
 client identity, API-family detection, feature support, and isolated runtime
 failures. It must not write SavedVariables.
 

@@ -1,4 +1,4 @@
-dofile("ApogeePartyHealthBars_MouseButtonData.lua")
+dofile("Actions/MouseButtons/MouseButtonData.lua")
 local data = ApogeePartyHealthBars_MouseButtonData
 
 local valid, errors = data.ValidateAll()

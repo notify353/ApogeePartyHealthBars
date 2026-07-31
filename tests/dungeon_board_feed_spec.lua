@@ -1,6 +1,6 @@
-dofile("ApogeePartyHealthBars_DungeonBoardCatalog.lua")
-dofile("ApogeePartyHealthBars_DungeonBoardEligibility.lua")
-dofile("ApogeePartyHealthBars_DungeonBoardFeed.lua")
+dofile("DungeonBoard/DungeonBoardCatalog.lua")
+dofile("DungeonBoard/DungeonBoardEligibility.lua")
+dofile("DungeonBoard/DungeonBoardFeed.lua")
 local Feed = ApogeePartyHealthBars_DungeonBoardFeed
 
 local createdFrames = {}
@@ -72,9 +72,17 @@ local opportunityCallback
 local settingsListener
 local configActive = false
 local savedFeedPosition
+local dockCalls, releaseCalls, movedCalls, refreshDockCalls = 0, 0, 0, 0
 local configSurface = {
     Register = function() end,
     SetSurfaceChromeShown = function(_, value) configActive = value == true end,
+    DockConfigurationPreview = function() dockCalls = dockCalls + 1; return true end,
+    ReleaseConfigurationPreview = function() releaseCalls = releaseCalls + 1; return true end,
+    MarkConfigurationPreviewMoved = function() movedCalls = movedCalls + 1; return true end,
+    RefreshConfigurationPreviewDock = function()
+        refreshDockCalls = refreshDockCalls + 1
+        return true
+    end,
 }
 
 Feed.Initialize({
@@ -94,6 +102,7 @@ Feed.Initialize({
         SetFeedPosition = function(...)
             savedFeedPosition = { ... }
         end,
+        ResetFeedPosition = function() end,
     },
     Eligibility = ApogeePartyHealthBars_DungeonBoardEligibility,
     Catalog = ApogeePartyHealthBars_DungeonBoardCatalog,
@@ -104,7 +113,7 @@ Feed.Initialize({
         end,
     },
     Helpers = { EscapeText = tostring },
-    ConfigSurfaces = configSurface,
+    SettingsSurfaces = configSurface,
     Actions = {
         CanQueryWho = function(name) return name ~= nil, "Who unavailable." end,
         QueryWho = function(name)
@@ -134,30 +143,35 @@ assert(not feedFrame.shown and feedFrame.width == 340 and feedFrame.height == 34
 Feed.SetUnlocked(true)
 assert(Feed.IsUnlocked() and feedFrame.mouseEnabled
         and feedFrame.shown and configActive
+        and dockCalls == 1
         and feedFrame.height == 34 and firstRow.shown
         and firstRow.title.text:find("PREVIEW", 1, true)
         and firstRow.detail.text
             == "ExamplePlayer  •  LFM Wailing Caverns - need healer"
         and not firstRow.who.enabled and not firstRow.whisper.enabled,
     "disabled LFG Alerts did not expose its example and drag anchor")
+feedFrame.scripts.OnDragStart(feedFrame)
 feedFrame.scripts.OnDragStop(feedFrame)
-assert(savedFeedPosition and savedFeedPosition[1] == "CENTER"
+assert(movedCalls == 1 and savedFeedPosition and savedFeedPosition[1] == "CENTER"
         and savedFeedPosition[2] == "CENTER"
         and savedFeedPosition[3] == 0 and savedFeedPosition[4] == 0,
     "LFG Alerts drag stop did not preserve the released position directly")
 Feed.SetUnlocked(false)
-assert(not feedFrame.shown and not configActive and not firstRow.shown,
+assert(releaseCalls == 1 and not feedFrame.shown and not configActive and not firstRow.shown,
     "disabled LFG Alerts remained visible after configuration mode closed")
 feedEnabled = true
 settingsListener("feedEnabled")
 assert(not feedFrame.shown and feedFrame.height == 34 and not firstRow.shown,
     "enabled idle LFG Alerts did not remain hidden")
 Feed.SetUnlocked(true)
-assert(configActive and feedFrame.shown and firstRow.shown
+assert(dockCalls == 2 and configActive and feedFrame.shown and firstRow.shown
         and firstRow.title.text:find("PREVIEW", 1, true),
     "empty enabled LFG Alerts did not expose its preview and drag anchor")
+Feed.ResetPosition()
+assert(refreshDockCalls == 1,
+    "resetting LFG Alerts did not refresh its configuration dock")
 Feed.SetUnlocked(false)
-assert(not configActive and not feedFrame.shown,
+assert(releaseCalls == 2 and not configActive and not feedFrame.shown,
     "enabled LFG Alerts drag anchor remained visible after configuration mode closed")
 role = "tank"
 settingsListener("role")

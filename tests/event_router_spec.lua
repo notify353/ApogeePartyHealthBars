@@ -9,7 +9,7 @@ end
 
 C_EventUtils = { IsEventValid = function(event) return event ~= "INVALID_EVENT" end }
 
-dofile("ApogeePartyHealthBars_EventRouter.lua")
+dofile("Core/EventRouter.lua")
 local R = ApogeePartyHealthBars_EventRouter
 R.Initialize(function(message) messages[#messages + 1] = message end)
 

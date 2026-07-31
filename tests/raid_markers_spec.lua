@@ -1,5 +1,5 @@
-dofile("ApogeePartyHealthBars_Data.lua")
-dofile("ApogeePartyHealthBars_AccessoryLayout.lua")
+dofile("Core/Data.lua")
+dofile("PartyFrames/AccessoryLayout.lua")
 
 local created = {}
 local applied = {}
@@ -52,7 +52,7 @@ end
 GameTooltip = widget()
 function GameTooltip:SetOwner() end
 
-dofile("ApogeePartyHealthBars_RaidMarkers.lua")
+dofile("PartyFrames/RaidMarkers.lua")
 local markers = ApogeePartyHealthBars_RaidMarkers
 local targetBtn, targetAnchor = widget(), widget()
 markers.Attach({

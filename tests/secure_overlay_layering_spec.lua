@@ -1,14 +1,14 @@
-dofile("ApogeePartyHealthBars_Data.lua")
+dofile("Core/Data.lua")
 
 assert(ApogeePartyHealthBars_C.SECURE_OVERLAY_STRATA == "LOW",
     "secure input overlays must remain below standard Blizzard panels")
 
 local overlaySources = {
-    "ApogeePartyHealthBars_UnitBar.lua",
-    "ApogeePartyHealthBars_ShortcutBar.lua",
-    "ApogeePartyHealthBars_ConsumableBar.lua",
-    "ApogeePartyHealthBars_BoundActionRuntime.lua",
-    "ApogeePartyHealthBars_PlayerUtility.lua",
+    "PartyFrames/UnitBar.lua",
+    "Actions/ShortcutBar.lua",
+    "Actions/ConsumableBar.lua",
+    "Actions/BoundActionRuntime.lua",
+    "PartyFrames/PlayerUtility.lua",
 }
 
 for _, path in ipairs(overlaySources) do

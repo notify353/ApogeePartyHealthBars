@@ -24,7 +24,7 @@ function LoadBindings(set)
 end
 function InCombatLockdown() return false end
 
-dofile("ApogeePartyHealthBars_BoundActionBindings.lua")
+dofile("Actions/BoundActionBindings.lua")
 local factory = ApogeePartyHealthBars_BoundActionBindings
 local slots = {
     { id = "keyQ", key = "Q", label = "Key Q" },

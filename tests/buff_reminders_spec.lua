@@ -106,8 +106,8 @@ local selfBuffTexture
 local characterSaved = { selfBuffSelections = {} }
 local secureRefreshes, layoutRequests = 0, 0
 
-dofile("ApogeePartyHealthBars_UnitAPI.lua")
-dofile("ApogeePartyHealthBars_BuffReminders.lua")
+dofile("Core/UnitAPI.lua")
+dofile("Reminders/BuffReminders.lua")
 local reminders = ApogeePartyHealthBars_BuffReminders
 
 local valid, validationError = pcall(reminders.Initialize, {})

@@ -54,7 +54,7 @@ set is intentionally exact; changing only the TOC must fail validation.
 | Export regression fixtures | `scripts/test-wow-api-export.ps1` | Add the target definition and cover missing, stale, malformed, single-installed, and multi-installed cases. |
 | Loadable client interfaces | `ApogeePartyHealthBars.toc` | Declare the exact supported interface set on its single `## Interface` line. |
 | Package and release interface guard | `scripts/validate-package.ps1` | Update the exact expected interface set. |
-| Runtime client identity | `ApogeePartyHealthBars_ClientCapabilities.lua` | Map the exact interface to a stable flavor and product; preserve `unsupported` fallback behavior. |
+| Runtime client identity | `Core/ClientCapabilities.lua` | Map the exact interface to a stable flavor and product; preserve `unsupported` fallback behavior. |
 | Runtime identity coverage | `tests/client_capabilities_spec.lua` | Test the new mapping and unsupported-interface behavior. |
 | API normalization | Domain adapters listed in `PORTING.md` | Change only adapters whose exported API shape or in-game behavior differs. |
 | Content availability | Spell, aura, item, control, and macro data plus Spellbook discovery | Prefer learned player/pet spell discovery; add flavor restrictions only for non-discoverable differences. |
@@ -132,7 +132,7 @@ impossible and the distribution architecture has been reviewed separately.
 ### 5. Add or retain runtime identity
 
 For a new flavor, add the interface mapping in
-`ApogeePartyHealthBars_ClientCapabilities.lua` and equivalent test coverage.
+`Core/ClientCapabilities.lua` and equivalent test coverage.
 For an existing patch, replace its interface key without renaming the flavor.
 
 Use runtime flavor checks only for differences that capability detection,

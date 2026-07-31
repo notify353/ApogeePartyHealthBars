@@ -1,6 +1,6 @@
-dofile("ApogeePartyHealthBars_DungeonBoardCatalog.lua")
-dofile("ApogeePartyHealthBars_DungeonBoardEligibility.lua")
-dofile("ApogeePartyHealthBars_DungeonBoardGroupFinder.lua")
+dofile("DungeonBoard/DungeonBoardCatalog.lua")
+dofile("DungeonBoard/DungeonBoardEligibility.lua")
+dofile("DungeonBoard/DungeonBoardGroupFinder.lua")
 local GroupFinder = ApogeePartyHealthBars_DungeonBoardGroupFinder
 local Eligibility = ApogeePartyHealthBars_DungeonBoardEligibility
 

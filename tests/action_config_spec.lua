@@ -1,5 +1,5 @@
 ApogeePartyHealthBars_C = {
-    CONFIG_CONTENT_W = 396, BIND_PAD = 8, CONFIG_HEADER_H = 40, CONFIG_TAB_H = 24,
+    CONFIG_CONTENT_W = 396, BIND_PAD = 8, CONFIG_HEADER_H = 40, CONFIG_PAGE_SELECTOR_H = 24,
 }
 ApogeePartyHealthBars_ActionMacros = { MAX_BODY_BYTES = 255 }
 
@@ -60,6 +60,11 @@ function ApogeePartyHealthBars_UIHelpers.CreateButton(_, label)
     buttons[label] = button
     return button
 end
+function ApogeePartyHealthBars_UIHelpers.CreateArrowButton(_, direction)
+    local button = ApogeePartyHealthBars_UIHelpers.CreateButton(nil, "")
+    button.arrowDirection = direction
+    return button
+end
 function ApogeePartyHealthBars_UIHelpers.CreateDropdown()
     local dropdown = widget()
     function dropdown:SetArrowShown() end
@@ -73,8 +78,8 @@ function ApogeePartyHealthBars_UIHelpers.SetTooltip(frame, title, body)
     frame.tooltipTitle, frame.tooltipBody = title, body
 end
 
-dofile("ApogeePartyHealthBars_ActionConfig.lua")
-local config = ApogeePartyHealthBars_ActionConfig
+dofile("Actions/ActionSettingsComponents.lua")
+local config = ApogeePartyHealthBars_ActionSettingsComponents
 config.Initialize(widget(), function() end)
 
 local list = config.CreateActionList(widget(), "TestActionList")
@@ -98,11 +103,11 @@ config.SetActionRowState(actionRow, {
 assert(actionRow.primary:GetText() == "Fireball"
         and actionRow.icon.texture == "Interface\\Icons\\Spell_Fire_FlameBolt"
         and actionRow.sound.selectedKey == "toast"
-        and actionRow.sound.tooltipTitle == "Cooldown alert"
+        and actionRow.sound.tooltipTitle == "Ready sound"
         and actionRow.sound.tooltipBody
             == "Plays when this action becomes ready after a meaningful cooldown or depleted charges."
         and actionRow.sound:IsEnabled() and actionRow.macro:IsEnabled()
-        and actionRow.macro.label:GetText() == "Macro*" and actionRow.up:IsEnabled()
+        and actionRow.macro.label:GetText() == "Custom" and actionRow.up:IsEnabled()
         and not actionRow.down:IsEnabled() and actionRow.clear:IsEnabled(),
     "shared action row did not render consistent filled controls")
 local healingRow = config.CreateActionRow(list.content, list.rowWidth, {

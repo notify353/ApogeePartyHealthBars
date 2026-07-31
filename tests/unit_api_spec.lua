@@ -1,4 +1,4 @@
-dofile("ApogeePartyHealthBars_Data.lua")
+dofile("Core/Data.lua")
 
 local units = {
     player = { exists = true, connected = true, guid = "Player-1", health = 80, healthMax = 100,
@@ -26,7 +26,7 @@ function UnitInRange() return false, true end
 function UnitCanAssist() return true end
 function UnitIsEnemy() return false end
 
-dofile("ApogeePartyHealthBars_UnitAPI.lua")
+dofile("Core/UnitAPI.lua")
 local api = ApogeePartyHealthBars_UnitAPI
 
 local channels = api.GetPowerChannels("player")

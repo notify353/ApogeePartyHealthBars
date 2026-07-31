@@ -41,7 +41,7 @@ function CreateFrame()
     return ticker
 end
 
-dofile("ApogeePartyHealthBars_ActionHud.lua")
+dofile("Actions/ActionHud.lua")
 local Hud = ApogeePartyHealthBars_ActionHud
 Hud.Attach({ btn = button })
 
@@ -55,13 +55,13 @@ assert(text.point[4] == 302 and text.point[5] == -171,
 assert(Hud.GetFeedbackTop() == 162,
     "feedback top did not track the authoritative action icon height")
 
-assert(Hud.Show("keys", "F", "Frostbolt", 0.75), "Keys feedback did not show")
+assert(Hud.Show("keyboard", "F", "Frostbolt", 0.75), "Keys feedback did not show")
 assert(text:IsShown() and text:GetText() == "F — Frostbolt",
     "feedback text visibility or content was incorrect")
-assert(not Hud.Clear("wheel") and text:IsShown(),
+assert(not Hud.Clear("mouseWheel") and text:IsShown(),
     "one feature cleared another feature's active feedback")
 
-assert(Hud.Show("wheel", "Normal Up", "Fireball", 0.75),
+assert(Hud.Show("mouseWheel", "Normal Up", "Fireball", 0.75),
     "Wheel feedback did not replace Keys feedback")
 assert(text:GetText() == "Normal Up — Fireball", "replacement feedback text was incorrect")
 now = 20.8
@@ -69,7 +69,7 @@ ticker.scripts.OnUpdate()
 assert(not text:IsShown() and not ticker:IsShown(), "expired feedback did not hide all visual regions")
 
 ApogeePartyHealthBars_S.sv.actionFeedbackEnabled = false
-assert(not Hud.Show("keys", "F", "Frostbolt", 0.75) and not text:IsShown(),
+assert(not Hud.Show("keyboard", "F", "Frostbolt", 0.75) and not text:IsShown(),
     "disabled action feedback still displayed text")
 
 print("PASS shared action HUD")

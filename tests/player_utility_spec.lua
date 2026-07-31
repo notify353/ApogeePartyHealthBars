@@ -1,5 +1,5 @@
-dofile("ApogeePartyHealthBars_Data.lua")
-dofile("ApogeePartyHealthBars_AccessoryLayout.lua")
+dofile("Core/Data.lua")
+dofile("PartyFrames/AccessoryLayout.lua")
 ApogeePartyHealthBars_S = { castBtnSerial = 0 }
 
 local function widget()
@@ -41,7 +41,7 @@ local visible, selfBuffKnown, deferred = true, true, 0
 local features = { selfBuffEnabled = true, clickableBuffIcons = true }
 local function hide(frame) frame:Hide() end
 local function show(frame) frame:Show() end
-dofile("ApogeePartyHealthBars_PlayerUtility.lua")
+dofile("PartyFrames/PlayerUtility.lua")
 local utility = ApogeePartyHealthBars_PlayerUtility
 utility.Attach(surface, {
     ShouldShowSelfBuffIcon = function() return visible end,

@@ -157,16 +157,16 @@ GameTooltip.AddLine = function(_, line) tooltipLines[#tooltipLines + 1] = line e
 GameTooltip.Show = function() tooltipShows = tooltipShows + 1 end
 GameTooltip.Hide = function() tooltipHides = tooltipHides + 1 end
 
-dofile("ApogeePartyHealthBars_Sounds.lua")
-dofile("ApogeePartyHealthBars_UIHelpers.lua")
-dofile("ApogeePartyHealthBars_AccessoryLayout.lua")
-dofile("ApogeePartyHealthBars_ActionCooldowns.lua")
-dofile("ApogeePartyHealthBars_ShortcutItems.lua")
-dofile("ApogeePartyHealthBars_ActionData.lua")
-dofile("ApogeePartyHealthBars_ActionMacros.lua")
-dofile("ApogeePartyHealthBars_CrowdControl.lua")
-dofile("ApogeePartyHealthBars_PlayerSpells.lua")
-dofile("ApogeePartyHealthBars_ShortcutBar.lua")
+dofile("Core/Sounds.lua")
+dofile("Core/UIHelpers.lua")
+dofile("PartyFrames/AccessoryLayout.lua")
+dofile("Actions/ActionCooldowns.lua")
+dofile("Actions/ShortcutItems.lua")
+dofile("Actions/ActionData.lua")
+dofile("Actions/ActionMacros.lua")
+dofile("PartyFrames/CrowdControl.lua")
+dofile("Core/PlayerSpells.lua")
+dofile("Actions/ShortcutBar.lua")
 local shortcuts = ApogeePartyHealthBars_ShortcutBar
 ApogeePartyHealthBars_UIHelpers.ShowNativeSpellTooltip(widget(), nil, "Unknown Spell")
 assert(tooltipFallbackTitle == "Unknown Spell",

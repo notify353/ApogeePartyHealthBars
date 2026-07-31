@@ -13,7 +13,7 @@ GetAddOnMetadata = function(name, field)
     return "legacy-version"
 end
 
-dofile("ApogeePartyHealthBars_ClientCapabilities.lua")
+dofile("Core/ClientCapabilities.lua")
 local capabilities = ApogeePartyHealthBars_ClientCapabilities
 
 assert(capabilities.Has("core"), "required core capability was not detected")
@@ -124,14 +124,14 @@ end
 ApogeePartyHealthBars_C = {}
 ApogeePartyHealthBars_S = {}
 C_UnitAuras, UnitBuff = nil, nil
-dofile("ApogeePartyHealthBars_Auras.lua")
+dofile("PartyFrames/Auras.lua")
 local auraSnapshot = ApogeePartyHealthBars_Auras.ScanUnitHelpfulAuras("player")
 assert(#auraSnapshot.auras == 0 and not auraSnapshot.partyBuff
         and not auraSnapshot.selfBuff and auraSnapshot.pwShield == nil,
     "missing aura APIs did not return a normalized empty snapshot")
 
 C_SpellBook, GetSpellBookItemInfo, GetSpellBookItemName = nil, nil, nil
-dofile("ApogeePartyHealthBars_PlayerSpells.lua")
+dofile("Core/PlayerSpells.lua")
 local spellId, spellName = ApogeePartyHealthBars_PlayerSpells.GetSpellFromCursor(1, nil, nil)
 local byId, byName, known = ApogeePartyHealthBars_PlayerSpells.BuildKnownSpellMap()
 assert(spellId == nil and spellName == nil and next(byId) == nil

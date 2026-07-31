@@ -1,6 +1,6 @@
 BOOKTYPE_SPELL, BOOKTYPE_PET = "spell", "pet"
 
-dofile("ApogeePartyHealthBars_CleanseData.lua")
+dofile("Reminders/CleanseData.lua")
 local Data = ApogeePartyHealthBars_CleanseData
 
 local capabilities = Data.ResolveCapabilities({

@@ -1,5 +1,5 @@
-dofile("ApogeePartyHealthBars_DungeonBoardCatalog.lua")
-dofile("ApogeePartyHealthBars_DungeonBoardEligibility.lua")
+dofile("DungeonBoard/DungeonBoardCatalog.lua")
+dofile("DungeonBoard/DungeonBoardEligibility.lua")
 local Eligibility = ApogeePartyHealthBars_DungeonBoardEligibility
 
 local chat = {

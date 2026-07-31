@@ -13,7 +13,7 @@ C_UnitAuras = { GetAuraDataByIndex = function(_, index, filter)
     return modern[index]
 end }
 
-dofile("ApogeePartyHealthBars_Auras.lua")
+dofile("PartyFrames/Auras.lua")
 local A = ApogeePartyHealthBars_Auras
 local snapshot = A.GetUnitHarmfulAuraSnapshot("target")
 assert(#snapshot.auras == 2 and snapshot.playerBySpellId[172] == modern[1],

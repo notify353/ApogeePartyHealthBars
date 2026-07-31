@@ -11,7 +11,7 @@ function ChatFrame_AddMessageEventFilter(event, callback)
 end
 
 ApogeePartyHealthBars_MentionAlerts = nil
-dofile("ApogeePartyHealthBars_MentionAlerts.lua")
+dofile("Reminders/MentionAlerts.lua")
 local M = ApogeePartyHealthBars_MentionAlerts
 
 M.Initialize({

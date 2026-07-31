@@ -75,7 +75,7 @@ function UnitDetailedThreatSituation(unitId, target)
 end
 function GetThreatStatusColor() return 1, 0, 0 end
 
-dofile("ApogeePartyHealthBars_Threat.lua")
+dofile("PartyFrames/Threat.lua")
 local threat = ApogeePartyHealthBars_Threat
 local tickerSyncs = 0
 threat.Attach({ playerRow, partyRow }, function() tickerSyncs = tickerSyncs + 1 end)

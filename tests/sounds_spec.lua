@@ -6,7 +6,7 @@ function PlaySoundFile(path, channel)
     return true
 end
 
-dofile("ApogeePartyHealthBars_Sounds.lua")
+dofile("Core/Sounds.lua")
 local sounds = ApogeePartyHealthBars_Sounds
 
 assert(sounds.NormalizeKey("ready", "none", true) == "alarm_high", "legacy ready key was not migrated")

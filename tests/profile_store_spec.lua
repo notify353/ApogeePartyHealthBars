@@ -1,12 +1,29 @@
 ApogeePartyHealthBars_C = {
-    PROFILE_STORE_VERSION = 2,
-    PROFILE_PAYLOAD_VERSION = 2,
-    SAVED_VARIABLES_VERSION = 5,
+    PROFILE_STORE_VERSION = 3,
+    PROFILE_PAYLOAD_VERSION = 3,
+    SAVED_VARIABLES_VERSION = 7,
 }
 ApogeePartyHealthBars_S = {}
 ApogeePartyHealthBars_Effects = {
     InitializeSavedVariables = function(settings, actions)
         local version = tonumber(settings.schemaVersion) or 0
+        local renamedSettings = {
+            dotRemindersEnabled = "targetEffectRemindersEnabled",
+            dotRefreshThreshold = "targetEffectRefreshThreshold",
+        }
+        local renamedActions = {
+            keyActions = "keyboardActions",
+            wheelMacros = "mouseWheelActions",
+            mouseActions = "mouseButtonActions",
+        }
+        for legacyKey, canonicalKey in pairs(renamedSettings) do
+            if settings[canonicalKey] == nil then settings[canonicalKey] = settings[legacyKey] end
+            settings[legacyKey] = nil
+        end
+        for legacyKey, canonicalKey in pairs(renamedActions) do
+            if actions[canonicalKey] == nil then actions[canonicalKey] = actions[legacyKey] end
+            actions[legacyKey] = nil
+        end
         if version < 1 then
             if settings.partyBuffEnabled == nil then settings.partyBuffEnabled = settings.fortEnabled end
             if settings.selfBuffEnabled == nil then settings.selfBuffEnabled = settings.innerFireEnabled end
@@ -42,7 +59,7 @@ ApogeePartyHealthBars_Effects = {
         settings.dungeonBoardRole =
             dungeonBoardRole == "tank" and "tank" or "healer"
         settings.dungeonBoardMode = nil
-        settings.schemaVersion = 5
+        settings.schemaVersion = 7
         actions.bindings = type(actions.bindings) == "table" and actions.bindings or {}
         local legacyShortcuts = type(actions.trackedSpells) == "table" and actions.trackedSpells or nil
         if type(actions.shortcuts) ~= "table"
@@ -56,19 +73,26 @@ ApogeePartyHealthBars_Effects = {
         actions.trackedSpellsSchemaVersion = nil
         actions.trackerDefaultsVersion = nil
         actions.selfBuffSelections = type(actions.selfBuffSelections) == "table" and actions.selfBuffSelections or {}
-        actions.wheelMacros = type(actions.wheelMacros) == "table" and actions.wheelMacros or {}
-        actions.keyActions = type(actions.keyActions) == "table" and actions.keyActions or {}
-        actions.mouseActions = type(actions.mouseActions) == "table" and actions.mouseActions or {}
+        actions.mouseWheelActions = type(actions.mouseWheelActions) == "table" and actions.mouseWheelActions or {}
+        actions.keyboardActions = type(actions.keyboardActions) == "table" and actions.keyboardActions or {}
+        actions.mouseButtonActions = type(actions.mouseButtonActions) == "table" and actions.mouseButtonActions or {}
     end,
 }
 local clock = 100
 function time() clock = clock + 1; return clock end
 
-dofile("ApogeePartyHealthBars_ProfileStore.lua")
+dofile("Profiles/ProfileStore.lua")
 local store = ApogeePartyHealthBars_ProfileStore
 
-local account = { schemaVersion = 5, enabled = false, x = 42, minimapAngle = 133,
-    automaticConsumablesEnabled = true }
+local account = {
+    schemaVersion = 6,
+    enabled = false,
+    x = 42,
+    minimapAngle = 133,
+    automaticConsumablesEnabled = true,
+    dotRemindersEnabled = false,
+    dotRefreshThreshold = 7,
+}
 local character = {
     bindings = { ["1"] = { kind = "spell", spellName = "Flash Heal" } },
     shortcuts = { {
@@ -95,23 +119,26 @@ assert(active.name == "Healer - Realm" and active.classToken == "PRIEST",
     "legacy character did not receive a class profile")
 assert(active.payload.settings.enabled == false and active.payload.settings.x == 42
     and active.payload.settings.automaticConsumablesEnabled == true
-    and active.payload.settings.minimapAngle == 133,
+    and active.payload.settings.minimapAngle == 133
+    and active.payload.settings.targetEffectRemindersEnabled == false
+    and active.payload.settings.targetEffectRefreshThreshold == 7
+    and active.payload.settings.dotRemindersEnabled == nil,
     "legacy account settings were not migrated into the profile")
 assert(active.payload.actions.bindings["1"].spellName == "Flash Heal"
     and active.payload.actions.shortcuts[1].spellName == "Renew"
     and active.payload.actions.shortcuts[1].macroText
         == "/cast [@mouseover,help,nodead] Renew",
     "legacy character actions were not migrated")
-assert(active.payload.actions.keyActions.enabled == nil
-    and active.payload.actions.keyActions.ownership == nil
-    and active.payload.actions.keyActions.bindingVersion == nil,
+assert(active.payload.actions.keyboardActions.enabled == nil
+    and active.payload.actions.keyboardActions.ownership == nil
+    and active.payload.actions.keyboardActions.bindingVersion == nil,
     "obsolete binding intent or runtime ownership leaked into the profile")
-local migratedRuntime = store.GetBindingRuntime("keyActions")
+local migratedRuntime = store.GetBindingRuntime("keyboardActions")
 assert(migratedRuntime.bindingVersion == 1
     and migratedRuntime.ownership["2"].keyQ.previousAction == "MOVEFORWARD",
     "legacy binding recovery state was not moved to character-local storage")
-local migratedMouseRuntime = store.GetBindingRuntime("mouseActions")
-assert(active.payload.actions.mouseActions.profiles["1"].layouts.base.slots.normal3.spellName == "Smite"
+local migratedMouseRuntime = store.GetBindingRuntime("mouseButtonActions")
+assert(active.payload.actions.mouseButtonActions.profiles["1"].layouts.base.slots.normal3.spellName == "Smite"
         and migratedMouseRuntime.ownership["2"].normal3.previousAction == "TOGGLEAUTORUN",
     "Buttons profile actions or binding recovery state were not migrated correctly")
 assert(account.enabled == false and account.profileStore == nil and character.bindings == nil
@@ -192,16 +219,16 @@ assert(active.author == "Author - Realm" and active.payload.settings.x == nil
             == "/cast [mod:shift] Prayer of Healing",
     "profile replace retained old portable values or lost imported author")
 
-active.payload.actions.keyActions.ownership = { bad = true }
-active.payload.actions.keyActions.enabled = true
-active.payload.actions.mouseActions.ownership = { bad = true }
-active.payload.actions.mouseActions.bindingVersion = 1
+active.payload.actions.keyboardActions.ownership = { bad = true }
+active.payload.actions.keyboardActions.enabled = true
+active.payload.actions.mouseButtonActions.ownership = { bad = true }
+active.payload.actions.mouseButtonActions.bindingVersion = 1
 local exported = store.Exportable(active.id)
-assert(exported.payload.actions.keyActions.ownership == nil
-    and exported.payload.actions.keyActions.enabled == nil,
+assert(exported.payload.actions.keyboardActions.ownership == nil
+    and exported.payload.actions.keyboardActions.enabled == nil,
     "exportable profile leaked binding ownership or activation intent")
-assert(exported.payload.actions.mouseActions.ownership == nil
-        and exported.payload.actions.mouseActions.bindingVersion == nil,
+assert(exported.payload.actions.mouseButtonActions.ownership == nil
+        and exported.payload.actions.mouseButtonActions.bindingVersion == nil,
     "exportable profile leaked Buttons binding ownership")
 assert(exported.payload.actions.shortcuts[1].macroText
         == "/cast [mod:shift] Prayer of Healing",
@@ -253,12 +280,12 @@ local sanitized = store.NormalizePayload({ settings = {
     minimapAngle = 0 / 0,
     x = math.huge,
     y = 24,
-    dotRemindersEnabled = false,
-    dotRefreshThreshold = 4,
-    dotDisabled = { corruption = true },
-    dotPriority = { "corruption", "immolate" },
-    dotThresholds = { corruption = 6 },
-    dotHudPoint = "CENTER", dotHudRelPoint = "CENTER", dotHudX = 12, dotHudY = 144,
+    targetEffectRemindersEnabled = false,
+    targetEffectRefreshThreshold = 4,
+    targetEffectDisabled = { corruption = true },
+    targetEffectPriority = { "corruption", "immolate" },
+    targetEffectThresholds = { corruption = 6 },
+    targetEffectHudPoint = "CENTER", targetEffectHudRelPoint = "CENTER", targetEffectHudX = 12, targetEffectHudY = 144,
     dungeonBoardMode = "healer", dungeonBoardSoundKey = "alarm_soft",
     dungeonBoardFeedEnabled = false,
     dungeonBoardLevelsBelow = 12, dungeonBoardLevelsAbove = 4,
@@ -269,10 +296,10 @@ assert(sanitized.settings.minimapAngle == nil,
     "non-finite minimap position survived profile normalization")
 assert(sanitized.settings.x == nil and sanitized.settings.y == 24,
     "profile numeric normalization did not reject only non-finite values")
-assert(sanitized.settings.dotRemindersEnabled == false
-        and sanitized.settings.dotThresholds.corruption == 6
-        and sanitized.settings.dotPriority[2] == "immolate"
-        and sanitized.settings.dotHudY == 144,
+assert(sanitized.settings.targetEffectRemindersEnabled == false
+        and sanitized.settings.targetEffectThresholds.corruption == 6
+        and sanitized.settings.targetEffectPriority[2] == "immolate"
+        and sanitized.settings.targetEffectHudY == 144,
     "DoT policy or HUD position did not survive profile normalization")
 assert(sanitized.settings.dungeonBoardRole == "healer"
         and sanitized.settings.dungeonBoardMode == nil
@@ -370,7 +397,7 @@ local metadataOnlyLegacyCharacter = {
     trackedSpells = {},
     trackedSpellsSchemaVersion = 1,
     trackerDefaultsVersion = 1,
-    keyActions = { schemaVersion = 2, profiles = {
+    keyboardActions = { schemaVersion = 2, profiles = {
         [2] = { layouts = { base = { slots = {} } } },
     } },
 }
@@ -379,7 +406,7 @@ local metadataOnlyLegacyProfile = store.Initialize(
 assert(metadataOnlyLegacyProfile.name == "Default"
         and next(metadataOnlyLegacyProfile.payload.actions.shortcuts) == nil
         and metadataOnlyLegacyCharacter.trackedSpells == nil
-        and metadataOnlyLegacyCharacter.keyActions == nil,
+        and metadataOnlyLegacyCharacter.keyboardActions == nil,
     "empty legacy action metadata was mistaken for private character actions")
 
 local lateLegacyCharacter = {
@@ -408,7 +435,7 @@ assert(not pcall(store.Initialize, {}, foreignCharacter, "WARRIOR", "Warrior - R
     "character store accepted a profile for another class")
 
 local resetRoot = assert(store.ResetCharacter())
-assert(resetRoot.profileStore.schemaVersion == 2 and #store.List() == 1
+assert(resetRoot.profileStore.schemaVersion == 3 and #store.List() == 1
         and store.GetActiveProfile().name == "Default"
         and store.GetActiveProfile().payload.settings.cleanseWatchPoint
             == "TOPRIGHT"
@@ -427,16 +454,16 @@ local ok = pcall(store.Initialize, futureAccount, {}, "PRIEST", "Future - Realm"
 assert(not ok and futureAccount.profileStore.schemaVersion == 2,
     "future legacy account profile-store schema was silently accepted or mutated")
 
-local futurePayload = { schemaVersion = 3, settings = {}, actions = {} }
+local futurePayload = { schemaVersion = 4, settings = {}, actions = {} }
 assert(not pcall(store.NormalizePayload, futurePayload),
     "future profile payload schema was silently downgraded")
 
 local futureCharacter = { profileStore = {
-    schemaVersion = 3, activeProfileId = "p1", profiles = {}, order = {}, nextId = 1,
+    schemaVersion = 4, activeProfileId = "p1", profiles = {}, order = {}, nextId = 1,
 } }
 local untouchedAccount = { enabled = false }
 ok = pcall(store.Initialize, untouchedAccount, futureCharacter, "PRIEST", "Future - Realm")
-assert(not ok and futureCharacter.profileStore.schemaVersion == 3 and untouchedAccount.profileStore == nil
+assert(not ok and futureCharacter.profileStore.schemaVersion == 4 and untouchedAccount.profileStore == nil
         and untouchedAccount.enabled == false,
     "future character profile state mutated saved data before it was rejected")
 

@@ -1,4 +1,4 @@
-dofile("ApogeePartyHealthBars_CrowdControl.lua")
+dofile("PartyFrames/CrowdControl.lua")
 local CC = ApogeePartyHealthBars_CrowdControl
 
 -- This expectation is deliberately independent of CC.DEFINITIONS so deleting a

@@ -81,8 +81,8 @@ C_Spell = {
     end,
 }
 
-dofile("ApogeePartyHealthBars_ActionCooldowns.lua")
-dofile("ApogeePartyHealthBars_ShortcutItems.lua")
+dofile("Actions/ActionCooldowns.lua")
+dofile("Actions/ShortcutItems.lua")
 local items = ApogeePartyHealthBars_ShortcutItems
 
 local name, icon, itemId = items.GetInfo(1251)

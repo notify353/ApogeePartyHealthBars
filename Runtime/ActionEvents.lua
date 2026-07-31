@@ -24,6 +24,19 @@ function A.Register(eventRouter, deps)
         T.Refresh(false); W.Refresh(); K.Refresh(); B.Refresh()
     end
 
+    local function RefreshEquipmentLoadouts()
+        T.RefreshSecureActions()
+        W.RefreshSecureActions()
+        K.RefreshSecureActions()
+        B.RefreshSecureActions()
+        local ui = deps.GetSettingsUI()
+        if ui.RefreshShortcutPanel then ui.RefreshShortcutPanel() end
+        if ui.RefreshKeyboardPage then ui.RefreshKeyboardPage() end
+        if ui.RefreshMouseWheelPage then ui.RefreshMouseWheelPage() end
+        if ui.RefreshMouseButtonsPage then ui.RefreshMouseButtonsPage() end
+        if ui.RefreshLoadoutsPage then ui.RefreshLoadoutsPage() end
+    end
+
     local function ProtectedRefreshManualActionCooldowns()
         local ok, err = pcall(RefreshManualActionCooldowns)
         if not ok then
@@ -129,9 +142,26 @@ function A.Register(eventRouter, deps)
         "ACTIONBAR_UPDATE_USABLE", "ACTIONBAR_UPDATE_COOLDOWN", "ACTIONBAR_UPDATE_STATE",
         "CURRENT_SPELL_CAST_CHANGED", "PLAYER_EQUIPMENT_CHANGED",
     }) do
-        eventRouter.RegisterOptional(event, "ShortcutBar", function()
+        local actionEvent = event
+        eventRouter.RegisterOptional(actionEvent, "ShortcutBar", function()
             RefreshManualActionCooldowns()
             CB.Refresh(false)
+            if actionEvent == "PLAYER_EQUIPMENT_CHANGED" then
+                T.RefreshSecureActions()
+                W.RefreshSecureActions()
+                K.RefreshSecureActions()
+                B.RefreshSecureActions()
+                local ui = deps.GetSettingsUI()
+                if ui.RefreshShortcutPanel then ui.RefreshShortcutPanel() end
+                if ui.RefreshKeyboardPage then ui.RefreshKeyboardPage() end
+                if ui.RefreshMouseWheelPage then ui.RefreshMouseWheelPage() end
+                if ui.RefreshMouseButtonsPage then ui.RefreshMouseButtonsPage() end
+                if ui.RefreshLoadoutsFromInventory then
+                    ui.RefreshLoadoutsFromInventory()
+                elseif ui.RefreshLoadoutsPage then
+                    ui.RefreshLoadoutsPage()
+                end
+            end
         end)
     end
 
@@ -178,6 +208,10 @@ function A.Register(eventRouter, deps)
         if ui.RefreshMouseWheelPage then ui.RefreshMouseWheelPage() end
         if ui.RefreshMouseButtonsPage then ui.RefreshMouseButtonsPage() end
         if ui.RefreshPartyFrameClicksPage then ui.RefreshPartyFrameClicksPage() end
+    end)
+
+    eventRouter.RegisterOptional("EQUIPMENT_SETS_CHANGED", "EquipmentLoadouts", function()
+        RefreshEquipmentLoadouts()
     end)
 
     eventRouter.RegisterOptional("UNIT_PET", "PlayerPetActions", function(_, unit)

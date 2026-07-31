@@ -20,6 +20,8 @@ local function openMacroEditor(slot)
         actionName = ApogeePartyHealthBars_ActionMacros.GetName(entry),
         macroText = shortcuts.GetMacro(slot),
         resetText = shortcuts.ResetMacro(slot),
+        prefixBytes = ApogeePartyHealthBars_ActionMacros.GetEquipmentPrefixBytes
+            and ApogeePartyHealthBars_ActionMacros.GetEquipmentPrefixBytes(entry) or 0,
         onSave = function(body) return shortcuts.ApplyMacro(slot, body) end,
         onSaved = function(message) setStatus(message, true); SC.Refresh() end,
     })
@@ -52,6 +54,8 @@ function SC.Refresh(assignedSlot)
                         or "Unknown Shortcut",
                     detail = "Shortcut " .. index .. " — " .. kindLabel,
                     soundKey = shortcuts.GetSlotSoundKey(index),
+                    equipmentSetName = shortcuts.GetSlotEquipmentSet
+                        and shortcuts.GetSlotEquipmentSet(index),
                     macroCustomized = shortcuts.IsMacroCustomized(index),
                     canMoveUp = index > 1,
                     canMoveDown = index < #entries,
@@ -96,6 +100,13 @@ function SC.Create(parent, deps)
             shortcuts.PreviewSound(selected)
             SC.Refresh()
         end)
+        if row.gear then
+            row.gear:SetSelectionCallback(function(setName)
+                local ok, message = shortcuts.SetSlotEquipmentSet(slot, setName)
+                setStatus(message, ok)
+                SC.Refresh()
+            end)
+        end
         row.macro:SetScript("OnClick", function() openMacroEditor(slot) end)
         row.up:SetScript("OnClick", function()
             local moved, message = shortcuts.MoveSlot(slot, -1)

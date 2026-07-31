@@ -19,8 +19,8 @@ D.DocumentationCategories = {
 }
 
 D.SyntaxTopics = {
-    { id = "syntax-targetenemy", title = "Conditional Enemy Targeting", body = "/targetenemy [noexists][dead][help]", explanation = "Finds a hostile target only when the current target is missing, dead, or friendly.", applied = "Generated standalone and ranged auto-attacks plus explicit combat recipes, not ordinary or curated melee spells.", why = "It preserves a valid living enemy instead of changing targets on every press.", tradeoffs = "It is unsafe as a universal default because friendly, utility, stealth, crowd-control, and current-target melee actions may not want another enemy selected.", copyable = false },
-    { id = "syntax-startattack", title = "Start Melee Auto-Attack", body = "/startattack", explanation = "Starts melee auto-attack without toggling it off on another press.", applied = "Every generated Warrior spell macro, the Attack template, reviewed melee abilities for other classes, and the ranged auto-attack melee fallback.", why = "Warrior actions follow the class-wide attack policy; other confirmed attack actions engage reliably even when another cast cannot fire.", tradeoffs = "Outside the deliberate Warrior policy, add it selectively because it can break crowd control, cancel stealth plans, or start unwanted combat.", copyable = false },
+    { id = "syntax-targetenemy", title = "Conditional Enemy Targeting", body = "/targetenemy [noexists][dead][help]", explanation = "Finds a hostile target only when the current target is missing, dead, or friendly.", applied = "Generated Attack, ranged auto-attacks, reviewed attack abilities, and explicit combat recipes.", why = "It preserves a valid living enemy instead of changing targets on every press.", tradeoffs = "It is unsafe as a universal default because friendly, utility, defensive, stance, stealth, and crowd-control actions may not want another enemy selected.", copyable = false },
+    { id = "syntax-startattack", title = "Guarded Melee Auto-Attack", body = "/startattack [harm,nodead]", explanation = "Starts melee auto-attack only when the current target is a living enemy, without toggling it off on another press.", applied = "The Attack template, reviewed attack abilities, ranged auto-attack melee fallbacks, and explicit attack recipes.", why = "The guard prevents WoW's “Nothing to attack” error when enemy acquisition finds no valid target.", tradeoffs = "Use it selectively because a valid hostile target will begin combat and may break crowd control or stealth plans.", copyable = false },
     { id = "syntax-nochanneling", title = "Optional Channel Guard", body = "/cast [nochanneling:Mind Flay] Mind Flay(Rank 7)", explanation = "Casts unless that same named spell is already channeling.", applied = "Optional custom macros for actual channeled spells such as Mind Flay; it is not added to ordinary generated spells.", why = "It can make one channel key spammable without preventing other abilities from interrupting that channel.", tradeoffs = "It prevents another copy from queuing during the channel, so latency can leave a small gap afterward.", copyable = false },
     { id = "syntax-bang", title = "Prevent Toggle-Off with !", body = "/cast !Auto Shot", explanation = "The ! prefix turns on a toggle-style spell but does not turn it off on another press.", applied = "Generated Auto Shot, wand Shoot, and client-confirmed ranged auto-attacks; selected custom toggle recipes also use it.", why = "Repeated key presses cannot cancel a supported repeating or toggle action.", tradeoffs = "Do not add ! indiscriminately when intentional cancellation matters.", copyable = false },
     { id = "syntax-ranked", title = "Rank-Qualified Spell Names", body = "/cast Fireball(Rank 1)", explanation = "Keeps the Spellbook subtext so the macro casts the exact assigned rank.", applied = "Generated spell macros when the client supplies rank text.", why = "Classic characters may intentionally assign different ranks of the same spell.", tradeoffs = "Reset continues using the rank currently stored on the assignment.", copyable = false },
@@ -39,6 +39,7 @@ D.SyntaxTopics = {
 }
 
 local TARGET = "/targetenemy [noexists][dead][help]"
+local START_ATTACK = "/startattack [harm,nodead]"
 local function stopcast(spell)
     return "/stopcasting\n/cast [@focus,harm,nodead][] " .. spell
 end
@@ -47,21 +48,21 @@ D.Recipes = {
     {
         id = "universal-safe-attack", category = "attack",
         title = "Safe Target & Attack", explanation = "Keeps a living hostile target, finds one only when needed, and starts melee auto-attack.",
-        body = TARGET .. "\n/startattack",
+        body = TARGET .. "\n" .. START_ATTACK,
     },
     {
         id = "wand-safe-shoot", category = "attack", classes = { MAGE = true, PRIEST = true, WARLOCK = true },
         title = "Spam-Safe Wand Shoot",
         explanation = "Targets an enemy and starts Shoot without toggling your wand attack off when the button is spammed.",
         requirements = "Requires an equipped wand and the Shoot ability.", requiredSpells = { "Shoot" },
-        body = TARGET .. "\n/cast !Shoot\n/startattack",
+        body = TARGET .. "\n/cast !Shoot\n" .. START_ATTACK,
     },
     {
         id = "hunter-safe-auto-shot", category = "attack", classes = { HUNTER = true },
         title = "Spam-Safe Auto Shot",
         explanation = "Targets an enemy and starts Auto Shot without toggling it off when the button is spammed.",
         requirements = "Requires a ranged weapon and Auto Shot.", requiredSpells = { "Auto Shot" },
-        body = TARGET .. "\n/cast !Auto Shot\n/startattack",
+        body = TARGET .. "\n/cast !Auto Shot\n" .. START_ATTACK,
     },
     {
         id = "hunter-force-auto-shot", category = "attack", classes = { HUNTER = true },
@@ -77,7 +78,7 @@ D.Recipes = {
         title = "Pet Attack & Safe Auto Shot",
         explanation = "Sends your pet to a valid enemy and starts Auto Shot without toggling it off.",
         requirements = "Requires an active pet, a ranged weapon, and Auto Shot.", requiredSpells = { "Auto Shot" },
-        body = TARGET .. "\n/petattack [@target,harm,nodead]\n/cast !Auto Shot\n/startattack",
+        body = TARGET .. "\n/petattack [@target,harm,nodead]\n/cast !Auto Shot\n" .. START_ATTACK,
     },
     {
         id = "warlock-pet-attack", category = "pet", classes = { WARLOCK = true },
@@ -99,7 +100,7 @@ D.Recipes = {
     { id = "rogue-safe-sap", category = "control", classes = { ROGUE = true }, title = "Mouseover Sap without Auto-Attack", explanation = "Stops weapon attacks, Saps a living hostile mouseover when present, and otherwise uses the current target.", requirements = "Requires Stealth, Sap, and a valid out-of-combat target.", requiredSpells = { "Sap" }, body = "/stopattack\n/cast [@mouseover,harm,nodead][] Sap" },
     { id = "druid-spam-safe-prowl", category = "state", classes = { DRUID = true }, title = "Spam-Safe Prowl", explanation = "Enters Prowl only while not already stealthed, so repeated presses cannot immediately cancel it.", requirements = "Requires Cat Form and Prowl.", verificationNote = "Use a separate action when you intentionally want to leave Prowl.", requiredSpells = { "Prowl" }, body = "/cast [nostealth] !Prowl" },
     { id = "rogue-spam-safe-stealth", category = "state", classes = { ROGUE = true }, title = "Spam-Safe Stealth", explanation = "Enters Stealth only while not already stealthed, so repeated presses cannot immediately cancel it.", requirements = "Requires Stealth and being out of combat.", verificationNote = "Use a separate action when you intentionally want to leave Stealth.", requiredSpells = { "Stealth" }, body = "/cast [nostealth] !Stealth" },
-    { id = "warrior-queued-heroic-strike", category = "attack", classes = { WARRIOR = true }, title = "Keep Heroic Strike Queued", explanation = "Queues Heroic Strike without letting repeated presses toggle the pending next-swing attack off.", requirements = "Requires Heroic Strike and enough rage when the next melee swing lands.", verificationNote = "Preventing cancellation can waste rage; verify the queue indicator and resource behavior in game.", requiredSpells = { "Heroic Strike" }, body = "/startattack\n/cast !Heroic Strike" },
-    { id = "druid-queued-maul", category = "attack", classes = { DRUID = true }, title = "Keep Maul Queued", explanation = "Queues Maul without letting repeated presses toggle the pending next-swing attack off.", requirements = "Requires Bear Form, Maul, and enough rage when the next melee swing lands.", verificationNote = "Preventing cancellation can starve other Bear abilities; verify the queue indicator and resource behavior in game.", requiredSpells = { "Maul" }, body = "/startattack\n/cast !Maul" },
-    { id = "hunter-queued-raptor-strike", category = "attack", classes = { HUNTER = true }, title = "Keep Raptor Strike Queued", explanation = "Queues Raptor Strike without letting repeated presses toggle the pending next-swing attack off.", requirements = "Requires a melee weapon, Raptor Strike, and enough mana when the next melee swing lands.", verificationNote = "Verify the queue indicator and melee-weaving behavior on the active client.", requiredSpells = { "Raptor Strike" }, body = "/startattack\n/cast !Raptor Strike" },
+    { id = "warrior-queued-heroic-strike", category = "attack", classes = { WARRIOR = true }, title = "Keep Heroic Strike Queued", explanation = "Queues Heroic Strike without letting repeated presses toggle the pending next-swing attack off.", requirements = "Requires Heroic Strike and enough rage when the next melee swing lands.", verificationNote = "Preventing cancellation can waste rage; verify the queue indicator and resource behavior in game.", requiredSpells = { "Heroic Strike" }, body = TARGET .. "\n" .. START_ATTACK .. "\n/cast !Heroic Strike" },
+    { id = "druid-queued-maul", category = "attack", classes = { DRUID = true }, title = "Keep Maul Queued", explanation = "Queues Maul without letting repeated presses toggle the pending next-swing attack off.", requirements = "Requires Bear Form, Maul, and enough rage when the next melee swing lands.", verificationNote = "Preventing cancellation can starve other Bear abilities; verify the queue indicator and resource behavior in game.", requiredSpells = { "Maul" }, body = TARGET .. "\n" .. START_ATTACK .. "\n/cast !Maul" },
+    { id = "hunter-queued-raptor-strike", category = "attack", classes = { HUNTER = true }, title = "Keep Raptor Strike Queued", explanation = "Queues Raptor Strike without letting repeated presses toggle the pending next-swing attack off.", requirements = "Requires a melee weapon, Raptor Strike, and enough mana when the next melee swing lands.", verificationNote = "Verify the queue indicator and melee-weaving behavior on the active client.", requiredSpells = { "Raptor Strike" }, body = TARGET .. "\n" .. START_ATTACK .. "\n/cast !Raptor Strike" },
 }

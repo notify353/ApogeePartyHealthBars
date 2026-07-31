@@ -1,6 +1,6 @@
 local Sounds = ApogeePartyHealthBars_Sounds
 local Data = ApogeePartyHealthBars_ActionData
-local PlayerContext = ApogeePartyHealthBars_PlayerContext
+local EquipmentSets = ApogeePartyHealthBars_EquipmentSets
 
 ApogeePartyHealthBars_ActionMacros = {}
 local A = ApogeePartyHealthBars_ActionMacros
@@ -8,6 +8,8 @@ local A = ApogeePartyHealthBars_ActionMacros
 A.MAX_BODY_BYTES = 255
 
 local TARGET_ENEMY = "/targetenemy [noexists][dead][help]"
+local START_ATTACK = "/startattack [harm,nodead]"
+local START_ATTACK_OUT_OF_STEALTH = "/startattack [harm,nodead,nostealth]"
 local MELEE_AUTO_ATTACK_IDS = { [6603] = true }
 local RANGED_AUTO_ATTACK_IDS = { [75] = true, [5019] = true }
 
@@ -17,7 +19,8 @@ local RANGED_AUTO_ATTACK_IDS = { [75] = true, [5019] = true }
 local MELEE_ATTACK_FAMILY_IDS = {
     -- Warrior
     78, 845, 772, 1715, 7386, 7384, 6572, 5308, 1464, 1680,
-    12294, 23881, 23922, 20243, 100, 20252,
+    12294, 23881, 23922, 20243, 100, 20252, 6343, 72, 6552, 694,
+    12809, 34428,
     -- Hunter
     2973, 1495, 19306, 2974,
     -- Paladin and Shaman
@@ -29,6 +32,22 @@ local STEALTH_SAFE_MELEE_ATTACK_FAMILY_IDS = {
     1752, 53, 2098, 1943, 16511, 14278, 5938, 1329, 32645, 8647,
     -- Druid
     1082, 1822, 5221, 33876, 33878, 1079, 22568, 6807, 33745, 779, 16979,
+}
+
+-- These abilities are rejected by the client unless a shield is
+-- equipped. The generated condition suppresses that failed cast while an
+-- attached loadout's earlier /equipset or /equipslot line equips the shield.
+-- A weapon-swap global cooldown can still make the successful cast require a
+-- second press.
+local SHIELD_REQUIRED_FAMILY_IDS = {
+    72,    -- Shield Bash
+    871,   -- Shield Wall
+    2565,  -- Shield Block
+    20243, -- Devastate
+    20925, -- Holy Shield
+    23920, -- Spell Reflection
+    23922, -- Shield Slam
+    31935, -- Avenger's Shield
 }
 
 local function getSpellInfo(identifier)
@@ -67,15 +86,21 @@ local function matchesFamily(assignedName, canonicalIds)
     return false
 end
 
-local function classifySpell(spellId, spellName)
-    local identifier = spellId or spellName
+local function getValidatedAssignedName(spellId, spellName)
     local assignedName = getSpellInfo(spellName)
     local idName = spellId and getSpellInfo(spellId) or nil
     -- Saved or imported actions can contain stale or mismatched identity fields.
-    -- Never let one spell's ID add attack behavior to a different cast name.
+    -- Never let one spell's ID add behavior to a different cast name.
     if not assignedName or (spellId and (not idName or idName ~= assignedName)) then
-        return "standard-spell"
+        return nil
     end
+    return assignedName
+end
+
+local function classifySpell(spellId, spellName)
+    local identifier = spellId or spellName
+    local assignedName = getValidatedAssignedName(spellId, spellName)
+    if not assignedName then return "standard-spell" end
     local resolvedId = resolveSpellId(spellId, spellName)
     -- The client predicates are equipment-sensitive, so retain stable IDs for
     -- Auto Shot and wand Shoot after the relevant weapon is unequipped.
@@ -87,10 +112,6 @@ local function classifySpell(spellId, spellName)
             or spellPredicate("IsAutoRepeatSpell", identifier) then
         return "ranged-auto"
     end
-    if PlayerContext and PlayerContext.GetClassToken
-            and PlayerContext.GetClassToken() == "WARRIOR" then
-        return "melee-attack"
-    end
     if matchesFamily(assignedName, STEALTH_SAFE_MELEE_ATTACK_FAMILY_IDS) then
         return "stealth-safe-melee-attack"
     end
@@ -98,22 +119,35 @@ local function classifySpell(spellId, spellName)
     return "standard-spell"
 end
 
-local function renderSpellTemplate(spellName, templateId)
+local function requiresShield(spellId, spellName)
+    local assignedName = getValidatedAssignedName(spellId, spellName)
+    return assignedName and matchesFamily(assignedName, SHIELD_REQUIRED_FAMILY_IDS) or false
+end
+
+local function renderSpellTemplate(spellName, templateId, shieldRequired)
     if type(spellName) ~= "string" or not spellName:find("%S") then return nil end
-    if templateId == "melee-auto" then return TARGET_ENEMY .. "\n/startattack" end
-    local castLine = "/cast " .. (templateId == "ranged-auto" and "!" or "") .. spellName
-    if templateId == "ranged-auto" then return TARGET_ENEMY .. "\n" .. castLine .. "\n/startattack" end
+    if templateId == "melee-auto" then return TARGET_ENEMY .. "\n" .. START_ATTACK end
+    local castPrefix = templateId == "ranged-auto" and "!" or ""
+    if shieldRequired then castPrefix = "[equipped:Shields] " .. castPrefix end
+    local castLine = "/cast " .. castPrefix .. spellName
+    if templateId == "ranged-auto" then
+        return TARGET_ENEMY .. "\n" .. castLine .. "\n" .. START_ATTACK
+    end
     if templateId == "melee-attack" then
-        return "/startattack\n" .. castLine
+        return TARGET_ENEMY .. "\n" .. START_ATTACK .. "\n" .. castLine
     end
     if templateId == "stealth-safe-melee-attack" then
-        return "/startattack [nostealth]\n" .. castLine
+        return TARGET_ENEMY .. "\n" .. START_ATTACK_OUT_OF_STEALTH .. "\n" .. castLine
     end
     return castLine
 end
 
 function A.BuildDefaultSpellMacro(spellName, spellId)
-    return renderSpellTemplate(spellName, classifySpell(spellId, spellName))
+    return renderSpellTemplate(
+        spellName,
+        classifySpell(spellId, spellName),
+        requiresShield(spellId, spellName)
+    )
 end
 
 function A.GetSpellTemplateId(spellName, spellId)
@@ -186,6 +220,10 @@ function A.ValidateMacro(entry, body)
     if #body > A.MAX_BODY_BYTES then
         return false, "Macro exceeds " .. A.MAX_BODY_BYTES .. " bytes."
     end
+    if EquipmentSets and EquipmentSets.ValidateRuntime then
+        local runtimeValid, runtimeMessage = EquipmentSets.ValidateRuntime(normalized, body)
+        if not runtimeValid then return false, runtimeMessage end
+    end
     return true
 end
 
@@ -198,6 +236,39 @@ function A.IsCustomized(entry)
     local normalized = A.Normalize(entry)
     if not normalized then return false end
     return normalized.macroText ~= A.BuildDefaultMacro(normalized)
+end
+
+function A.GetEquipmentSetName(entry)
+    local normalized = A.Normalize(entry)
+    return normalized and normalized.equipmentSetName or nil
+end
+
+function A.SetEquipmentSet(entry, name)
+    local normalized = A.Normalize(entry)
+    if not normalized or type(entry) ~= "table" then
+        return false, "Choose an action first."
+    end
+    if not EquipmentSets or not EquipmentSets.SetEntryLoadout then
+        return false, "Equipment loadouts are unavailable."
+    end
+    return EquipmentSets.SetEntryLoadout(entry, name)
+end
+
+function A.BuildRuntimeMacro(entry)
+    local normalized = A.Normalize(entry)
+    if not normalized then return nil end
+    if EquipmentSets and EquipmentSets.ComposeRuntime then
+        return EquipmentSets.ComposeRuntime(normalized, normalized.macroText)
+    end
+    if EquipmentSets and EquipmentSets.Compose then
+        return EquipmentSets.Compose(normalized, normalized.macroText)
+    end
+    return normalized.macroText
+end
+
+function A.GetEquipmentPrefixBytes(entry)
+    return EquipmentSets and EquipmentSets.GetPrefixBytes
+        and EquipmentSets.GetPrefixBytes(A.Normalize(entry)) or 0
 end
 
 function A.GetTemplateTopics()
@@ -213,17 +284,17 @@ function A.GetTemplateTopics()
         },
         {
             id = "generated-melee-attack", category = "generated", kind = "template",
-            title = "Melee and Warrior Ability",
-            explanation = "Keeps auto-attack running on the current target and casts the exact assigned ability and rank.",
-            applied = "Every new Warrior spell assignment, plus Reset; other classes use it only for explicitly reviewed melee combat families.",
+            title = "Reviewed Attack Ability",
+            explanation = "Keeps a living hostile target or acquires one, starts auto-attack only with a valid enemy, and casts the exact assigned ability and rank.",
+            applied = "New assignments and Reset for explicitly reviewed attacks, damaging interrupts, and hostile gap-closers.",
             why = "The weapon swing continues even when the ability cannot fire because of resources, stance, range, or cooldown.",
-            tradeoffs = "It never selects another enemy. Warrior utility and stance actions also start attacking by class policy; other classes remain limited to reviewed weapon abilities and hostile melee gap closers.",
+            tradeoffs = "It can select a nearby enemy when the current target is missing, dead, or friendly. Utility, defensive, stance, taunt, fear, and disarm actions remain direct casts.",
             body = renderSpellTemplate("Heroic Strike(Rank 1)", "melee-attack"), copyable = true,
         },
         {
             id = "generated-stealth-safe-melee", category = "generated", kind = "template",
             title = "Stealth-Safe Melee Ability",
-            explanation = "Uses the melee combat template but starts auto-attack only while the player is not stealthed.",
+            explanation = "Uses guarded enemy acquisition but starts auto-attack only with a living hostile target and while the player is not stealthed.",
             applied = "New assignments and Reset for explicitly reviewed Rogue and Feral Druid combat families.",
             why = "A failed ability press cannot waste Stealth or Prowl; a successful ability breaks stealth through its normal game behavior.",
             tradeoffs = "Stealth openers and control abilities remain direct casts and are not included in this family.",
@@ -244,7 +315,7 @@ function A.GetTemplateTopics()
             explanation = "Uses ! to start Auto Shot, wand Shoot, and other client-confirmed repeating attacks without toggling them off when the binding is spammed.",
             applied = "New Auto Shot, Shoot, or client-confirmed ranged auto-attack assignments, plus Reset.",
             why = "The exclamation prefix preserves the repeating attack, while /startattack provides a melee fallback at close range.",
-            tradeoffs = "The melee fallback can engage a nearby target when the ranged attack cannot fire; remove /startattack in a custom macro if that is unwanted.",
+            tradeoffs = "The melee fallback can engage a nearby target when the ranged attack cannot fire; it is skipped when no living hostile target is available.",
             body = renderSpellTemplate("Auto Shot", "ranged-auto"), copyable = true,
         },
         {

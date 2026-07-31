@@ -16,6 +16,17 @@ for _, classToken in ipairs(classes) do
         assert(not recipe.classes or recipe.classes[classToken], classToken .. " received another class's recipe")
         assert(#recipe.body <= L.MAX_BODY_BYTES, recipe.id .. " exceeds the client limit")
         assert(L.GetRecipe(recipe.id) == recipe, recipe.id .. " did not resolve by ID")
+        local hasStartAttack = false
+        for line in recipe.body:gmatch("[^\n]+") do
+            if line:find("^/startattack") then
+                hasStartAttack = true
+                assert(line == "/startattack [harm,nodead]",
+                    recipe.id .. " contains an unguarded start-attack line")
+            end
+        end
+        assert(not hasStartAttack
+                or recipe.body:find("/targetenemy [noexists][dead][help]", 1, true),
+            recipe.id .. " starts attacking without safe enemy acquisition")
         assert(recipe.macroName == nil and recipe.iconSpell == nil and recipe.fallbackIcon == nil,
             recipe.id .. " retained installer-only metadata")
     end
@@ -24,9 +35,9 @@ end
 assert(#L.GetRecipesForClass("MAGE", "pet") == 0, "mage unexpectedly received a pet recipe")
 assert(#L.GetRecipesForClass("HUNTER", "pet") == 1, "hunter pet recipe missing")
 assert(L.GetRecipe("wand-safe-shoot").body
-    == "/targetenemy [noexists][dead][help]\n/cast !Shoot\n/startattack")
+    == "/targetenemy [noexists][dead][help]\n/cast !Shoot\n/startattack [harm,nodead]")
 assert(L.GetRecipe("hunter-safe-auto-shot").body
-    == "/targetenemy [noexists][dead][help]\n/cast !Auto Shot\n/startattack")
+    == "/targetenemy [noexists][dead][help]\n/cast !Auto Shot\n/startattack [harm,nodead]")
 assert(L.GetRecipe("hunter-force-auto-shot").body
     == "/cast !Auto Shot\n/cast Arcane Shot")
 local mageTopics = L.GetTopicsForClass("MAGE", "all")
@@ -50,6 +61,9 @@ assert(L.GetRecipe("druid-spam-safe-prowl").body == "/cast [nostealth] !Prowl",
     "spam-safe stealth-state recipe is missing")
 assert(L.GetRecipe("warrior-queued-heroic-strike").body:find("!Heroic Strike", 1, true),
     "queued next-swing recipe is missing")
+assert(L.GetRecipe("warrior-queued-heroic-strike").body
+        == "/targetenemy [noexists][dead][help]\n/startattack [harm,nodead]\n/cast !Heroic Strike",
+    "queued next-swing recipe omitted guarded targeting")
 assert(not L.ValidateBody("  \n\t"), "blank macro was accepted")
 assert(not L.ValidateBody(string.rep("x", 256)), "oversized macro was accepted")
 assert(not L.ValidateRecipe({ id = "bad", category = "attack", title = "Bad", explanation = "Bad", body = "/cast Bad", classes = "MAGE" }), "invalid class metadata was accepted")

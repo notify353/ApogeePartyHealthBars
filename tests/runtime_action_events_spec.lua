@@ -23,6 +23,7 @@ ApogeePartyHealthBars_S = {
 }
 ApogeePartyHealthBars_ShortcutBar = {
     Refresh = function(full) record("shortcut-refresh:" .. tostring(full)) end,
+    RefreshSecureActions = function() record("shortcut-secure") end,
     ResolveAndRefresh = function() record("shortcut-resolve") end,
     RefreshItemInfo = function() record("shortcut-item-info") end,
     SetSpellbookOpen = function(active)
@@ -31,6 +32,7 @@ ApogeePartyHealthBars_ShortcutBar = {
 }
 ApogeePartyHealthBars_MouseWheelActions = {
     Refresh = function() record("wheel-refresh") end,
+    RefreshSecureActions = function() record("wheel-secure") end,
     RefreshItemInfo = function() record("wheel-item-info") end,
     OnActiveSpecChanged = function() record("wheel-spec") end,
     RefreshLayouts = function()
@@ -43,6 +45,7 @@ ApogeePartyHealthBars_MouseWheelActions = {
 }
 ApogeePartyHealthBars_KeyboardActions = {
     Refresh = function() record("keys-refresh") end,
+    RefreshSecureActions = function() record("keys-secure") end,
     RefreshItemInfo = function() record("keys-item-info") end,
     OnActiveSpecChanged = function() record("keys-spec") end,
     RefreshLayouts = function()
@@ -55,6 +58,7 @@ ApogeePartyHealthBars_KeyboardActions = {
 }
 ApogeePartyHealthBars_MouseButtonActions = {
     Refresh = function() record("buttons-refresh") end,
+    RefreshSecureActions = function() record("buttons-secure") end,
     RefreshItemInfo = function() record("buttons-item-info") end,
     OnActiveSpecChanged = function() record("buttons-spec") end,
     RefreshLayouts = function()
@@ -77,6 +81,8 @@ local ui = {
     RefreshMouseButtonsPage = function() record("ui-buttons") end,
     RefreshPartyFrameClicksPage = function() record("ui-healing") end,
     RefreshMacroPanel = function() record("ui-macros") end,
+    RefreshLoadoutsPage = function() record("ui-loadouts") end,
+    RefreshLoadoutsFromInventory = function() record("ui-loadouts-inventory") end,
 }
 
 local optional = {}
@@ -124,6 +130,7 @@ assert(optional.SPELL_UPDATE_COOLDOWN.owner == "ShortcutBar"
         and optional.UNIT_FLAGS.owner == "ShortcutBarTarget"
         and optional.BAG_UPDATE_DELAYED.owner == "ShortcutItems"
         and optional.GET_ITEM_INFO_RECEIVED.owner == "ShortcutItemInfo"
+        and optional.EQUIPMENT_SETS_CHANGED.owner == "EquipmentLoadouts"
         and optional.UNIT_PET.owner == "PlayerPetActions"
         and optional.PET_BAR_UPDATE.owner == "PlayerPetActions"
         and optional.PET_BAR_UPDATE_COOLDOWN.owner == "PlayerPetActionState"
@@ -145,6 +152,22 @@ dispatch("SPELL_UPDATE_COOLDOWN")
 expect({ "shortcut-refresh:false", "wheel-refresh", "keys-refresh", "buttons-refresh",
     "consumable-refresh:false" },
     "cooldown refresh fan-out changed")
+
+reset()
+dispatch("PLAYER_EQUIPMENT_CHANGED", 16, true)
+expect({
+    "shortcut-refresh:false", "wheel-refresh", "keys-refresh", "buttons-refresh",
+    "consumable-refresh:false",
+    "shortcut-secure", "wheel-secure", "keys-secure", "buttons-secure",
+    "ui-shortcuts", "ui-keys", "ui-wheel", "ui-buttons", "ui-loadouts-inventory",
+}, "equipment inventory changes did not rebuild every secure action")
+
+reset()
+dispatch("EQUIPMENT_SETS_CHANGED")
+expect({
+    "shortcut-secure", "wheel-secure", "keys-secure", "buttons-secure",
+    "ui-shortcuts", "ui-keys", "ui-wheel", "ui-buttons", "ui-loadouts",
+}, "native equipment-set changes did not rebuild every secure action")
 
 reset()
 scheduledTimers = {}

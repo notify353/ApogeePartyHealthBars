@@ -19,7 +19,9 @@ function L.GetRecipe(recipeId) return recipesById[recipeId] end
 
 local function explainLine(line)
     if line:find("^/targetenemy") then return line .. " — keeps a living hostile target and finds one only when needed." end
-    if line == "/startattack" then return line .. " — starts melee auto-attack without toggling it off." end
+    if line:find("^/startattack") then
+        return line .. " — starts melee auto-attack only when its target conditions pass."
+    end
     if line:find("^/stopcasting") then return line .. " — cancels the current cast or channel before the next command." end
     if line:find("^/stopattack") then return line .. " — stops active weapon attacks before control or utility is attempted." end
     if line:find("^/petattack") then return line .. " — sends the active pet to the valid hostile target." end

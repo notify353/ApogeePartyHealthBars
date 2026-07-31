@@ -43,9 +43,11 @@ assert(staleItem.itemName == "Linen Bandage", "localized item name was not refre
 local clone = actions.Clone({
     kind = "spell", spellId = 2061, spellName = "Flash Heal(Rank 7)",
     macroText = "/cast Something Else", soundKey = "toast",
+    equipmentSetName = "Healing",
 })
 assert(clone.kind == "spell" and clone.spellName == "Flash Heal(Rank 7)"
-    and clone.macroText == nil and clone.soundKey == nil,
+    and clone.macroText == nil and clone.soundKey == nil
+    and clone.equipmentSetName == "Healing",
     "action identity clone retained execution-specific fields")
 assert(actions.Normalize({}) == nil and actions.CreateItem(0, "Invalid") == nil,
     "invalid action identity was accepted")

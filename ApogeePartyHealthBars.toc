@@ -39,6 +39,7 @@ DungeonBoard/DungeonBoardUI.lua
 Actions/ActionCooldowns.lua
 Actions/ShortcutItems.lua
 Actions/ActionData.lua
+Actions/EquipmentSets.lua
 PartyFrames/UnitBar.lua
 Actions/ActionMacros.lua
 Actions/ActionSettingsComponents.lua
@@ -87,6 +88,7 @@ Settings/KeyboardSettingsPage.lua
 Settings/MouseWheelSettingsPage.lua
 Settings/MouseButtonsSettingsPage.lua
 Settings/MacroLibrarySettingsPage.lua
+Settings/LoadoutsSettingsPage.lua
 Settings/ProfilesSettingsPage.lua
 Settings/TargetEffectsSettingsPage.lua
 Settings/SettingsUI.lua

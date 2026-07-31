@@ -11,6 +11,12 @@ local function validName(value)
     return type(value) == "string" and value:find("%S") and value or nil
 end
 
+local function copyEquipmentSetName(source, target)
+    local name = type(source) == "table" and validName(source.equipmentSetName) or nil
+    if name then target.equipmentSetName = name end
+    return target
+end
+
 local function resolveSpellName(spellId)
     if not spellId then return nil end
     if C_Spell and C_Spell.GetSpellInfo then
@@ -54,21 +60,27 @@ function A.Normalize(entry)
 
     local isItem = entry.kind == "item" or entry.itemId ~= nil or entry.itemName ~= nil
     if isItem then
-        return A.CreateItem(validId(entry.itemId), validName(entry.itemName) or validName(entry.name))
+        local normalized = A.CreateItem(
+            validId(entry.itemId), validName(entry.itemName) or validName(entry.name))
+        return normalized and copyEquipmentSetName(entry, normalized) or nil
     end
 
-    return A.CreateSpell(
+    local normalized = A.CreateSpell(
         validId(entry.spellId) or validId(entry.displaySpellId) or validId(entry.id),
         validName(entry.spellName) or validName(entry.displaySpellName) or validName(entry.name))
+    return normalized and copyEquipmentSetName(entry, normalized) or nil
 end
 
 function A.Clone(entry)
     local normalized = A.Normalize(entry)
     if not normalized then return nil end
+    local clone
     if normalized.kind == "item" then
-        return A.CreateItem(normalized.itemId, normalized.itemName)
+        clone = A.CreateItem(normalized.itemId, normalized.itemName)
+    else
+        clone = A.CreateSpell(normalized.spellId, normalized.spellName)
     end
-    return A.CreateSpell(normalized.spellId, normalized.spellName)
+    return copyEquipmentSetName(normalized, clone)
 end
 
 function A.GetName(entry)

@@ -927,6 +927,7 @@ configUI = ApogeePartyHealthBars_SettingsUI.Build({
     MouseButtonActions         = B,
     ProfileStore              = ApogeePartyHealthBars_ProfileStore,
     ProfileCodec              = ApogeePartyHealthBars_ProfileCodec,
+    EquipmentSets            = ApogeePartyHealthBars_EquipmentSets,
     ActivateProfile           = ActivateProfile,
     MutateActiveProfile       = MutateActiveProfile,
     CreateAndActivateProfile = CreateAndActivateProfile,

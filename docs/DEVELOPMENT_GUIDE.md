@@ -15,6 +15,7 @@ for ownership and discoverability, not automatic loading.
 | Middle/Button 4/Button 5 actions | Mouse Buttons |
 | Maintained harmful/helpful target auras | Target Effects |
 | Configured footer actions | Shortcut Bar |
+| Character-wide native equipment sets | Loadouts |
 
 Legacy saved-field names appear only inside migration boundaries and migration
 fixtures. Do not reuse them for new APIs, variables, files, or documentation.
@@ -23,9 +24,9 @@ fixtures. Do not reuse them for new APIs, variables, files, or documentation.
 
 - `Core/`: constants, session state, capabilities, player context, API adapters,
   shared effects, sounds, and event routing.
-- `Actions/`: shared action models and UI components, binding ownership, Party
-  Frame Clicks, Shortcut Bar, Macro Library, Keyboard, Mouse Wheel, and Mouse
-  Buttons.
+- `Actions/`: shared action models and UI components, native equipment-loadout
+  composition, binding ownership, Party Frame Clicks, Shortcut Bar, Macro
+  Library, Keyboard, Mouse Wheel, and Mouse Buttons.
 - `PartyFrames/`: secure unit frames, health/power rendering, layout, auras,
   healing indicators, threat, and attached utilities.
 - `Reminders/`: buff, cleansing, health/chat, and Target Effects reminders.

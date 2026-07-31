@@ -6,8 +6,14 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Added
+
+- Added character-wide native equipment loadouts under Manage → Loadouts. Capture current gear with optional ignored slots, then explicitly attach a loadout to Shortcut Bar, Keyboard, Mouse Wheel, or Mouse Buttons actions; full sets equip out of combat while combat macros attempt only included weapon slots.
+- Generated shield-required Warrior and Paladin ability macros now wait until a shield is equipped, avoiding the invalid-cast equipment error while an attached loadout swaps weapons.
+
 ### Changed
 
+- Attack-oriented generated macros and bundled recipes now acquire an enemy when needed and guard `/startattack` with `[harm,nodead]`, preventing “Nothing to attack” errors when no enemy is available; Warrior utility is no longer treated as an attack.
 - Moved action feedback and Automatic Consumables into Frames → Party Frames and removed the undersized two-option Action Display page.
 - Replaced mismatched text-character arrows in Settings with shared, paired Blizzard arrow artwork for reorder controls and dropdown indicators.
 - Dock Target Effects and Dungeon Board samples above Settings while configuring them, preventing saved gameplay positions from covering page controls without changing those positions unless the sample is dragged.

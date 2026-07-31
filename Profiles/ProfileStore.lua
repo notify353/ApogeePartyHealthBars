@@ -623,6 +623,79 @@ function Store.NormalizePayload(payload) return normalizePayload(payload) end
 function Store.DeepCopy(value) return deepCopy(value) end
 function Store.ValidateName(name, exceptId) return validateName(name, exceptId, classToken) end
 
+local function visitEquipmentSetReferences(value, callback, seen)
+    if type(value) ~= "table" then return end
+    seen = seen or {}
+    if seen[value] then return end
+    seen[value] = true
+    if type(value.equipmentSetName) == "string" and value.equipmentSetName ~= "" then
+        callback(value)
+    end
+    for _, nested in pairs(value) do
+        if type(nested) == "table" then
+            visitEquipmentSetReferences(nested, callback, seen)
+        end
+    end
+end
+
+local function sameEquipmentSetName(left, right)
+    return type(left) == "string" and type(right) == "string"
+        and string.lower(left) == string.lower(right)
+end
+
+function Store.CountEquipmentSetReferences(name)
+    local count = 0
+    if not store or type(name) ~= "string" then return count end
+    for _, profile in pairs(store.profiles) do
+        visitEquipmentSetReferences(profile.payload and profile.payload.actions, function(entry)
+            if sameEquipmentSetName(entry.equipmentSetName, name) then
+                count = count + 1
+            end
+        end)
+    end
+    return count
+end
+
+function Store.RenameEquipmentSetReferences(oldName, newName)
+    if not store or type(oldName) ~= "string" or type(newName) ~= "string" then return 0 end
+    local count = 0
+    for _, profile in pairs(store.profiles) do
+        local profileCount = 0
+        visitEquipmentSetReferences(profile.payload and profile.payload.actions, function(entry)
+            if sameEquipmentSetName(entry.equipmentSetName, oldName) then
+                entry.equipmentSetName = newName
+                count = count + 1
+                profileCount = profileCount + 1
+            end
+        end)
+        if profileCount > 0 then
+            profile.author = author
+            profile.modifiedAt = time and time() or 0
+        end
+    end
+    return count
+end
+
+function Store.ClearEquipmentSetReferences(name)
+    if not store or type(name) ~= "string" then return 0 end
+    local count = 0
+    for _, profile in pairs(store.profiles) do
+        local profileCount = 0
+        visitEquipmentSetReferences(profile.payload and profile.payload.actions, function(entry)
+            if sameEquipmentSetName(entry.equipmentSetName, name) then
+                entry.equipmentSetName = nil
+                count = count + 1
+                profileCount = profileCount + 1
+            end
+        end)
+        if profileCount > 0 then
+            profile.author = author
+            profile.modifiedAt = time and time() or 0
+        end
+    end
+    return count
+end
+
 function Store.Create(name)
     local valid, message = validateName(name, nil, classToken)
     if not valid then return nil, message end

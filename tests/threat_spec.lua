@@ -75,6 +75,7 @@ function UnitDetailedThreatSituation(unitId, target)
 end
 function GetThreatStatusColor() return 1, 0, 0 end
 
+dofile("PartyFrames/ThreatObserver.lua")
 dofile("PartyFrames/Threat.lua")
 local threat = ApogeePartyHealthBars_Threat
 local tickerSyncs = 0

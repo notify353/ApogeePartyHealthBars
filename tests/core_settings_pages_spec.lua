@@ -103,6 +103,9 @@ local saved = {
     dungeonBoardLevelsBelow = 10,
     dungeonBoardLevelsAbove = 3,
     hotEnabled = true,
+    threatAwarenessEnabled = false,
+    threatAwarenessMode = "radar",
+    threatAwarenessSoundKey = "alarm_soft",
     hotDisabled = { renew = true },
 }
 local known = { party = true, self = false, reminder = true, renew = true, rejuv = false }
@@ -243,6 +246,15 @@ local deps = {
     },
     SyncVisualTicker = function() calls.ticker = calls.ticker + 1 end,
     Threat = { Refresh = function() calls.threat = calls.threat + 1 end },
+    ThreatAwareness = {
+        Refresh = function() calls.threatAwareness = (calls.threatAwareness or 0) + 1 end,
+        GetMode = function() return saved.threatAwarenessMode end,
+        SetMode = function(mode) saved.threatAwarenessMode = mode end,
+        GetSoundKey = function() return saved.threatAwarenessSoundKey end,
+        SetSoundKey = function(key) saved.threatAwarenessSoundKey = key end,
+        PreviewSound = function() calls.threatAwarenessPreview = (calls.threatAwarenessPreview or 0) + 1 end,
+        ResetPosition = function() calls.threatAwarenessReset = (calls.threatAwarenessReset or 0) + 1 end,
+    },
     CleanseWatch = {
         HasCapability = function() return true end,
         GetUnavailableReason = function() return nil end,
@@ -274,6 +286,9 @@ assert(config.GetRow("showAllSlots").check:GetChecked() == false
         and config.GetRow("showAllSlots").label:GetText()
             == "Show all 5 party frames while solo",
     "saved frame checkboxes did not refresh")
+assert(config.GetRow("threatAwarenessMode").value:IsEnabled()
+        and not config.GetRow("threatAwarenessSoundKey").value:IsEnabled(),
+    "disabled Threat Awareness did not retain presentation preview access")
 assert(config.GetRow("enabled") == nil,
     "General still exposed the redundant add-on enable checkbox")
 config.SetPage("buffsCleanse")
@@ -353,6 +368,21 @@ threat:SetChecked(true)
 Click(threat)
 assert(calls.threat == 1 and calls.ticker == 1,
     "threat setting did not refresh threat and ticker state")
+
+local awarenessToggle = config.GetRow("threatAwarenessEnabled").check
+awarenessToggle:SetChecked(true)
+Click(awarenessToggle)
+assert(saved.threatAwarenessEnabled and calls.threatAwareness == 1 and calls.ticker == 2,
+    "Threat Awareness enablement did not refresh the HUD and ticker")
+config.GetRow("threatAwarenessMode").value.onSelect("queue")
+config.GetRow("threatAwarenessSoundKey").value.onSelect("alarm_soft")
+assert(saved.threatAwarenessMode == "queue"
+        and saved.threatAwarenessSoundKey == "alarm_soft"
+        and calls.threatAwarenessPreview == 1,
+    "Threat Awareness mode or sound selection did not persist")
+Click(config.GetResetButtons().threatAwareness)
+assert(calls.threatAwarenessReset == 1,
+    "Threat Awareness position reset did not reach the HUD")
 
 local hotGlobal = config.GetRow("hotEnabled").check
 hotGlobal:SetChecked(false)

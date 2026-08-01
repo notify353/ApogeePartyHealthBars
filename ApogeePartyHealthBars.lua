@@ -17,6 +17,8 @@ local CB = ApogeePartyHealthBars_ConsumableBar
 local AH = ApogeePartyHealthBars_ActionHud
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
+local threatObserver = ApogeePartyHealthBars_ThreatObserver
+local threatAwareness = ApogeePartyHealthBars_ThreatAwareness
 local rowGeometry = ApogeePartyHealthBars_RowGeometry
 local visualTicker = ApogeePartyHealthBars_VisualTicker
 local buffReminders = ApogeePartyHealthBars_BuffReminders
@@ -120,6 +122,7 @@ local SUPPORT_FEATURE_BY_SETTING = {
     rangeCheckEnabled = "rangeFade",
     threatEnabled = "threat",
     threatPercentEnabled = "threat",
+    threatAwarenessEnabled = "threat",
     hotEnabled = "hotTracking",
 }
 
@@ -332,6 +335,7 @@ visualTicker.Initialize({
     MouseButtonActions = B,
     ConsumableBar = CB,
     Threat = H,
+    ThreatAwareness = threatAwareness,
     TargetEffectTracker = ApogeePartyHealthBars_TargetEffectTracker,
 })
 local targetChainGUIDs = {}
@@ -461,6 +465,17 @@ CB.Configure({
 
 
 local configSurfaces = ApogeePartyHealthBars_SettingsSurfaces
+threatObserver.Initialize({ Now = function() return GetTime and GetTime() or 0 end })
+threatAwareness.Initialize({
+    Observer = threatObserver,
+    Sounds = ApogeePartyHealthBars_Sounds,
+    SettingsSurfaces = configSurfaces,
+    Now = function() return GetTime and GetTime() or 0 end,
+    IsSupported = function()
+        return ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable("threat")
+    end,
+})
+threatAwareness.Build()
 local unitFrames = ApogeePartyHealthBars_UnitFrames.Build({
     rows = rows,
     StyleReadableText = StyleReadableText,
@@ -900,6 +915,7 @@ configController.Initialize({
     TargetEffectHud = ApogeePartyHealthBars_TargetEffectHud,
     DungeonBoardFeed = dungeonBoardFeed,
     CleanseWatch = cleanseWatch,
+    ThreatAwareness = threatAwareness,
     SettingsSurfaces = configSurfaces,
     Print = Print,
 })
@@ -938,6 +954,7 @@ configUI = ApogeePartyHealthBars_SettingsUI.Build({
     TargetEffectHud                   = ApogeePartyHealthBars_TargetEffectHud,
     DungeonBoardFeed         = dungeonBoardFeed,
     CleanseWatch             = cleanseWatch,
+    ThreatAwareness          = threatAwareness,
     GetSavedVariables        = function() return S.sv end,
         CoreSettingsPages = {
         ForceRefresh                = ForceRefresh,
@@ -970,6 +987,7 @@ configUI = ApogeePartyHealthBars_SettingsUI.Build({
         DungeonBoardUI              = dungeonBoardUI,
         CleanseWatch                 = cleanseWatch,
         Threat                      = H,
+        ThreatAwareness             = threatAwareness,
         CombatUIFader               = ApogeePartyHealthBars_CombatUIFader,
         SyncVisualTicker            = SyncVisualTicker,
         ClientCapabilities          = ApogeePartyHealthBars_ClientCapabilities,

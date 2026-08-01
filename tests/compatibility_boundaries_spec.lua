@@ -39,7 +39,10 @@ local rules = {
     },
     {
         token = "UnitDetailedThreatSituation(",
-        allowed = { ApogeePartyHealthBars_Threat = true },
+        allowed = {
+            ApogeePartyHealthBars_Threat = true,
+            ApogeePartyHealthBars_ThreatObserver = true,
+        },
     },
     {
         token = "SetRaidTarget(",
@@ -50,15 +53,17 @@ local rules = {
 local toc = assert(io.open("ApogeePartyHealthBars.toc", "rb"))
 local sources = {}
 for line in toc:lines() do
-    local module = line:match("^(ApogeePartyHealthBars[^/\\]-)%.lua%s*$")
-    if module then sources[#sources + 1] = module end
+    local path = line:match("^([^#].-%.lua)%s*$")
+    if path then sources[#sources + 1] = path end
 end
 toc:close()
 
-for _, module in ipairs(sources) do
-    local file = assert(io.open(module .. ".lua", "rb"))
+for _, path in ipairs(sources) do
+    local file = assert(io.open(path, "rb"))
     local body = file:read("*a")
     file:close()
+    local shortName = body:match("ApogeePartyHealthBars_([%w]+)%s*=%s*{}")
+    local module = shortName and ("ApogeePartyHealthBars_" .. shortName) or path
     for _, rule in ipairs(rules) do
         local found
         if rule.pattern then
@@ -67,7 +72,7 @@ for _, module in ipairs(sources) do
             found = body:find(rule.token, 1, true)
         end
         if found then
-            assert(rule.allowed[module], module .. " bypasses the compatibility boundary for "
+            assert(rule.allowed[module], path .. " bypasses the compatibility boundary for "
                 .. rule.token)
         end
     end

@@ -21,6 +21,13 @@ ApogeePartyHealthBars_ShortcutBar = {
 }
 ApogeePartyHealthBars_RaidMarkers = { Refresh = function() record("raid") end }
 ApogeePartyHealthBars_Threat = { Refresh = function() record("threat") end }
+ApogeePartyHealthBars_ThreatObserver = {
+    OnNamePlateAdded = function(unit) record("plate+:" .. unit) end,
+    OnNamePlateRemoved = function(unit) record("plate-:" .. unit) end,
+}
+ApogeePartyHealthBars_ThreatAwareness = { Refresh = function(suppress)
+    record("awareness:" .. tostring(suppress))
+end }
 
 local required, optional = {}, {}
 local router = {}
@@ -67,7 +74,9 @@ for _, event in ipairs({
 end
 assert(optional.RAID_TARGET_UPDATE.owner == "RaidMarkers"
         and optional.UNIT_THREAT_SITUATION_UPDATE.owner == "Threat"
-        and optional.UNIT_THREAT_LIST_UPDATE.owner == "Threat",
+        and optional.UNIT_THREAT_LIST_UPDATE.owner == "Threat"
+        and optional.NAME_PLATE_UNIT_ADDED.owner == "ThreatAwareness"
+        and optional.NAME_PLATE_UNIT_REMOVED.owner == "ThreatAwareness",
     "visual event owners changed")
 
 dispatch("UNIT_AURA", "party1")
@@ -112,7 +121,13 @@ expect({ "layout", "layout" }, "unit-target filtering changed")
 reset()
 dispatch("RAID_TARGET_UPDATE")
 dispatch("UNIT_THREAT_LIST_UPDATE")
-expect({ "raid", "threat" }, "raid-marker or threat visual refresh changed")
+expect({ "raid", "threat", "awareness:nil" }, "raid-marker or threat visual refresh changed")
+
+reset()
+dispatch("NAME_PLATE_UNIT_ADDED", "nameplate7")
+dispatch("NAME_PLATE_UNIT_REMOVED", "nameplate7")
+expect({ "plate+:nameplate7", "awareness:nil", "plate-:nameplate7", "awareness:nil" },
+    "nameplate lifecycle did not update Threat Awareness")
 
 reset()
 deps.ResolvePanelUnit = function() error("expected unit failure") end

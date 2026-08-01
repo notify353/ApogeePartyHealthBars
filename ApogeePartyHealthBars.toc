@@ -71,7 +71,9 @@ PartyFrames/HotTracker.lua
 Actions/ShortcutBar.lua
 Actions/ConsumableBar.lua
 PartyFrames/RaidMarkers.lua
+PartyFrames/ThreatObserver.lua
 PartyFrames/Threat.lua
+PartyFrames/ThreatAwareness.lua
 PartyFrames/RowGeometry.lua
 PartyFrames/VisualTicker.lua
 PartyFrames/MinimapController.lua

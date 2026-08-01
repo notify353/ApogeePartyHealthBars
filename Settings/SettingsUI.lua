@@ -139,6 +139,9 @@ local function SetContextualPreviews(pageKey)
     if D.DungeonBoardFeed then
         D.DungeonBoardFeed.SetUnlocked(active and pageKey == "dungeon")
     end
+    if D.ThreatAwareness then
+        D.ThreatAwareness.SetUnlocked(active and pageKey == "frames")
+    end
 end
 
 local function ActivatePage(pageKey)

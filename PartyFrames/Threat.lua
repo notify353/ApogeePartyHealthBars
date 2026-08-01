@@ -1,17 +1,13 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities
+local Observer = ApogeePartyHealthBars_ThreatObserver
 
 ApogeePartyHealthBars_Threat = {}
 local H = ApogeePartyHealthBars_Threat
 
 local rows, syncTicker
 local needsTicker = false
-local CHALLENGER_UNITS = {
-    "player", "party1", "party2", "party3", "party4",
-    "pet", "partypet1", "partypet2", "partypet3", "partypet4",
-}
-
 local FALLBACK_COLORS = {
     [1] = { 1.00, 0.85, 0.10 },
     [2] = { 1.00, 0.50, 0.00 },
@@ -88,18 +84,7 @@ local function BuildSnapshot()
         and UnitCanAttack("player", "target") and not UnitIsDeadOrGhost("target")
     if not snapshot.hasTarget then return snapshot end
 
-    for _, unitId in ipairs(CHALLENGER_UNITS) do
-        if UnitExists(unitId) then
-            local isTanking, status, scaledPercent = UnitDetailedThreatSituation(unitId, "target")
-            if type(scaledPercent) == "number" then
-                snapshot.details[unitId] = {
-                    isTanking = isTanking,
-                    status = status,
-                    scaledPercent = scaledPercent,
-                }
-            end
-        end
-    end
+    snapshot.details = Observer.GetThreatDetails("target")
     return snapshot
 end
 

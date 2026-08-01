@@ -68,8 +68,10 @@ local function widget()
         end,
         IsEnabled = function() return true end,
         GetName = function() return nil end,
-        GetParent = function() return UIParent end,
-        GetWidth = function() return 200 end, GetHeight = function() return 26 end,
+        SetParent = function(self, parent) self.parent = parent end,
+        GetParent = function(self) return self.parent or UIParent end,
+        GetWidth = function(self) return self.width or 200 end,
+        GetHeight = function(self) return self.height or 26 end,
         GetMinMaxValues = function() return 0, 100 end,
         GetValue = function() return 50 end,
         GetAlpha = function(self) return self.alpha end,
@@ -125,6 +127,7 @@ function GetMouseFoci() return {} end
 
 Enum = { PowerType = { Mana = 0 }, SpellBookSpellBank = { Player = 0, Pet = 1 } }
 C_EventUtils = { IsEventValid = function() return true end }
+C_NamePlate = { GetNamePlateForUnit = function() return nil end }
 C_AddOns = {
     GetAddOnMetadata = function(addonName, field)
         assert(addonName == "ApogeePartyHealthBars" and field == "Version",
@@ -290,8 +293,12 @@ assert(tocLoadOrder["PartyFrames/AccessoryLayout.lua"]
     and tocLoadOrder["PartyFrames/AccessoryLayout.lua"]
         < tocLoadOrder["Actions/ShortcutBar.lua"]
     and tocLoadOrder["PartyFrames/AccessoryLayout.lua"]
+        < tocLoadOrder["PartyFrames/RaidMarkers.lua"]
+    and tocLoadOrder["PartyFrames/TargetNameplateHud.lua"]
+        < tocLoadOrder["Reminders/TargetEffects/TargetEffectHud.lua"]
+    and tocLoadOrder["PartyFrames/TargetNameplateHud.lua"]
         < tocLoadOrder["PartyFrames/RaidMarkers.lua"],
-    "compact accessory consumers loaded before their shared geometry dependency")
+    "nameplate or compact accessory consumers loaded before their shared dependency")
 assert(tocLoadOrder["Actions/MouseWheel/MouseWheelLayouts.lua"]
     < tocLoadOrder["Actions/MouseWheel/MouseWheelActions.lua"],
     "wheel runtime loaded before its class-state layout dependency")
@@ -310,8 +317,6 @@ assert(tocLoadOrder["Actions/Keyboard/KeyboardLayouts.lua"]
         < tocLoadOrder["Actions/Keyboard/KeyboardActions.lua"]
     and tocLoadOrder["Core/UIHelpers.lua"]
         < tocLoadOrder["Settings/SettingsSurfaces.lua"]
-    and tocLoadOrder["Settings/SettingsSurfaces.lua"]
-        < tocLoadOrder["Reminders/TargetEffects/TargetEffectHud.lua"]
     and tocLoadOrder["Settings/SettingsSurfaces.lua"]
         < tocLoadOrder["PartyFrames/UnitFrames.lua"]
     and tocLoadOrder["Profiles/ProfileCodec.lua"]
@@ -413,46 +418,36 @@ assert(ApogeePartyHealthBars_EffectsTracker == nil,
     "retired EffectsTracker runtime was still loaded")
 
 local router = ApogeePartyHealthBars_EventRouter
-assert(ApogeePartyHealthBars_TargetEffectHud.GetAnchor() == nil,
-    "DoT reminder HUD was unexpectedly created before its first use")
-ApogeePartyHealthBars_TargetEffectHud.SetUnlocked(true)
-local preLoginConfigDotAnchor = ApogeePartyHealthBars_TargetEffectHud.GetAnchor()
-assert(preLoginConfigDotAnchor and not preLoginConfigDotAnchor.shown
-        and preLoginConfigDotAnchor.width == 140
-        and preLoginConfigDotAnchor.height == 24,
-    "opening configuration exposed a blank reminder HUD before samples were available")
+local targetEffectRow = ApogeePartyHealthBars_TargetEffectHud.GetAnchor()
+assert(targetEffectRow and targetEffectRow.frameType == "Frame"
+        and targetEffectRow.template == nil and not targetEffectRow.mouseEnabled,
+    "Target Effects did not create a passive nameplate row")
+local inlinePreview = ApogeePartyHealthBars_TargetEffectHud.CreateConfigurationPreview(UIParent)
 ApogeePartyHealthBars_TargetEffectHud.SetConfigurationPreview({
     { key = "preview", label = "Preview", spellId = 1160, icon = 132154, preview = true },
 })
-local previewDotIcon = ApogeePartyHealthBars_TargetEffectHud.GetIcons()[1]
-assert(preLoginConfigDotAnchor.shown
-        and previewDotIcon and previewDotIcon.dragButtons[1] == "LeftButton"
-        and type(previewDotIcon.scripts.OnDragStart) == "function"
-        and type(previewDotIcon.scripts.OnDragStop) == "function",
-    "configuration example icon did not forward dragging to the reminder HUD")
-ApogeePartyHealthBars_TargetEffectHud.SetUnlocked(false)
-assert(#previewDotIcon.dragButtons == 0,
-    "reminder example icon remained draggable after configuration closed")
+assert(inlinePreview.shown and inlinePreview.width == 24
+        and inlinePreview.icons[1].mouseEnabled
+        and inlinePreview.icons[1].scripts.OnDragStart == nil,
+    "Target Effects did not render a non-draggable inline configuration sample")
+local settingsPreviewRow = ApogeePartyHealthBars_TargetEffectsSettingsPage.GetPreviewRow()
+assert(settingsPreviewRow and settingsPreviewRow.preview
+        and settingsPreviewRow.preview.icons[1]
+        and settingsPreviewRow.preview.icons[1].scripts.OnDragStart == nil,
+    "Target Effects settings page did not own its inline sample")
 local earlyDotRefreshOk, earlyDotRefreshError = pcall(
     ApogeePartyHealthBars_TargetEffectHud.SetSuggestions, {})
 assert(earlyDotRefreshOk,
     "pre-login DoT context refresh failed before HUD initialization: "
         .. tostring(earlyDotRefreshError))
-local earlyDotAnchor = ApogeePartyHealthBars_TargetEffectHud.GetAnchor()
-assert(earlyDotAnchor == preLoginConfigDotAnchor,
-    "pre-login configuration and reminder refresh created different HUD anchors")
-local earlyDotPointWrites = earlyDotAnchor.pointWrites
 router.Dispatch("PLAYER_LOGIN")
 local dotHudAnchor = ApogeePartyHealthBars_TargetEffectHud.GetAnchor()
 assert(dotHudAnchor and dotHudAnchor.frameType == "Frame" and dotHudAnchor.template == nil
-        and dotHudAnchor.scripts.OnClick == nil,
+        and dotHudAnchor.scripts.OnClick == nil and dotHudAnchor == targetEffectRow,
     "DoT reminder HUD was not created as a passive non-secure frame")
-assert(dotHudAnchor == earlyDotAnchor and dotHudAnchor.pointWrites > earlyDotPointWrites,
-    "pre-login reminder HUD did not restore its position after profile loading")
-local dotPointWrites = dotHudAnchor.pointWrites
-ApogeePartyHealthBars_TargetEffectHud.SetSuggestions({})
-assert(dotHudAnchor.pointWrites == dotPointWrites,
-    "routine reminder refresh reapplied the saved HUD position during dragging")
+assert(ApogeePartyHealthBars_TargetEffectHud.ResetPosition == nil
+        and ApogeePartyHealthBars_TargetEffectHud.SetUnlocked == nil,
+    "removed movable Target Effects APIs were still exposed")
 assert(ApogeePartyHealthBarsPanel.point[1] == "TOPRIGHT"
         and ApogeePartyHealthBarsPanel.point[3] == "TOPRIGHT"
         and ApogeePartyHealthBarsPanel.point[4] == 0
@@ -808,7 +803,7 @@ end
 ClickMinimapButton()
 assert(ApogeePartyHealthBars_S.configMode, "minimap click did not open settings")
 local configSurfaces = ApogeePartyHealthBars_SettingsSurfaces
-local expectedConfigSurfaceKeys = { "settings", "party", "feed", "dot", "cleanse" }
+local expectedConfigSurfaceKeys = { "settings", "party", "feed", "cleanse" }
 for _, key in ipairs(expectedConfigSurfaceKeys) do
     local surface = assert(configSurfaces.Get(key), "missing configuration surface: " .. key)
     local shouldShowChrome = key == "settings"
@@ -822,8 +817,7 @@ for _, key in ipairs(expectedConfigSurfaceKeys) do
     assert(surface.frame.topLevel and surface.frame.frameStrata == "DIALOG",
         "configuration surface did not join native active-window stacking: " .. key)
 end
-assert(configSurfaces.Get("dot").chrome.title == nil
-        and configSurfaces.Get("dot").chrome.header == nil
+assert(configSurfaces.Get("dot") == nil
         and configSurfaces.Get("cleanse").chrome.title == nil
         and configSurfaces.Get("cleanse").chrome.header == nil
         and configSurfaces.Get("feed").chrome.title == nil
@@ -879,8 +873,7 @@ end
 assert(configSurfaces.Get("settings").frame.frameStrata == "DIALOG"
         and configSurfaces.Get("feed").frame.frameStrata == "DIALOG"
         and configSurfaces.Get("cleanse").frame.frameStrata == "DIALOG"
-        and configSurfaces.Get("party").frame.frameStrata == "MEDIUM"
-        and configSurfaces.Get("dot").frame.frameStrata == "MEDIUM",
+        and configSurfaces.Get("party").frame.frameStrata == "MEDIUM",
     "configuration close did not restore runtime surface strata")
 local existingImmediatePoints = existingShortcutButton.pointWrites
 local addedImmediatePoints = addedShortcutButton.pointWrites
@@ -922,13 +915,12 @@ for _, key in ipairs({
 }) do
     ApogeePartyHealthBars_SettingsUI.ActivatePage(key)
     assert(ApogeePartyHealthBars_S.activeSettingsPageKey == key, "could not activate settings page: " .. key)
-    assert(ApogeePartyHealthBars_TargetEffectHud.IsUnlocked() == (key == "targetEffects")
-            and ApogeePartyHealthBars_CleanseWatch.IsUnlocked()
+    assert(ApogeePartyHealthBars_CleanseWatch.IsUnlocked()
                 == (key == "buffsCleanse")
             and ApogeePartyHealthBars_DungeonBoardFeed.IsUnlocked()
                 == (key == "dungeon"),
         "settings page exposed an unrelated configuration preview: " .. key)
-    assert((key == "targetEffects" or not ApogeePartyHealthBars_TargetEffectHud.GetAnchor():IsShown())
+    assert(not ApogeePartyHealthBars_TargetEffectHud.GetAnchor():IsShown()
             and (key == "buffsCleanse"
                 or not ApogeePartyHealthBars_CleanseWatch.GetFrame():IsShown())
             and (key == "dungeon"
@@ -1073,7 +1065,8 @@ ApogeePartyHealthBars_Effects.InitializeSavedVariables(renamedSettings, renamedA
 assert(renamedSettings.targetEffectRemindersEnabled == false
         and renamedSettings.targetEffectRefreshThreshold == 8
         and renamedSettings.targetEffectPriority[1] == "shadowWordPain"
-        and renamedSettings.targetEffectHudX == 42
+        and renamedSettings.targetEffectHudX == nil
+        and renamedSettings.dotHudX == nil
         and renamedSettings.dotRemindersEnabled == nil
         and renamedSettings.dotPriority == nil
         and renamedActions.keyboardActions.schemaVersion == 2

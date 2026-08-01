@@ -11,7 +11,7 @@ end
 function C.Exit()
     if not S.configMode then return end
     S.configMode = false
-    if D.TargetEffectHud then D.TargetEffectHud.SetUnlocked(false) end
+    if D.TargetEffectHud then D.TargetEffectHud.RefreshVisibility() end
     if D.DungeonBoardFeed then D.DungeonBoardFeed.SetUnlocked(false) end
     if D.CleanseWatch then D.CleanseWatch.SetUnlocked(false) end
     if D.ThreatAwareness then D.ThreatAwareness.SetUnlocked(false) end
@@ -147,6 +147,7 @@ function C.SetMode(active)
     end
     if active then
         S.configMode = true
+        if D.TargetEffectHud then D.TargetEffectHud.RefreshVisibility() end
         S.activeSettingsPageKey = S.activeSettingsPageKey or "frames"
         D.panel:EnableMouse(true)
         D.panel:RegisterForDrag("LeftButton")

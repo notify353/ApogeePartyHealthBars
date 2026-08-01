@@ -13,6 +13,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Moved Target Effects from a movable center-screen row to a passive, click-through row above the current hostile target's visible nameplate; it now shares one collapsing two-row nameplate stack with raid-marker controls and uses an inline Settings preview instead of a saved position.
 - Moved the Moon, Cross, and Skull target-marker controls from the party-frame target bar to a double-size row without tooltip or mouseover styling, centered above the current hostile target's visible nameplate with Skull on the right; Blizzard's live marker state is the sole source of truth and the other controls fade strongly.
 - Generated shield-required ability macros now cast directly instead of using an equipment condition that could silently suppress Shield Bash and similar abilities.
 - Threat Awareness now highlights the player's current target with a restrained row tint and edge marker while keeping the HUD passive and non-clickable.

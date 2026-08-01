@@ -53,13 +53,14 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `ShieldTracker`: private absorb ledger, aura/combat-log reconciliation, estimation fallbacks, and shield-segment rendering
 - `IncomingHeals`: alias-aware Blizzard heal prediction and overlay rendering for rows and inline targets
 - `HotTracker`: private known-spell and active-track state, player-cast aura matching, strip geometry inputs, and duration visuals
-- `TargetEffectData`, `TargetEffectTracker`, `TargetEffectHud`, `TargetEffectsSettingsPage`: ID-only learned-rank catalog, player-owned harmful-aura evaluation, event/timer-driven target suggestions, passive movable HUD, and profile-owned priority/threshold controls
+- `TargetEffectData`, `TargetEffectTracker`, `TargetEffectHud`, `TargetEffectsSettingsPage`: ID-only learned-rank catalog, player-owned harmful-aura evaluation, event/timer-driven target suggestions, passive click-through nameplate row, inline configuration sample, and profile-owned priority/threshold controls
 - `CleanseData`, `CleanseWatch`: learned player/pet cleanse capability policy, removable harmful-aura grouping, inline Blizzard descriptions, type-first presentation, profile-owned position, and pre-created unit-targeted secure actions
 - `ShortcutBar`, `ShortcutBarSettingsPage`: 12-slot typed shortcut storage, a full-size configured Shortcut footer beneath the party frame, compact left-aligned target crowd-control grids, player and pet spellbook discovery, targeting-mode-aware state prediction, independent footer/lane-height reporting, spell/item state icons, sound feedback, secure macros, smart Spellbook/bag assignment, and scrollable compact configuration
 - `MouseWheelData`, `MouseWheelLayouts`, `MouseWheelActions`, `MouseWheelSettingsPage`: fixed gesture definitions, Mouse Wheel-specific shared-runtime policy, active talent-spec profiles, per-form typed shortcut layouts, right-side HUD geometry, and compact configuration
 - `KeyboardData`, `KeyboardLayouts`, `KeyboardActions`, `KeyboardSettingsPage`: fixed keyboard definitions, Keyboard-specific shared-runtime policy, independent empty per-spec/per-form profiles, bottom-aligned left-side HUD geometry, and uniform row-based configuration
 - `MouseButtonData`, `MouseButtonLayouts`, `MouseButtonActions`, `MouseButtonsSettingsPage`: fixed Mouse Button 3–5 combat definitions, independent per-spec/per-form profiles, right-of-Mouse-Wheel 3×3 HUD geometry, and uniform configuration
-- `RaidMarkers`: compact right-aligned target marker controls with stable external height reporting
+- `TargetNameplateHud`: current-target GUID/nameplate matching, reusable nameplate attachment, and independently collapsing marker and Target Effects rows
+- `RaidMarkers`: large clickable Moon, Cross, and Skull controls registered as the lower target-nameplate row
 - `Threat`: primary player/party threat
 - `ThreatObserver`: dynamic hostile-token discovery, GUID deduplication, normalized group-threat margins, severity ranking, immutable pack snapshots, transition detection, and short last-seen loss retention
 - `ThreatAwareness`: passive profile-owned Pack Radar, Loss Alarm, and Threat Queue presentation, movable configuration preview, and throttled tanked-to-lost sound policy
@@ -86,7 +87,7 @@ The data and pure-policy chain loads as `DungeonBoardCatalog` → `DungeonBoardA
 - Keep volatile client APIs inside their domain adapters and capability detection; ordinary frame construction and widget methods remain direct.
 - Keep configuration-only chrome and cross-surface stacking inside `SettingsSurfaces`; surfaces may opt out of automatic backing when their native content is sufficient. Feature modules own their content and direct position persistence, configuration must never reposition another surface, and normal gameplay must not retain configuration backing or elevation.
 - Keep Settings at its compact 480×460 footprint and preserve the simultaneous Spellbook, Settings, and live party-frame configuration workflow; add configuration depth through grouped pages and scrolling rather than a wider window.
-- Keep the party-frame preview visible throughout Settings, but activate Cleanse Watch, Target Effects, and LFG Alert samples only on the page that configures each surface.
+- Keep the party-frame preview visible throughout Settings, but activate Cleanse Watch and LFG Alert samples only on the page that configures each surface; Target Effects uses an inline sample on its own page.
 - Keep Dungeon Board catalog, activity mapping, classification, and eligibility independent from chat events, saved variables, and UI; keep search/result ingestion inside `DungeonBoardGroupFinder`, manual native player interactions inside `DungeonBoardActions`, chat payload knowledge inside the event adapter, and UI reads on immutable runtime snapshots.
 - Give Dungeon Board service/noise classifications precedence over dungeon requests, and preserve unresolved `DM`, Dire Maul, and Scarlet Monastery candidates instead of guessing or duplicating requests.
 - Preserve the original message alongside every plain-language Dungeon Board explanation; presentation may clarify known intent and catalog facts but must not invent an unstated role or resolve ambiguous slang.
@@ -98,6 +99,7 @@ The data and pure-policy chain loads as `DungeonBoardCatalog` → `DungeonBoardA
 - Treat basic unit health and frame construction as the required baseline while aura, range, prediction, threat, markers, assignment, bindings, state layouts, and profile sharing degrade independently.
 - Never mutate secure attributes, position, visibility, or mouse state during combat.
 - Keep party-frame units inside `UnitTopology`; event routing, trackers, and layout must not grow independent player/party token-pattern rules. Dynamic hostile nameplate and target-chain discovery belongs exclusively to `ThreatObserver` and must not alter fixed party-frame topology.
+- Keep current-target nameplate discovery and attachment inside `TargetNameplateHud`; raid markers and Target Effects own only their row content and enabled state. Keep markers nearest the nameplate, Target Effects above them, and collapse either row without reserving a gap.
 - Treat Threat Awareness as an observable-token view, never a complete combat-enemy list. Deduplicate hostile sources by GUID, label reduced coverage when no hostile nameplate tokens are observable, and never present cached threat values as live after the final token disappears.
 - Keep Threat Awareness passive and non-secure. Sounds may fire only for a continuously observed tanked-to-lost transition and must remain suppressed for initial discovery, repeated lost refreshes, stale records, previews, and mode changes.
 - Poll target-chain identity and values at the normal visual cadence because Anniversary's Blizzard raid frames document unreliable second-depth target events.
@@ -118,7 +120,7 @@ The data and pure-policy chain loads as `DungeonBoardCatalog` → `DungeonBoardA
 - Keep shield ledger writes inside `ShieldTracker`; display reads may use aura or rank estimates but must never persist those fallbacks over tracked depletion.
 - Keep known and active HoT tracks inside `HotTracker`; aura scanning, layout, configuration, row display, and visual ticking consume only its explicit APIs.
 - Keep cleanse spell preference and removable-type policy inside `CleanseData`; keep the five unit targets and four type slots stable, and defer every secure Cleanse Watch mutation until combat ends.
-- Keep Target Effect family, rank, replacement, exclusivity, race, form, and target policy inside `TargetEffectData`; `TargetEffectTracker` may suggest only, and `TargetEffectHud` must remain non-secure and cast-free.
+- Keep Target Effect family, rank, replacement, exclusivity, race, form, and target policy inside `TargetEffectData`; `TargetEffectTracker` may suggest only, and the live `TargetEffectHud` must remain non-secure, cast-free, mouse-disabled, and nameplate-only.
 - Preserve every nonblank saved macro exactly during normalization, metadata refresh, profiles, imports, and migration; regenerate defaults only for new assignments, explicit resets, or legacy entries without macro text.
 - Infer generated attack behavior only from Blizzard's auto-attack predicates or the reviewed canonical spell-family policy; class, harmfulness, range, resource type, and cast time are not sufficient.
 - Keep generated-template documentation sourced from `ActionMacros` so the Macros glossary cannot drift from runtime output.

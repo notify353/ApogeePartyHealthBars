@@ -27,6 +27,7 @@ Core/UnitAPI.lua
 Core/UIHelpers.lua
 Settings/SettingsSurfaces.lua
 PartyFrames/AccessoryLayout.lua
+PartyFrames/TargetNameplateHud.lua
 Actions/MacroData.lua
 Actions/MacroLibrary.lua
 Core/EventRouter.lua

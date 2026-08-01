@@ -21,8 +21,10 @@ ApogeePartyHealthBars_ShortcutBar = {
 }
 ApogeePartyHealthBars_RaidMarkers = {
     Refresh = function() record("raid") end,
-    OnNamePlateAdded = function(unit) record("raid-plate+:" .. unit) end,
-    OnNamePlateRemoved = function(unit) record("raid-plate-:" .. unit) end,
+}
+ApogeePartyHealthBars_TargetNameplateHud = {
+    OnNamePlateAdded = function(unit) record("hud-plate+:" .. unit) end,
+    OnNamePlateRemoved = function(unit) record("hud-plate-:" .. unit) end,
 }
 ApogeePartyHealthBars_Threat = { Refresh = function() record("threat") end }
 ApogeePartyHealthBars_ThreatObserver = {
@@ -95,9 +97,9 @@ end
 assert(optionalHasOwner("RAID_TARGET_UPDATE", "RaidMarkers")
         and optionalHasOwner("UNIT_THREAT_SITUATION_UPDATE", "Threat")
         and optionalHasOwner("UNIT_THREAT_LIST_UPDATE", "Threat")
-        and optionalHasOwner("NAME_PLATE_UNIT_ADDED", "RaidMarkers")
+        and optionalHasOwner("NAME_PLATE_UNIT_ADDED", "TargetNameplateHud")
         and optionalHasOwner("NAME_PLATE_UNIT_ADDED", "ThreatAwareness")
-        and optionalHasOwner("NAME_PLATE_UNIT_REMOVED", "RaidMarkers")
+        and optionalHasOwner("NAME_PLATE_UNIT_REMOVED", "TargetNameplateHud")
         and optionalHasOwner("NAME_PLATE_UNIT_REMOVED", "ThreatAwareness"),
     "visual event owners changed")
 
@@ -149,8 +151,8 @@ reset()
 dispatch("NAME_PLATE_UNIT_ADDED", "nameplate7")
 dispatch("NAME_PLATE_UNIT_REMOVED", "nameplate7")
 expect({
-    "raid-plate+:nameplate7", "plate+:nameplate7", "awareness:nil",
-    "raid-plate-:nameplate7", "plate-:nameplate7", "awareness:nil",
+    "hud-plate+:nameplate7", "raid", "plate+:nameplate7", "awareness:nil",
+    "hud-plate-:nameplate7", "raid", "plate-:nameplate7", "awareness:nil",
 }, "nameplate lifecycle did not update raid markers and Threat Awareness")
 
 reset()

@@ -306,8 +306,11 @@ assert(sanitized.settings.x == nil and sanitized.settings.y == 24,
 assert(sanitized.settings.targetEffectRemindersEnabled == false
         and sanitized.settings.targetEffectThresholds.corruption == 6
         and sanitized.settings.targetEffectPriority[2] == "immolate"
-        and sanitized.settings.targetEffectHudY == 144,
-    "DoT policy or HUD position did not survive profile normalization")
+        and sanitized.settings.targetEffectHudPoint == nil
+        and sanitized.settings.targetEffectHudRelPoint == nil
+        and sanitized.settings.targetEffectHudX == nil
+        and sanitized.settings.targetEffectHudY == nil,
+    "Target Effects policy changed or obsolete HUD coordinates survived normalization")
 assert(sanitized.settings.dungeonBoardRole == "healer"
         and sanitized.settings.dungeonBoardMode == nil
         and sanitized.settings.dungeonBoardFeedEnabled == false

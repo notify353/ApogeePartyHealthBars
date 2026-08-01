@@ -16,7 +16,6 @@ local SETTINGS_KEYS = {
     "cleanseWatchEnabled", "cleanseWatchPoint", "cleanseWatchRelPoint",
     "cleanseWatchX", "cleanseWatchY",
     "targetEffectRemindersEnabled", "targetEffectRefreshThreshold", "targetEffectDisabled", "targetEffectPriority", "targetEffectThresholds",
-    "targetEffectHudPoint", "targetEffectHudRelPoint", "targetEffectHudX", "targetEffectHudY",
     "dungeonBoardRole", "dungeonBoardMode", "dungeonBoardFeedEnabled",
     "dungeonBoardSoundKey",
     "dungeonBoardLevelsBelow", "dungeonBoardLevelsAbove", "dungeonBoardFeedPoint",
@@ -54,7 +53,6 @@ local LEGACY_SETTINGS_KEYS = {
     "cleanseWatchEnabled", "cleanseWatchPoint", "cleanseWatchRelPoint",
     "cleanseWatchX", "cleanseWatchY",
     "targetEffectRemindersEnabled", "targetEffectRefreshThreshold", "targetEffectDisabled", "targetEffectPriority", "targetEffectThresholds",
-    "targetEffectHudPoint", "targetEffectHudRelPoint", "targetEffectHudX", "targetEffectHudY",
     "dungeonBoardRole", "dungeonBoardMode", "dungeonBoardFeedEnabled",
     "dungeonBoardSoundKey",
     "dungeonBoardLevelsBelow", "dungeonBoardLevelsAbove", "dungeonBoardFeedPoint",
@@ -64,7 +62,7 @@ local LEGACY_SETTINGS_KEYS = {
     "configX", "configY", "minimapAngle", "fortEnabled", "innerFireEnabled",
     "lowHealthSoundEnabled", "spellTrackerEnabled", "spellTrackerSoundsEnabled", "bindings",
     "dotRemindersEnabled", "dotRefreshThreshold", "dotDisabled", "dotPriority",
-    "dotThresholds", "dotHudPoint", "dotHudRelPoint", "dotHudX", "dotHudY",
+    "dotThresholds",
 }
 local ORDERED_COLLECTIONS = { bindings = true, shortcuts = true, slots = true, targetEffectPriority = true }
 local SETTINGS_TYPES = {
@@ -82,8 +80,7 @@ local SETTINGS_TYPES = {
     cleanseWatchEnabled = "boolean", cleanseWatchPoint = "string",
     cleanseWatchRelPoint = "string", cleanseWatchX = "number", cleanseWatchY = "number",
     targetEffectRemindersEnabled = "boolean", targetEffectRefreshThreshold = "number", targetEffectDisabled = "table",
-    targetEffectPriority = "table", targetEffectThresholds = "table", targetEffectHudPoint = "string",
-    targetEffectHudRelPoint = "string", targetEffectHudX = "number", targetEffectHudY = "number",
+    targetEffectPriority = "table", targetEffectThresholds = "table",
     dungeonBoardRole = "string", dungeonBoardMode = "string",
     dungeonBoardFeedEnabled = "boolean",
     dungeonBoardSoundKey = "string",
@@ -114,10 +111,6 @@ LEGACY_SETTINGS_TYPES.dotRefreshThreshold = "number"
 LEGACY_SETTINGS_TYPES.dotDisabled = "table"
 LEGACY_SETTINGS_TYPES.dotPriority = "table"
 LEGACY_SETTINGS_TYPES.dotThresholds = "table"
-LEGACY_SETTINGS_TYPES.dotHudPoint = "string"
-LEGACY_SETTINGS_TYPES.dotHudRelPoint = "string"
-LEGACY_SETTINGS_TYPES.dotHudX = "number"
-LEGACY_SETTINGS_TYPES.dotHudY = "number"
 local accountRoot, characterRoot, store, classToken, author
 local LEGACY_ACCOUNT_STORE_VERSION = 1
 
@@ -142,10 +135,6 @@ local RENAMED_SETTINGS_FIELDS = {
     dotDisabled = "targetEffectDisabled",
     dotPriority = "targetEffectPriority",
     dotThresholds = "targetEffectThresholds",
-    dotHudPoint = "targetEffectHudPoint",
-    dotHudRelPoint = "targetEffectHudRelPoint",
-    dotHudX = "targetEffectHudX",
-    dotHudY = "targetEffectHudY",
 }
 
 local RENAMED_ACTION_FIELDS = {

@@ -1,74 +1,24 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local UIH = ApogeePartyHealthBars_UIHelpers
-local CS = ApogeePartyHealthBars_SettingsSurfaces
+local NameplateHud = ApogeePartyHealthBars_TargetNameplateHud
 
 ApogeePartyHealthBars_TargetEffectHud = {}
 local H = ApogeePartyHealthBars_TargetEffectHud
 
 local ICON_SIZE = C.SHORTCUT_ICON_SIZE or 24
 local ICON_GAP = C.SHORTCUT_ICON_GAP or 3
-local EMPTY_PREVIEW_WIDTH = 140
-local anchor
+local SURFACE_KEY = "targetEffects"
+local TARGET_EFFECT_GAP = 4
+
+local row
 local icons = {}
 local suggestions = {}
 local configurationPreview = {}
-local unlocked = false
-local positionLoaded = false
+local previewRows = {}
 
-local function SavePosition()
-    if not anchor or not S.sv then return end
-    local point, _, relPoint, x, y = anchor:GetPoint()
-    S.sv.targetEffectHudPoint, S.sv.targetEffectHudRelPoint = point, relPoint
-    S.sv.targetEffectHudX, S.sv.targetEffectHudY = x, y
-end
-
-local function StartDrag()
-    if unlocked and anchor then
-        CS.MarkConfigurationPreviewMoved("dot")
-        anchor:StartMoving()
-    end
-end
-
-local function StopDrag()
-    if not unlocked or not anchor then return end
-    anchor:StopMovingOrSizing()
-    SavePosition()
-end
-
-local function SetIconDraggable(frame)
-    if unlocked then
-        frame:RegisterForDrag("LeftButton")
-    else
-        frame:RegisterForDrag()
-    end
-end
-
-function H.ResetPosition()
-    if not anchor then return end
-    anchor:ClearAllPoints()
-    anchor:SetPoint("CENTER", UIParent, "CENTER", 0, 120)
-    if S.sv then
-        S.sv.targetEffectHudPoint, S.sv.targetEffectHudRelPoint = nil, nil
-        S.sv.targetEffectHudX, S.sv.targetEffectHudY = nil, nil
-    end
-    if unlocked then CS.RefreshConfigurationPreviewDock("dot") end
-end
-
-function H.RestorePosition()
-    if not anchor then return end
-    anchor:ClearAllPoints()
-    local sv = S.sv
-    if sv and type(sv.targetEffectHudX) == "number" and type(sv.targetEffectHudY) == "number" then
-        local ok = pcall(anchor.SetPoint, anchor, sv.targetEffectHudPoint or "CENTER", UIParent,
-            sv.targetEffectHudRelPoint or "CENTER", sv.targetEffectHudX, sv.targetEffectHudY)
-        if ok then return end
-    end
-    H.ResetPosition()
-end
-
-local function CreateIcon(index)
-    local frame = CreateFrame("Frame", nil, anchor)
+local function CreateIcon(parent, interactive)
+    local frame = CreateFrame("Frame", nil, parent)
     frame:SetSize(ICON_SIZE, ICON_SIZE)
     local texture = frame:CreateTexture(nil, "ARTWORK")
     texture:SetAllPoints()
@@ -80,58 +30,76 @@ local function CreateIcon(index)
     local count = frame:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
     count:SetPoint("BOTTOM", frame, "BOTTOM", 0, 1)
     if count.SetShadowOffset then count:SetShadowOffset(1, -1) end
-    frame:EnableMouse(true)
-    frame:SetScript("OnEnter", function(self)
-        local item = self.suggestion
-        if not item then return end
-        UIH.ShowSpellTooltip(self, item.spellId, item.label,
-            item.preview and "Configuration preview"
-                or (item.aura and "Refresh now" or "Missing"), nil,
-            { { text = "Passive reminder — this icon never casts.", wrap = true } })
-    end)
-    frame:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
-    frame:SetScript("OnDragStart", StartDrag)
-    frame:SetScript("OnDragStop", StopDrag)
-    SetIconDraggable(frame)
+    frame:EnableMouse(interactive == true)
+    if interactive then
+        frame:SetScript("OnEnter", function(self)
+            local item = self.suggestion
+            if not item then return end
+            UIH.ShowSpellTooltip(self, item.spellId, item.label, "Configuration preview", nil,
+                { { text = "Passive reminder — this icon never casts.", wrap = true } })
+        end)
+        frame:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
+    end
     frame.texture, frame.cooldown, frame.count = texture, cooldown, count
-    icons[index] = frame
     return frame
 end
 
-local function displayedSuggestions()
-    if unlocked then return configurationPreview end
-    return suggestions
+local function ApplyItem(icon, item, preview)
+    icon.texture:SetTexture(item.icon)
+    icon.suggestion = item
+    if not preview and item.aura and item.aura.duration and item.aura.duration > 0
+        and item.aura.expirationTime and item.aura.expirationTime > 0 then
+        icon.cooldown:SetCooldown(item.aura.expirationTime - item.aura.duration,
+            item.aura.duration)
+        icon.cooldown:Show()
+    else
+        icon.cooldown:Hide()
+    end
+    icon.count:SetText("")
+    icon:Show()
 end
 
-local function ShouldShow()
-    if unlocked then return #configurationPreview > 0 end
-    if S.configMode then return false end
-    return #suggestions > 0
-end
-
-local function Layout()
-    local displayed = displayedSuggestions()
-    local count = #displayed
-    local width = count > 0 and count * ICON_SIZE + (count - 1) * ICON_GAP
-        or EMPTY_PREVIEW_WIDTH
-    anchor:SetSize(width, ICON_SIZE)
-    for index, item in ipairs(displayed) do
-        local icon = icons[index] or CreateIcon(index)
-        icon:ClearAllPoints()
-        icon:SetPoint("LEFT", anchor, "LEFT", (index - 1) * (ICON_SIZE + ICON_GAP), 0)
-        icon.texture:SetTexture(item.icon)
-        icon.suggestion = item
-        if item.aura and item.aura.duration and item.aura.duration > 0
-            and item.aura.expirationTime and item.aura.expirationTime > 0 then
-            icon.cooldown:SetCooldown(item.aura.expirationTime - item.aura.duration,
-                item.aura.duration)
-            icon.cooldown:Show()
-        else
-            icon.cooldown:Hide()
+local function LayoutLive()
+    local count = #suggestions
+    local width = count > 0 and count * ICON_SIZE + (count - 1) * ICON_GAP or 1
+    row:SetSize(width, ICON_SIZE)
+    for index, item in ipairs(suggestions) do
+        local icon = icons[index]
+        if not icon then
+            icon = CreateIcon(row, false)
+            icons[index] = icon
         end
-        icon:Show()
+        icon:ClearAllPoints()
+        icon:SetPoint("LEFT", row, "LEFT", (index - 1) * (ICON_SIZE + ICON_GAP), 0)
+        ApplyItem(icon, item, false)
     end
     for index = count + 1, #icons do icons[index]:Hide() end
+end
+
+local function LayoutPreview(preview)
+    if not preview then return end
+    local count = #configurationPreview
+    local width = count > 0 and count * ICON_SIZE + (count - 1) * ICON_GAP or 1
+    preview:SetSize(width, ICON_SIZE)
+    preview.icons = preview.icons or {}
+    for index, item in ipairs(configurationPreview) do
+        local icon = preview.icons[index]
+        if not icon then
+            icon = CreateIcon(preview, true)
+            preview.icons[index] = icon
+        end
+        icon:ClearAllPoints()
+        icon:SetPoint("LEFT", preview, "LEFT", (index - 1) * (ICON_SIZE + ICON_GAP), 0)
+        ApplyItem(icon, item, true)
+    end
+    for index = count + 1, #preview.icons do preview.icons[index]:Hide() end
+    preview:SetShown(count > 0)
+end
+
+local function RefreshVisibility()
+    if not row then return end
+    NameplateHud.SetSurfaceEnabled(SURFACE_KEY,
+        S.sv and S.sv.enabled == true and #suggestions > 0 and not S.configMode)
 end
 
 function H.SetSuggestions(nextSuggestions)
@@ -151,77 +119,55 @@ function H.SetSuggestions(nextSuggestions)
         end
     end
     suggestions = nextSuggestions
-    if unchanged then
-        H.Tick()
-        anchor:SetShown(ShouldShow())
-        return
-    end
-    Layout()
-    anchor:SetShown(ShouldShow())
+    if not unchanged then LayoutLive() end
+    H.Tick()
+    RefreshVisibility()
 end
 
 function H.Tick()
     local now = GetTime and GetTime() or 0
-    for index, item in ipairs(displayedSuggestions()) do
+    for index, item in ipairs(suggestions) do
         local remaining = item.aura and item.aura.expirationTime
             and math.max(0, item.aura.expirationTime - now) or nil
-        icons[index].count:SetText(remaining and tostring(math.ceil(remaining)) or "")
+        if icons[index] then
+            icons[index].count:SetText(remaining and tostring(math.ceil(remaining)) or "")
+        end
     end
 end
-
-function H.SetUnlocked(value)
-    H.Initialize()
-    local nextUnlocked = value == true and not (InCombatLockdown and InCombatLockdown())
-    local wasUnlocked = unlocked
-    unlocked = nextUnlocked
-    if nextUnlocked and not wasUnlocked then
-        CS.DockConfigurationPreview("dot")
-    elseif wasUnlocked and not nextUnlocked then
-        CS.ReleaseConfigurationPreview("dot")
-    end
-    anchor:EnableMouse(nextUnlocked)
-    if nextUnlocked then anchor:RegisterForDrag("LeftButton") else anchor:RegisterForDrag() end
-    CS.SetSurfaceChromeShown("dot", nextUnlocked)
-    if wasUnlocked ~= nextUnlocked then Layout() end
-    for _, icon in ipairs(icons) do SetIconDraggable(icon) end
-    anchor:SetShown(ShouldShow())
-end
-
-function H.IsUnlocked() return unlocked end
 
 function H.SetConfigurationPreview(items)
     configurationPreview = items or {}
-    if anchor and unlocked then
-        Layout()
-        anchor:SetShown(ShouldShow())
-    end
+    for _, preview in ipairs(previewRows) do LayoutPreview(preview) end
 end
 
-function H.Hide() if anchor then anchor:Hide() end end
+function H.CreateConfigurationPreview(parent)
+    H.Initialize()
+    local preview = CreateFrame("Frame", nil, parent)
+    preview:SetSize(1, ICON_SIZE)
+    previewRows[#previewRows + 1] = preview
+    LayoutPreview(preview)
+    return preview
+end
+
+function H.RefreshVisibility()
+    H.Initialize()
+    RefreshVisibility()
+end
+
+function H.Hide()
+    if row then NameplateHud.SetSurfaceEnabled(SURFACE_KEY, false) end
+end
 
 function H.Initialize()
-    if anchor then
-        if not positionLoaded and S.sv then
-            H.RestorePosition()
-            positionLoaded = true
-        end
-        return
-    end
-    anchor = CreateFrame("Frame", "ApogeePartyHealthBarsDotReminderHud", UIParent)
-    -- Configuration may initialize the HUD before any suggestion changes.
-    -- Give the empty preview real geometry immediately so its chrome and drag
-    -- region are visible even when SetSuggestions({}) takes the unchanged path.
-    anchor:SetSize(EMPTY_PREVIEW_WIDTH, ICON_SIZE)
-    anchor:SetClampedToScreen(true); anchor:SetMovable(true); anchor:SetFrameStrata("MEDIUM")
-    anchor:SetScript("OnDragStart", StartDrag)
-    anchor:SetScript("OnDragStop", StopDrag)
-    anchor:SetScript("OnUpdate", function() H.Tick() end)
-    CS.Register("dot", anchor)
-    H.RestorePosition()
-    positionLoaded = S.sv ~= nil
-    anchor:Hide()
+    if row then return end
+    row = CreateFrame("Frame", nil, UIParent)
+    row:SetSize(1, ICON_SIZE)
+    row:EnableMouse(false)
+    row:SetScript("OnUpdate", function() H.Tick() end)
+    NameplateHud.RegisterSurface(SURFACE_KEY, row, 2, TARGET_EFFECT_GAP)
 end
 
-function H.GetAnchor() return anchor end
+function H.GetAnchor() return row end
 function H.GetSuggestions() return suggestions end
 function H.GetIcons() return icons end
+function H.GetConfigurationPreview() return configurationPreview end

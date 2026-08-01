@@ -49,7 +49,10 @@ ApogeePartyHealthBars_ConsumableBar = {
 }
 ApogeePartyHealthBars_RaidMarkers = {
     Initialize = function() record("raid-init") end,
-    OnTargetChanged = function() record("raid-target") end,
+    Refresh = function() record("raid-target") end,
+}
+ApogeePartyHealthBars_TargetNameplateHud = {
+    OnTargetChanged = function() record("nameplate-target") end,
 }
 ApogeePartyHealthBars_Threat = { Refresh = function() record("threat") end }
 ApogeePartyHealthBars_SecureFrames = {
@@ -224,7 +227,7 @@ expect({ "player-spells", "minimap", "shield-seed", "threat", "request-update" }
 
 reset()
 dispatch("PLAYER_TARGET_CHANGED")
-expect({ "raid-target", "shortcut-rebaseline", "wheel-refresh", "keys-refresh", "buttons-refresh", "threat", "request-update" },
+expect({ "nameplate-target", "raid-target", "shortcut-rebaseline", "wheel-refresh", "keys-refresh", "buttons-refresh", "threat", "request-update" },
     "target-change order changed")
 
 reset()

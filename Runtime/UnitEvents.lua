@@ -95,11 +95,17 @@ function U.Register(eventRouter, deps)
             if TA then TA.Refresh() end
         end)
     end
+    eventRouter.RegisterOptional("NAME_PLATE_UNIT_ADDED", "RaidMarkers", function(_, unit)
+        M.OnNamePlateAdded(unit)
+    end)
     eventRouter.RegisterOptional("NAME_PLATE_UNIT_ADDED", "ThreatAwareness", function(_, unit)
         O.OnNamePlateAdded(unit)
         -- Initial observations never produce a lost transition, so do not
         -- suppress a real transition from another continuously observed mob.
         TA.Refresh()
+    end)
+    eventRouter.RegisterOptional("NAME_PLATE_UNIT_REMOVED", "RaidMarkers", function(_, unit)
+        M.OnNamePlateRemoved(unit)
     end)
     eventRouter.RegisterOptional("NAME_PLATE_UNIT_REMOVED", "ThreatAwareness", function(_, unit)
         O.OnNamePlateRemoved(unit)

@@ -19,7 +19,11 @@ ApogeePartyHealthBars_Auras = {
 ApogeePartyHealthBars_ShortcutBar = {
     Refresh = function(full) record("shortcut:" .. tostring(full)) end,
 }
-ApogeePartyHealthBars_RaidMarkers = { Refresh = function() record("raid") end }
+ApogeePartyHealthBars_RaidMarkers = {
+    Refresh = function() record("raid") end,
+    OnNamePlateAdded = function(unit) record("raid-plate+:" .. unit) end,
+    OnNamePlateRemoved = function(unit) record("raid-plate-:" .. unit) end,
+}
 ApogeePartyHealthBars_Threat = { Refresh = function() record("threat") end }
 ApogeePartyHealthBars_ThreatObserver = {
     OnNamePlateAdded = function(unit) record("plate+:" .. unit) end,
@@ -35,12 +39,28 @@ function router.Subscribe(event, owner, callback)
     required[event] = { owner = owner, callback = callback }
 end
 function router.RegisterOptional(event, owner, callback)
-    optional[event] = { owner = owner, callback = callback }
+    local subscription = { owner = owner, callback = callback }
+    if not optional[event] then
+        optional[event] = { subscription }
+    else
+        optional[event][#optional[event] + 1] = subscription
+    end
 end
 local function dispatch(event, ...)
-    local subscription = required[event] or optional[event]
-    assert(subscription, "missing subscription: " .. event)
-    subscription.callback(event, ...)
+    local subscription = required[event]
+    if subscription then
+        subscription.callback(event, ...)
+        return
+    end
+    local subscriptions = optional[event]
+    assert(subscriptions, "missing subscription: " .. event)
+    for _, current in ipairs(subscriptions) do current.callback(event, ...) end
+end
+local function optionalHasOwner(event, owner)
+    for _, subscription in ipairs(optional[event] or {}) do
+        if subscription.owner == owner then return true end
+    end
+    return false
 end
 
 local auraNeedsLayout = true
@@ -69,14 +89,16 @@ for _, event in ipairs({
     "UNIT_POWER_FREQUENT", "UNIT_MAXPOWER", "UNIT_DISPLAYPOWER", "UNIT_TARGET",
     "UNIT_CONNECTION",
 }) do
-    assert(optional[event] and optional[event].owner == "Bootstrap",
+    assert(optionalHasOwner(event, "Bootstrap"),
         "optional unit event changed registration: " .. event)
 end
-assert(optional.RAID_TARGET_UPDATE.owner == "RaidMarkers"
-        and optional.UNIT_THREAT_SITUATION_UPDATE.owner == "Threat"
-        and optional.UNIT_THREAT_LIST_UPDATE.owner == "Threat"
-        and optional.NAME_PLATE_UNIT_ADDED.owner == "ThreatAwareness"
-        and optional.NAME_PLATE_UNIT_REMOVED.owner == "ThreatAwareness",
+assert(optionalHasOwner("RAID_TARGET_UPDATE", "RaidMarkers")
+        and optionalHasOwner("UNIT_THREAT_SITUATION_UPDATE", "Threat")
+        and optionalHasOwner("UNIT_THREAT_LIST_UPDATE", "Threat")
+        and optionalHasOwner("NAME_PLATE_UNIT_ADDED", "RaidMarkers")
+        and optionalHasOwner("NAME_PLATE_UNIT_ADDED", "ThreatAwareness")
+        and optionalHasOwner("NAME_PLATE_UNIT_REMOVED", "RaidMarkers")
+        and optionalHasOwner("NAME_PLATE_UNIT_REMOVED", "ThreatAwareness"),
     "visual event owners changed")
 
 dispatch("UNIT_AURA", "party1")
@@ -126,8 +148,10 @@ expect({ "raid", "threat", "awareness:nil" }, "raid-marker or threat visual refr
 reset()
 dispatch("NAME_PLATE_UNIT_ADDED", "nameplate7")
 dispatch("NAME_PLATE_UNIT_REMOVED", "nameplate7")
-expect({ "plate+:nameplate7", "awareness:nil", "plate-:nameplate7", "awareness:nil" },
-    "nameplate lifecycle did not update Threat Awareness")
+expect({
+    "raid-plate+:nameplate7", "plate+:nameplate7", "awareness:nil",
+    "raid-plate-:nameplate7", "plate-:nameplate7", "awareness:nil",
+}, "nameplate lifecycle did not update raid markers and Threat Awareness")
 
 reset()
 deps.ResolvePanelUnit = function() error("expected unit failure") end

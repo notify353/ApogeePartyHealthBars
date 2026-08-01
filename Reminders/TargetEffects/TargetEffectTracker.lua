@@ -195,11 +195,6 @@ local function requiredStrength(entry)
     })
 end
 
-local function threshold(definition)
-    local override = settings().targetEffectThresholds[definition.key]
-    return type(override) == "number" and override or settings().targetEffectRefreshThreshold
-end
-
 local function schedule(delay)
     local now = (GetTime and GetTime()) or 0
     local desired = delay and delay > 0 and (now + delay) or nil
@@ -231,6 +226,7 @@ function T.Refresh(invalidate)
     local helpfulSnapshot = Auras.GetUnitAuraSnapshot("player")
     local context, now = playerContext or Context.GetSnapshot(), (GetTime and GetTime()) or 0
     local ordered = orderedKnown()
+    local refreshThreshold = settings().targetEffectRefreshThreshold
     local groupChoice = {}
     for _, entry in ipairs(ordered) do
         local group = entry.definition.exclusiveGroup
@@ -251,14 +247,14 @@ function T.Refresh(invalidate)
             local aura, strength = strongestAura(entry, harmfulSnapshot, helpfulSnapshot)
             if aura and strength < requiredStrength(entry) then aura = nil end
             local remaining = aura and math.max(0, (tonumber(aura.expirationTime) or 0) - now) or 0
-            local due = not aura or remaining <= threshold(definition)
+            local due = not aura or remaining <= refreshThreshold
             if due then
                 suggestions[#suggestions + 1] = {
                     key = definition.key, label = entry.label, spellId = entry.spellId,
-                    icon = entry.icon, aura = aura, threshold = threshold(definition),
+                    icon = entry.icon, aura = aura, threshold = refreshThreshold,
                 }
-            elseif remaining > threshold(definition) then
-                local delay = remaining - threshold(definition)
+            elseif remaining > refreshThreshold then
+                local delay = remaining - refreshThreshold
                 nextWake = not nextWake and delay or math.min(nextWake, delay)
             end
         end
@@ -280,18 +276,7 @@ function T.SetEnabled(key, value)
     updateConfigurationPreview()
     T.Refresh(false)
 end
-function T.GetThreshold(key)
-    local definition = Data.Get(key)
-    return definition and threshold(definition) or settings().targetEffectRefreshThreshold
-end
-function T.HasThresholdOverride(key) return type(settings().targetEffectThresholds[key]) == "number" end
-function T.AdjustThreshold(key, direction)
-    local value = math.max(0, math.min(30, T.GetThreshold(key) + (direction < 0 and -1 or 1)))
-    settings().targetEffectThresholds[key] = value
-    T.Refresh(false)
-end
-function T.ResetThreshold(key) settings().targetEffectThresholds[key] = nil; T.Refresh(false) end
-function T.AdjustDefaultThreshold(direction)
+function T.AdjustThreshold(direction)
     settings().targetEffectRefreshThreshold = math.max(0,
         math.min(30, settings().targetEffectRefreshThreshold + (direction < 0 and -1 or 1)))
     T.Refresh(false)

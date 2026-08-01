@@ -25,15 +25,15 @@ Actions/MouseButtons/MouseButtonData.lua
 Core/UnitTopology.lua
 Core/UnitAPI.lua
 Core/UIHelpers.lua
+Core/UIErrorSuppressor.lua
 Settings/SettingsSurfaces.lua
 PartyFrames/AccessoryLayout.lua
 PartyFrames/TargetNameplateHud.lua
-Actions/MacroData.lua
-Actions/MacroLibrary.lua
 Core/EventRouter.lua
 PartyFrames/SecureFrames.lua
 Core/Sounds.lua
 Reminders/MentionAlerts.lua
+Reminders/BuffThanks.lua
 DungeonBoard/DungeonBoardSettings.lua
 DungeonBoard/DungeonBoardFeed.lua
 DungeonBoard/DungeonBoardUI.lua
@@ -90,7 +90,6 @@ Settings/ShortcutBarSettingsPage.lua
 Settings/KeyboardSettingsPage.lua
 Settings/MouseWheelSettingsPage.lua
 Settings/MouseButtonsSettingsPage.lua
-Settings/MacroLibrarySettingsPage.lua
 Settings/LoadoutsSettingsPage.lua
 Settings/ProfilesSettingsPage.lua
 Settings/TargetEffectsSettingsPage.lua
@@ -101,5 +100,6 @@ Runtime/ActionEvents.lua
 Runtime/TargetEffectEvents.lua
 Runtime/DungeonBoardEvents.lua
 Runtime/CleanseEvents.lua
+Runtime/BuffThanksEvents.lua
 Runtime/RuntimeEvents.lua
 ApogeePartyHealthBars.lua

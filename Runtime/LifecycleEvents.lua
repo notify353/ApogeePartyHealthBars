@@ -10,6 +10,7 @@ local N = ApogeePartyHealthBars_TargetNameplateHud
 local H = ApogeePartyHealthBars_Threat
 local F = ApogeePartyHealthBars_SecureFrames
 local U = ApogeePartyHealthBars_CombatUIFader
+local UIErrorSuppressor = ApogeePartyHealthBars_UIErrorSuppressor
 local ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities
 
 ApogeePartyHealthBars_LifecycleEvents = {}
@@ -71,13 +72,8 @@ function L.Register(eventRouter, deps)
                 RunStep("Combat UI fading", function()
                     U.Initialize(S.sv and S.sv.combatUIAutoHide)
                 end)
-                RunStep("Macro library", function()
-                    local macrosValid, macroErrors = ApogeePartyHealthBars_MacroLibrary.ValidateAll()
-                    if not macrosValid then
-                        for _, message in ipairs(macroErrors) do
-                            deps.Print("macro validation: " .. message)
-                        end
-                    end
+                RunStep("UI error suppression", function()
+                    UIErrorSuppressor.Initialize(S.sv and S.sv.hideUIErrors)
                 end)
                 RunStep("Party Frame Clicks", S.InitializeClassDefaultBindings)
                 RunStep("Shortcuts", T.Initialize)

@@ -63,14 +63,11 @@ ApogeePartyHealthBars_CombatUIFader = {
     OnCombatStart = function() record("fader-combat-start") end,
     OnCombatEnd = function() record("fader-combat-end") end,
 }
+ApogeePartyHealthBars_UIErrorSuppressor = {
+    Initialize = function(enabled) record("ui-errors-init:" .. tostring(enabled)) end,
+}
 ApogeePartyHealthBars_BindingStore = {
     Initialize = function() record("binding-store") end,
-}
-ApogeePartyHealthBars_MacroLibrary = {
-    ValidateAll = function()
-        record("macro-validation")
-        return false, { "broken recipe" }
-    end,
 }
 local runtimeFailures = {}
 ApogeePartyHealthBars_ClientCapabilities = {
@@ -154,12 +151,12 @@ assert(optional.COMBAT_LOG_EVENT_UNFILTERED
 assert(optional.ADDON_LOADED == nil,
     "lifecycle still subscribes to ADDON_LOADED for modified-click hooks")
 
-ApogeePartyHealthSV = { enabled = true, combatUIAutoHide = true }
+ApogeePartyHealthSV = { enabled = true, combatUIAutoHide = true, hideUIErrors = true }
 ApogeePartyHealthCharSV = {}
 dispatch("PLAYER_LOGIN")
 expect({
-    "saved-variables", "binding-store", "fader-init:true", "macro-validation",
-    "print:macro validation: broken recipe", "class-bindings", "shortcut-init",
+    "saved-variables", "binding-store", "fader-init:true", "ui-errors-init:true",
+    "class-bindings", "shortcut-init",
     "wheel-init", "keys-init", "buttons-init", "consumable-init", "raid-init", "bindings-claim", "player-spells", "restore-position", "update-header",
     "minimap", "shield-seed", "force-refresh",
 }, "PLAYER_LOGIN order changed")

@@ -6,13 +6,25 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed the Thank You prompt position row overlapping the final Health & Chat setting after switching reminder pages.
+
 ### Added
 
+- Added default-on Thank You prompts for lasting buffs cast by players outside your group and successful cleanses performed by any other player. Each prompt identifies the player and helpful action and offers one compact directed Thank icon without changing targets or sending an emote automatically; Reminders → Buffs & Cleansing provides an enable checkbox and a draggable multi-giver demo that remains visible while the feature is disabled.
+- Added a default-on profile setting under Frames → Behavior that hides Blizzard's red UI error messages and their associated sounds or vocals.
 - Added an opt-in movable Threat Awareness HUD with Pack Radar, Loss Alarm, and Threat Queue modes; the selected presentation previews simulated enemies while configuring it. It combines observable targets and hostile nameplates, ranks enemies by tanking risk, retains brief last-seen loss warnings, and plays one throttled sound only when a continuously observed enemy changes from tanked to lost.
 - Added character-wide native equipment loadouts under Manage → Loadouts. Capture current gear with optional ignored slots, then explicitly attach a loadout to Shortcut Bar, Keyboard, Mouse Wheel, or Mouse Buttons actions; full sets equip out of combat while combat macros attempt only included weapon slots.
 
 ### Changed
 
+- New Warrior Charge assignments now generate a contextual Charge-out-of-combat and Hamstring-in-combat action, with the live action HUD tracking the active spell; existing and custom macros remain unchanged until reassigned or reset.
+- Thank You prompts use Classic Era's current namespaced combat-log and player-GUID APIs, so they remain available when deprecated API fallbacks are disabled.
+- Thank You prompts follow the Threat Awareness HUD language: compact 24-pixel shaded rows, a slim helper-class-colored accent rail, expanded single-line player and action context, one background-free Apogee-logo Thank icon without a separate dismiss control, and a multi-giver Settings preview at the saved gameplay position.
+- Combat UI auto-hide now also fades the player's Blizzard target frame, including its target-of-target display, and restores its prior alpha after combat.
+- Removed the separate copy-only Macro Library while preserving smart class-aware generated macros and the focused macro editor on every macro-capable action.
+- Simplified Target Effects to one shared reminder timer and removed individual effect timing overrides and reset controls.
 - Moved Target Effects from a movable center-screen row to a passive, click-through row above the current hostile target's visible nameplate; it now shares one collapsing two-row nameplate stack with raid-marker controls and uses an inline Settings preview instead of a saved position.
 - Moved the Moon, Cross, and Skull target-marker controls from the party-frame target bar to a double-size row without tooltip or mouseover styling, centered above the current hostile target's visible nameplate with Skull on the right; Blizzard's live marker state is the sole source of truth and the other controls fade strongly.
 - Generated shield-required ability macros now cast directly instead of using an equipment condition that could silently suppress Shield Bash and similar abilities.

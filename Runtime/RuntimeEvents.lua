@@ -4,6 +4,7 @@ local ActionEvents = ApogeePartyHealthBars_ActionEvents
 local DotEvents = ApogeePartyHealthBars_TargetEffectEvents
 local DungeonBoardEvents = ApogeePartyHealthBars_DungeonBoardEvents
 local CleanseEvents = ApogeePartyHealthBars_CleanseEvents
+local BuffThanksEvents = ApogeePartyHealthBars_BuffThanksEvents
 local MentionAlerts = ApogeePartyHealthBars_MentionAlerts
 
 ApogeePartyHealthBars_RuntimeEvents = {}
@@ -20,5 +21,6 @@ function R.Register(eventRouter, deps)
     if DotEvents then DotEvents.Register(eventRouter, deps) end
     if DungeonBoardEvents then DungeonBoardEvents.Register(eventRouter, deps) end
     if CleanseEvents then CleanseEvents.Register(eventRouter, deps) end
+    if BuffThanksEvents then BuffThanksEvents.Register(eventRouter, deps) end
     if MentionAlerts then MentionAlerts.Register(eventRouter) end
 end

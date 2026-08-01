@@ -20,6 +20,7 @@ local resolvedSlots = {}
 local previousStates = {}
 local lastSoundAt = {}
 local cooldownAlertArmed = {}
+local activeSpellKeys = {}
 local spellbookOpen = false
 local initialized = false
 local resolutionPending = false
@@ -521,17 +522,39 @@ local function EvaluateCrowdControlTarget(info)
     return true
 end
 
-local function Evaluate(info)
+local function ResolveRuntimeInfo(info)
+    if not info or info.kind == "item" or not info.entry
+            or not Actions.ResolveRuntimeSpell then
+        return info
+    end
+    local name, icon, spellId, _, contextual = Actions.ResolveRuntimeSpell(info.entry)
+    return {
+        id = spellId or info.id,
+        name = name or info.name,
+        castName = name or info.castName,
+        icon = icon or info.icon,
+        contextual = contextual == true,
+    }
+end
+
+local function Evaluate(info, runtimeInfo)
     if info.kind == "item" then
         local state, _, start, duration, count, _, reason, gcdOnly = Items.Evaluate(info.entry)
         return state, start, duration, gcdOnly, count, reason,
             state == "cooldown" and Cooldowns.IsAlertable(duration, gcdOnly, false)
     end
-    local identifier = info.id or info.castName or info.name
+    runtimeInfo = runtimeInfo or ResolveRuntimeInfo(info)
+    local identifier = runtimeInfo.id or runtimeInfo.castName or runtimeInfo.name
     local customMacro = info.entry and Actions.IsCustomized(info.entry)
     if not customMacro then
         local eligible, reason = EvaluateCrowdControlTarget(info)
         if not eligible then return "invalid", 0, 0, false, nil, reason end
+    end
+    local playerSpells = ApogeePartyHealthBars_PlayerSpells
+    if runtimeInfo.contextual and info.entry and playerSpells and playerSpells.IsKnownSpell
+            and playerSpells.IsKnownSpell(runtimeInfo.id,
+                runtimeInfo.castName or runtimeInfo.name, info.sourceBook) ~= true then
+        return "unavailable", 0, 0, false, nil
     end
     if IsCurrent(identifier) then return "current", 0, 0, false, nil end
 
@@ -552,7 +575,7 @@ local function Evaluate(info)
     local predictsCurrentTarget = not info.crowdControl
         or CrowdControl.UsesCurrentTarget(info.crowdControl)
     if not customMacro and predictsCurrentTarget then
-        local inRange = GetRange(info.castName or info.name or identifier)
+        local inRange = GetRange(runtimeInfo.castName or runtimeInfo.name or identifier)
         if inRange ~= nil or HasRange(identifier) then
             local validTarget = UnitExists("target") and not UnitIsDeadOrGhost("target")
             if validTarget and IsHarmful(identifier) then validTarget = UnitCanAttack("player", "target") end
@@ -685,9 +708,19 @@ function T.Refresh(suppressSound)
     for i = 1, MAX_DISPLAY_ICONS do
         local icon, info = icons[i], resolved[i]
         if IsEnabled() and info then
-            icon.texture:SetTexture(info.icon)
+            local runtimeInfo = ResolveRuntimeInfo(info)
+            icon.texture:SetTexture(runtimeInfo.icon)
             local state, start, duration, gcdOnly, charges, reason, alertableCooldown =
-                Evaluate(info)
+                Evaluate(info, runtimeInfo)
+            local activeSpellKey = info.kind == "item"
+                and "item:" .. tostring(info.id)
+                or "spell:" .. tostring(runtimeInfo.id or runtimeInfo.name)
+            if activeSpellKeys[i] ~= nil and activeSpellKeys[i] ~= activeSpellKey then
+                previousStates[i], cooldownAlertArmed[i] = nil, nil
+                icon.pulseUntil = nil
+                for _, edge in ipairs(icon.pulseBorder) do edge:SetAlpha(0) end
+            end
+            activeSpellKeys[i] = activeSpellKey
             local previous = previousStates[i]
             local cooldownFinished = Cooldowns.UpdateAlertState(
                 cooldownAlertArmed, i, initialized, previous, state, gcdOnly,
@@ -717,7 +750,7 @@ function T.Refresh(suppressSound)
             icon.interruptBadge:Hide()
             icon.shortcutInfo = nil
             icon.shortcutReason = nil
-            previousStates[i], cooldownAlertArmed[i] = nil, nil
+            previousStates[i], cooldownAlertArmed[i], activeSpellKeys[i] = nil, nil, nil
         end
     end
     initialized = true
@@ -750,6 +783,7 @@ end
 function T.Rebaseline()
     wipe(previousStates)
     wipe(cooldownAlertArmed)
+    wipe(activeSpellKeys)
     initialized = false
     T.Refresh(true)
 end
@@ -764,6 +798,7 @@ function T.ResolveAndRefresh()
     ResolveEntries()
     wipe(previousStates)
     wipe(cooldownAlertArmed)
+    wipe(activeSpellKeys)
     initialized = false
     -- Icon count, order, or lane can change without changing Shortcut Bar height.
     -- Always queue the authoritative row layout before secure overlays are reused.
@@ -828,7 +863,7 @@ function T.GetSlotLane(slot) return resolvedSlots[slot] and resolvedSlots[slot].
 function T.GetSlotState(slot)
     local info = resolvedSlots[slot]
     if not info then return nil, nil end
-    local state, _, _, _, _, reason = Evaluate(info)
+    local state, _, _, _, _, reason = Evaluate(info, ResolveRuntimeInfo(info))
     return state, reason
 end
 

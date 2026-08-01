@@ -38,6 +38,12 @@ ApogeePartyHealthBars_Effects = {
         if settings.enabled == nil then settings.enabled = true end
         if settings.showAllSlots == nil then settings.showAllSlots = true end
         if settings.combatUIAutoHide == nil then settings.combatUIAutoHide = true end
+        if settings.hideUIErrors == nil then settings.hideUIErrors = true end
+        if settings.buffThanksEnabled == nil then settings.buffThanksEnabled = true end
+        if settings.buffThanksPoint == nil then settings.buffThanksPoint = "TOP" end
+        if settings.buffThanksRelPoint == nil then settings.buffThanksRelPoint = "TOP" end
+        if settings.buffThanksX == nil then settings.buffThanksX = 0 end
+        if settings.buffThanksY == nil then settings.buffThanksY = -120 end
         if settings.automaticConsumablesEnabled == nil then
             settings.automaticConsumablesEnabled = true
         end
@@ -156,6 +162,7 @@ active.payload.settings.dungeonBoardRole = "tank"
 active.payload.settings.dungeonBoardFeedEnabled = false
 local created = assert(store.Create("Clean"))
 assert(created.payload.settings.enabled
+        and created.payload.settings.hideUIErrors == true
         and created.payload.settings.automaticConsumablesEnabled == true
         and created.payload.settings.dungeonBoardRole == "healer"
         and created.payload.settings.dungeonBoardFeedEnabled == true
@@ -167,7 +174,8 @@ assert(created.payload.settings.enabled
     "new profile did not start from defaults")
 local duplicate = assert(store.Duplicate(active.id, "Copy"))
 assert(duplicate.payload.settings.dungeonBoardRole == "tank"
-        and duplicate.payload.settings.dungeonBoardFeedEnabled == false,
+        and duplicate.payload.settings.dungeonBoardFeedEnabled == false
+        and duplicate.payload.settings.hideUIErrors == true,
     "profile duplication did not retain the Dungeon Board preferences")
 duplicate.payload.settings.x = 999
 assert(duplicate.payload.actions.shortcuts[1].macroText
@@ -198,6 +206,7 @@ local imported = {
     author = "Author - Realm",
     payload = { settings = {
         showAllSlots = true,
+        hideUIErrors = false,
         dungeonBoardFeedEnabled = false,
     }, actions = { shortcuts = {
         {
@@ -208,6 +217,7 @@ local imported = {
 }
 local shared = assert(store.AddImported(imported))
 assert(shared.author == "Author - Realm" and shared.payload.settings.showAllSlots
+        and shared.payload.settings.hideUIErrors == false
         and shared.payload.settings.dungeonBoardFeedEnabled == false
         and shared.payload.actions.shortcuts[1].macroText
             == "/cast [mod:shift] Prayer of Healing",
@@ -240,6 +250,8 @@ assert(exported.payload.actions.mouseButtonActions.ownership == nil
 assert(exported.payload.actions.shortcuts[1].macroText
         == "/cast [mod:shift] Prayer of Healing",
     "profile export changed custom macro text")
+assert(exported.payload.settings.hideUIErrors == false,
+    "profile export removed the UI error suppression preference")
 
 local secondCharacter = { shortcuts = { { kind = "spell", spellName = "Smite" } } }
 local second = store.Initialize(account, secondCharacter, "PRIEST", "Alt - Realm")
@@ -291,20 +303,20 @@ local sanitized = store.NormalizePayload({ settings = {
     targetEffectRefreshThreshold = 4,
     targetEffectDisabled = { corruption = true },
     targetEffectPriority = { "corruption", "immolate" },
-    targetEffectThresholds = { corruption = 6 },
     targetEffectHudPoint = "CENTER", targetEffectHudRelPoint = "CENTER", targetEffectHudX = 12, targetEffectHudY = 144,
     dungeonBoardMode = "healer", dungeonBoardSoundKey = "alarm_soft",
     dungeonBoardFeedEnabled = false,
     dungeonBoardLevelsBelow = 12, dungeonBoardLevelsAbove = 4,
     dungeonBoardFeedPoint = "TOP", dungeonBoardFeedRelPoint = "TOP",
     dungeonBoardFeedX = 18, dungeonBoardFeedY = -36,
+    buffThanksEnabled = false, buffThanksPoint = "TOP", buffThanksRelPoint = "TOP",
+    buffThanksX = 12, buffThanksY = -140,
 }, actions = {} })
 assert(sanitized.settings.minimapAngle == nil,
     "non-finite minimap position survived profile normalization")
 assert(sanitized.settings.x == nil and sanitized.settings.y == 24,
     "profile numeric normalization did not reject only non-finite values")
 assert(sanitized.settings.targetEffectRemindersEnabled == false
-        and sanitized.settings.targetEffectThresholds.corruption == 6
         and sanitized.settings.targetEffectPriority[2] == "immolate"
         and sanitized.settings.targetEffectHudPoint == nil
         and sanitized.settings.targetEffectHudRelPoint == nil
@@ -321,6 +333,12 @@ assert(sanitized.settings.dungeonBoardRole == "healer"
         and sanitized.settings.dungeonBoardFeedX == 18
         and sanitized.settings.dungeonBoardFeedY == -36,
     "Dungeon Board profile preferences did not survive normalization")
+assert(sanitized.settings.buffThanksEnabled == false
+        and sanitized.settings.buffThanksPoint == "TOP"
+        and sanitized.settings.buffThanksRelPoint == "TOP"
+        and sanitized.settings.buffThanksX == 12
+        and sanitized.settings.buffThanksY == -140,
+    "Buff Thanks profile preferences did not survive normalization")
 
 local legacyAccount = { schemaVersion = 1, profileStore = {
     schemaVersion = 1,
@@ -468,6 +486,11 @@ assert(resetRoot.profileStore.schemaVersion == 3 and #store.List() == 1
             == "TOPRIGHT"
         and store.GetActiveProfile().payload.settings.cleanseWatchX == 0
         and store.GetActiveProfile().payload.settings.cleanseWatchY == 0
+        and store.GetActiveProfile().payload.settings.buffThanksEnabled == true
+        and store.GetActiveProfile().payload.settings.buffThanksPoint == "TOP"
+        and store.GetActiveProfile().payload.settings.buffThanksRelPoint == "TOP"
+        and store.GetActiveProfile().payload.settings.buffThanksX == 0
+        and store.GetActiveProfile().payload.settings.buffThanksY == -120
         and store.GetActiveProfile().payload.settings.threatAwarenessEnabled == false
         and store.GetActiveProfile().payload.settings.threatAwarenessMode == "radar"
         and store.GetActiveProfile().payload.settings.threatAwarenessSoundKey == "alarm_soft"

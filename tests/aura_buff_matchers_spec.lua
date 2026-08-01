@@ -57,6 +57,9 @@ assert(scanner.SnapshotHasAura(snapshot, nil, { ["Inner Fire"] = true }),
     "snapshot lost configured self-buff aura data")
 assert(snapshot.playerHots[1] == auras[5],
     "HoT matcher did not isolate the player's aura source")
+assert(scanner.FindUnitHelpfulAuraBySpellId("player", 139) == auras[4]
+        and scanner.FindUnitHelpfulAuraBySpellId("player", 9999) == nil,
+    "exact helpful-aura lookup did not scan by spell ID")
 
 auras[1].name = "Power Word: Shield"
 auras[1].spellId = 17

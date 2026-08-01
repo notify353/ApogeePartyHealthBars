@@ -94,10 +94,12 @@ local saved = {
     enabled = true,
     showAllSlots = false,
     combatUIAutoHide = true,
+    hideUIErrors = true,
     automaticConsumablesEnabled = false,
     mentionAlertsEnabled = true,
     mentionSoundKey = "toast",
     mentionHighlightEnabled = true,
+    buffThanksEnabled = true,
     dungeonBoardFeedEnabled = true,
     dungeonBoardSoundKey = "none",
     dungeonBoardLevelsBelow = 10,
@@ -148,6 +150,9 @@ local deps = {
     ApplyDefaultPosition = function() calls.barReset = calls.barReset + 1 end,
     CombatUIFader = {
         ApplyEnabledState = function(enabled) calls.fadeState = enabled end,
+    },
+    UIErrorSuppressor = {
+        ApplyEnabledState = function(enabled) calls.uiErrorsState = enabled end,
     },
     ConsumableBar = {
         SetEnabled = function(enabled) calls.consumablesEnabled = enabled == true end,
@@ -262,6 +267,10 @@ local deps = {
         ResetPosition = function() calls.cleanseReset = (calls.cleanseReset or 0) + 1 end,
         Refresh = function() calls.cleansePanel = (calls.cleansePanel or 0) + 1 end,
     },
+    BuffThanks = {
+        Refresh = function() calls.buffThanksRefresh = (calls.buffThanksRefresh or 0) + 1 end,
+        ResetPosition = function() calls.buffThanksReset = (calls.buffThanksReset or 0) + 1 end,
+    },
     ClientCapabilities = clientCapabilities,
 }
 
@@ -283,6 +292,7 @@ assert(config.GetPage() == "frames"
 
 assert(config.GetRow("showAllSlots").check:GetChecked() == false
         and config.GetRow("combatUIAutoHide").check:GetChecked() == true
+        and config.GetRow("hideUIErrors").check:GetChecked() == true
         and config.GetRow("showAllSlots").label:GetText()
             == "Show all 5 party frames while solo",
     "saved frame checkboxes did not refresh")
@@ -292,7 +302,12 @@ assert(config.GetRow("threatAwarenessMode").value:IsEnabled()
 assert(config.GetRow("enabled") == nil,
     "General still exposed the redundant add-on enable checkbox")
 config.SetPage("buffsCleanse")
+local buffThanksResetRow = config.GetForm().entries[#config.GetForm().entries].frame
 assert(config.GetRow("partyBuffEnabled"):IsShown()
+        and config.GetRow("buffThanksEnabled"):IsShown()
+        and config.GetRow("buffThanksEnabled").check:GetChecked()
+        and config.GetRow("buffThanksEnabled").label:GetText()
+            == "Enable Thank You prompts for lasting buffs and player cleanses"
         and not config.GetRow("selfBuffEnabled"):IsShown()
         and config.GetRow("clickableBuffIcons"):IsShown(),
     "known-spell visibility policy changed")
@@ -306,6 +321,8 @@ assert(config.GetRow("lowHealthSoundKey").value.selectedKey == "alarm_soft"
         and config.GetRow("mentionSoundKey").value.selectedKey == "toast"
         and config.GetRow("mentionHighlightEnabled").check:GetChecked(),
     "health and chat preferences did not refresh")
+assert(not buffThanksResetRow:IsShown(),
+    "Thank You reset row remained visible after leaving Buffs & Cleansing")
 config.SetPage("dungeon")
 assert(config.GetRow("dungeonBoardRole").value.selectedKey == "healer"
         and config.GetRow("dungeonBoardFeedEnabled").check:GetChecked()
@@ -324,10 +341,25 @@ local function Click(control, mouseButton)
     control.scripts.OnClick(control, mouseButton or "LeftButton")
 end
 
+local buffThanksCheck = config.GetRow("buffThanksEnabled").check
+buffThanksCheck:SetChecked(false)
+Click(buffThanksCheck)
+assert(saved.buffThanksEnabled == false
+        and calls.savedKey == "buffThanksEnabled"
+        and calls.savedEnabled == false
+        and calls.buffThanksRefresh == 1,
+    "Buff Thanks enable checkbox did not disable and refresh the feature")
+
+Click(config.GetResetButtons().buffThanks)
+assert(calls.buffThanksReset == 1 and calls.buffThanksRefresh == 2,
+    "Buff Thanks position reset did not reset and refresh the panel")
+
 local showAll = config.GetRow("showAllSlots").check
+local refreshBeforeShowAll = calls.refresh
 showAll:SetChecked(true)
 Click(showAll)
-assert(saved.showAllSlots and calls.savedKey == "showAllSlots" and calls.refresh == 1,
+assert(saved.showAllSlots and calls.savedKey == "showAllSlots"
+        and calls.refresh == refreshBeforeShowAll + 1,
     "General checkbox did not persist and request refresh")
 
 local dungeonFeed = config.GetRow("dungeonBoardFeedEnabled").check
@@ -342,6 +374,12 @@ combatFade:SetChecked(false)
 Click(combatFade)
 assert(calls.fadeState == false,
     "combat UI setting did not apply its immediate side effect")
+
+local hideUIErrors = config.GetRow("hideUIErrors").check
+hideUIErrors:SetChecked(false)
+Click(hideUIErrors)
+assert(saved.hideUIErrors == false and calls.uiErrorsState == false,
+    "UI error setting did not persist and immediately restore Blizzard errors")
 
 local actionFeedback = config.GetRow("actionFeedbackEnabled").check
 assert(config.GetRow("actionFeedbackEnabled"):IsShown()

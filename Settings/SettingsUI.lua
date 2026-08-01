@@ -6,7 +6,6 @@ local SC = ApogeePartyHealthBars_ShortcutBarSettingsPage
 local KC = ApogeePartyHealthBars_KeyboardSettingsPage
 local WC = ApogeePartyHealthBars_MouseWheelSettingsPage
 local BC = ApogeePartyHealthBars_MouseButtonsSettingsPage
-local MC = ApogeePartyHealthBars_MacroLibrarySettingsPage
 local LC = ApogeePartyHealthBars_LoadoutsSettingsPage
 local PC = ApogeePartyHealthBars_ProfilesSettingsPage
 local DC = ApogeePartyHealthBars_TargetEffectsSettingsPage
@@ -20,7 +19,7 @@ local built = false
 local D
 local configPanel, profileLabel, pageDropdown, pageTitle
 local profilesPage, coreSettingsPagesFrame, targetEffectsPage, partyFrameClicksPage, shortcutBarPage
-local keyboardPage, mouseWheelPage, mouseButtonsPage, macroLibraryPage, loadoutsPage
+local keyboardPage, mouseWheelPage, mouseButtonsPage, loadoutsPage
 local pages, groups, allFrames = {}, {}, {}
 local pageOrder, groupOrder = {}, { "frames", "actions", "reminders", "dungeon", "manage" }
 
@@ -134,6 +133,9 @@ local function SetContextualPreviews(pageKey)
     if not active then return end
     if D.CleanseWatch then
         D.CleanseWatch.SetUnlocked(active and pageKey == "buffsCleanse")
+    end
+    if D.BuffThanks then
+        D.BuffThanks.SetUnlocked(active and pageKey == "buffsCleanse")
     end
     if D.DungeonBoardFeed then
         D.DungeonBoardFeed.SetUnlocked(active and pageKey == "dungeon")
@@ -270,7 +272,6 @@ function UI.Build(deps)
     keyboardPage = KC.Create(configPanel, D)
     mouseWheelPage = WC.Create(configPanel, D)
     mouseButtonsPage = BC.Create(configPanel, D)
-    macroLibraryPage = MC.Create(configPanel, D)
     loadoutsPage = LC.Create(configPanel, D)
 
     local groupLabels = {
@@ -348,11 +349,6 @@ function UI.Build(deps)
         summary = "Manage, export, and import character profiles.",
     })
     RegisterPage({
-        key = "macros", group = "manage", label = "Macro Library",
-        frame = macroLibraryPage, refresh = MC.Refresh, hint = MC.GetForm().hint,
-        summary = "Browse macro templates and reference examples.",
-    })
-    RegisterPage({
         key = "loadouts", group = "manage", label = "Loadouts",
         frame = loadoutsPage, refresh = LC.Refresh, hint = LC.GetForm().hint,
         featureKey = "equipmentLoadouts",
@@ -399,7 +395,6 @@ function UI.Build(deps)
     UI.RefreshKeyboardPage = KC.Refresh
     UI.RefreshMouseWheelPage = WC.Refresh
     UI.RefreshMouseButtonsPage = BC.Refresh
-    UI.RefreshMacroPanel = MC.Refresh
     UI.RefreshLoadoutsPage = LC.Refresh
     UI.RefreshLoadoutsFromInventory = LC.RefreshFromInventory
     UI.RefreshProfilePanel = PC.Refresh

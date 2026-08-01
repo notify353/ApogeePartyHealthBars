@@ -5,7 +5,7 @@ ApogeePartyHealthBars_ProfileStore = {}
 local Store = ApogeePartyHealthBars_ProfileStore
 
 local SETTINGS_KEYS = {
-    "schemaVersion", "enabled", "combatUIAutoHide", "showAllSlots", "actionFeedbackEnabled",
+    "schemaVersion", "enabled", "combatUIAutoHide", "hideUIErrors", "showAllSlots", "actionFeedbackEnabled",
     "automaticConsumablesEnabled",
     "partyBuffEnabled", "selfBuffEnabled", "clickableBuffIcons", "shieldEnabled",
     "incomingHealEnabled", "rangeCheckEnabled", "showUnitTargets", "hotEnabled",
@@ -13,9 +13,11 @@ local SETTINGS_KEYS = {
     "threatAwarenessEnabled", "threatAwarenessMode", "threatAwarenessSoundKey",
     "threatAwarenessPoint", "threatAwarenessRelPoint", "threatAwarenessX", "threatAwarenessY",
     "mentionAlertsEnabled", "mentionSoundKey", "mentionHighlightEnabled",
+    "buffThanksEnabled", "buffThanksPoint", "buffThanksRelPoint",
+    "buffThanksX", "buffThanksY",
     "cleanseWatchEnabled", "cleanseWatchPoint", "cleanseWatchRelPoint",
     "cleanseWatchX", "cleanseWatchY",
-    "targetEffectRemindersEnabled", "targetEffectRefreshThreshold", "targetEffectDisabled", "targetEffectPriority", "targetEffectThresholds",
+    "targetEffectRemindersEnabled", "targetEffectRefreshThreshold", "targetEffectDisabled", "targetEffectPriority",
     "dungeonBoardRole", "dungeonBoardMode", "dungeonBoardFeedEnabled",
     "dungeonBoardSoundKey",
     "dungeonBoardLevelsBelow", "dungeonBoardLevelsAbove", "dungeonBoardFeedPoint",
@@ -42,7 +44,7 @@ local LEGACY_ACTION_CONTENT_KEYS = {
     "wheelMacros", "keyActions", "mouseActions",
 }
 local LEGACY_SETTINGS_KEYS = {
-    "schemaVersion", "enabled", "combatUIAutoHide", "showAllSlots", "actionFeedbackEnabled",
+    "schemaVersion", "enabled", "combatUIAutoHide", "hideUIErrors", "showAllSlots", "actionFeedbackEnabled",
     "automaticConsumablesEnabled",
     "partyBuffEnabled", "selfBuffEnabled", "clickableBuffIcons", "shieldEnabled",
     "incomingHealEnabled", "rangeCheckEnabled", "showUnitTargets", "hotEnabled",
@@ -50,9 +52,11 @@ local LEGACY_SETTINGS_KEYS = {
     "threatAwarenessEnabled", "threatAwarenessMode", "threatAwarenessSoundKey",
     "threatAwarenessPoint", "threatAwarenessRelPoint", "threatAwarenessX", "threatAwarenessY",
     "mentionAlertsEnabled", "mentionSoundKey", "mentionHighlightEnabled",
+    "buffThanksEnabled", "buffThanksPoint", "buffThanksRelPoint",
+    "buffThanksX", "buffThanksY",
     "cleanseWatchEnabled", "cleanseWatchPoint", "cleanseWatchRelPoint",
     "cleanseWatchX", "cleanseWatchY",
-    "targetEffectRemindersEnabled", "targetEffectRefreshThreshold", "targetEffectDisabled", "targetEffectPriority", "targetEffectThresholds",
+    "targetEffectRemindersEnabled", "targetEffectRefreshThreshold", "targetEffectDisabled", "targetEffectPriority",
     "dungeonBoardRole", "dungeonBoardMode", "dungeonBoardFeedEnabled",
     "dungeonBoardSoundKey",
     "dungeonBoardLevelsBelow", "dungeonBoardLevelsAbove", "dungeonBoardFeedPoint",
@@ -62,11 +66,10 @@ local LEGACY_SETTINGS_KEYS = {
     "configX", "configY", "minimapAngle", "fortEnabled", "innerFireEnabled",
     "lowHealthSoundEnabled", "spellTrackerEnabled", "spellTrackerSoundsEnabled", "bindings",
     "dotRemindersEnabled", "dotRefreshThreshold", "dotDisabled", "dotPriority",
-    "dotThresholds",
 }
 local ORDERED_COLLECTIONS = { bindings = true, shortcuts = true, slots = true, targetEffectPriority = true }
 local SETTINGS_TYPES = {
-    schemaVersion = "number", enabled = "boolean", combatUIAutoHide = "boolean",
+    schemaVersion = "number", enabled = "boolean", combatUIAutoHide = "boolean", hideUIErrors = "boolean",
     showAllSlots = "boolean", actionFeedbackEnabled = "boolean", automaticConsumablesEnabled = "boolean",
     partyBuffEnabled = "boolean", selfBuffEnabled = "boolean",
     clickableBuffIcons = "boolean", shieldEnabled = "boolean", incomingHealEnabled = "boolean",
@@ -77,10 +80,12 @@ local SETTINGS_TYPES = {
     threatAwarenessRelPoint = "string", threatAwarenessX = "number", threatAwarenessY = "number",
     mentionAlertsEnabled = "boolean", mentionSoundKey = "string",
     mentionHighlightEnabled = "boolean",
+    buffThanksEnabled = "boolean", buffThanksPoint = "string",
+    buffThanksRelPoint = "string", buffThanksX = "number", buffThanksY = "number",
     cleanseWatchEnabled = "boolean", cleanseWatchPoint = "string",
     cleanseWatchRelPoint = "string", cleanseWatchX = "number", cleanseWatchY = "number",
     targetEffectRemindersEnabled = "boolean", targetEffectRefreshThreshold = "number", targetEffectDisabled = "table",
-    targetEffectPriority = "table", targetEffectThresholds = "table",
+    targetEffectPriority = "table",
     dungeonBoardRole = "string", dungeonBoardMode = "string",
     dungeonBoardFeedEnabled = "boolean",
     dungeonBoardSoundKey = "string",
@@ -110,7 +115,6 @@ LEGACY_SETTINGS_TYPES.dotRemindersEnabled = "boolean"
 LEGACY_SETTINGS_TYPES.dotRefreshThreshold = "number"
 LEGACY_SETTINGS_TYPES.dotDisabled = "table"
 LEGACY_SETTINGS_TYPES.dotPriority = "table"
-LEGACY_SETTINGS_TYPES.dotThresholds = "table"
 local accountRoot, characterRoot, store, classToken, author
 local LEGACY_ACCOUNT_STORE_VERSION = 1
 
@@ -134,7 +138,6 @@ local RENAMED_SETTINGS_FIELDS = {
     dotRefreshThreshold = "targetEffectRefreshThreshold",
     dotDisabled = "targetEffectDisabled",
     dotPriority = "targetEffectPriority",
-    dotThresholds = "targetEffectThresholds",
 }
 
 local RENAMED_ACTION_FIELDS = {

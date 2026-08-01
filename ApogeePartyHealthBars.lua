@@ -581,6 +581,15 @@ cleanseWatch.Initialize({
 })
 cleanseWatch.Build()
 
+local buffThanks = ApogeePartyHealthBars_BuffThanks
+buffThanks.Initialize({
+    Auras = A,
+    ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities,
+    SettingsSurfaces = configSurfaces,
+    Now = function() return GetTime and GetTime() or 0 end,
+})
+buffThanks.Build()
+
 dungeonBoardUI = ApogeePartyHealthBars_DungeonBoardUI.Build({
     Runtime = ApogeePartyHealthBars_DungeonBoardRuntime,
     Catalog = ApogeePartyHealthBars_DungeonBoardCatalog,
@@ -914,6 +923,7 @@ configController.Initialize({
     TargetEffectHud = ApogeePartyHealthBars_TargetEffectHud,
     DungeonBoardFeed = dungeonBoardFeed,
     CleanseWatch = cleanseWatch,
+    BuffThanks = buffThanks,
     ThreatAwareness = threatAwareness,
     SettingsSurfaces = configSurfaces,
     Print = Print,
@@ -953,6 +963,7 @@ configUI = ApogeePartyHealthBars_SettingsUI.Build({
     TargetEffectHud                   = ApogeePartyHealthBars_TargetEffectHud,
     DungeonBoardFeed         = dungeonBoardFeed,
     CleanseWatch             = cleanseWatch,
+    BuffThanks               = buffThanks,
     ThreatAwareness          = threatAwareness,
     GetSavedVariables        = function() return S.sv end,
         CoreSettingsPages = {
@@ -985,9 +996,11 @@ configUI = ApogeePartyHealthBars_SettingsUI.Build({
         DungeonBoardFeed            = dungeonBoardFeed,
         DungeonBoardUI              = dungeonBoardUI,
         CleanseWatch                 = cleanseWatch,
+        BuffThanks                   = buffThanks,
         Threat                      = H,
         ThreatAwareness             = threatAwareness,
         CombatUIFader               = ApogeePartyHealthBars_CombatUIFader,
+        UIErrorSuppressor           = ApogeePartyHealthBars_UIErrorSuppressor,
         SyncVisualTicker            = SyncVisualTicker,
         ClientCapabilities          = ApogeePartyHealthBars_ClientCapabilities,
     },

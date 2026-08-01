@@ -30,7 +30,11 @@ local profile = {
     classToken = "PRIEST",
     payload = {
         schemaVersion = 3,
-        settings = { enabled = true },
+        settings = {
+            enabled = true, hideUIErrors = false,
+            buffThanksEnabled = true, buffThanksPoint = "TOP",
+            buffThanksRelPoint = "TOP", buffThanksX = 0, buffThanksY = -120,
+        },
         actions = { shortcuts = { {
             kind = "spell", spellName = "Flash Heal(Rank 7)",
             macroText = "/cast [@mouseover,help,nodead] Flash Heal(Rank 7)",
@@ -46,6 +50,9 @@ local envelope = assert(codec.Decode(text))
 assert(envelope.profileName == "Raid" and envelope.classToken == "PRIEST"
     and envelope.author == "Healer - Realm" and envelope.addonVersion == "0.38.0"
     and envelope.exportedAt == 12345
+    and envelope.payload.settings.hideUIErrors == false
+    and envelope.payload.settings.buffThanksEnabled == true
+    and envelope.payload.settings.buffThanksY == -120
     and envelope.payload.actions.shortcuts[1].macroText
         == "/cast [@mouseover,help,nodead] Flash Heal(Rank 7)",
     "share metadata did not round-trip")

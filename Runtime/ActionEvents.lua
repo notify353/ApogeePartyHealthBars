@@ -15,11 +15,6 @@ function A.Register(eventRouter, deps)
         assert(deps[key] ~= nil, "ActionEvents missing dependency: " .. key)
     end
 
-    local function RefreshMacroRequirements()
-        local ui = deps.GetSettingsUI()
-        if ui.RefreshMacroPanel then ui.RefreshMacroPanel() end
-    end
-
     local function RefreshManualActionCooldowns()
         T.Refresh(false); W.Refresh(); K.Refresh(); B.Refresh()
     end
@@ -69,6 +64,10 @@ function A.Register(eventRouter, deps)
             elseif event == "SPELLS_CHANGED" then
                 S.InitializeClassDefaultBindings()
                 deps.InitPlayerSpells()
+                if ApogeePartyHealthBars_ActionMacros
+                        and ApogeePartyHealthBars_ActionMacros.InvalidateRuntimeSpellCache then
+                    ApogeePartyHealthBars_ActionMacros.InvalidateRuntimeSpellCache()
+                end
                 T.ResolveAndRefresh()
                 local wheelLayoutsChanged = W.RefreshLayouts()
                 local keyLayoutsChanged = K.RefreshLayouts()
@@ -85,7 +84,6 @@ function A.Register(eventRouter, deps)
                 if buttonLayoutsChanged and deps.GetSettingsUI().RefreshMouseButtonsPage then
                     deps.GetSettingsUI().RefreshMouseButtonsPage()
                 end
-                RefreshMacroRequirements()
                 S.RequestUpdate()
 
             elseif event == "UPDATE_BINDINGS" then
@@ -217,12 +215,10 @@ function A.Register(eventRouter, deps)
     eventRouter.RegisterOptional("UNIT_PET", "PlayerPetActions", function(_, unit)
         if unit == "player" then
             T.ResolveAndRefresh()
-            RefreshMacroRequirements()
         end
     end)
     eventRouter.RegisterOptional("PET_BAR_UPDATE", "PlayerPetActions", function()
         T.ResolveAndRefresh()
-        RefreshMacroRequirements()
     end)
     for _, event in ipairs({ "PET_BAR_UPDATE_COOLDOWN", "PET_BAR_UPDATE_USABLE" }) do
         eventRouter.RegisterOptional(event, "PlayerPetActionState", function()

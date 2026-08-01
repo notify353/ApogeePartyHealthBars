@@ -150,7 +150,29 @@ local CAPABILITIES = {
     },
     combatLog = {
         reason = "This client does not provide detailed combat-log events.",
-        detect = function() return isFunction(CombatLogGetCurrentEventInfo) end,
+        detect = function()
+            return (C_CombatLog and isFunction(C_CombatLog.GetCurrentEventInfo))
+                or isFunction(CombatLogGetCurrentEventInfo)
+        end,
+    },
+    directedEmotes = {
+        reason = "This client does not provide directed player emotes.",
+        detect = function() return isFunction(DoEmote) end,
+    },
+    combatLogSourceIdentity = {
+        reason = "This client cannot identify helpful player sources from combat-log events.",
+        detect = function()
+            local hasPlayerGuidClassifier =
+                (C_PlayerInfo and isFunction(C_PlayerInfo.GUIDIsPlayer))
+                or isFunction(GUIDIsPlayer)
+            local hasFlagMatcher = (bit and isFunction(bit.band))
+                or (bit32 and isFunction(bit32.band))
+                or (C_CombatLog and isFunction(C_CombatLog.DoesObjectMatchFilter))
+            return hasPlayerGuidClassifier
+                and hasFlagMatcher
+                and Enum ~= nil
+                and Enum.CombatLogObject ~= nil
+        end,
     },
     profileSharing = {
         reason = "This client does not provide profile compression and encoding.",
@@ -199,6 +221,12 @@ local FEATURES = {
     multiSpecLayouts = { label = "Per-specialization layouts", requires = { "specialization" } },
     formLayouts = { label = "Form and stance layouts", requires = { "forms" } },
     combatLogTracking = { label = "Combat-log tracking", requires = { "combatLog" } },
+    buffThanks = {
+        label = "Thank You prompts",
+        requires = {
+            "auras", "combatLog", "combatLogSourceIdentity", "directedEmotes",
+        },
+    },
     profileSharing = { label = "Profile import and export", requires = { "profileSharing" } },
     dungeonBoardOfficialListings = {
         label = "Dungeon Board official listings",

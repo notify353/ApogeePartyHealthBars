@@ -10,6 +10,9 @@ A.MAX_BODY_BYTES = 255
 local TARGET_ENEMY = "/targetenemy [noexists][dead][help]"
 local START_ATTACK = "/startattack [harm,nodead]"
 local START_ATTACK_OUT_OF_STEALTH = "/startattack [harm,nodead,nostealth]"
+local WARRIOR_CHARGE_ID = 100
+local WARRIOR_HAMSTRING_ID = 1715
+local WARRIOR_CHARGE_FAMILY_IDS = { WARRIOR_CHARGE_ID }
 local MELEE_AUTO_ATTACK_IDS = { [6603] = true }
 local RANGED_AUTO_ATTACK_IDS = { [75] = true, [5019] = true }
 
@@ -99,6 +102,10 @@ local function classifySpell(spellId, spellName)
     if matchesFamily(assignedName, STEALTH_SAFE_MELEE_ATTACK_FAMILY_IDS) then
         return "stealth-safe-melee-attack"
     end
+    if matchesFamily(assignedName, WARRIOR_CHARGE_FAMILY_IDS)
+            and getSpellInfo(WARRIOR_HAMSTRING_ID) then
+        return "warrior-charge-hamstring"
+    end
     if matchesFamily(assignedName, MELEE_ATTACK_FAMILY_IDS) then return "melee-attack" end
     return "standard-spell"
 end
@@ -110,6 +117,14 @@ local function renderSpellTemplate(spellName, templateId)
     local castLine = "/cast " .. castPrefix .. spellName
     if templateId == "ranged-auto" then
         return TARGET_ENEMY .. "\n" .. castLine .. "\n" .. START_ATTACK
+    end
+    if templateId == "warrior-charge-hamstring" then
+        local hamstringName = getSpellInfo(WARRIOR_HAMSTRING_ID)
+        if hamstringName then
+            return TARGET_ENEMY .. "\n/cast [combat] " .. hamstringName .. "; "
+                .. spellName .. "\n" .. START_ATTACK
+        end
+        templateId = "melee-attack"
     end
     if templateId == "melee-attack" then
         return TARGET_ENEMY .. "\n" .. START_ATTACK .. "\n" .. castLine
@@ -130,6 +145,82 @@ end
 function A.GetSpellTemplateId(spellName, spellId)
     if type(spellName) ~= "string" or not spellName:find("%S") then return nil end
     return classifySpell(spellId, spellName)
+end
+
+local function playerIsInCombat()
+    if type(UnitAffectingCombat) == "function" then
+        return UnitAffectingCombat("player") == true
+    end
+    return type(InCombatLockdown) == "function" and InCombatLockdown() == true
+end
+
+local cachedChargeName, cachedHamstringName, cachedHamstringId
+local chargeCacheReady = false
+local hamstringCacheReady = false
+
+local function resolveChargeName()
+    if not chargeCacheReady then
+        cachedChargeName = getSpellInfo(WARRIOR_CHARGE_ID)
+        chargeCacheReady = true
+    end
+    return cachedChargeName
+end
+
+local function resolveKnownHamstring()
+    if hamstringCacheReady then return cachedHamstringName, cachedHamstringId end
+    local name, spellId = getSpellInfo(WARRIOR_HAMSTRING_ID)
+    local spells = ApogeePartyHealthBars_PlayerSpells
+    if name and spells and type(spells.BuildKnownSpellMap) == "function" then
+        local _, byName = spells.BuildKnownSpellMap()
+        local known = byName and byName[name]
+        if known then
+            name = known.name or name
+            spellId = known.id or spellId
+        end
+    end
+    cachedHamstringName, cachedHamstringId = name, spellId
+    hamstringCacheReady = true
+    return cachedHamstringName, cachedHamstringId
+end
+
+function A.InvalidateRuntimeSpellCache()
+    cachedChargeName, cachedHamstringName, cachedHamstringId = nil, nil, nil
+    chargeCacheReady, hamstringCacheReady = false, false
+end
+
+-- Resolves the spell represented by a generated contextual action without
+-- changing its saved identity. Custom macros deliberately retain the assigned
+-- spell's display and prediction because arbitrary macro text is not parsed.
+function A.ResolveRuntimeSpell(entry, inCombat)
+    local normalized = Data.Normalize(entry)
+    if not normalized or normalized.kind ~= "spell" then
+        return Data.ResolveDisplay(entry)
+    end
+
+    local name, icon, spellId, available = Data.ResolveDisplay(entry)
+    local chargeName = resolveChargeName()
+    if not chargeName or name ~= chargeName then
+        return name, icon, spellId, available, false
+    end
+    local templateId = classifySpell(normalized.spellId, normalized.spellName)
+    local generated = renderSpellTemplate(normalized.spellName, templateId)
+    local contextual = templateId == "warrior-charge-hamstring"
+        and type(entry) == "table" and entry.macroText == generated
+    if not contextual or (inCombat == nil and not playerIsInCombat())
+            or inCombat == false then
+        return name, icon, spellId, available, false
+    end
+
+    local hamstringName, hamstringId = resolveKnownHamstring()
+    if not hamstringName then return name, icon, spellId, available, false end
+    local runtime = {
+        kind = "spell",
+        spellId = hamstringId,
+        spellName = hamstringName,
+    }
+    local activeName, activeIcon, activeId, activeAvailable = Data.ResolveDisplay(runtime)
+    return activeName or hamstringName, activeIcon, activeId or hamstringId,
+        activeAvailable, true
 end
 
 function A.BuildDefaultItemMacro(itemName)
@@ -246,63 +337,4 @@ end
 function A.GetEquipmentPrefixBytes(entry)
     return EquipmentSets and EquipmentSets.GetPrefixBytes
         and EquipmentSets.GetPrefixBytes(A.Normalize(entry)) or 0
-end
-
-function A.GetTemplateTopics()
-    return {
-        {
-            id = "generated-standard-spell", category = "generated", kind = "template",
-            title = "Standard Spell Template",
-            explanation = "Casts the exact assigned spell and rank with no added targeting or combat behavior.",
-            applied = "New spell assignments in Shortcut Bar, Keyboard, Mouse Wheel, and Mouse Buttons, plus Reset in their macro editors.",
-            why = "The neutral default does not retarget, begin combat, break crowd control, or interfere with friendly and utility spells.",
-            tradeoffs = "Add channel protection, unit targeting, modifiers, or attack behavior only when the assigned spell benefits from it.",
-            body = renderSpellTemplate("Fireball(Rank 1)", "standard-spell"), copyable = true,
-        },
-        {
-            id = "generated-melee-attack", category = "generated", kind = "template",
-            title = "Reviewed Attack Ability",
-            explanation = "Keeps a living hostile target or acquires one, starts auto-attack only with a valid enemy, and casts the exact assigned ability and rank.",
-            applied = "New assignments and Reset for explicitly reviewed attacks, damaging interrupts, and hostile gap-closers.",
-            why = "The weapon swing continues even when the ability cannot fire because of resources, stance, range, or cooldown.",
-            tradeoffs = "It can select a nearby enemy when the current target is missing, dead, or friendly. Utility, defensive, stance, taunt, fear, and disarm actions remain direct casts.",
-            body = renderSpellTemplate("Heroic Strike(Rank 1)", "melee-attack"), copyable = true,
-        },
-        {
-            id = "generated-stealth-safe-melee", category = "generated", kind = "template",
-            title = "Stealth-Safe Melee Ability",
-            explanation = "Uses guarded enemy acquisition but starts auto-attack only with a living hostile target and while the player is not stealthed.",
-            applied = "New assignments and Reset for explicitly reviewed Rogue and Feral Druid combat families.",
-            why = "A failed ability press cannot waste Stealth or Prowl; a successful ability breaks stealth through its normal game behavior.",
-            tradeoffs = "Stealth openers and control abilities remain direct casts and are not included in this family.",
-            body = renderSpellTemplate("Sinister Strike(Rank 1)", "stealth-safe-melee-attack"), copyable = true,
-        },
-        {
-            id = "generated-melee-auto", category = "generated", kind = "template",
-            title = "Melee Auto-Attack",
-            explanation = "Keeps a living hostile target or acquires one when needed, then starts melee auto-attack without toggling it off.",
-            applied = "New assignments of WoW's melee Attack action, plus Reset.",
-            why = "Attack is the one spell family where target acquisition and /startattack are always the requested behavior.",
-            tradeoffs = "It intentionally engages a target and contains no cast command.",
-            body = renderSpellTemplate("Attack", "melee-auto"), copyable = true,
-        },
-        {
-            id = "generated-ranged-auto", category = "generated", kind = "template",
-            title = "Spam-Safe Ranged Auto-Attack",
-            explanation = "Uses ! to start Auto Shot, wand Shoot, and other client-confirmed repeating attacks without toggling them off when the binding is spammed.",
-            applied = "New Auto Shot, Shoot, or client-confirmed ranged auto-attack assignments, plus Reset.",
-            why = "The exclamation prefix preserves the repeating attack, while /startattack provides a melee fallback at close range.",
-            tradeoffs = "The melee fallback can engage a nearby target when the ranged attack cannot fire; it is skipped when no living hostile target is available.",
-            body = renderSpellTemplate("Auto Shot", "ranged-auto"), copyable = true,
-        },
-        {
-            id = "generated-item", category = "generated", kind = "template",
-            title = "Item Template",
-            explanation = "Uses the localized item name through WoW's /use command.",
-            applied = "New bag-item assignments in Shortcut Bar, Keyboard, Mouse Wheel, and Mouse Buttons, plus Reset.",
-            why = "A direct /use line preserves normal item targeting, cooldown, and inventory behavior.",
-            tradeoffs = "Items that need a unit, cursor, modifier, or equipment slot require a custom macro.",
-            body = A.BuildDefaultItemMacro("Linen Bandage"), copyable = true,
-        },
-    }
 end

@@ -23,6 +23,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `ActionEvents`: spell/spec/form transitions, binding reconciliation, action-state refreshes, item and native equipment-set updates, and macro requirements
 - `TargetEffectEvents`: target-aura invalidation plus event-driven spell, talent, form, resource, cooldown, and usability refresh policy
 - `CleanseEvents`: party-aura, roster, spellbook, pet, and post-combat Cleanse Watch refresh policy
+- `BuffThanksEvents`: combat-log buff/cleanse capture, player-aura verification triggers, and session reset routing for Thank You prompts
 - `RuntimeEvents`: thin subscriber registration coordinator
 - `Sounds`: shared sound catalog, saved-key normalization, and SFX playback
 - `CrowdControl`: class-owned active-control catalog, control categories, activation modes, automatic-display policy, and per-class allocation bounds
@@ -49,6 +50,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `Layout`: stable three-column row positioning and secure overlay placement using `RowGeometry`
 - `VisualTicker`: cross-feature visual activation, per-frame updates, private range cadence, and stop lifecycle
 - `BuffReminders`: known party/self buff resolution, family preferences, aura matching, icon policy, and secure cast names
+- `BuffThanks`: namespaced-first combat-log/player-GUID compatibility, optional GUID-to-class presentation, outside-group lasting-buff filtering, all-player successful-cleanse capture, three-player gratitude-reason queue, profile-owned movable prompt, and hardware-click-only directed gratitude emotes
 - `PlayerUtility`: left-aligned player self-buff lane, spell tooltip, stable capability-based external height reporting, and secure binding, attached through the player unit-bar interface
 - `ShieldTracker`: private absorb ledger, aura/combat-log reconciliation, estimation fallbacks, and shield-segment rendering
 - `IncomingHeals`: alias-aware Blizzard heal prediction and overlay rendering for rows and inline targets
@@ -72,7 +74,6 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `ProfileStore`: character-owned named profiles, read-only account-profile migration, portable payload normalization, stable identity, CRUD/copy/import mutations, and cross-profile equipment-set reference maintenance
 - `ProfileCodec`: native CBOR, Deflate, and URL-safe Base64 profile sharing with versioned metadata and bounded decoding
 - `ProfilesSettingsPage`: compact profile selection, management, and copy sections plus export/import preview and confirmation workflows
-- `MacroData`, `MacroLibrary`, `MacroLibrarySettingsPage`: generated-template and syntax documentation, immutable current-class combat recipes, unified topic validation/filtering, and read-only copy support
 
 ## Dungeon Board TOC Order
 
@@ -87,7 +88,7 @@ The data and pure-policy chain loads as `DungeonBoardCatalog` → `DungeonBoardA
 - Keep volatile client APIs inside their domain adapters and capability detection; ordinary frame construction and widget methods remain direct.
 - Keep configuration-only chrome and cross-surface stacking inside `SettingsSurfaces`; surfaces may opt out of automatic backing when their native content is sufficient. Feature modules own their content and direct position persistence, configuration must never reposition another surface, and normal gameplay must not retain configuration backing or elevation.
 - Keep Settings at its compact 480×460 footprint and preserve the simultaneous Spellbook, Settings, and live party-frame configuration workflow; add configuration depth through grouped pages and scrolling rather than a wider window.
-- Keep the party-frame preview visible throughout Settings, but activate Cleanse Watch and LFG Alert samples only on the page that configures each surface; Target Effects uses an inline sample on its own page.
+- Keep the party-frame preview visible throughout Settings, but activate Cleanse Watch, Thank You, and LFG Alert samples only on the page that configures each surface; Target Effects uses an inline sample on its own page.
 - Keep Dungeon Board catalog, activity mapping, classification, and eligibility independent from chat events, saved variables, and UI; keep search/result ingestion inside `DungeonBoardGroupFinder`, manual native player interactions inside `DungeonBoardActions`, chat payload knowledge inside the event adapter, and UI reads on immutable runtime snapshots.
 - Give Dungeon Board service/noise classifications precedence over dungeon requests, and preserve unresolved `DM`, Dire Maul, and Scarlet Monastery candidates instead of guessing or duplicating requests.
 - Preserve the original message alongside every plain-language Dungeon Board explanation; presentation may clarify known intent and catalog facts but must not invent an unstated role or resolve ambiguous slang.

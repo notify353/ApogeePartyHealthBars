@@ -126,11 +126,44 @@ local targetPrefix = "/targetenemy [noexists][dead][help]\n"
 local attackPrefix = targetPrefix .. "/startattack [harm,nodead]\n/cast "
 for _, family in ipairs(normalMeleeFamilies) do
     local castName = family[2] .. "(Rank 9)"
-    assert(actions.GetSpellTemplateId(castName, family[1]) == "melee-attack",
+    local templateId = family[1] == 100
+        and "warrior-charge-hamstring" or "melee-attack"
+    local expectedMacro = family[1] == 100
+        and targetPrefix .. "/cast [combat] Hamstring; " .. castName
+            .. "\n/startattack [harm,nodead]"
+        or attackPrefix .. castName
+    assert(actions.GetSpellTemplateId(castName, family[1]) == templateId,
         family[2] .. " did not receive the curated melee policy")
-    assert(actions.BuildDefaultSpellMacro(castName, family[1]) == attackPrefix .. castName,
+    assert(actions.BuildDefaultSpellMacro(castName, family[1]) == expectedMacro,
         family[2] .. " lost target, attack, cast, or rank behavior")
 end
+
+local charge = actions.CreateSpell(100, "Charge(Rank 2)", "none")
+assert(charge.macroText == targetPrefix
+        .. "/cast [combat] Hamstring; Charge(Rank 2)\n/startattack [harm,nodead]",
+    "Charge did not generate the contextual Hamstring template")
+local affectingCombat = false
+function UnitAffectingCombat() return affectingCombat end
+spellNames[7372] = "Hamstring"
+ApogeePartyHealthBars_PlayerSpells = {
+    BuildKnownSpellMap = function()
+        return { [7372] = { id = 7372, name = "Hamstring(Rank 3)", baseName = "Hamstring" } }, {
+            Hamstring = { id = 7372, name = "Hamstring(Rank 3)", baseName = "Hamstring" },
+        }
+    end,
+}
+local activeName, _, activeId, _, contextual = actions.ResolveRuntimeSpell(charge)
+assert(activeName == "Charge" and activeId == 100 and not contextual,
+    "contextual Charge did not remain the active out-of-combat HUD spell")
+affectingCombat = true
+activeName, _, activeId, _, contextual = actions.ResolveRuntimeSpell(charge)
+assert(activeName == "Hamstring" and activeId == 7372 and contextual,
+    "contextual Charge did not resolve the highest learned in-combat Hamstring")
+charge.macroText = "/cast [mod:shift] Charge(Rank 2)"
+activeName, _, activeId, _, contextual = actions.ResolveRuntimeSpell(charge)
+assert(activeName == "Charge" and activeId == 100 and not contextual,
+    "custom Charge macro was treated as a generated contextual action")
+affectingCombat = false
 
 local stealthPrefix = targetPrefix .. "/startattack [harm,nodead,nostealth]\n/cast "
 for _, family in ipairs(stealthSafeFamilies) do
@@ -143,6 +176,19 @@ end
 assert(actions.BuildDefaultSpellMacro("Mongoose Bite(Rank 4)", 14271)
     == attackPrefix .. "Mongoose Bite(Rank 4)",
     "a higher Mongoose Bite rank was mistaken for Ghostly Strike")
+
+spellNames[1715] = nil
+assert(actions.GetSpellTemplateId("Charge(Rank 2)", 100) == "melee-attack"
+        and actions.BuildDefaultSpellMacro("Charge(Rank 2)", 100)
+            == attackPrefix .. "Charge(Rank 2)",
+    "missing Hamstring metadata did not fail closed to the reviewed Charge template")
+spellNames[1715] = "Hamstring"
+
+spellNames[100], spellNames[1715] = "Carga", "Seccionar"
+assert(actions.BuildDefaultSpellMacro("Carga(Rango 2)", 100)
+        == targetPrefix .. "/cast [combat] Seccionar; Carga(Rango 2)\n/startattack [harm,nodead]",
+    "contextual Charge/Hamstring template did not use localized canonical names")
+spellNames[100], spellNames[1715] = "Charge", "Hamstring"
 
 for _, family in ipairs(excludedFamilies) do
     local castName = family[2] .. "(Rank 3)"
@@ -280,14 +326,7 @@ assert(itemClone.kind == "item" and itemClone.macroText == item.macroText,
 assert(actions.IsCustomized(item), "custom item macro was not detected")
 assert(actions.ResetMacro(item) == "/use Linen Bandage", "item macro reset did not rebuild the default")
 
-local topics = actions.GetTemplateTopics()
-assert(#topics == 6 and topics[1].body == expected,
-    "generated-template documentation drifted from the runtime renderer")
-assert(topics[2].body == attackPrefix .. "Heroic Strike(Rank 1)"
-    and topics[3].body == stealthPrefix .. "Sinister Strike(Rank 1)"
-    and topics[4].body == targetPrefix .. "/startattack [harm,nodead]"
-    and topics[5].body:find("!Auto Shot", 1, true)
-    and topics[6].body == "/use Linen Bandage",
-    "generated-template catalog omitted a smart macro family")
+assert(actions.GetTemplateTopics == nil,
+    "removed Macro Library topic exporter was still exposed")
 
 print("PASS shared action macros")

@@ -24,6 +24,7 @@ local FRAME_NAMES = {
 
     -- Unit frame, bags, minimap, micro menu, and status tracking.
     "PlayerFrame",
+    "TargetFrame",
     "BagsBar",
     "MinimapCluster",
     "MicroMenu",

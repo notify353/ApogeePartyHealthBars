@@ -44,27 +44,17 @@ local function createSpellRow(parent, index)
     local check = CreateFrame("CheckButton", nil, row, "UICheckButtonTemplate")
     check:SetSize(22, 22); check:SetPoint("LEFT", row, "LEFT", 4, 0)
     local label = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    label:SetPoint("LEFT", check, "RIGHT", 2, 0); label:SetWidth(126); label:SetJustifyH("LEFT")
+    label:SetPoint("LEFT", check, "RIGHT", 2, 0); label:SetJustifyH("LEFT")
     local upPriority = UIH.CreateArrowButton(row, "up", 34, 22)
-    upPriority:SetPoint("LEFT", label, "RIGHT", 3, 0)
     local downPriority = UIH.CreateArrowButton(row, "down", 34, 22)
-    downPriority:SetPoint("LEFT", upPriority, "RIGHT", 3, 0)
-    local threshold = UIH.CreateButton(row, "3s", 43, 22)
-    threshold:SetPoint("RIGHT", row, "RIGHT", -65, 0)
-    local minus = UIH.CreateButton(row, "-", 25, 22)
-    minus:SetPoint("RIGHT", threshold, "LEFT", -3, 0)
-    local plus = UIH.CreateButton(row, "+", 25, 22)
-    plus:SetPoint("LEFT", threshold, "RIGHT", 3, 0)
-    local reset = UIH.CreateButton(row, "R", 24, 22)
-    reset:SetPoint("LEFT", plus, "RIGHT", 3, 0)
+    downPriority:SetPoint("RIGHT", row, "RIGHT", -5, 0)
+    upPriority:SetPoint("RIGHT", downPriority, "LEFT", -3, 0)
+    label:SetPoint("RIGHT", upPriority, "LEFT", -5, 0)
     UIH.SetTooltip(upPriority, "Move earlier",
         "Give this reminder higher priority in the on-screen order.")
     UIH.SetTooltip(downPriority, "Move later",
         "Give this reminder lower priority in the on-screen order.")
-    UIH.SetTooltip(reset, "Reset timing",
-        "Use the default reminder timing for this effect.")
     row.check, row.label, row.up, row.down = check, label, upPriority, downPriority
-    row.threshold, row.minus, row.plus, row.reset = threshold, minus, plus, reset
     check:SetScript("OnClick", function(self)
         if refreshing or not row.key then return end
         D.TargetEffectTracker.SetEnabled(row.key, self:GetChecked())
@@ -72,9 +62,6 @@ local function createSpellRow(parent, index)
     end)
     upPriority:SetScript("OnClick", function() if row.key then D.TargetEffectTracker.Move(row.key, -1); DC.Refresh() end end)
     downPriority:SetScript("OnClick", function() if row.key then D.TargetEffectTracker.Move(row.key, 1); DC.Refresh() end end)
-    minus:SetScript("OnClick", function() if row.key then D.TargetEffectTracker.AdjustThreshold(row.key, -1); DC.Refresh() end end)
-    plus:SetScript("OnClick", function() if row.key then D.TargetEffectTracker.AdjustThreshold(row.key, 1); DC.Refresh() end end)
-    reset:SetScript("OnClick", function() if row.key then D.TargetEffectTracker.ResetThreshold(row.key); DC.Refresh() end end)
     rows[index] = row
     return row
 end
@@ -105,8 +92,6 @@ function DC.Refresh()
         row.key = entry.definition.key
         row.label:SetText(entry.label)
         setChecked(row.check, D.TargetEffectTracker.IsEnabled(row.key))
-        row.threshold.label:SetText(tostring(D.TargetEffectTracker.GetThreshold(row.key)) .. "s")
-        row.reset.label:SetText(D.TargetEffectTracker.HasThresholdOverride(row.key) and "R*" or "R")
         if index > 1 then row.up:Enable() else row.up:Disable() end
         if index < #known then row.down:Enable() else row.down:Disable() end
         if supported and saved.targetEffectRemindersEnabled then row.check:Enable() else row.check:Disable() end
@@ -128,8 +113,8 @@ function DC.Create(parent, deps)
         "Show missing or expiring maintained effects above the visible target nameplate.", false)
     enabledRow = checkboxRow(form.content, "Enable target-effect reminders")
     defaultRow = stepperRow(form.content, "Remind when this much time remains")
-    defaultRow.decrease:SetScript("OnClick", function() D.TargetEffectTracker.AdjustDefaultThreshold(-1); DC.Refresh() end)
-    defaultRow.increase:SetScript("OnClick", function() D.TargetEffectTracker.AdjustDefaultThreshold(1); DC.Refresh() end)
+    defaultRow.decrease:SetScript("OnClick", function() D.TargetEffectTracker.AdjustThreshold(-1); DC.Refresh() end)
+    defaultRow.increase:SetScript("OnClick", function() D.TargetEffectTracker.AdjustThreshold(1); DC.Refresh() end)
     enabledRow.check:SetScript("OnClick", function(self)
         if refreshing then return end
         D.TargetEffectTracker.SetFeatureEnabled(self:GetChecked()); DC.Refresh()
@@ -142,7 +127,7 @@ function DC.Create(parent, deps)
     preview:SetPoint("BOTTOM", previewRow, "BOTTOM", 0, 4)
     previewRow.preview = preview
     spellSection = UIH.CreateFormSection(form.content, form.rowWidth,
-        "Learned target effects — priority and reminder timing")
+        "Learned target effects — enablement and priority")
     DC.Refresh()
     return page
 end

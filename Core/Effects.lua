@@ -10,6 +10,7 @@ local E = ApogeePartyHealthBars_Effects
 local FEATURE_DEFAULTS = {
     enabled = true,
     combatUIAutoHide = true,
+    hideUIErrors = true,
     showAllSlots = true,
     actionFeedbackEnabled = true,
     automaticConsumablesEnabled = true,
@@ -26,6 +27,11 @@ local FEATURE_DEFAULTS = {
     mentionAlertsEnabled = true,
     mentionSoundKey = "toast",
     mentionHighlightEnabled = true,
+    buffThanksEnabled = true,
+    buffThanksPoint = "TOP",
+    buffThanksRelPoint = "TOP",
+    buffThanksX = 0,
+    buffThanksY = -120,
     cleanseWatchEnabled = true,
     cleanseWatchPoint = "TOPRIGHT",
     cleanseWatchRelPoint = "TOPRIGHT",
@@ -88,7 +94,6 @@ local RENAMED_SETTINGS_FIELDS = {
     dotRefreshThreshold = "targetEffectRefreshThreshold",
     dotDisabled = "targetEffectDisabled",
     dotPriority = "targetEffectPriority",
-    dotThresholds = "targetEffectThresholds",
 }
 
 local RENAMED_ACTION_FIELDS = {
@@ -169,19 +174,11 @@ function E.InitializeSavedVariables(saved, characterSaved)
     end
     if type(saved.targetEffectDisabled) ~= "table" then saved.targetEffectDisabled = {} end
     if type(saved.targetEffectPriority) ~= "table" then saved.targetEffectPriority = {} end
-    if type(saved.targetEffectThresholds) ~= "table" then saved.targetEffectThresholds = {} end
     saved.targetEffectRefreshThreshold = NormalizeDotThreshold(saved.targetEffectRefreshThreshold, 3)
     saved.dungeonBoardLevelsBelow = NormalizeDungeonBoardLevelOffset(
         saved.dungeonBoardLevelsBelow, 10)
     saved.dungeonBoardLevelsAbove = NormalizeDungeonBoardLevelOffset(
         saved.dungeonBoardLevelsAbove, 3)
-    for key, value in pairs(saved.targetEffectThresholds) do
-        if type(key) ~= "string" or type(value) ~= "number" or value ~= value then
-            saved.targetEffectThresholds[key] = nil
-        else
-            saved.targetEffectThresholds[key] = NormalizeDotThreshold(value, 3)
-        end
-    end
     for key, value in pairs(saved.targetEffectDisabled) do
         if type(key) ~= "string" or value ~= true then saved.targetEffectDisabled[key] = nil end
     end

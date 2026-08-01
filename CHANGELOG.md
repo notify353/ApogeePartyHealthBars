@@ -8,6 +8,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Fixed
 
+- Kept the draggable Tank Threat Control preview consistently below the main Settings window, including when first created after Settings opens, so a saved or dragged HUD position cannot cover configuration controls.
+- Fixed live Tank Threat Control enemies, including lost mobs, remaining hidden behind `+N MORE` while a non-live last-seen warning occupied or filled a visible slot.
 - Fixed the Thank You prompt position row overlapping the final Health & Chat setting after switching reminder pages.
 
 ### Added
@@ -19,6 +21,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Moved Tank Threat Control configuration and its draggable preview from Frames → Party Frames to a dedicated Reminders → Threat Control page.
+- Reworked Threat Awareness into one Tank Threat Control queue: up to five stable enemy rows now use centered right-growing threat-lead and left-growing recovery bars, hidden lost mobs replace the safest visible held mob, and the legacy presentation preference remains profile-compatible without affecting runtime behavior.
 - New Warrior Charge assignments now generate a contextual Charge-out-of-combat and Hamstring-in-combat action, with the live action HUD tracking the active spell; existing and custom macros remain unchanged until reassigned or reset.
 - Thank You prompts use Classic Era's current namespaced combat-log and player-GUID APIs, so they remain available when deprecated API fallbacks are disabled.
 - Thank You prompts follow the Threat Awareness HUD language: compact 24-pixel shaded rows, a slim helper-class-colored accent rail, expanded single-line player and action context, one background-free Apogee-logo Thank icon without a separate dismiss control, and a multi-giver Settings preview at the saved gameplay position.

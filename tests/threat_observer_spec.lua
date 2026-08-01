@@ -62,6 +62,13 @@ assert(first.total == 4 and not first.limitedCoverage
 assert(first.enemies[1].guid == "C" and first.enemies[1].victim == "Healer"
         and first.enemies[1].raidMarker == 8,
     "observer did not rank or describe the worst enemy")
+local firstByGuid = {}
+for _, enemy in ipairs(first.enemies) do firstByGuid[enemy.guid] = enemy end
+assert(firstByGuid.A.control == 40 and firstByGuid.A.severity == "safe"
+        and firstByGuid.B.control == 15 and firstByGuid.B.severity == "slipping"
+        and firstByGuid.C.control == -50 and firstByGuid.C.severity == "lost"
+        and firstByGuid.D.control == 5 and firstByGuid.D.severity == "critical",
+    "observer did not calculate signed tank-control values and thresholds")
 
 first.enemies[1].name = "mutated"
 assert(observer.GetSnapshot().enemies[1].name == "Loose Marauder",
@@ -80,15 +87,28 @@ threat.A.party1 = { true, 3, 100 }
 local lost = observer.Refresh()
 assert(#lost.lostTransitions == 1 and lost.lostTransitions[1] == "A",
     "known tanked-to-lost transition was not reported")
+local lostA
+for _, enemy in ipairs(lost.enemies) do if enemy.guid == "A" then lostA = enemy end end
+assert(lostA and lostA.control == -30,
+    "lost enemy did not expose the player's recovery deficit")
 assert(#observer.Refresh().lostTransitions == 0,
     "repeated lost refresh emitted another transition")
+
+threat.A.player = nil
+local missingPlayer = observer.Refresh()
+local missingPlayerA
+for _, enemy in ipairs(missingPlayer.enemies) do
+    if enemy.guid == "A" then missingPlayerA = enemy end
+end
+assert(missingPlayerA and missingPlayerA.control == -100,
+    "missing player threat did not produce the full recovery deficit")
 
 tokens.target, tokens.party1target = nil, nil
 now = 11
 local stale = observer.Refresh()
 local staleA
 for _, enemy in ipairs(stale.enemies) do if enemy.guid == "A" then staleA = enemy end end
-assert(staleA and staleA.stale and not staleA.live and staleA.margin == nil,
+assert(staleA and staleA.stale and not staleA.live and staleA.control == nil,
     "lost enemy did not remain as a non-live last-seen warning")
 now = 13.1
 local expired = observer.Refresh()

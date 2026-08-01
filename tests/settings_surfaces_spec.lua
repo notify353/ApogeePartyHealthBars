@@ -69,6 +69,7 @@ local settings = frame("DIALOG")
 local party = frame("MEDIUM")
 local feed = frame("DIALOG")
 local dot = frame("MEDIUM")
+local threat = frame("MEDIUM")
 
 local settingsChrome = M.Register("settings", settings, {
     headerHeight = 40,
@@ -82,8 +83,13 @@ M.Register("feed", feed, {
     title = "LFG Alerts",
 })
 local dotChrome = M.Register("dot", dot)
+M.Register("threat", threat, {
+    automaticChrome = false,
+    configurationStrata = "HIGH",
+})
 
-assert(settings.topLevel and party.topLevel and feed.topLevel and dot.topLevel,
+assert(settings.topLevel and party.topLevel and feed.topLevel and dot.topLevel
+        and threat.topLevel,
     "registered configuration surfaces were not native top-level frames")
 assert(M.Resolve == nil and M.ResolveAfterDrag == nil
         and M.ResolveOpen == nil and M.ScheduleResolve == nil,
@@ -95,10 +101,12 @@ M.SetConfigurationActive(true)
 assert(M.IsConfigurationActive(),
     "configuration surface manager did not report its active lifecycle")
 assert(settings.strata == "DIALOG" and party.strata == "DIALOG"
-        and feed.strata == "DIALOG" and dot.strata == "DIALOG",
-    "active configuration surfaces did not share one native stacking strata")
+        and feed.strata == "DIALOG" and dot.strata == "DIALOG"
+        and threat.strata == "HIGH",
+    "active configuration surfaces did not preserve their requested stacking strata")
 assert(settings.pointWrites == 0 and party.pointWrites == 0
-        and feed.pointWrites == 0 and dot.pointWrites == 0,
+        and feed.pointWrites == 0 and dot.pointWrites == 0
+        and threat.pointWrites == 0,
     "activating configuration changed a surface position")
 assert(settingsChrome.foundation.shown and settingsChrome.foundation.color[1] == 0
         and settingsChrome.foundation.color[2] == 0
@@ -113,6 +121,14 @@ assert(dotChrome.title == nil and dotChrome.header == nil
     "headerless reminder preview recreated title chrome or lost its background")
 assert(not M.Get("party").chrome.foundation.shown,
     "surface that opted out of automatic chrome gained configuration backing")
+
+local lateThreat = frame("MEDIUM")
+M.Register("lateThreat", lateThreat, {
+    automaticChrome = false,
+    configurationStrata = "HIGH",
+})
+assert(lateThreat.strata == "HIGH",
+    "surface registered during configuration did not receive its configuration strata")
 
 assert(M.DockConfigurationPreview("dot"),
     "contextual preview could not enter its configuration dock")
@@ -150,7 +166,8 @@ assert(M.ReleaseConfigurationPreview("dot")
 
 M.SetConfigurationActive(false)
 assert(settings.strata == "DIALOG" and party.strata == "MEDIUM"
-        and feed.strata == "DIALOG" and dot.strata == "MEDIUM",
+        and feed.strata == "DIALOG" and dot.strata == "MEDIUM"
+        and threat.strata == "MEDIUM" and lateThreat.strata == "MEDIUM",
     "configuration close did not restore original runtime strata")
 assert(not settingsChrome.foundation.shown and not dotChrome.foundation.shown,
     "configuration chrome leaked after configuration closed")

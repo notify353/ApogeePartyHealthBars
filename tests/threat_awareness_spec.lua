@@ -3,88 +3,148 @@ ApogeePartyHealthBars_UIHelpers = {}
 
 dofile("PartyFrames/ThreatAwareness.lua")
 local awareness = ApogeePartyHealthBars_ThreatAwareness
-local snapshot = {
-    total = 5,
-    counts = { safe = 1, slipping = 1, critical = 1, lost = 2 },
+
+local function Enemy(guid, severity, control, isTanking, live)
+    return {
+        guid = guid, name = guid, severity = severity, control = control,
+        isTanking = isTanking, live = live ~= false,
+    }
+end
+
+local positive = awareness.GetControlDisplay(Enemy("safe", "safe", 41.6, true))
+local negative = awareness.GetControlDisplay(Enemy("lost", "lost", -27.6, false))
+local heldZero = awareness.GetControlDisplay(Enemy("held-zero", "critical", 0, true))
+local lostZero = awareness.GetControlDisplay(Enemy("lost-zero", "lost", 0, false))
+assert(positive.direction == "positive" and positive.progress == 41.6
+        and negative.direction == "negative" and negative.progress == 27.6
+        and heldZero.progress == 0 and lostZero.progress == 0
+        and awareness.GetControlDisplay({ control = -40, live = false }) == nil,
+    "directional tank-control display calculation changed")
+
+local initial = {
+    total = 6,
     enemies = {
-        { guid = "1", severity = "lost" }, { guid = "2", severity = "lost" },
-        { guid = "3", severity = "critical" }, { guid = "4", severity = "slipping" },
-        { guid = "5", severity = "safe" },
+        Enemy("lost", "lost", -60, false),
+        Enemy("critical", "critical", 5, true),
+        Enemy("slipping", "slipping", 20, true),
+        Enemy("safe-a", "safe", 40, true),
+        Enemy("safe-b", "safe", 50, true),
+        Enemy("safe-c", "safe", 70, true),
     },
-    lostTransitions = { "1" },
 }
+local first = awareness.ReconcileQueue(initial, {})
+assert(first.visible == 5 and first.overflow == 1
+        and first.slotGuids[1] == "lost" and first.slotGuids[5] == "safe-b",
+    "initial tank-control queue did not select the five most urgent enemies")
 
-local radar = awareness.GetPresentation(snapshot, "radar")
-local alarm = awareness.GetPresentation(snapshot, "alarm")
-local queue = awareness.GetPresentation(snapshot, "queue")
-assert(#radar.enemies == 1 and radar.enemies[1].guid == "1"
-        and radar.title == "PACK RADAR"
-        and radar.summary == "5 ENEMIES  |  2 LOST  |  2 RISK",
-    "Pack Radar presentation changed")
-assert(#alarm.enemies == 1 and alarm.enemies[1].severity == "lost"
-        and alarm.title == "LOSS ALARM" and alarm.summary == "2 LOST",
-    "Loss Alarm presentation changed")
-assert(#queue.enemies == 5 and queue.overflow == 0 and queue.title == "THREAT QUEUE"
-        and queue.summary == "TOP 5",
-    "Threat Queue presentation changed")
+local changed = {
+    total = 6,
+    enemies = {
+        Enemy("safe-c", "critical", 2, true),
+        Enemy("safe-b", "safe", 80, true),
+        Enemy("safe-a", "safe", 65, true),
+        Enemy("slipping", "slipping", 12, true),
+        Enemy("critical", "safe", 55, true),
+        Enemy("lost", "lost", -10, false),
+    },
+}
+local stable = awareness.ReconcileQueue(changed, first.slotGuids)
+for index = 1, 5 do
+    assert(stable.slotGuids[index] == first.slotGuids[index],
+        "ordinary threat changes reordered a stable queue slot")
+end
 
-assert(awareness.GetRiskProgress({ severity = "safe", margin = 60, live = true }) == 20
-        and awareness.GetRiskProgress({ severity = "slipping", margin = 20, live = true }) == 52.5
-        and awareness.GetRiskProgress({ severity = "critical", margin = 5, live = true }) == 82.5
-        and awareness.GetRiskProgress({ severity = "lost", margin = 80, live = true }) == 100
-        and awareness.GetRiskProgress({ severity = "lost", stale = true, live = false }) == nil,
-    "Threat Awareness risk bars no longer grow monotonically with danger")
+changed.total = 5
+table.remove(changed.enemies, 5) -- Remove the former "critical" enemy.
+local filled = awareness.ReconcileQueue(changed, stable.slotGuids)
+assert(filled.slotGuids[2] == "safe-c"
+        and filled.slotGuids[1] == "lost" and filled.slotGuids[3] == "slipping",
+    "vacated queue slot was not filled without shifting retained enemies")
+
+local overflowLoss = {
+    total = 6,
+    enemies = {
+        Enemy("a", "critical", 5, true), Enemy("b", "slipping", 20, true),
+        Enemy("c", "safe", 35, true), Enemy("d", "safe", 60, true),
+        Enemy("e", "safe", 80, true), Enemy("hidden-lost", "lost", -75, false),
+    },
+}
+local promoted = awareness.ReconcileQueue(overflowLoss, { "a", "b", "c", "d", "e" })
+assert(promoted.slotGuids[5] == "hidden-lost" and promoted.overflow == 1
+        and promoted.slotGuids[1] == "a" and promoted.slotGuids[4] == "d",
+    "hidden lost enemy did not replace the safest visible held enemy in place")
+
+local staleOverflow = {
+    total = 6,
+    enemies = {
+        Enemy("stale-lost", "lost", nil, false, false),
+        Enemy("held-a", "critical", 5, true), Enemy("held-b", "slipping", 20, true),
+        Enemy("held-c", "safe", 40, true), Enemy("held-d", "safe", 60, true),
+        Enemy("live-lost", "lost", -70, false),
+    },
+}
+local staleReplaced = awareness.ReconcileQueue(staleOverflow,
+    { "stale-lost", "held-a", "held-b", "held-c", "held-d" })
+assert(staleReplaced.slotGuids[1] == "live-lost"
+        and staleReplaced.slotGuids[5] == "held-d",
+    "hidden live loss did not replace a non-live last-seen warning first")
+
+local staleVacancy = {
+    total = 6,
+    enemies = {
+        Enemy("hidden-stale", "lost", nil, false, false),
+        Enemy("visible-a", "critical", 5, true), Enemy("visible-b", "slipping", 20, true),
+        Enemy("visible-c", "safe", 40, true), Enemy("visible-d", "safe", 60, true),
+        Enemy("hidden-live", "safe", 80, true),
+    },
+}
+local liveFilled = awareness.ReconcileQueue(staleVacancy,
+    { "visible-a", "visible-b", "visible-c", "visible-d", "resolved" })
+assert(liveFilled.slotGuids[5] == "hidden-live",
+    "vacant queue slot preferred a stale warning over an observable enemy")
+
+local empty = awareness.ReconcileQueue({ enemies = {}, total = 0 }, promoted.slotGuids)
+assert(empty.visible == 0 and empty.overflow == 0 and next(empty.slotGuids) == nil,
+    "empty pack did not reset stable queue slots")
 
 assert(awareness.IsCurrentTarget({ guid = "enemy-1" }, "enemy-1")
         and not awareness.IsCurrentTarget({ guid = "enemy-2" }, "enemy-1")
         and awareness.IsCurrentTarget({ isCurrentTarget = true }, nil)
         and not awareness.IsCurrentTarget(nil, "enemy-1"),
-    "Threat Awareness current-target matching changed")
+    "Tank Threat Control current-target matching changed")
 assert(awareness.GetEnemyName({ name = "Dark Iron Bombardier" }) == "Dark Iron Bombardier"
         and awareness.GetEnemyName({}) == "Enemy",
-    "Threat Awareness enemy names are being artificially truncated")
+    "Tank Threat Control enemy names are being artificially truncated")
 local left, right, top, bottom = awareness.GetRaidMarkerTexCoords(8)
 assert(left == 0.75 and right == 1 and top == 0.5 and bottom == 1,
-    "Threat Awareness fallback raid-marker atlas coordinates changed")
+    "Tank Threat Control fallback raid-marker atlas coordinates changed")
 
-local radarDemo = awareness.GetDemoSnapshot("radar")
-local alarmDemo = awareness.GetDemoSnapshot("alarm")
-local queueDemo = awareness.GetDemoSnapshot("queue")
-assert(radarDemo.total == 6 and radarDemo.counts.lost == 1
-        and radarDemo.counts.critical == 1 and radarDemo.counts.slipping == 1
-        and radarDemo.enemies[1].severity == "lost"
-        and radarDemo.enemies[1].isCurrentTarget == true and radarDemo.demoHint,
-    "Pack Radar demo no longer shows a realistic mixed pack and worst enemy")
-assert(alarmDemo.counts.lost == 2 and alarmDemo.enemies[1].victim == "Healer"
-        and alarmDemo.demoHint,
-    "Loss Alarm demo no longer demonstrates multiple lost enemies")
-local queueDemoView = awareness.GetPresentation(queueDemo, "queue")
-assert(queueDemoView.enemies[1].severity == "lost"
-        and queueDemoView.enemies[2].severity == "critical"
-        and queueDemoView.enemies[2].isCurrentTarget == true
-        and queueDemoView.enemies[3].severity == "slipping"
-        and #queueDemoView.enemies == 5
-        and queueDemoView.overflow == 2 and queueDemo.demoHint,
-    "Threat Queue demo no longer demonstrates urgency ranking and overflow")
+local demo = awareness.GetDemoSnapshot()
+local demoView = awareness.ReconcileQueue(demo, {})
+assert(demo.total == 7 and demo.counts.lost == 1
+        and demo.enemies[1].control == -38 and demo.enemies[2].control == 7
+        and demoView.visible == 5 and demoView.overflow == 2 and demo.demoHint,
+    "Tank Threat Control demo no longer shows directional lead, recovery, and overflow")
 local liveQueue = {
-    enemies = queueDemo.enemies, counts = queueDemo.counts,
-    total = queueDemo.total, limitedCoverage = false,
+    enemies = demo.enemies, counts = demo.counts,
+    total = demo.total, limitedCoverage = false,
 }
-local liveQueueView = awareness.GetPresentation(liveQueue, "queue")
+local liveQueueView = awareness.ReconcileQueue(liveQueue, {})
 assert(awareness.GetFooterText(liveQueue, liveQueueView) == "+2 MORE",
-    "chrome-free Threat Queue lost its live overflow indicator")
+    "Tank Threat Control lost its live overflow indicator")
 liveQueue.limitedCoverage = true
 assert(awareness.GetFooterText(liveQueue, liveQueueView)
         == "+2 MORE  |  LIMITED COVERAGE",
-    "Threat Queue overflow hid its reduced-coverage warning")
+    "Tank Threat Control overflow hid its reduced-coverage warning")
 
-assert(awareness.ShouldPlayLostAlert(snapshot, true, false, 10, 0)
-        and not awareness.ShouldPlayLostAlert(snapshot, false, false, 10, 0)
-        and not awareness.ShouldPlayLostAlert(snapshot, true, true, 10, 0)
-        and not awareness.ShouldPlayLostAlert(snapshot, true, false, 10, 9),
+local alertSnapshot = { lostTransitions = { "lost" } }
+assert(awareness.ShouldPlayLostAlert(alertSnapshot, true, false, 10, 0)
+        and not awareness.ShouldPlayLostAlert(alertSnapshot, false, false, 10, 0)
+        and not awareness.ShouldPlayLostAlert(alertSnapshot, true, true, 10, 0)
+        and not awareness.ShouldPlayLostAlert(alertSnapshot, true, false, 10, 9),
     "lost-threat sound gating or throttle changed")
-snapshot.lostTransitions = {}
-assert(not awareness.ShouldPlayLostAlert(snapshot, true, false, 10, 0),
+alertSnapshot.lostTransitions = {}
+assert(not awareness.ShouldPlayLostAlert(alertSnapshot, true, false, 10, 0),
     "alert played without a tanked-to-lost transition")
 
 awareness.Initialize({
@@ -93,8 +153,8 @@ awareness.Initialize({
 })
 ApogeePartyHealthBars_S.sv = { enabled = false, threatAwarenessEnabled = true }
 assert(not awareness.IsActive(),
-    "Threat Awareness remained active after the add-on session was disabled")
+    "Tank Threat Control remained active after the add-on session was disabled")
 ApogeePartyHealthBars_S.sv.enabled = true
-assert(awareness.IsActive(), "enabled Threat Awareness did not become active")
+assert(awareness.IsActive(), "enabled Tank Threat Control did not become active")
 
-print("PASS Threat Awareness presentation and alert policy")
+print("PASS Tank Threat Control presentation and alert policy")

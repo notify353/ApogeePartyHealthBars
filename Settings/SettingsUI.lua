@@ -141,7 +141,7 @@ local function SetContextualPreviews(pageKey)
         D.DungeonBoardFeed.SetUnlocked(active and pageKey == "dungeon")
     end
     if D.ThreatAwareness then
-        D.ThreatAwareness.SetUnlocked(active and pageKey == "frames")
+        D.ThreatAwareness.SetUnlocked(active and pageKey == "threatControl")
     end
 end
 
@@ -336,6 +336,12 @@ function UI.Build(deps)
         frame = targetEffectsPage, refresh = DC.Refresh, hint = DC.GetForm().hint,
         featureKey = "targetEffectReminders",
         summary = "Remind you about target effects.",
+    })
+    RegisterPage({
+        key = "threatControl", group = "reminders", label = "Threat Control",
+        frame = coreSettingsPagesFrame, configure = function() GC.SetPage("threatControl") end,
+        refresh = GC.Refresh, hint = GC.GetForm().hint,
+        summary = "Configure multi-enemy tank threat control.",
     })
     RegisterPage({
         key = "dungeon", group = "dungeon", label = "Dungeon Board",

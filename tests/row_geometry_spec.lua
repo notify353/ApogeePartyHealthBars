@@ -20,7 +20,7 @@ function UnitExists() return true end
 
 local hotHeight = 0
 local playerUtilityHeight, playerShortcutHeight, targetShortcutHeight = 0, 0, 0
-local raidMarkerHeight, wheelHeight, keyHeight, mouseHeight = 0, 0, 0, 0
+local wheelHeight, keyHeight, mouseHeight = 0, 0, 0
 local consumableHeight = 0
 local wheelIconHeight, keyIconHeight, mouseIconHeight
 local function PlayerOnlyHeight(value)
@@ -58,7 +58,6 @@ local invalidAction, invalidActionError = pcall(geometry.Initialize, {
     GetHotStripHeight = function() return 0 end,
     PlayerUtility = { GetHeight = function() return 0 end },
     ShortcutBar = { GetLaneHeight = function() return 0 end },
-    RaidMarkers = { GetHeight = function() return 0 end },
     MouseWheelActions = { GetHeight = function() return 0 end },
     KeyboardActions = keyFeature,
     MouseButtonActions = mouseFeature,
@@ -77,7 +76,6 @@ geometry.Initialize({
             return 0
         end,
     },
-    RaidMarkers = { GetHeight = PlayerOnlyHeight(function() return raidMarkerHeight end) },
     MouseWheelActions = wheelFeature,
     KeyboardActions = keyFeature,
     MouseButtonActions = mouseFeature,
@@ -87,12 +85,6 @@ geometry.Initialize({
 assert(geometry.GetActionAreaHeight("player") == 0, "empty actions reserved height")
 assert(geometry.GetRowTotalHeight("player") == 47,
     "base player row did not include exactly one power strip")
-
-raidMarkerHeight = 18
-assert(geometry.GetActionAreaHeight("player") == 18
-        and geometry.GetRowTotalHeight("player") == 65,
-    "hidden target accessories did not keep their stable compact tier")
-raidMarkerHeight = 0
 
 playerUtilityHeight = 18
 assert(geometry.GetActionAreaHeight("player") == 18

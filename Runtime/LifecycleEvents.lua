@@ -84,6 +84,7 @@ function L.Register(eventRouter, deps)
                 RunStep("Keyboard", K.InitializeSaved)
                 RunStep("Mouse Buttons", B.InitializeSaved)
                 RunStep("Consumables", CB.Initialize)
+                RunStep("Raid markers", M.Initialize)
                 RunStep("Physical bindings", function()
                     local bindingsOk, bindingsCode, bindingsDetail
                     if S.sv and S.sv.enabled then
@@ -114,7 +115,6 @@ function L.Register(eventRouter, deps)
                 end
 
             elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
-                RunStep("Raid markers", M.OnCombatLogEvent)
                 if deps.IsShieldEnabled() then
                     RunStep("Shield tracking", deps.OnShieldCombatLog)
                 end
@@ -143,6 +143,7 @@ function L.Register(eventRouter, deps)
                 RunStep("Combat refresh", deps.ForceRefresh)
 
             elseif event == "PLAYER_TARGET_CHANGED" then
+                RunStep("Raid markers", M.OnTargetChanged)
                 RunStep("Shortcuts", T.Rebaseline)
                 RunStep("Mouse Wheel", W.Refresh)
                 RunStep("Keyboard", K.Refresh)

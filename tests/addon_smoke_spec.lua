@@ -507,13 +507,11 @@ local geometry = ApogeePartyHealthBars_RowGeometry
 local permanentActionHeight = geometry.GetActionAreaHeight("player")
 local playerUtilityHeight = ApogeePartyHealthBars_PlayerUtility.GetHeight("player")
 local targetShortcutHeight = ApogeePartyHealthBars_ShortcutBar.GetLaneHeight("target")
-local raidMarkerHeight = ApogeePartyHealthBars_RaidMarkers.GetHeight("player")
 local actionHudHeight = geometry.GetActionHudHeight("player")
 local actionHudGeometry = geometry.GetActionHudGeometry("player")
 local expectedActionHeight = math.max(
     actionHudHeight + playerUtilityHeight,
-    targetShortcutHeight,
-    raidMarkerHeight)
+    targetShortcutHeight)
 assert(keysRuntime.GetHeight("player") == 136
         and wheelRuntime.GetHeight("player") == 169
         and buttonRuntime.GetHeight("player") == 78

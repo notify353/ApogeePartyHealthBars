@@ -48,7 +48,8 @@ ApogeePartyHealthBars_ConsumableBar = {
     OnBagUpdate = function() record("consumable-bags") end,
 }
 ApogeePartyHealthBars_RaidMarkers = {
-    OnCombatLogEvent = function() record("raid-combat-log") end,
+    Initialize = function() record("raid-init") end,
+    OnTargetChanged = function() record("raid-target") end,
 }
 ApogeePartyHealthBars_Threat = { Refresh = function() record("threat") end }
 ApogeePartyHealthBars_SecureFrames = {
@@ -156,7 +157,7 @@ dispatch("PLAYER_LOGIN")
 expect({
     "saved-variables", "binding-store", "fader-init:true", "macro-validation",
     "print:macro validation: broken recipe", "class-bindings", "shortcut-init",
-    "wheel-init", "keys-init", "buttons-init", "consumable-init", "bindings-claim", "player-spells", "restore-position", "update-header",
+    "wheel-init", "keys-init", "buttons-init", "consumable-init", "raid-init", "bindings-claim", "player-spells", "restore-position", "update-header",
     "minimap", "shield-seed", "force-refresh",
 }, "PLAYER_LOGIN order changed")
 assert(ApogeePartyHealthBars_S.sv == ApogeePartyHealthSV
@@ -223,12 +224,12 @@ expect({ "player-spells", "minimap", "shield-seed", "threat", "request-update" }
 
 reset()
 dispatch("PLAYER_TARGET_CHANGED")
-expect({ "shortcut-rebaseline", "wheel-refresh", "keys-refresh", "buttons-refresh", "threat", "request-update" },
+expect({ "raid-target", "shortcut-rebaseline", "wheel-refresh", "keys-refresh", "buttons-refresh", "threat", "request-update" },
     "target-change order changed")
 
 reset()
 dispatch("COMBAT_LOG_EVENT_UNFILTERED")
-expect({ "raid-combat-log", "shield-combat-log" }, "combat-log fan-out changed")
+expect({ "shield-combat-log" }, "combat-log fan-out changed")
 
 reset()
 local originalInitPlayerSpells = deps.InitPlayerSpells

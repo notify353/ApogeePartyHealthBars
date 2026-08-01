@@ -66,6 +66,7 @@ local CAPABILITIES = {
         reason = "This client does not provide raid-marker controls.",
         detect = function()
             return isFunction(SetRaidTarget) and isFunction(GetRaidTargetIndex)
+                and C_NamePlate and isFunction(C_NamePlate.GetNamePlateForUnit)
         end,
     },
     spellbook = {

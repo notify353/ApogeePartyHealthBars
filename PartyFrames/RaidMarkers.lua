@@ -5,58 +5,87 @@ ApogeePartyHealthBars_RaidMarkers = {}
 local M = ApogeePartyHealthBars_RaidMarkers
 
 local ICON_TEXTURE = "Interface\\TargetingFrame\\UI-RaidTargetingIcons"
-local ASSIGNED_ALPHA = 0.55
+local INACTIVE_SELECTION_ALPHA = 0.18
+local NAMEPLATE_GAP = 2
+local MARKER_GAP = 6
+local MARKER_SIZE = Accessory.GetIconSize() * 2
 
 local MARKERS = {
-    { index = 8, label = "Skull", left = 0.75, right = 1.00, top = 0.50, bottom = 1.00 },
-    { index = 7, label = "Cross", left = 0.50, right = 0.75, top = 0.50, bottom = 1.00 },
     { index = 5, label = "Moon", left = 0.00, right = 0.25, top = 0.50, bottom = 1.00 },
+    { index = 7, label = "Cross", left = 0.50, right = 0.75, top = 0.50, bottom = 1.00 },
+    { index = 8, label = "Skull", left = 0.75, right = 1.00, top = 0.50, bottom = 1.00 },
 }
 
 local buttons = {}
-local assignedGuids = {}
+local nameplateUnits = {}
 local supportedMarkers = { [5] = true, [7] = true, [8] = true }
+local container
+local boundUnit
+local boundGuid
 
 local function IsSupported()
     return not ClientCapabilities or ClientCapabilities.IsFeatureAvailable("raidMarkers")
 end
 
-local function SetMarkerState(button, assigned, targetMarked, currentTargetMarker)
-    button.markerAssigned = assigned and true or false
-    button.targetMarked = targetMarked and true or false
-    button.currentTargetMarker = currentTargetMarker and true or false
-    local assignedElsewhere = button.markerAssigned and not button.currentTargetMarker
-    button.texture:SetDesaturated(assignedElsewhere)
-    button.texture:SetAlpha(assignedElsewhere and ASSIGNED_ALPHA or 1)
-    for _, edge in ipairs(button.selectionBorder) do
-        edge:SetAlpha(button.currentTargetMarker and 1 or 0)
-    end
+local function IsLivingHostile(unit)
+    return UnitExists and UnitExists(unit)
+        and UnitCanAttack and UnitCanAttack("player", unit)
+        and not (UnitIsDeadOrGhost and UnitIsDeadOrGhost(unit))
 end
 
-local function ClearGuidAssignments(guid)
-    if not guid then return end
-    for index, assignedGuid in pairs(assignedGuids) do
-        if assignedGuid == guid then assignedGuids[index] = nil end
+local function SetMarkerState(button, currentTargetMarker, hasSupportedSelection)
+    button.currentTargetMarker = currentTargetMarker and true or false
+    local inactiveSelection = hasSupportedSelection and not button.currentTargetMarker
+    button.texture:SetDesaturated(inactiveSelection)
+    button.texture:SetAlpha(inactiveSelection and INACTIVE_SELECTION_ALPHA or 1)
+end
+
+local function Detach()
+    boundUnit, boundGuid = nil, nil
+    if not container then return end
+    container:Hide()
+    container:ClearAllPoints()
+    if UIParent and container.SetParent then container:SetParent(UIParent) end
+end
+
+local function ResolveTargetNameplate()
+    if not IsLivingHostile("target") or not UnitGUID then return nil end
+    local targetGuid = UnitGUID("target")
+    if not targetGuid then return nil end
+    for unit in pairs(nameplateUnits) do
+        if UnitExists(unit) and UnitGUID(unit) == targetGuid then
+            local plate
+            if C_NamePlate and C_NamePlate.GetNamePlateForUnit then
+                local ok, result = pcall(C_NamePlate.GetNamePlateForUnit, unit)
+                if ok then plate = result end
+            end
+            if plate then return unit, targetGuid, plate end
+        end
     end
+    return nil
 end
 
 local function ApplyMarker(index)
-    if not UnitExists or not UnitExists("target") or not SetRaidTarget then return end
-    local guid = UnitGUID and UnitGUID("target")
-    local currentMarker = GetRaidTargetIndex and GetRaidTargetIndex("target")
-    local clearing = currentMarker == index
-    if guid then
-        ClearGuidAssignments(guid)
-        if not clearing then assignedGuids[index] = guid end
+    local unit, guid = boundUnit, boundGuid
+    if not unit or not guid or not SetRaidTarget or not UnitGUID then return end
+    if not IsLivingHostile(unit) or UnitGUID(unit) ~= guid
+        or not UnitExists("target") or UnitGUID("target") ~= guid then
+        M.Refresh()
+        return
     end
-    SetRaidTarget("target", clearing and 0 or index)
+    local currentMarker = GetRaidTargetIndex and GetRaidTargetIndex(unit)
+    local clearing = currentMarker == index
+    SetRaidTarget(unit, clearing and 0 or index)
     M.Refresh()
 end
 
-local function CreateMarkerButton(parent, definition)
+local function CreateMarkerButton(parent, definition, position)
     local button = CreateFrame("Button", nil, parent)
-    Accessory.SetCompactSize(button)
+    button:SetSize(MARKER_SIZE, MARKER_SIZE)
     button:RegisterForClicks("LeftButtonUp")
+    button:SetPoint(
+        "LEFT", parent, "LEFT",
+        (position - 1) * (MARKER_SIZE + MARKER_GAP), 0)
 
     local texture = button:CreateTexture(nil, "ARTWORK")
     Accessory.InsetTexture(texture, 1)
@@ -68,111 +97,72 @@ local function CreateMarkerButton(parent, definition)
     end
     button.texture = texture
 
-    button.selectionBorder = Accessory.CreateBorder(button, 0)
-    for _, edge in ipairs(button.selectionBorder) do
-        edge:SetColorTexture(1, 0.82, 0, 1)
-        edge:SetAlpha(0)
-    end
-
-    local highlight = button:CreateTexture(nil, "HIGHLIGHT")
-    highlight:SetAllPoints()
-    highlight:SetColorTexture(1, 1, 1, 0.10)
-
     button:SetScript("OnClick", function() ApplyMarker(definition.index) end)
-    button:SetScript("OnEnter", function(self)
-        if not GameTooltip then return end
-        GameTooltip:SetOwner(self, "ANCHOR_TOP")
-        GameTooltip:AddLine(definition.label .. " target marker")
-        if self.targetMarked then
-            if self.currentTargetMarker then
-                GameTooltip:AddLine("Currently applied. Click to remove.", 0.85, 0.85, 0.85)
-            else
-                GameTooltip:AddLine("Click to replace the current marker.", 0.85, 0.85, 0.85)
-            end
-        elseif self.markerAssigned then
-            GameTooltip:AddLine("Currently assigned. Click to move it here.", 0.85, 0.85, 0.85)
-        else
-            GameTooltip:AddLine("Click to apply.", 0.85, 0.85, 0.85)
-        end
-        GameTooltip:Show()
-    end)
-    button:SetScript("OnLeave", function()
-        if GameTooltip then GameTooltip:Hide() end
-    end)
     return button
 end
 
-function M.Attach(targetSurface)
-    assert(targetSurface and targetSurface.GetAccessoryAnchor,
-        "RaidMarkers requires the current-target accessory anchor")
-    if not IsSupported() then return end
-    local anchor = targetSurface:GetAccessoryAnchor()
+function M.Initialize()
+    if container or not IsSupported() then return end
+    container = CreateFrame("Frame", nil, UIParent)
+    container:SetSize(
+        #MARKERS * MARKER_SIZE + (#MARKERS - 1) * MARKER_GAP,
+        MARKER_SIZE)
+    container:Hide()
     for position, definition in ipairs(MARKERS) do
-        local button = CreateMarkerButton(anchor, definition)
-        button:SetFrameLevel((anchor:GetFrameLevel() or 0) + 10)
-        Accessory.Place(button, anchor, "right", position, #MARKERS)
-        buttons[position] = button
+        buttons[position] = CreateMarkerButton(container, definition, position)
     end
     M.Refresh()
 end
 
-function M.GetHeight(unitId)
-    if not IsSupported() or unitId ~= "player" then return 0 end
-    return Accessory.GetHeight(1, 1)
-end
-
-local function RefreshInternal(ignoredGuid)
+local function RefreshInternal()
     if not IsSupported() then return end
-    local targetExists = UnitExists and UnitExists("target")
-    local guid = targetExists and UnitGUID and UnitGUID("target")
-    local currentMarker = targetExists and GetRaidTargetIndex and GetRaidTargetIndex("target")
-    local targetDead = targetExists and UnitIsDeadOrGhost and UnitIsDeadOrGhost("target")
+    if not container then M.Initialize() end
+    if not container then return end
 
-    if guid then
-        if targetDead then
-            ClearGuidAssignments(guid)
-        elseif guid ~= ignoredGuid then
-            for index, assignedGuid in pairs(assignedGuids) do
-                if assignedGuid == guid and currentMarker ~= index then assignedGuids[index] = nil end
-            end
-            if supportedMarkers[currentMarker] then assignedGuids[currentMarker] = guid end
-        end
+    local unit, guid, plate = ResolveTargetNameplate()
+    if not unit then
+        Detach()
+        return
     end
 
-    local visible = targetExists
-        and UnitCanAttack and UnitCanAttack("player", "target")
-        and not targetDead
-    local targetMarked = currentMarker ~= nil
+    local currentMarker = GetRaidTargetIndex and GetRaidTargetIndex(unit)
+    boundUnit, boundGuid = unit, guid
+    container:SetParent(plate)
+    container:ClearAllPoints()
+    container:SetPoint("BOTTOM", plate, "TOP", 0, NAMEPLATE_GAP)
+    container:SetFrameLevel((plate:GetFrameLevel() or 0) + 20)
+    local hasSupportedSelection = supportedMarkers[currentMarker] == true
     for position, definition in ipairs(MARKERS) do
-        local button = buttons[position]
         SetMarkerState(
-            button,
-            assignedGuids[definition.index] ~= nil,
-            targetMarked,
-            currentMarker == definition.index)
-        button:SetShown(visible and true or false)
+            buttons[position],
+            currentMarker == definition.index,
+            hasSupportedSelection)
     end
+    container:Show()
 end
 
 function M.Refresh()
     RefreshInternal()
 end
 
-function M.ReleaseGuid(guid)
-    if not guid then return end
-    ClearGuidAssignments(guid)
-    RefreshInternal(guid)
+function M.OnNamePlateAdded(unit)
+    if type(unit) == "string" then nameplateUnits[unit] = true end
+    M.Refresh()
 end
 
-function M.OnCombatLogEvent()
-    if not IsSupported() or not CombatLogGetCurrentEventInfo then return end
-    local _, subevent, _, _, _, _, _, destGuid = CombatLogGetCurrentEventInfo()
-    if subevent == "UNIT_DIED" or subevent == "UNIT_DESTROYED" or subevent == "PARTY_KILL" then
-        M.ReleaseGuid(destGuid)
-    end
+function M.OnNamePlateRemoved(unit)
+    if type(unit) ~= "string" then return end
+    nameplateUnits[unit] = nil
+    if boundUnit == unit then Detach() end
+    M.Refresh()
+end
+
+function M.OnTargetChanged()
+    M.Refresh()
 end
 
 -- Read-only diagnostics used by regression tests.
 function M.GetButton(position) return buttons[position] end
-function M.GetAssignedGuid(index) return assignedGuids[index] end
+function M.GetContainer() return container end
+function M.GetBoundUnit() return boundUnit end
 M.IsSupported = IsSupported

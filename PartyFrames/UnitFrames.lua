@@ -5,7 +5,6 @@ local W = ApogeePartyHealthBars_MouseWheelActions
 local K = ApogeePartyHealthBars_KeyboardActions
 local B = ApogeePartyHealthBars_MouseButtonActions
 local CB = ApogeePartyHealthBars_ConsumableBar
-local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 local UnitBar = ApogeePartyHealthBars_UnitBar
 local Topology = ApogeePartyHealthBars_UnitTopology
@@ -137,7 +136,6 @@ function F.Build(D)
     K.Attach(rows[1].primary)
     B.Attach(rows[1].primary)
     CB.Attach(rows[1].primary)
-    M.Attach(rows[1].target)
     local primarySurfaces = {}
     for index = 1, C.MAX_ROWS do primarySurfaces[index] = rows[index].primary end
     H.Attach(primarySurfaces, D.SyncVisualTicker)

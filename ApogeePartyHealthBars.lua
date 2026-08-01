@@ -247,7 +247,6 @@ rowGeometry.Initialize({
     GetHotStripHeight = GetHotStripHeight,
     PlayerUtility = playerUtility,
     ShortcutBar = T,
-    RaidMarkers = M,
     MouseWheelActions = W,
     KeyboardActions = K,
     MouseButtonActions = B,

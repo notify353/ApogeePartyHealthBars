@@ -25,7 +25,6 @@ function G.Initialize(deps)
     for dependency, method in pairs({
         PlayerUtility = "GetHeight",
         ShortcutBar = "GetLaneHeight",
-        RaidMarkers = "GetHeight",
     }) do
         assert(type(deps[dependency]) == "table"
                 and type(deps[dependency][method]) == "function",
@@ -95,9 +94,7 @@ function G.GetActionAreaHeight(rowOrUnit, actionGeometry)
 
     local playerStack = actionHudHeight
         + D.PlayerUtility.GetHeight(unitId)
-    local targetStack = math.max(
-        D.ShortcutBar.GetLaneHeight("target"),
-        D.RaidMarkers.GetHeight(unitId))
+    local targetStack = D.ShortcutBar.GetLaneHeight("target")
     return math.max(playerStack, targetStack)
 end
 

@@ -81,14 +81,20 @@ local function BuildEnemy(unit, guid, now, sourcePriority)
     if next(details) == nil then return nil end
     local player = details.player
     local isTanking = player and player.isTanking == true or false
-    local margin = isTanking and math.max(0, 100 - GetClosestChallenger(details))
-        or (player and math.max(0, player.scaledPercent or 0) or 0)
+    local control
+    if isTanking then
+        control = math.max(0, math.min(100, 100 - GetClosestChallenger(details)))
+    else
+        local recoveryProgress = player and math.max(0, math.min(100,
+            player.scaledPercent or 0)) or 0
+        control = -(100 - recoveryProgress)
+    end
     local severity
     if not isTanking then
         severity = "lost"
-    elseif margin <= 10 then
+    elseif control <= 10 then
         severity = "critical"
-    elseif margin <= 30 then
+    elseif control <= 30 then
         severity = "slipping"
     else
         severity = "safe"
@@ -103,7 +109,7 @@ local function BuildEnemy(unit, guid, now, sourcePriority)
         raidMarker = GetRaidTargetIndex and GetRaidTargetIndex(unit) or nil,
         victim = ResolveVictim(unit),
         isTanking = isTanking,
-        margin = margin,
+        control = control,
         severity = severity,
         changedAt = changedAt,
         lastSeen = now,
@@ -126,9 +132,9 @@ local function SortEnemies(left, right)
     local leftOrder = SEVERITY_ORDER[left.severity] or 99
     local rightOrder = SEVERITY_ORDER[right.severity] or 99
     if leftOrder ~= rightOrder then return leftOrder < rightOrder end
-    local leftMargin = type(left.margin) == "number" and left.margin or math.huge
-    local rightMargin = type(right.margin) == "number" and right.margin or math.huge
-    if leftMargin ~= rightMargin then return leftMargin < rightMargin end
+    local leftControl = type(left.control) == "number" and left.control or math.huge
+    local rightControl = type(right.control) == "number" and right.control or math.huge
+    if leftControl ~= rightControl then return leftControl < rightControl end
     if left.changedAt ~= right.changedAt then return left.changedAt > right.changedAt end
     return tostring(left.guid) < tostring(right.guid)
 end
@@ -189,7 +195,7 @@ function O.Refresh()
             if not resolvedGuids[guid] and previous.severity == "lost"
                 and now - previous.lastSeen <= STALE_SECONDS then
                 local stale = DeepCopy(previous)
-                stale.unit, stale.margin, stale.details = nil, nil, nil
+                stale.unit, stale.control, stale.details = nil, nil, nil
                 stale.live, stale.stale = false, true
                 stale.observed = false
                 nextSnapshot.enemies[#nextSnapshot.enemies + 1] = stale

@@ -837,7 +837,7 @@ assert(table.concat(ApogeePartyHealthBars_SettingsUI.groupOrder, ",")
     "settings groups did not follow the compact task order")
 assert(table.concat(ApogeePartyHealthBars_SettingsUI.pageOrder, ",")
         == "frames,partyFrameClicks,shortcuts,keyboard,mouseWheel,mouseButtons,"
-            .. "healthChat,buffsCleanse,targetEffects,dungeon,profiles,loadouts,maintenance",
+            .. "healthChat,buffsCleanse,targetEffects,threatControl,dungeon,profiles,loadouts,maintenance",
     "settings pages did not retain every configuration workflow")
 assert(ApogeePartyHealthBars_MacroData == nil
         and ApogeePartyHealthBars_MacroLibrary == nil
@@ -933,7 +933,7 @@ assert(ApogeePartyHealthBars_BuffThanks.GetFrame().width == 326
     "Buff Thanks did not use the shaded Threat Awareness HUD treatment")
 for _, key in ipairs({
     "frames", "partyFrameClicks", "shortcuts", "keyboard", "mouseWheel",
-    "mouseButtons", "healthChat", "buffsCleanse", "targetEffects", "dungeon",
+    "mouseButtons", "healthChat", "buffsCleanse", "targetEffects", "threatControl", "dungeon",
     "profiles", "maintenance",
 }) do
     ApogeePartyHealthBars_SettingsUI.ActivatePage(key)
@@ -967,8 +967,15 @@ for _, key in ipairs({
             and (key == "buffsCleanse"
                 or not ApogeePartyHealthBars_BuffThanks.GetFrame():IsShown())
             and (key == "dungeon"
-                or not ApogeePartyHealthBars_DungeonBoardFeed.GetFrame():IsShown()),
+                or not ApogeePartyHealthBars_DungeonBoardFeed.GetFrame():IsShown())
+            and ApogeePartyHealthBars_ThreatAwareness.GetFrame():IsShown()
+                == (key == "threatControl"),
         "settings page left an unrelated auxiliary surface visible: " .. key)
+    if key == "threatControl" then
+        assert(ApogeePartyHealthBars_ThreatAwareness.GetFrame().frameStrata == "HIGH"
+                and ApogeePartyHealthBarsBindPanel.frameStrata == "DIALOG",
+            "Tank Threat Control preview could render above the settings window")
+    end
     local singlePageGroup = key == "frames" or key == "dungeon"
     assert(ApogeePartyHealthBars_SettingsUI.pageDropdown:IsShown()
             == not singlePageGroup

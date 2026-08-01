@@ -253,8 +253,6 @@ local deps = {
     Threat = { Refresh = function() calls.threat = calls.threat + 1 end },
     ThreatAwareness = {
         Refresh = function() calls.threatAwareness = (calls.threatAwareness or 0) + 1 end,
-        GetMode = function() return saved.threatAwarenessMode end,
-        SetMode = function(mode) saved.threatAwarenessMode = mode end,
         GetSoundKey = function() return saved.threatAwarenessSoundKey end,
         SetSoundKey = function(key) saved.threatAwarenessSoundKey = key end,
         PreviewSound = function() calls.threatAwarenessPreview = (calls.threatAwarenessPreview or 0) + 1 end,
@@ -296,9 +294,21 @@ assert(config.GetRow("showAllSlots").check:GetChecked() == false
         and config.GetRow("showAllSlots").label:GetText()
             == "Show all 5 party frames while solo",
     "saved frame checkboxes did not refresh")
-assert(config.GetRow("threatAwarenessMode").value:IsEnabled()
+assert(not config.GetRow("threatAwarenessEnabled"):IsShown()
+        and not config.GetRow("threatAwarenessExplanation"):IsShown()
+        and not config.GetRow("threatAwarenessSoundKey"):IsShown(),
+    "Frames still exposed Tank Threat Control settings")
+config.SetPage("threatControl")
+assert(config.GetPage() == "threatControl"
+        and config.GetForm().hint:GetText()
+            == "Configure tank threat lead, recovery, and lost-threat alerts; the sample remains visible and draggable while this page is open."
+        and config.GetRow("threatAwarenessMode") == nil
+        and config.GetRow("threatAwarenessExplanation").label:GetText()
+            == "Right is threat lead; left is effort to regain."
+        and config.GetRow("threatAwarenessEnabled").label:GetText()
+            == "Show Tank Threat Control HUD"
         and not config.GetRow("threatAwarenessSoundKey").value:IsEnabled(),
-    "disabled Threat Awareness did not retain presentation preview access")
+    "dedicated Tank Threat Control page did not expose its complete workflow")
 assert(config.GetRow("enabled") == nil,
     "General still exposed the redundant add-on enable checkbox")
 config.SetPage("buffsCleanse")
@@ -407,21 +417,22 @@ Click(threat)
 assert(calls.threat == 1 and calls.ticker == 1,
     "threat setting did not refresh threat and ticker state")
 
+config.SetPage("threatControl")
 local awarenessToggle = config.GetRow("threatAwarenessEnabled").check
 awarenessToggle:SetChecked(true)
 Click(awarenessToggle)
 assert(saved.threatAwarenessEnabled and calls.threatAwareness == 1 and calls.ticker == 2,
     "Threat Awareness enablement did not refresh the HUD and ticker")
-config.GetRow("threatAwarenessMode").value.onSelect("queue")
 config.GetRow("threatAwarenessSoundKey").value.onSelect("alarm_soft")
-assert(saved.threatAwarenessMode == "queue"
+assert(saved.threatAwarenessMode == "radar"
         and saved.threatAwarenessSoundKey == "alarm_soft"
         and calls.threatAwarenessPreview == 1,
-    "Threat Awareness mode or sound selection did not persist")
+    "Tank Threat Control sound selection changed legacy mode compatibility")
 Click(config.GetResetButtons().threatAwareness)
 assert(calls.threatAwarenessReset == 1,
     "Threat Awareness position reset did not reach the HUD")
 
+config.SetPage("frames")
 local hotGlobal = config.GetRow("hotEnabled").check
 hotGlobal:SetChecked(false)
 Click(hotGlobal)
@@ -497,6 +508,15 @@ assert(calls.factoryReset == 1 and resets.factory.label:GetText() == "Reset Char
 
 saved.threatEnabled = true
 unsupportedFeatures.threat = true
+config.SetPage("threatControl")
+config.Refresh()
+assert(config.GetPage() == "threatControl"
+        and config.GetRow("threatAwarenessEnabled").check:GetChecked()
+        and not config.GetRow("threatAwarenessEnabled").check:IsEnabled()
+        and config.GetRow("threatAwarenessEnabled").unavailableReason == "threat unavailable"
+        and not config.GetRow("threatAwarenessSoundKey").value:IsEnabled()
+        and saved.threatAwarenessEnabled == true,
+    "unsupported Threat Control page did not preserve and disable its saved preference")
 config.SetPage("frames")
 config.Refresh()
 assert(config.GetRow("threatEnabled").check:GetChecked()

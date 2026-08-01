@@ -33,6 +33,7 @@ local function Widget(name)
         end,
         IsEnabled = function(self) return self.enabled end,
         SetText = function(self, text) self.text = text end,
+        GetText = function(self) return self.text end,
         SetTextColor = function(self, ...) self.textColor = { ... } end,
         SetTexture = function(self, texture) self.texture = texture end,
         SetTexCoord = function(self, ...) self.texCoord = { ... } end,
@@ -56,6 +57,9 @@ local function Widget(name)
         GetVerticalScroll = function(self) return self.verticalScroll or 0 end,
         SetVerticalScroll = function(self, value) self.verticalScroll = value end,
         GetVerticalScrollRange = function(self) return self.verticalRange or 0 end,
+        GetCenter = function(self) return self.centerX, self.centerY end,
+        SetAlpha = function(self, value) self.alpha = value end,
+        SetPushedTexture = function(self, texture) self.pushedTexture = texture end,
         HookScript = function(self, script, callback)
             self.hooks = self.hooks or {}; self.hooks[script] = callback
         end,
@@ -63,13 +67,14 @@ local function Widget(name)
     local noops = {
         "SetPoint", "ClearAllPoints", "SetAllPoints",
         "SetClampedToScreen", "EnableMouse",
-        "SetJustifyH", "SetJustifyV", "SetWordWrap", "SetOwner",
+        "SetJustifyH", "SetJustifyV", "SetWordWrap",
     }
     for _, method in ipairs(noops) do methods[method] = function() end end
     return setmetatable(object, { __index = function(_, key) return methods[key] end })
 end
 
 UIParent = Widget("UIParent")
+UIParent.centerX = 500
 function CreateFrame(_, name, _, template)
     local frame = Widget(name)
     if template == "UIPanelScrollFrameTemplate" then frame.ScrollBar = Widget() end
@@ -85,6 +90,20 @@ assert(panel.backdrop == ApogeePartyHealthBars_C.BACKDROP
         and panel.backdropBorderColor[1] == 1,
     "shared panel backdrop lost its explicit opacity or border")
 local selected
+local primaryButton = helpers.CreateButton(UIParent, "Save", 86, 22, "primary")
+assert(primaryButton.apogeeButtonStyle == "primary"
+        and primaryButton.bg.color[1] == 0.20
+        and primaryButton.border.color[1] == 0.72,
+    "primary button did not retain its semantic style")
+helpers.SetButtonEnabled(primaryButton, false)
+assert(not primaryButton:IsEnabled() and primaryButton.label.textColor[1] == 0.62
+        and primaryButton.border.color[1] > 0.41,
+    "disabled semantic button did not retain a readable muted state")
+helpers.SetButtonStyle(primaryButton, "danger")
+helpers.SetButtonEnabled(primaryButton, true)
+assert(primaryButton.apogeeButtonStyle == "danger"
+        and primaryButton.bg.color[1] == 0.19,
+    "button style could not change without recreating the control")
 local upArrowButton = helpers.CreateArrowButton(UIParent, "up", 26, 22)
 local downArrowButton = helpers.CreateArrowButton(UIParent, "down", 26, 22)
 assert(upArrowButton.arrow.direction == "up"
@@ -159,6 +178,9 @@ assert(helpers.EscapeText("Raid |cff00ff00Profile|r") == "Raid ||cff00ff00Profil
     "profile display text did not escape WoW markup")
 
 GameTooltip = Widget("GameTooltip")
+function GameTooltip:SetOwner(owner, anchor)
+    self.owner, self.ownerAnchor = owner, anchor
+end
 function GameTooltip:SetSpellByID(spellId)
     self.spellId = spellId
     return spellId == 17
@@ -168,9 +190,17 @@ function GameTooltip:SetItemByID(itemId)
     return itemId == 6948
 end
 local tooltipAnchor = Widget("TooltipAnchor")
+tooltipAnchor.centerX = 700
 helpers.ShowNativeSpellTooltip(tooltipAnchor, 999999, "Stored Spell")
 assert(GameTooltip.spellId == 999999 and GameTooltip.text == "Stored Spell",
     "failed native spell tooltip did not fall back to its stored display name")
+assert(GameTooltip.ownerAnchor == "ANCHOR_RIGHT",
+    "tooltip did not choose the outward-facing side of a right-side control")
+tooltipAnchor.centerX = 300
+helpers.ShowNativeItemTooltip(tooltipAnchor, 999999, "Stored Item")
+assert(GameTooltip.ownerAnchor == "ANCHOR_LEFT",
+    "tooltip did not choose the outward-facing side of a left-side control")
+tooltipAnchor.centerX = 700
 GameTooltip.text = nil
 helpers.ShowNativeItemTooltip(tooltipAnchor, 999999, "Stored Item")
 assert(GameTooltip.itemId == 999999 and GameTooltip.text == "Stored Item",
@@ -192,9 +222,14 @@ assert(form.hint.text == "Choose settings." and form.rowWidth == 372
     "shared form scaffold did not create the common hierarchy")
 assert(not form.scroll.ScrollBar:IsShown(),
     "shared form scrollbar was visible before content overflowed")
+form.scroll.verticalRange = 100
 form.scroll.hooks.OnScrollRangeChanged(form.scroll, 0, 100)
-assert(form.scroll.ScrollBar:IsShown(),
+assert(form.scroll.ScrollBar:IsShown() and form.overflowCue:IsShown(),
     "shared form scrollbar did not appear when content overflowed")
+form.scroll.verticalScroll = 100
+form.scroll.hooks.OnVerticalScroll(form.scroll, 100)
+assert(not form.overflowCue:IsShown(),
+    "shared overflow cue remained visible at the bottom of the form")
 helpers.SetFormStatus(form, "Saved.", true)
 assert(form.status.text == "|cff00ff00Saved.|r",
     "shared form status did not use consistent success styling")
@@ -205,5 +240,19 @@ helpers.LayoutForm(statuslessForm, {
 })
 assert(not statuslessForm.status:IsShown() and statuslessForm.content.height == 53,
     "statusless shared form retained the empty footer gap")
+
+local availabilityRow = helpers.CreateFormRow(UIParent, 372, 40)
+local availabilityLabel = availabilityRow:CreateFontString()
+availabilityLabel:SetText("Cleanse Watch")
+local availabilityControl = Widget()
+helpers.PrepareAvailabilityRow(availabilityRow, availabilityLabel, availabilityControl, 8)
+helpers.SetControlAvailability(availabilityRow, availabilityControl, false,
+    "No cleansing spell is known")
+assert(not availabilityControl:IsEnabled()
+        and availabilityRow.apogeeAvailabilityLabel:IsShown()
+        and availabilityRow.apogeeAvailabilityLabel.text
+            == "Unavailable — No cleansing spell is known"
+        and availabilityRow.apogeeUnavailableReason == "No cleansing spell is known",
+    "shared unavailable state did not expose its inline and tooltip reasons")
 
 print("PASS UI dropdown helpers")

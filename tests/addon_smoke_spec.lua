@@ -982,8 +982,19 @@ for _, key in ipairs({
             and ApogeePartyHealthBars_SettingsUI.pageTitle:IsShown()
                 == singlePageGroup,
         "single-page settings group did not use a static page heading: " .. key)
+    assert(ApogeePartyHealthBars_SettingsUI.pageSummary:GetText()
+            == ApogeePartyHealthBars_SettingsUI.pages[key].summary,
+        "settings page did not expose its concise full-width summary: " .. key)
+    local threatSurface = ApogeePartyHealthBars_SettingsSurfaces.Get("threatAwareness")
+    assert((threatSurface.previewDock ~= nil) == (key == "threatControl"),
+        "Tank Threat Control preview did not follow the contextual dock lifecycle: " .. key)
     ApogeePartyHealthBars_SettingsUI.RefreshPage(key, true)
 end
+assert(ApogeePartyHealthBars_SettingsUI.pageDropdown.width == 240
+        and ApogeePartyHealthBars_SettingsUI.pageDropdown.point[1] == "TOPLEFT"
+        and ApogeePartyHealthBars_SettingsUI.pageSummary.width
+            == ApogeePartyHealthBars_C.CONFIG_CONTENT_W,
+    "settings page selector and summary did not use the two-row header geometry")
 ApogeePartyHealthBars_S.sv.buffThanksEnabled = true
 ApogeePartyHealthBars_BuffThanks.Refresh()
 ApogeePartyHealthBars_SettingsUI.ActivatePage("profiles")
@@ -996,6 +1007,7 @@ assert(ApogeePartyHealthBars_SettingsUI.profileLabel:GetText():find("Profile:", 
 local shareTextFrame = ApogeePartyHealthBars_ProfilesSettingsPage.GetShareTextFrame()
 local shareStatusFrame = ApogeePartyHealthBars_ProfilesSettingsPage.GetShareStatusFrame()
 assert(shareTextFrame.template == "InputScrollFrameTemplate"
+        and shareTextFrame.apogeeInset
         and ApogeePartyHealthBars_ProfilesSettingsPage.GetShareText() == shareTextFrame.EditBox,
     "profile share text was not constrained by Blizzard's scrolling input frame")
 assert(shareStatusFrame.template == "BackdropTemplate"

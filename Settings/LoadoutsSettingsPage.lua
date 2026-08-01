@@ -151,14 +151,14 @@ function L.Create(parent, deps)
         .. "Then attach it with an action row's Gear control.")
 
     local createSection = UIH.CreateFormSection(form.content, form.rowWidth,
-        "Create from your currently equipped gear")
+        "New loadout")
     local createRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     createNameEdit = CreateFrame("EditBox", nil, createRow, "InputBoxTemplate")
     createNameEdit:SetSize(form.rowWidth - 184, 22)
     createNameEdit:SetPoint("LEFT", createRow, "LEFT", 9, 0)
     createNameEdit:SetAutoFocus(false)
     if createNameEdit.SetMaxLetters then createNameEdit:SetMaxLetters(16) end
-    captureButton = UIH.CreateButton(createRow, "Capture as New", 160, 22)
+    captureButton = UIH.CreateButton(createRow, "Capture as New", 160, 22, "primary")
     captureButton:SetPoint("LEFT", createNameEdit, "RIGHT", 7, 0)
     UIH.SetTooltip(captureButton, "Capture a new loadout",
         "Saves your currently equipped items using the chosen gear scope under the name on the left.")
@@ -177,7 +177,7 @@ function L.Create(parent, deps)
     end)
 
     local currentSection = UIH.CreateFormSection(form.content, form.rowWidth,
-        "Manage an existing loadout")
+        "Selected loadout")
     local currentRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     loadoutIcon = currentRow:CreateTexture(nil, "ARTWORK")
     loadoutIcon:SetSize(24, 24)
@@ -193,7 +193,7 @@ function L.Create(parent, deps)
         applySetSelection(selectedSet())
         updateControls()
     end)
-    equipButton = UIH.CreateButton(currentRow, "Equip Selected", 126, 22)
+    equipButton = UIH.CreateButton(currentRow, "Equip Selected", 126, 22, "primary")
     equipButton:SetPoint("LEFT", loadoutDropdown, "RIGHT", 6, 0)
     equipButton:SetScript("OnClick", function()
         local ok, message = D.EquipmentSets.Equip(selectedId)
@@ -228,7 +228,7 @@ function L.Create(parent, deps)
     end)
 
     local scopeSection = UIH.CreateFormSection(form.content, form.rowWidth,
-        "Choose what Capture or Update controls")
+        "Scope")
     local presetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     allSlotsButton = UIH.CreateButton(presetRow, "All Gear",
         (form.rowWidth - 16) / 2, 22)
@@ -244,7 +244,7 @@ function L.Create(parent, deps)
     weaponsOnlyButton:SetScript("OnClick", function() setSlotPreset(true) end)
 
     local iconSection = UIH.CreateFormSection(form.content, form.rowWidth,
-        "Choose an icon from your equipped gear")
+        "Icon")
     local iconRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     iconPreview = iconRow:CreateTexture(nil, "ARTWORK")
     iconPreview:SetSize(24, 24)
@@ -262,10 +262,10 @@ function L.Create(parent, deps)
 
     local manageRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     updateButton = UIH.CreateButton(manageRow, "Update Selected",
-        (form.rowWidth - 16) / 2, 22)
+        (form.rowWidth - 16) / 2, 22, "primary")
     updateButton:SetPoint("LEFT", manageRow, "LEFT", 5, 0)
     deleteButton = UIH.CreateButton(manageRow, "Delete",
-        (form.rowWidth - 16) / 2, 22)
+        (form.rowWidth - 16) / 2, 22, "danger")
     deleteButton:SetPoint("LEFT", updateButton, "RIGHT", 6, 0)
     UIH.SetTooltip(updateButton, "Update the selected loadout",
         "Replaces the selected loadout using the chosen gear scope and your currently equipped items.")

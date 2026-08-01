@@ -43,9 +43,10 @@ end
 ApogeePartyHealthBars_UIHelpers = {}
 local UIH = ApogeePartyHealthBars_UIHelpers
 function UIH.EscapeText(value) return tostring(value or ""):gsub("|", "||") end
-function UIH.CreateButton(_, label, width)
+function UIH.CreateButton(_, label, width, _, style)
     local control = widget(); control.label = widget(); control.label:SetText(label)
-    control.requestedWidth = width; buttons[label] = control; return control
+    control.requestedWidth = width; control.apogeeButtonStyle = style or "neutral"
+    buttons[label] = control; return control
 end
 function UIH.SetButtonEnabled(control, enabled)
     if enabled then control:Enable() else control:Disable() end
@@ -119,6 +120,14 @@ assert(buttons["Activate Profile"] and buttons["Create"] and buttons["Duplicate"
         and buttons["Rename"] and buttons["Delete"]
         and buttons["Replace Active"] and buttons["Export"] and buttons["Import"],
     "Profiles compact controls were incomplete")
+assert(buttons["Activate Profile"].apogeeButtonStyle == "primary"
+        and buttons.Create.apogeeButtonStyle == "primary"
+        and buttons.Delete.apogeeButtonStyle == "danger"
+        and buttons["Replace Active"].apogeeButtonStyle == "danger"
+        and buttons.Import.apogeeButtonStyle == "primary"
+        and buttons["Review Import"].apogeeButtonStyle == "primary"
+        and buttons["Replace Selected"].apogeeButtonStyle == "danger",
+    "profile actions did not distinguish primary and destructive outcomes")
 assert(dropdowns[1].selectedKey == "default" and not buttons["Activate Profile"]:IsEnabled(),
     "active profile selection did not refresh the compact controls")
 
@@ -129,7 +138,8 @@ assert(buttons["Activate Profile"]:IsEnabled(),
 sharingSupported = false
 config.Refresh()
 assert(not buttons["Export"]:IsEnabled() and not buttons["Import"]:IsEnabled()
-        and buttons["Export"].unavailableReason == "profile sharing unavailable",
+        and buttons["Export"].unavailableReason == "profile sharing unavailable"
+        and form.entries[6].frame.label:GetText() == "Share — Unavailable",
     "unsupported profile sharing controls were not disabled with a reason")
 
 print("PASS compact profile configuration")

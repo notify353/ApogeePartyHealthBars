@@ -21,6 +21,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Polished every Settings page with a dedicated page header, clearer section hierarchy, semantic primary and destructive actions, readable two-tier action rows, visible overflow cues, inline unavailable states, and contextually docked previews while preserving the compact window footprint.
 - Moved Tank Threat Control configuration and its draggable preview from Frames → Party Frames to a dedicated Reminders → Threat Control page.
 - Reworked Threat Awareness into one Tank Threat Control queue: up to five stable enemy rows now use centered right-growing threat-lead and left-growing recovery bars, hidden lost mobs replace the safest visible held mob, and the legacy presentation preference remains profile-compatible without affecting runtime behavior.
 - New Warrior Charge assignments now generate a contextual Charge-out-of-combat and Hamstring-in-combat action, with the live action HUD tracking the active spell; existing and custom macros remain unchanged until reassigned or reset.

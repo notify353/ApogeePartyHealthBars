@@ -45,6 +45,9 @@ function A.ResetPosition()
         S.sv.threatAwarenessPoint, S.sv.threatAwarenessRelPoint = nil, nil
         S.sv.threatAwarenessX, S.sv.threatAwarenessY = nil, nil
     end
+    if unlocked and D and D.SettingsSurfaces then
+        D.SettingsSurfaces.RefreshConfigurationPreviewDock("threatAwareness")
+    end
 end
 
 function A.RestorePosition()
@@ -381,7 +384,14 @@ function A.IsActive() return IsEnabled() or unlocked end
 
 function A.SetUnlocked(value)
     A.Build()
-    unlocked = value == true and not (InCombatLockdown and InCombatLockdown())
+    local nextUnlocked = value == true and not (InCombatLockdown and InCombatLockdown())
+    local wasUnlocked = unlocked
+    unlocked = nextUnlocked
+    if nextUnlocked and not wasUnlocked then
+        D.SettingsSurfaces.DockConfigurationPreview("threatAwareness")
+    elseif wasUnlocked and not nextUnlocked then
+        D.SettingsSurfaces.ReleaseConfigurationPreview("threatAwareness")
+    end
     frame:EnableMouse(unlocked)
     if unlocked then frame:RegisterForDrag("LeftButton") else frame:RegisterForDrag() end
     D.SettingsSurfaces.SetSurfaceChromeShown("threatAwareness", false)
@@ -398,7 +408,11 @@ function A.Build()
     frame = CreateFrame("Frame", "ApogeePartyHealthBarsThreatAwarenessHud", UIParent, "BackdropTemplate")
     frame:SetSize(WIDTH, HEADER_HEIGHT + ROW_HEIGHT + FOOTER_HEIGHT)
     frame:SetMovable(true); frame:SetClampedToScreen(true); frame:SetFrameStrata("MEDIUM")
-    frame:SetScript("OnDragStart", function(self) if unlocked then self:StartMoving() end end)
+    frame:SetScript("OnDragStart", function(self)
+        if not unlocked then return end
+        D.SettingsSurfaces.MarkConfigurationPreviewMoved("threatAwareness")
+        self:StartMoving()
+    end)
     frame:SetScript("OnDragStop", function(self) if unlocked then self:StopMovingOrSizing(); SavePosition() end end)
     coverage = frame:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     coverage:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 8, 5)

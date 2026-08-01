@@ -22,6 +22,7 @@ local function checkboxRow(parent, labelText)
     label:SetPoint("LEFT", row, "LEFT", 8, 0); label:SetPoint("RIGHT", check, "LEFT", -5, 0)
     label:SetJustifyH("LEFT"); label:SetText(labelText)
     row.check, row.label = check, label
+    if UIH.PrepareAvailabilityRow then UIH.PrepareAvailabilityRow(row, label, check, 8) end
     return row
 end
 
@@ -75,14 +76,19 @@ function DC.Refresh()
     }
     local supported = D.ClientCapabilities.IsFeatureAvailable("targetEffectReminders")
     setChecked(enabledRow.check, saved.targetEffectRemindersEnabled == true)
-    if supported then enabledRow.check:Enable() else enabledRow.check:Disable() end
-    UIH.SetUnavailableTooltip(enabledRow, supported and nil
-        or D.ClientCapabilities.GetFeatureReason("targetEffectReminders"))
+    local unavailableReason = not supported
+        and D.ClientCapabilities.GetFeatureReason("targetEffectReminders") or nil
+    if UIH.SetControlAvailability then
+        UIH.SetControlAvailability(enabledRow, enabledRow.check, supported, unavailableReason)
+    else
+        if supported then enabledRow.check:Enable() else enabledRow.check:Disable() end
+        UIH.SetUnavailableTooltip(enabledRow, unavailableReason)
+    end
     defaultRow.value.label:SetText(tostring(saved.targetEffectRefreshThreshold) .. "s")
 
     local known = D.TargetEffectTracker.GetKnownFamilies()
     local entries = {
-        { frame = enabledRow, height = 32 },
+        { frame = enabledRow, height = supported and 32 or 40 },
         { frame = defaultRow, height = 32 },
         { frame = previewRow, height = 50 },
         { frame = spellSection, height = 16, gap = 10 },

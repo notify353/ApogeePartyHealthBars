@@ -13,10 +13,12 @@ local hotRows = {}
 local hotRowsByKey = {}
 local resetBarBtn, resetSettingsBtn, resetMinimapBtn, threatAwarenessResetBtn, buffThanksResetBtn, prepareDisableBtn, factoryResetBtn
 local lfgAlertsResetBtn, dungeonBoardResetBtn
-local behaviorSection, alertsSection, dungeonBoardSection, displaySection, threatAwarenessSection, hudDisplaysSection
+local behaviorSection, alertsSection, lowHealthSection, nameMentionsSection
+local dungeonBoardSection, displaySection, threatAwarenessSection, hudDisplaysSection
 local hotSection, compatibilitySection
-local positionsSection, dangerSection
-local resetRow, threatAwarenessResetRow, cleanseResetRow, buffThanksResetRow, lfgAlertsResetRow, dungeonBoardResetRow
+local positionsSection, recoverySection, dangerSection
+local resetPartyFramesRow, resetSettingsRow, resetMinimapRow
+local threatAwarenessResetRow, cleanseResetRow, buffThanksResetRow, lfgAlertsResetRow, dungeonBoardResetRow
 local compatibilityRow, compatibilityLabel, prepareDisableRow, factoryRow
 local prepareDisableArmed, prepareDisableToken = false, 0
 local factoryResetArmed, factoryResetToken = false, 0
@@ -64,15 +66,19 @@ local function ApplySettingSupport(entry)
     local supported, reason = GetSettingSupport(entry.svKey)
     local frame = entry.frame
     local control = frame.check or frame.value
-    if control then
-        if supported then control:Enable() else control:Disable() end
-    end
-    if frame.label then
-        local color = supported and 0.9 or 0.45
-        frame.label:SetTextColor(color, color, color)
-    end
-    if UIH.SetUnavailableTooltip then
-        UIH.SetUnavailableTooltip(frame, supported and nil or reason)
+    if UIH.SetControlAvailability then
+        UIH.SetControlAvailability(frame, control, supported, reason)
+    else
+        if control then
+            if supported then control:Enable() else control:Disable() end
+        end
+        if frame.label then
+            local color = supported and 0.9 or 0.45
+            frame.label:SetTextColor(color, color, color)
+        end
+        if UIH.SetUnavailableTooltip then
+            UIH.SetUnavailableTooltip(frame, supported and nil or reason)
+        end
     end
     return supported
 end
@@ -100,6 +106,9 @@ local function CreateCheckboxRow(parent, labelText, indent)
 
     row.check = check
     row.label = label
+    if UIH.PrepareAvailabilityRow then
+        UIH.PrepareAvailabilityRow(row, label, check, 8 + (indent or 0))
+    end
     return row
 end
 
@@ -136,9 +145,11 @@ local function Layout()
     for _, entry in ipairs(generalRows) do entry.frame:Hide() end
     for _, entry in ipairs(hotRows) do entry.row:Hide() end
     for _, frame in ipairs({
-        behaviorSection, alertsSection, dungeonBoardSection, displaySection,
+        behaviorSection, alertsSection, lowHealthSection, nameMentionsSection,
+        dungeonBoardSection, displaySection,
         threatAwarenessSection, hudDisplaysSection, hotSection, compatibilitySection, positionsSection, dangerSection,
-        resetRow, threatAwarenessResetRow, cleanseResetRow, buffThanksResetRow,
+        recoverySection, resetPartyFramesRow, resetSettingsRow, resetMinimapRow,
+        threatAwarenessResetRow, cleanseResetRow, buffThanksResetRow,
         lfgAlertsResetRow, dungeonBoardResetRow,
         compatibilityRow, prepareDisableRow, factoryRow,
     }) do
@@ -211,7 +222,8 @@ local function Layout()
             else
                 SetCheckboxChecked(row.frame.check, D.IsSavedFeatureEnabled(row.svKey))
             end
-            ApplySettingSupport(row)
+            local supported = ApplySettingSupport(row)
+            entries[#entries].height = supported and 32 or 40
         end
     end
 
@@ -288,20 +300,26 @@ local function Layout()
                     entry.row.check:Disable()
                     entry.row.label:SetTextColor(0.45, 0.45, 0.45)
                 end
-                if UIH.SetUnavailableTooltip then
+                if UIH.SetControlAvailability then
+                    UIH.SetControlAvailability(entry.row, entry.row.check, supported, reason)
+                elseif UIH.SetUnavailableTooltip then
                     UIH.SetUnavailableTooltip(entry.row, supported and nil or reason)
                 end
+                entries[#entries].height = supported and 32 or 40
             end
         end
         entries[#entries + 1] = { frame = hudDisplaysSection, height = 16, gap = 10 }
         addSetting("actionFeedbackEnabled")
         addSetting("automaticConsumablesEnabled")
         entries[#entries + 1] = { frame = positionsSection, height = 16, gap = 10 }
-        entries[#entries + 1] = { frame = resetRow, height = 32 }
+        entries[#entries + 1] = { frame = resetPartyFramesRow, height = 32 }
+        entries[#entries + 1] = { frame = resetSettingsRow, height = 32 }
+        entries[#entries + 1] = { frame = resetMinimapRow, height = 32 }
     elseif activePage == "healthChat" then
-        entries[#entries + 1] = { frame = alertsSection, height = 16, gap = 9 }
+        entries[#entries + 1] = { frame = lowHealthSection, height = 16, gap = 9 }
         addSetting("lowHealthThreshold")
         addSetting("lowHealthSoundKey")
+        entries[#entries + 1] = { frame = nameMentionsSection, height = 16, gap = 10 }
         addSetting("mentionAlertsEnabled")
         addSetting("mentionSoundKey")
         addSetting("mentionHighlightEnabled")
@@ -352,8 +370,9 @@ local function Layout()
         entries[#entries + 1] = {
             frame = compatibilityRow, height = 42, visible = compatibilityVisible,
         }
-        entries[#entries + 1] = { frame = dangerSection, height = 16, gap = 10 }
+        entries[#entries + 1] = { frame = recoverySection, height = 16, gap = 10 }
         entries[#entries + 1] = { frame = prepareDisableRow, height = 32 }
+        entries[#entries + 1] = { frame = dangerSection, height = 16, gap = 12 }
         entries[#entries + 1] = { frame = factoryRow, height = 32 }
     end
     form.hint:SetText(PAGE_HINTS[activePage] or PAGE_HINTS.frames)
@@ -641,6 +660,8 @@ function G.Create(parent, deps)
 
     behaviorSection = UIH.CreateFormSection(form.content, form.rowWidth, "Behavior")
     alertsSection = UIH.CreateFormSection(form.content, form.rowWidth, "Alerts and reminders")
+    lowHealthSection = UIH.CreateFormSection(form.content, form.rowWidth, "Low Health")
+    nameMentionsSection = UIH.CreateFormSection(form.content, form.rowWidth, "Name Mentions")
     dungeonBoardSection = UIH.CreateFormSection(form.content, form.rowWidth, "Dungeon Board")
     displaySection = UIH.CreateFormSection(form.content, form.rowWidth, "Frame details")
     threatAwarenessSection = UIH.CreateFormSection(form.content, form.rowWidth, "Tank threat control")
@@ -649,7 +670,10 @@ function G.Create(parent, deps)
     compatibilitySection = UIH.CreateFormSection(form.content, form.rowWidth,
         "Client compatibility")
     positionsSection = UIH.CreateFormSection(form.content, form.rowWidth, "Positions")
-    dangerSection = UIH.CreateFormSection(form.content, form.rowWidth, "Danger")
+    recoverySection = UIH.CreateFormSection(form.content, form.rowWidth, "Recovery")
+    dangerSection = UIH.CreateFormSection(form.content, form.rowWidth, "Danger Zone")
+    dangerSection.label:SetTextColor(1, 0.45, 0.38)
+    if dangerSection.rule then dangerSection.rule:SetColorTexture(0.62, 0.16, 0.14, 0.85) end
 
     AddCheckbox("Show all 5 party frames while solo", "showAllSlots")
     AddCheckbox("Fade selected Blizzard HUD elements in combat", "combatUIAutoHide", function()
@@ -731,21 +755,26 @@ function G.Create(parent, deps)
     compatibilityLabel:SetWordWrap(true)
     compatibilityLabel:SetTextColor(1, 0.65, 0.2)
 
-    resetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
-    local resetWidth = (form.rowWidth - 22) / 3
-    resetBarBtn = UIH.CreateButton(resetRow, "Party Frames", resetWidth, 22)
-    resetBarBtn:SetPoint("LEFT", resetRow, "LEFT", 5, 0)
+    local function CreatePositionResetRow(labelText)
+        local row = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+        local label = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+        label:SetPoint("LEFT", row, "LEFT", 8, 0)
+        label:SetText(labelText)
+        local button = UIH.CreateButton(row, "Reset", 86, 22)
+        button:SetPoint("RIGHT", row, "RIGHT", -5, 0)
+        return row, button
+    end
+
+    resetPartyFramesRow, resetBarBtn = CreatePositionResetRow("Party Frames")
     resetBarBtn:SetScript("OnClick", function()
         D.ApplyDefaultPosition()
         D.ForceRefresh()
     end)
 
-    resetSettingsBtn = UIH.CreateButton(resetRow, "Settings Window", resetWidth, 22)
-    resetSettingsBtn:SetPoint("LEFT", resetBarBtn, "RIGHT", 6, 0)
+    resetSettingsRow, resetSettingsBtn = CreatePositionResetRow("Settings Window")
     resetSettingsBtn:SetScript("OnClick", D.ApplyDefaultConfigPosition)
 
-    resetMinimapBtn = UIH.CreateButton(resetRow, "Minimap Button", resetWidth, 22)
-    resetMinimapBtn:SetPoint("LEFT", resetSettingsBtn, "RIGHT", 6, 0)
+    resetMinimapRow, resetMinimapBtn = CreatePositionResetRow("Minimap Button")
     resetMinimapBtn:SetScript("OnClick", D.ApplyDefaultMinimapPosition)
 
     threatAwarenessResetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
@@ -840,7 +869,7 @@ function G.Create(parent, deps)
     local factoryLabel = factoryRow:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     factoryLabel:SetPoint("LEFT", factoryRow, "LEFT", 8, 0)
     factoryLabel:SetText("Erase this character's profiles and settings")
-    factoryResetBtn = UIH.CreateButton(factoryRow, "Reset Character", 126, 22)
+    factoryResetBtn = UIH.CreateButton(factoryRow, "Reset Character", 126, 22, "danger")
     factoryResetBtn:SetPoint("RIGHT", factoryRow, "RIGHT", -5, 0)
     factoryResetBtn:SetScript("OnClick", function()
         if not factoryResetArmed then

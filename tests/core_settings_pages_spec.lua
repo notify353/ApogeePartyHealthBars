@@ -54,10 +54,11 @@ function CreateFrame() return Widget() end
 
 ApogeePartyHealthBars_UIHelpers = {}
 local UIH = ApogeePartyHealthBars_UIHelpers
-function UIH.CreateButton(_, label)
+function UIH.CreateButton(_, label, _, _, style)
     local button = Widget()
     button.label = Widget()
     button.label:SetText(label)
+    button.apogeeButtonStyle = style or "neutral"
     return button
 end
 function UIH.CreateDropdown(parent)
@@ -478,6 +479,19 @@ Click(config.GetRow("selfBuffPreference").value, "RightButton")
 assert(calls.selfPreference == "any", "right-click self-buff cycling changed order")
 
 local resets = config.GetResetButtons()
+assert(resets.bar.label:GetText() == "Reset"
+        and resets.settings.label:GetText() == "Reset"
+        and resets.minimap.label:GetText() == "Reset",
+    "position controls did not use labeled rows with unambiguous Reset actions")
+config.SetPage("maintenance")
+config.Refresh()
+local maintenanceSections = {}
+for _, entry in ipairs(config.GetForm().entries) do
+    if entry.frame.label then maintenanceSections[entry.frame.label:GetText()] = true end
+end
+assert(maintenanceSections.Recovery and maintenanceSections["Danger Zone"]
+        and resets.factory.apogeeButtonStyle == "danger",
+    "Maintenance did not separate restorative and destructive actions")
 Click(resets.bar); Click(resets.settings); Click(resets.minimap)
 Click(resets.lfgAlerts); Click(resets.dungeonBoard)
 assert(calls.barReset == 1 and calls.force == 1 and calls.settingsReset == 1

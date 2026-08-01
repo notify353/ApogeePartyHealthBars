@@ -67,7 +67,10 @@ function ApogeePartyHealthBars_UIHelpers.CreateArrowButton(_, direction)
 end
 function ApogeePartyHealthBars_UIHelpers.CreateDropdown()
     local dropdown = widget()
+    dropdown.label = widget()
+    dropdown.options = {}
     function dropdown:SetArrowShown() end
+    function dropdown:SetOptions(options) self.options = options end
     function dropdown:SetSelectedKey(key) self.selectedKey = key end
     return dropdown
 end
@@ -90,11 +93,13 @@ assert(list.scroll.template == "UIPanelScrollFrameTemplate" and list.rowWidth ==
     "shared action list did not create the compact native-scroll scaffold")
 local actionRow = config.CreateActionRow(list.content, list.rowWidth)
 config.SetActionRowState(actionRow, { detail = "Key G — Empty" })
-assert(actionRow.primary:GetText() == "Empty" and actionRow.secondary:GetText() == "Key G — Empty"
+assert(actionRow.primary:GetText() == "Drop spell or item"
+        and actionRow.secondary:GetText() == "Key G — Empty"
         and actionRow.iconSlot and actionRow.icon.texture == nil
         and not actionRow.sound:IsEnabled() and not actionRow.macro:IsEnabled()
         and not actionRow.clear:IsEnabled(),
     "shared action row did not render a clean, glyph-free empty drop target")
+actionRow.sound:SetOptions({ { key = "none", label = "None" }, { key = "toast", label = "Toast" } })
 config.SetActionRowState(actionRow, {
     active = true, name = "Fireball", detail = "Key G — Spell",
     icon = "Interface\\Icons\\Spell_Fire_FlameBolt", soundKey = "toast",
@@ -103,11 +108,14 @@ config.SetActionRowState(actionRow, {
 assert(actionRow.primary:GetText() == "Fireball"
         and actionRow.icon.texture == "Interface\\Icons\\Spell_Fire_FlameBolt"
         and actionRow.sound.selectedKey == "toast"
-        and actionRow.sound.tooltipTitle == "Ready sound"
+        and actionRow.sound.label:GetText() == "Sound"
+        and actionRow.sound.tooltipTitle == "Ready sound: Toast"
         and actionRow.sound.tooltipBody
-            == "Plays when this action becomes ready after a meaningful cooldown or depleted charges."
+            == "Choose the sound played when this action becomes ready."
         and actionRow.sound:IsEnabled() and actionRow.macro:IsEnabled()
-        and actionRow.macro.label:GetText() == "Custom" and actionRow.up:IsEnabled()
+        and actionRow.sound.stateMarker:IsShown()
+        and actionRow.macro.label:GetText() == "Macro"
+        and actionRow.macro.stateMarker:IsShown() and actionRow.up:IsEnabled()
         and not actionRow.down:IsEnabled() and actionRow.clear:IsEnabled(),
     "shared action row did not render consistent filled controls")
 local healingRow = config.CreateActionRow(list.content, list.rowWidth, {
@@ -124,7 +132,7 @@ assert(not healingRow.sound:IsShown() and not healingRow.macro:IsShown()
         and healingRow.clear:IsEnabled(),
     "shared action row did not support Healing's native-action control variant")
 config.LayoutActionList(list, { actionRow })
-assert(list.content.height == 86, "shared action list did not calculate compact row content height")
+assert(list.content.height == 98, "shared action list did not calculate readable row content height")
 list.scroll.scripts.OnScrollRangeChanged(list.scroll, 0, 120)
 assert(list.scroll.ScrollBar:IsShown(), "shared action list did not reveal its overflow scrollbar")
 list.scroll.scripts.OnScrollRangeChanged(list.scroll, 0, 0)

@@ -17,7 +17,7 @@ local current
 
 local LIST_SCROLLBAR_W = 24
 local LIST_HINT_H = 18
-local LIST_ROW_H = 36
+local LIST_ROW_H = 48
 local LIST_ROW_GAP = 3
 local LIST_FIRST_ROW_GAP = 9
 local LIST_STATUS_GAP = 7
@@ -65,13 +65,18 @@ function AC.CreateActionRow(parent, width, options)
     local showMacro = options.showMacro ~= false
     local showGear = options.showGear ~= false and showMacro
     local row = CreateFrame("Button", nil, parent)
-    row:SetSize(width or C.CONFIG_CONTENT_W, 36)
+    row:SetSize(width or C.CONFIG_CONTENT_W, LIST_ROW_H)
     local bg = row:CreateTexture(nil, "BACKGROUND")
     bg:SetAllPoints(); bg:SetColorTexture(0.075, 0.075, 0.09, 1)
     local highlight = row:CreateTexture(nil, "HIGHLIGHT")
     highlight:SetAllPoints(); highlight:SetColorTexture(1, 1, 1, 0.05)
+    local dropAccent = row:CreateTexture(nil, "OVERLAY")
+    dropAccent:SetPoint("TOPLEFT", row, "TOPLEFT", 0, 0)
+    dropAccent:SetPoint("BOTTOMLEFT", row, "BOTTOMLEFT", 0, 0)
+    dropAccent:SetWidth(2); dropAccent:SetColorTexture(1, 0.82, 0, 0.85)
+    dropAccent:Hide()
     local iconSlot = CreateFrame("Frame", nil, row)
-    iconSlot:SetSize(26, 26); iconSlot:SetPoint("LEFT", row, "LEFT", 6, 0)
+    iconSlot:SetSize(30, 30); iconSlot:SetPoint("LEFT", row, "LEFT", 6, 0)
     local iconOutline = iconSlot:CreateTexture(nil, "BACKGROUND")
     iconOutline:SetAllPoints(); iconOutline:SetColorTexture(0.22, 0.22, 0.24, 1)
     local iconFill = iconSlot:CreateTexture(nil, "BORDER")
@@ -79,25 +84,37 @@ function AC.CreateActionRow(parent, width, options)
     iconFill:SetPoint("BOTTOMRIGHT", iconSlot, "BOTTOMRIGHT", -1, 1)
     iconFill:SetColorTexture(0.025, 0.025, 0.03, 1)
     local icon = iconSlot:CreateTexture(nil, "ARTWORK")
-    icon:SetSize(22, 22); icon:SetPoint("CENTER")
+    icon:SetSize(26, 26); icon:SetPoint("CENTER")
     icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
-    local clear = UIH.CreateButton(row, "Clear", 40, 22)
-    clear:SetPoint("RIGHT", row, "RIGHT", -4, 0)
-    local down = UIH.CreateArrowButton(row, "down", 26, 22)
+    local clear = UIH.CreateButton(row, "Clear", 38, 20, "quiet")
+    clear:SetPoint("BOTTOMRIGHT", row, "BOTTOMRIGHT", -4, 4)
+    local down = UIH.CreateArrowButton(row, "down", 24, 20)
     down:SetPoint("RIGHT", clear, "LEFT", -2, 0)
-    local up = UIH.CreateArrowButton(row, "up", 26, 22)
+    local up = UIH.CreateArrowButton(row, "up", 24, 20)
     up:SetPoint("RIGHT", down, "LEFT", -2, 0)
-    local macro = UIH.CreateButton(row, "Macro", 48, 22)
-    macro:SetPoint("RIGHT", up, "LEFT", -2, 0)
-    local gear = UIH.CreateDropdown(row, 54, 22, 190)
+    local previous = up
+    local macro = UIH.CreateButton(row, "Macro", 46, 20)
+    macro:SetShown(showMacro)
+    if showMacro then macro:SetPoint("RIGHT", previous, "LEFT", -2, 0); previous = macro end
+    local gear = UIH.CreateDropdown(row, 46, 20, 190)
     gear:SetArrowShown(false)
-    gear:SetPoint("RIGHT", macro, "LEFT", -2, 0)
     gear:SetShown(showGear)
-    local sound = UIH.CreateDropdown(row, 62, 22, 150)
+    if showGear then gear:SetPoint("RIGHT", previous, "LEFT", -2, 0); previous = gear end
+    local sound = UIH.CreateDropdown(row, 50, 20, 150)
     sound:SetArrowShown(false)
-    sound:SetPoint("RIGHT", showGear and gear or macro, "LEFT", -2, 0)
     sound:SetShown(showSound)
+    if showSound then sound:SetPoint("RIGHT", previous, "LEFT", -2, 0); previous = sound end
+    local function createStateMarker(control)
+        local marker = control:CreateTexture(nil, "OVERLAY")
+        marker:SetPoint("BOTTOMLEFT", control, "BOTTOMLEFT", 2, 1)
+        marker:SetPoint("BOTTOMRIGHT", control, "BOTTOMRIGHT", -2, 1)
+        marker:SetHeight(2); marker:SetColorTexture(1, 0.82, 0, 0.95); marker:Hide()
+        return marker
+    end
+    sound.stateMarker = createStateMarker(sound)
+    gear.stateMarker = createStateMarker(gear)
+    macro.stateMarker = createStateMarker(macro)
     if showSound then
         UIH.SetTooltip(sound, "Ready sound",
             "Plays when this action becomes ready after a meaningful cooldown or depleted charges.")
@@ -116,19 +133,22 @@ function AC.CreateActionRow(parent, width, options)
         UIH.SetTooltip(gear, "Equipment loadout",
             "Choose a native equipment loadout to run before this action.")
     end
-    macro:SetShown(showMacro)
-
     local primary = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    primary:SetPoint("LEFT", iconSlot, "RIGHT", 6, 5)
-    local textControl = showSound and sound or (showMacro and macro or up)
-    primary:SetPoint("RIGHT", textControl, "LEFT", -5, 5)
+    primary:SetPoint("TOPLEFT", iconSlot, "TOPRIGHT", 6, 0)
+    primary:SetPoint("TOPRIGHT", row, "TOPRIGHT", -6, -8)
     primary:SetJustifyH("LEFT"); primary:SetWordWrap(false)
     local secondary = row:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    secondary:SetPoint("LEFT", primary, "LEFT", 0, -12)
-    secondary:SetPoint("RIGHT", primary, "RIGHT", 0, -12)
+    secondary:SetPoint("BOTTOMLEFT", iconSlot, "BOTTOMRIGHT", 6, 2)
+    secondary:SetPoint("BOTTOMRIGHT", previous, "BOTTOMLEFT", -5, 3)
     secondary:SetJustifyH("LEFT"); secondary:SetWordWrap(false)
 
+    row:SetScript("OnEnter", function()
+        if GetCursorInfo and GetCursorInfo() then dropAccent:Show() end
+    end)
+    row:SetScript("OnLeave", function() dropAccent:SetShown(row.apogeeActive ~= true) end)
+
     row.bg, row.iconSlot, row.icon = bg, iconSlot, icon
+    row.dropAccent = dropAccent
     row.iconOutline, row.iconFill = iconOutline, iconFill
     row.primary, row.secondary = primary, secondary
     row.sound, row.gear, row.macro, row.up, row.down, row.clear =
@@ -137,14 +157,26 @@ function AC.CreateActionRow(parent, width, options)
     return row
 end
 
+local function selectedOptionLabel(dropdown, key, fallback)
+    for _, option in ipairs(dropdown.options or {}) do
+        if option.key == key then return option.label end
+    end
+    return fallback
+end
+
 function AC.SetActionRowState(row, options)
     if not row then return end
     options = options or {}
     local active = options.active == true
+    row.apogeeActive = active
     local available = options.available ~= false
     row.icon:SetTexture(options.icon)
     row.icon:SetDesaturated(not active or not available)
-    row.primary:SetText(options.name or "Empty")
+    local displayName = options.name
+    if not active and (not displayName or displayName == "Empty") then
+        displayName = "Drop spell or item"
+    end
+    row.primary:SetText(displayName or "Action")
     if active and available then
         row.primary:SetTextColor(0.86, 0.86, 1)
     elseif active then
@@ -158,7 +190,15 @@ function AC.SetActionRowState(row, options)
     row.secondary:SetText((options.detail or "Empty")
         .. (selectedLoadout and (" · Gear: " .. selectedLoadout
             .. (loadoutMissing and " (missing)" or "")) or ""))
-    row.sound:SetSelectedKey(active and (options.soundKey or "none") or "none")
+    local soundKey = active and (options.soundKey or "none") or "none"
+    row.sound:SetSelectedKey(soundKey)
+    local soundLabel = selectedOptionLabel(row.sound, soundKey, "None")
+    row.sound.label:SetText("Sound")
+    row.sound.stateMarker:SetShown(active and soundKey ~= "none")
+    if row.showSound then
+        UIH.SetTooltip(row.sound, "Ready sound: " .. soundLabel,
+            "Choose the sound played when this action becomes ready.")
+    end
     if row.showSound and active then row.sound:Enable() else row.sound:Disable() end
     if row.showGear then
         local selectedName = selectedLoadout
@@ -166,6 +206,8 @@ function AC.SetActionRowState(row, options)
             row.gear:SetOptions(EquipmentSets.GetOptions(selectedName))
         end
         row.gear:SetSelectedKey(selectedName or EquipmentSets.NONE_KEY)
+        row.gear.label:SetText("Gear")
+        row.gear.stateMarker:SetShown(selectedName ~= nil)
         UIH.SetTooltip(row.gear,
             selectedName and ("Equipment loadout: " .. selectedName) or "Equipment loadout",
             selectedName
@@ -178,7 +220,9 @@ function AC.SetActionRowState(row, options)
     UIH.SetButtonEnabled(row.clear, active)
     UIH.SetButtonEnabled(row.up, active and options.canMoveUp == true)
     UIH.SetButtonEnabled(row.down, active and options.canMoveDown == true)
-    row.macro.label:SetText(active and options.macroCustomized and "Custom" or "Macro")
+    row.macro.label:SetText("Macro")
+    row.macro.stateMarker:SetShown(active and options.macroCustomized == true)
+    row.dropAccent:SetShown(not active)
 end
 
 function AC.CreateActionList(parent, frameName)
@@ -207,14 +251,19 @@ function AC.CreateActionList(parent, frameName)
         status = status,
         rowWidth = rowWidth,
     }
-
-    local scrollBar = scroll.ScrollBar
-    if scrollBar then
-        scrollBar:Hide()
+    local bodyAnchor = CreateFrame("Frame", nil, content)
+    bodyAnchor:SetPoint("TOPLEFT", content, "TOPLEFT", 0, 0)
+    bodyAnchor:SetSize(rowWidth, 1)
+    list.bodyAnchor = bodyAnchor
+    if UIH.AttachOverflowCue then
+        list.overflowCue = UIH.AttachOverflowCue(scroll, parent)
+    elseif scroll.ScrollBar then
+        scroll.ScrollBar:Hide()
         scroll:HookScript("OnScrollRangeChanged", function(_, _, verticalRange)
-            scrollBar:SetShown((verticalRange or 0) > 0)
+            scroll.ScrollBar:SetShown((verticalRange or 0) > 0)
         end)
     end
+    if UIH.AttachScrollWheel then UIH.AttachScrollWheel(scroll, LIST_ROW_H * 2) end
     return list
 end
 
@@ -231,8 +280,8 @@ end
 function AC.LayoutActionList(list, rows, layoutControl)
     if not list then return end
     rows = rows or {}
-    local anchor = list.hint
-    local contentHeight = LIST_HINT_H
+    local anchor = list.headerManaged and list.bodyAnchor or list.hint
+    local contentHeight = list.headerManaged and 0 or LIST_HINT_H
 
     if layoutControl then
         layoutControl:ClearAllPoints()
@@ -257,10 +306,7 @@ function AC.LayoutActionList(list, rows, layoutControl)
     contentHeight = contentHeight + LIST_STATUS_GAP + LIST_STATUS_H
     list.content:SetHeight(contentHeight)
 
-    local scrollBar = list.scroll.ScrollBar
-    if scrollBar and list.scroll.GetVerticalScrollRange then
-        scrollBar:SetShown((list.scroll:GetVerticalScrollRange() or 0) > 0)
-    end
+    if list.scroll.apogeeRefreshOverflow then list.scroll.apogeeRefreshOverflow() end
 end
 
 function AC.Initialize(parent, applyBackdrop)
@@ -309,7 +355,7 @@ function AC.Initialize(parent, applyBackdrop)
     cancelButton = UIH.CreateButton(dialog, "Cancel", 74, 22)
     cancelButton:SetPoint("LEFT", resetButton, "RIGHT", 6, 0)
     cancelButton:SetScript("OnClick", AC.CloseEditor)
-    saveButton = UIH.CreateButton(dialog, "Save", 86, 22)
+    saveButton = UIH.CreateButton(dialog, "Save", 86, 22, "primary")
     saveButton:SetPoint("BOTTOMRIGHT", dialog, "BOTTOMRIGHT", -12, 38)
     saveButton:SetScript("OnClick", function()
         if not current then return end

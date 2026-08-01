@@ -17,11 +17,13 @@ local UI = ApogeePartyHealthBars_SettingsUI
 
 local built = false
 local D
-local configPanel, profileLabel, pageDropdown, pageTitle
+local configPanel, profileLabel, pageDropdown, pageTitle, pageSummary
 local profilesPage, coreSettingsPagesFrame, targetEffectsPage, partyFrameClicksPage, shortcutBarPage
 local keyboardPage, mouseWheelPage, mouseButtonsPage, loadoutsPage
 local pages, groups, allFrames = {}, {}, {}
 local pageOrder, groupOrder = {}, { "frames", "actions", "reminders", "dungeon", "manage" }
+local PAGE_BODY_TOP = 44
+local PAGE_BODY_SCROLLBAR_INSET = 24
 
 local function SaveConfigPosition()
     if not S.sv or not configPanel then return end
@@ -90,6 +92,17 @@ local function RegisterPage(spec)
     assert(group, "unknown configuration group: " .. spec.group)
     group.pages[#group.pages + 1] = spec.key
     allFrames[spec.frame] = true
+    if spec.layout and not spec.layout.headerManaged then
+        spec.layout.headerManaged = true
+        if spec.layout.hint then spec.layout.hint:Hide() end
+        local scroll = spec.layout.scroll
+        if scroll then
+            scroll:ClearAllPoints()
+            scroll:SetPoint("TOPLEFT", spec.frame, "TOPLEFT", 0, -PAGE_BODY_TOP)
+            scroll:SetPoint("BOTTOMRIGHT", spec.frame, "BOTTOMRIGHT",
+                -PAGE_BODY_SCROLLBAR_INSET, 0)
+        end
+    end
 end
 
 local function RefreshProfileLabel()
@@ -102,10 +115,7 @@ end
 
 local function ConfigurePage(spec)
     if spec.configure then spec.configure() end
-    if spec.hint then
-        spec.hint:SetText(spec.summary or "")
-        spec.hint:SetWidth(252)
-    end
+    if pageSummary then pageSummary:SetText(spec.summary or "") end
 end
 
 local function PageOptions(group)
@@ -288,82 +298,82 @@ function UI.Build(deps)
     RegisterPage({
         key = "frames", group = "frames", label = "Party Frames",
         frame = coreSettingsPagesFrame, configure = function() GC.SetPage("frames") end,
-        refresh = GC.Refresh, hint = GC.GetForm().hint,
+        refresh = GC.Refresh, hint = GC.GetForm().hint, layout = GC.GetForm(),
         summary = "Choose party-frame behavior, details, and nearby HUD displays.",
     })
     RegisterPage({
         key = "partyFrameClicks", group = "actions", label = "Party Frame Clicks",
-        frame = partyFrameClicksPage, refresh = HC.Refresh, hint = HC.GetHint(),
+        frame = partyFrameClicksPage, refresh = HC.Refresh, hint = HC.GetHint(), layout = HC.GetList(),
         summary = "Assign clicks used on Apogee unit frames.",
     })
     RegisterPage({
         key = "shortcuts", group = "actions", label = "Shortcut Bar",
-        frame = shortcutBarPage, refresh = SC.Refresh, hint = SC.GetList().hint,
+        frame = shortcutBarPage, refresh = SC.Refresh, hint = SC.GetList().hint, layout = SC.GetList(),
         summary = "Configure actions below the party frame.",
     })
     RegisterPage({
         key = "keyboard", group = "actions", label = "Keyboard",
-        frame = keyboardPage, refresh = KC.Refresh, hint = KC.GetList().hint,
+        frame = keyboardPage, refresh = KC.Refresh, hint = KC.GetList().hint, layout = KC.GetList(),
         featureKey = "boundActions",
         summary = "Assign fixed keys for your character state.",
     })
     RegisterPage({
         key = "mouseWheel", group = "actions", label = "Mouse Wheel",
-        frame = mouseWheelPage, refresh = WC.Refresh, hint = WC.GetList().hint,
+        frame = mouseWheelPage, refresh = WC.Refresh, hint = WC.GetList().hint, layout = WC.GetList(),
         featureKey = "boundActions",
         summary = "Assign six wheel gestures for your character state.",
     })
     RegisterPage({
         key = "mouseButtons", group = "actions", label = "Mouse Buttons",
-        frame = mouseButtonsPage, refresh = BC.Refresh, hint = BC.GetList().hint,
+        frame = mouseButtonsPage, refresh = BC.Refresh, hint = BC.GetList().hint, layout = BC.GetList(),
         featureKey = "boundActions",
         summary = "Assign Mouse 3–5 outside Apogee frames.",
     })
     RegisterPage({
         key = "healthChat", group = "reminders", label = "Health & Chat",
         frame = coreSettingsPagesFrame, configure = function() GC.SetPage("healthChat") end,
-        refresh = GC.Refresh, hint = GC.GetForm().hint,
+        refresh = GC.Refresh, hint = GC.GetForm().hint, layout = GC.GetForm(),
         summary = "Configure low-health and name-mention alerts.",
     })
     RegisterPage({
         key = "buffsCleanse", group = "reminders", label = "Buffs & Cleansing",
         frame = coreSettingsPagesFrame, configure = function() GC.SetPage("buffsCleanse") end,
-        refresh = GC.Refresh, hint = GC.GetForm().hint,
+        refresh = GC.Refresh, hint = GC.GetForm().hint, layout = GC.GetForm(),
         summary = "Configure buff and cleansing reminders.",
     })
     RegisterPage({
         key = "targetEffects", group = "reminders", label = "Target Effects",
-        frame = targetEffectsPage, refresh = DC.Refresh, hint = DC.GetForm().hint,
+        frame = targetEffectsPage, refresh = DC.Refresh, hint = DC.GetForm().hint, layout = DC.GetForm(),
         featureKey = "targetEffectReminders",
-        summary = "Remind you about target effects.",
+        summary = "Show missing or expiring effects on your current target.",
     })
     RegisterPage({
         key = "threatControl", group = "reminders", label = "Threat Control",
         frame = coreSettingsPagesFrame, configure = function() GC.SetPage("threatControl") end,
-        refresh = GC.Refresh, hint = GC.GetForm().hint,
+        refresh = GC.Refresh, hint = GC.GetForm().hint, layout = GC.GetForm(),
         summary = "Configure multi-enemy tank threat control.",
     })
     RegisterPage({
         key = "dungeon", group = "dungeon", label = "Dungeon Board",
         frame = coreSettingsPagesFrame, configure = function() GC.SetPage("dungeon") end,
-        refresh = GC.Refresh, hint = GC.GetForm().hint,
+        refresh = GC.Refresh, hint = GC.GetForm().hint, layout = GC.GetForm(),
         summary = "Configure LFG results and alerts.",
     })
     RegisterPage({
         key = "profiles", group = "manage", label = "Profiles",
-        frame = profilesPage, refresh = PC.Refresh, hint = PC.GetForm().hint,
+        frame = profilesPage, refresh = PC.Refresh, hint = PC.GetForm().hint, layout = PC.GetForm(),
         summary = "Manage, export, and import character profiles.",
     })
     RegisterPage({
         key = "loadouts", group = "manage", label = "Loadouts",
-        frame = loadoutsPage, refresh = LC.Refresh, hint = LC.GetForm().hint,
+        frame = loadoutsPage, refresh = LC.Refresh, hint = LC.GetForm().hint, layout = LC.GetForm(),
         featureKey = "equipmentLoadouts",
         summary = "Capture equipment and attach loadouts to actions.",
     })
     RegisterPage({
         key = "maintenance", group = "manage", label = "Maintenance",
         frame = coreSettingsPagesFrame, configure = function() GC.SetPage("maintenance") end,
-        refresh = GC.Refresh, hint = GC.GetForm().hint,
+        refresh = GC.Refresh, hint = GC.GetForm().hint, layout = GC.GetForm(),
         summary = "Restore bindings or reset this character.",
     })
 
@@ -377,19 +387,25 @@ function UI.Build(deps)
         group.button:SetScript("OnClick", function() ActivateGroup(key) end)
     end
 
-    pageDropdown = UIH.CreateDropdown(configPanel, 174, 22, 240)
-    pageDropdown:SetPoint("TOPRIGHT", configPanel, "TOPRIGHT", -32,
+    pageDropdown = UIH.CreateDropdown(configPanel, 240, 22, 240)
+    pageDropdown:SetPoint("TOPLEFT", configPanel, "TOPLEFT", C.BIND_PAD,
         -(C.CONFIG_HEADER_H + C.BIND_PAD + C.CONFIG_PAGE_SELECTOR_H + 4))
     pageDropdown:SetFrameLevel(configPanel:GetFrameLevel() + 12)
     pageDropdown:SetSelectionCallback(function(key) ActivatePage(key) end)
 
     pageTitle = configPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    pageTitle:SetSize(174, 22)
-    pageTitle:SetPoint("TOPRIGHT", configPanel, "TOPRIGHT", -32,
+    pageTitle:SetSize(240, 22)
+    pageTitle:SetPoint("TOPLEFT", configPanel, "TOPLEFT", C.BIND_PAD,
         -(C.CONFIG_HEADER_H + C.BIND_PAD + C.CONFIG_PAGE_SELECTOR_H + 4))
-    pageTitle:SetJustifyH("RIGHT")
+    pageTitle:SetJustifyH("LEFT")
     pageTitle:SetTextColor(1, 0.82, 0)
     pageTitle:Hide()
+
+    pageSummary = configPanel:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    pageSummary:SetPoint("TOPLEFT", pageDropdown, "BOTTOMLEFT", 0, -3)
+    pageSummary:SetSize(C.CONFIG_CONTENT_W, 16)
+    pageSummary:SetJustifyH("LEFT"); pageSummary:SetJustifyV("TOP")
+    pageSummary:SetWordWrap(false)
 
     ActivatePage(S.activeSettingsPageKey)
 
@@ -415,6 +431,7 @@ function UI.Build(deps)
     UI.pages = pages
     UI.pageDropdown = pageDropdown
     UI.pageTitle = pageTitle
+    UI.pageSummary = pageSummary
     UI.factoryResetButton = GC.GetFactoryResetButton()
     UI.prepareDisableButton = GC.GetPrepareDisableButton()
     UI.versionLabel = versionLabel

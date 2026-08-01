@@ -18,6 +18,57 @@ local FORM_SECTION_H = 16
 local FORM_ROW_H = 32
 local FORM_STATUS_H = 30
 
+local BUTTON_STYLES = {
+    neutral = {
+        bg = { 0.12, 0.12, 0.14, 1 },
+        border = { 0.36, 0.36, 0.40, 0.75 },
+        text = { 0.85, 0.85, 0.85 },
+    },
+    primary = {
+        bg = { 0.20, 0.17, 0.07, 1 },
+        border = { 0.72, 0.57, 0.10, 0.95 },
+        text = { 1, 0.86, 0.32 },
+    },
+    danger = {
+        bg = { 0.19, 0.07, 0.07, 1 },
+        border = { 0.66, 0.20, 0.18, 0.95 },
+        text = { 1, 0.58, 0.50 },
+    },
+    quiet = {
+        bg = { 0.075, 0.075, 0.09, 1 },
+        border = { 0.24, 0.24, 0.28, 0.65 },
+        text = { 0.72, 0.72, 0.74 },
+    },
+}
+
+local function setTextureColor(texture, color)
+    texture:SetColorTexture(color[1], color[2], color[3], color[4] or 1)
+end
+
+local function applyButtonStyle(button)
+    if not button or not button.bg then return end
+    local style = BUTTON_STYLES[button.apogeeButtonStyle] or BUTTON_STYLES.neutral
+    local enabled = not button.IsEnabled or button:IsEnabled()
+    if enabled then
+        setTextureColor(button.bg, style.bg)
+        for _, edge in ipairs(button.borders or { button.border }) do
+            setTextureColor(edge, style.border)
+        end
+        if button.label then button.label:SetTextColor(unpack(style.text)) end
+    else
+        button.bg:SetColorTexture(style.bg[1] * 0.50, style.bg[2] * 0.50,
+            style.bg[3] * 0.50, style.bg[4] or 1)
+        for _, edge in ipairs(button.borders or { button.border }) do
+            edge:SetColorTexture(style.border[1] * 0.58, style.border[2] * 0.58,
+                style.border[3] * 0.58, 0.52)
+        end
+        if button.label then
+            button.label:SetTextColor(style.text[1] * 0.62, style.text[2] * 0.62,
+                style.text[3] * 0.62)
+        end
+    end
+end
+
 function H.EscapeText(value)
     return tostring(value or ""):gsub("|", "||")
 end
@@ -39,19 +90,45 @@ function H.StyleTabButton(button, active, supported)
     button.accent:SetShown(active and supported)
 end
 
-function H.CreateButton(parent, labelText, width, height)
+function H.CreateButton(parent, labelText, width, height, style)
     local button = CreateFrame("Button", nil, parent)
     button:SetSize(width or C.CONFIG_CONTENT_W, height or C.CONFIG_BTN_H)
     local bg = button:CreateTexture(nil, "BACKGROUND")
-    bg:SetAllPoints(); bg:SetColorTexture(0.12, 0.12, 0.14, 1)
+    bg:SetAllPoints()
     local highlight = button:CreateTexture(nil, "HIGHLIGHT")
     highlight:SetAllPoints(); highlight:SetColorTexture(1, 1, 1, 0.08)
-    local border = button:CreateTexture(nil, "BORDER")
-    border:SetPoint("TOPLEFT"); border:SetPoint("TOPRIGHT"); border:SetHeight(1)
-    border:SetColorTexture(0.36, 0.36, 0.40, 0.75)
+    local pushed = button:CreateTexture(nil, "ARTWORK")
+    pushed:SetAllPoints(); pushed:SetColorTexture(0, 0, 0, 0.18)
+    if button.SetPushedTexture then button:SetPushedTexture(pushed) end
+    local borders = {}
+    for _, edge in ipairs({ "TOP", "BOTTOM", "LEFT", "RIGHT" }) do
+        local border = button:CreateTexture(nil, "BORDER")
+        if edge == "TOP" or edge == "BOTTOM" then
+            border:SetPoint(edge .. "LEFT", button, edge .. "LEFT")
+            border:SetPoint(edge .. "RIGHT", button, edge .. "RIGHT")
+            border:SetHeight(1)
+        else
+            border:SetPoint("TOP" .. edge, button, "TOP" .. edge)
+            border:SetPoint("BOTTOM" .. edge, button, "BOTTOM" .. edge)
+            border:SetWidth(1)
+        end
+        borders[#borders + 1] = border
+    end
     local label = button:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     label:SetPoint("CENTER"); label:SetText(labelText)
-    button.bg, button.label, button.border = bg, label, border
+    button.bg, button.label, button.border = bg, label, borders[1]
+    button.borders, button.pushed = borders, pushed
+    button.apogeeButtonStyle = BUTTON_STYLES[style] and style or "neutral"
+    button:SetScript("OnEnable", applyButtonStyle)
+    button:SetScript("OnDisable", applyButtonStyle)
+    applyButtonStyle(button)
+    return button
+end
+
+function H.SetButtonStyle(button, style)
+    assert(BUTTON_STYLES[style], "unknown button style: " .. tostring(style))
+    button.apogeeButtonStyle = style
+    applyButtonStyle(button)
     return button
 end
 
@@ -77,7 +154,7 @@ function H.CreateArrowIndicator(parent, direction, width, height)
 end
 
 function H.CreateArrowButton(parent, direction, width, height)
-    local button = H.CreateButton(parent, "", width, height)
+    local button = H.CreateButton(parent, "", width, height, "quiet")
     local arrow = H.CreateArrowIndicator(button, direction)
     arrow:SetPoint("CENTER")
     button.arrow = arrow
@@ -86,10 +163,21 @@ end
 
 function H.SetButtonEnabled(button, enabled)
     if enabled then button:Enable() else button:Disable() end
-    if button.label then
-        local color = enabled and 0.85 or 0.45
-        button.label:SetTextColor(color, color, color)
+    applyButtonStyle(button)
+end
+
+local function tooltipAnchor(frame)
+    if not frame or not frame.GetCenter or not UIParent or not UIParent.GetCenter then
+        return "ANCHOR_RIGHT"
     end
+    local frameX = frame:GetCenter()
+    local parentX = UIParent:GetCenter()
+    if not frameX or not parentX then return "ANCHOR_RIGHT" end
+    return frameX >= parentX and "ANCHOR_RIGHT" or "ANCHOR_LEFT"
+end
+
+local function setTooltipOwner(frame)
+    GameTooltip:SetOwner(frame, tooltipAnchor(frame))
 end
 
 function H.SetTooltip(frame, title, body)
@@ -104,7 +192,7 @@ function H.SetTooltip(frame, title, body)
     frame:SetScript("OnEnter", function(self)
         if not GameTooltip or not GameTooltip.SetOwner then return end
         if GameTooltip.ClearLines then GameTooltip:ClearLines() end
-        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        setTooltipOwner(self)
         if GameTooltip.SetText then GameTooltip:SetText(title, 1, 0.82, 0.15) end
         if body and body ~= "" and GameTooltip.AddLine then
             GameTooltip:AddLine(body, 0.85, 0.85, 0.85, true)
@@ -128,7 +216,7 @@ function H.SetUnavailableTooltip(frame, reason)
     frame:SetScript("OnEnter", function(self)
         if not GameTooltip or not GameTooltip.SetOwner then return end
         if GameTooltip.ClearLines then GameTooltip:ClearLines() end
-        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        setTooltipOwner(self)
         if GameTooltip.SetText then
             GameTooltip:SetText("Unavailable on this client", 1, 0.82, 0.15)
         end
@@ -140,12 +228,62 @@ function H.SetUnavailableTooltip(frame, reason)
     end)
 end
 
+
+function H.PrepareAvailabilityRow(frame, label, control, leftInset)
+    if not frame or not label then return frame end
+    local status = frame:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    status:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", leftInset or 8, 3)
+    status:SetPoint("BOTTOMRIGHT", control or frame, control and "BOTTOMLEFT" or "BOTTOMRIGHT",
+        control and -5 or -8, 3)
+    status:SetJustifyH("LEFT"); status:SetWordWrap(false)
+    status:SetTextColor(1, 0.48, 0.36)
+    status:Hide()
+    frame.apogeeAvailabilityLabel = status
+    frame.apogeeAvailabilityMainLabel = label
+    frame.apogeeAvailabilityControl = control
+    frame.apogeeAvailabilityLeftInset = leftInset or 8
+    return frame
+end
+
+function H.SetControlAvailability(frame, control, available, reason)
+    if not frame then return available ~= false end
+    control = control or frame.check or frame.value or frame
+    if control then
+        if available ~= false then control:Enable() else control:Disable() end
+    end
+    local label = frame.apogeeAvailabilityMainLabel or frame.label
+    if label then
+        local color = available ~= false and 0.90 or 0.55
+        label:SetTextColor(color, color, color)
+    end
+    local status = frame.apogeeAvailabilityLabel
+    if status then
+        if available == false and reason and reason ~= "" then
+            status:SetText("Unavailable — " .. tostring(reason))
+            status:Show()
+            label:ClearAllPoints()
+            label:SetPoint("TOPLEFT", frame, "TOPLEFT",
+                frame.apogeeAvailabilityLeftInset or 8, -4)
+            label:SetPoint("TOPRIGHT", control or frame,
+                control and "TOPLEFT" or "TOPRIGHT", control and -5 or -8, -4)
+        else
+            status:Hide()
+            label:ClearAllPoints()
+            label:SetPoint("LEFT", frame, "LEFT", frame.apogeeAvailabilityLeftInset or 8, 0)
+            label:SetPoint("RIGHT", control or frame,
+                control and "LEFT" or "RIGHT", control and -5 or -8, 0)
+        end
+    end
+    H.SetUnavailableTooltip(frame, available == false and reason or nil)
+    return available ~= false
+end
+
 -- Keep spell-icon tooltips compact and consistent without modifying Blizzard's
 -- shared tooltip frame styling or protected UI state.
 local function showNativeTooltip(anchor, identifier, title, setterName, fallbackTitle)
     if not GameTooltip then return end
     if GameTooltip.ClearLines then GameTooltip:ClearLines() end
-    GameTooltip:SetOwner(anchor, "ANCHOR_TOP")
+    setTooltipOwner(anchor)
     local setter = GameTooltip[setterName]
     local rendered = identifier and setter
         and setter(GameTooltip, identifier) == true
@@ -166,7 +304,7 @@ end
 function H.ShowSpellTooltip(anchor, spellId, title, stateLabel, reason, contextLines)
     if not GameTooltip then return end
     if GameTooltip.ClearLines then GameTooltip:ClearLines() end
-    GameTooltip:SetOwner(anchor, "ANCHOR_TOP")
+    setTooltipOwner(anchor)
     if spellId and GameTooltip.SetSpellByID then
         GameTooltip:SetSpellByID(spellId)
     else
@@ -184,7 +322,7 @@ end
 function H.ShowItemTooltip(anchor, itemId, title, stateLabel, reason, contextLines)
     if not GameTooltip then return end
     if GameTooltip.ClearLines then GameTooltip:ClearLines() end
-    GameTooltip:SetOwner(anchor, "ANCHOR_TOP")
+    setTooltipOwner(anchor)
     if itemId and GameTooltip.SetItemByID then
         GameTooltip:SetItemByID(itemId)
     else
@@ -424,6 +562,41 @@ function H.AttachScrollWheel(scroll, step)
     end)
 end
 
+function H.AttachOverflowCue(scroll, parent)
+    if not scroll or scroll.apogeeOverflowCue then return scroll and scroll.apogeeOverflowCue end
+    parent = parent or scroll
+    local cue = CreateFrame("Frame", nil, parent)
+    if cue.SetFrameLevel and scroll.GetFrameLevel then
+        cue:SetFrameLevel(scroll:GetFrameLevel() + 20)
+    end
+    cue:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 0, 0)
+    cue:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -FORM_SCROLLBAR_W, 0)
+    cue:SetHeight(10)
+    local shade = cue:CreateTexture(nil, "BACKGROUND")
+    shade:SetAllPoints(); shade:SetColorTexture(0.04, 0.04, 0.055, 0.72)
+    local arrow = H.CreateArrowIndicator(cue, "down", 10, 6)
+    arrow:SetPoint("CENTER", cue, "CENTER", 0, 0)
+    arrow:SetVertexColor(0.90, 0.74, 0.18)
+    cue:EnableMouse(false); cue:Hide()
+
+    local function refresh()
+        local range = scroll.GetVerticalScrollRange and scroll:GetVerticalScrollRange() or 0
+        local current = scroll.GetVerticalScroll and scroll:GetVerticalScroll() or 0
+        local overflowing = range > 0
+        if scroll.ScrollBar then
+            scroll.ScrollBar:SetShown(overflowing)
+            if scroll.ScrollBar.SetAlpha then scroll.ScrollBar:SetAlpha(0.92) end
+        end
+        cue:SetShown(overflowing and current < range - 1)
+    end
+    scroll:HookScript("OnScrollRangeChanged", refresh)
+    scroll:HookScript("OnVerticalScroll", refresh)
+    scroll.apogeeOverflowCue = cue
+    scroll.apogeeRefreshOverflow = refresh
+    refresh()
+    return cue
+end
+
 function H.CreateScrollFrame(parent)
     local scroll = CreateFrame("ScrollFrame", nil, parent)
     scroll:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 0)
@@ -464,14 +637,7 @@ function H.CreateFormScaffold(parent, frameName, hintText, showStatus)
         showStatus = showStatus,
         rowWidth = rowWidth,
     }
-
-    local scrollBar = scroll.ScrollBar
-    if scrollBar then
-        scrollBar:Hide()
-        scroll:HookScript("OnScrollRangeChanged", function(_, _, verticalRange)
-            scrollBar:SetShown((verticalRange or 0) > 0)
-        end)
-    end
+    form.overflowCue = H.AttachOverflowCue(scroll, parent)
     H.AttachScrollWheel(scroll, FORM_ROW_H * 2)
     return form
 end
@@ -481,11 +647,15 @@ function H.CreateFormSection(parent, width, labelText)
     section:SetSize(width, FORM_SECTION_H)
     local label = section:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     label:SetPoint("LEFT", section, "LEFT", 1, 0)
-    label:SetPoint("RIGHT", section, "RIGHT", -1, 0)
+    label:SetWidth(math.min(width * 0.62, 250))
     label:SetJustifyH("LEFT"); label:SetWordWrap(false)
     label:SetText(labelText or "")
-    label:SetTextColor(0.58, 0.58, 0.61)
-    section.label = label
+    label:SetTextColor(0.82, 0.74, 0.48)
+    local rule = section:CreateTexture(nil, "ARTWORK")
+    rule:SetPoint("LEFT", label, "RIGHT", 8, 0)
+    rule:SetPoint("RIGHT", section, "RIGHT", -1, 0)
+    rule:SetHeight(1); rule:SetColorTexture(0.45, 0.35, 0.08, 0.70)
+    section.label, section.rule = label, rule
     return section
 end
 
@@ -510,7 +680,7 @@ end
 
 function H.LayoutForm(form, entries)
     if not form then return end
-    local y = FORM_HINT_H
+    local y = form.headerManaged and 0 or FORM_HINT_H
     for _, entry in ipairs(entries or {}) do
         local frame = entry.frame
         local visible = entry.visible ~= false
@@ -535,8 +705,5 @@ function H.LayoutForm(form, entries)
         form.content:SetHeight(y)
     end
 
-    local scrollBar = form.scroll.ScrollBar
-    if scrollBar and form.scroll.GetVerticalScrollRange then
-        scrollBar:SetShown((form.scroll:GetVerticalScrollRange() or 0) > 0)
-    end
+    if form.scroll.apogeeRefreshOverflow then form.scroll.apogeeRefreshOverflow() end
 end

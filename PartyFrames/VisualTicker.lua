@@ -44,6 +44,7 @@ local function OnUpdate(_, elapsed)
         D.RefreshUnitChains()
         D.RefreshRangeAlpha()
         D.Threat.Refresh()
+        if D.ThreatAwareness then D.ThreatAwareness.Refresh() end
         D.KeyboardActions.Refresh()
         D.MouseButtonActions.Refresh()
         D.ConsumableBar.Refresh(false)

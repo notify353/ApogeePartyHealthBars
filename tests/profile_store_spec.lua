@@ -1,7 +1,7 @@
 ApogeePartyHealthBars_C = {
     PROFILE_STORE_VERSION = 3,
-    PROFILE_PAYLOAD_VERSION = 3,
-    SAVED_VARIABLES_VERSION = 7,
+    PROFILE_PAYLOAD_VERSION = 4,
+    SAVED_VARIABLES_VERSION = 8,
 }
 ApogeePartyHealthBars_S = {}
 ApogeePartyHealthBars_Effects = {
@@ -59,7 +59,14 @@ ApogeePartyHealthBars_Effects = {
         settings.dungeonBoardRole =
             dungeonBoardRole == "tank" and "tank" or "healer"
         settings.dungeonBoardMode = nil
-        settings.schemaVersion = 7
+        if settings.threatAwarenessEnabled == nil then settings.threatAwarenessEnabled = false end
+        if settings.threatAwarenessMode == nil then settings.threatAwarenessMode = "radar" end
+        if settings.threatAwarenessSoundKey == nil then settings.threatAwarenessSoundKey = "alarm_soft" end
+        if settings.threatAwarenessPoint == nil then settings.threatAwarenessPoint = "CENTER" end
+        if settings.threatAwarenessRelPoint == nil then settings.threatAwarenessRelPoint = "CENTER" end
+        if settings.threatAwarenessX == nil then settings.threatAwarenessX = 0 end
+        if settings.threatAwarenessY == nil then settings.threatAwarenessY = 40 end
+        settings.schemaVersion = 8
         actions.bindings = type(actions.bindings) == "table" and actions.bindings or {}
         local legacyShortcuts = type(actions.trackedSpells) == "table" and actions.trackedSpells or nil
         if type(actions.shortcuts) ~= "table"
@@ -458,6 +465,9 @@ assert(resetRoot.profileStore.schemaVersion == 3 and #store.List() == 1
             == "TOPRIGHT"
         and store.GetActiveProfile().payload.settings.cleanseWatchX == 0
         and store.GetActiveProfile().payload.settings.cleanseWatchY == 0
+        and store.GetActiveProfile().payload.settings.threatAwarenessEnabled == false
+        and store.GetActiveProfile().payload.settings.threatAwarenessMode == "radar"
+        and store.GetActiveProfile().payload.settings.threatAwarenessSoundKey == "alarm_soft"
         and next(resetRoot.bindingRuntime) == nil,
     "character reset did not create a clean authoritative store")
 local resetAgain = store.Initialize(legacyAccount, resetRoot, "WARRIOR", "Bolderbear - Dreamscythe")
@@ -469,7 +479,7 @@ local ok = pcall(store.Initialize, futureAccount, {}, "PRIEST", "Future - Realm"
 assert(not ok and futureAccount.profileStore.schemaVersion == 2,
     "future legacy account profile-store schema was silently accepted or mutated")
 
-local futurePayload = { schemaVersion = 4, settings = {}, actions = {} }
+local futurePayload = { schemaVersion = 5, settings = {}, actions = {} }
 assert(not pcall(store.NormalizePayload, futurePayload),
     "future profile payload schema was silently downgraded")
 

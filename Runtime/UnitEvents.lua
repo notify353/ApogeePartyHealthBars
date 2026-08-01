@@ -3,6 +3,8 @@ local A = ApogeePartyHealthBars_Auras
 local T = ApogeePartyHealthBars_ShortcutBar
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
+local O = ApogeePartyHealthBars_ThreatObserver
+local TA = ApogeePartyHealthBars_ThreatAwareness
 
 ApogeePartyHealthBars_UnitEvents = {}
 local U = ApogeePartyHealthBars_UnitEvents
@@ -88,6 +90,19 @@ function U.Register(eventRouter, deps)
 
     eventRouter.RegisterOptional("RAID_TARGET_UPDATE", "RaidMarkers", M.Refresh)
     for _, event in ipairs({ "UNIT_THREAT_SITUATION_UPDATE", "UNIT_THREAT_LIST_UPDATE" }) do
-        eventRouter.RegisterOptional(event, "Threat", H.Refresh)
+        eventRouter.RegisterOptional(event, "Threat", function()
+            H.Refresh()
+            if TA then TA.Refresh() end
+        end)
     end
+    eventRouter.RegisterOptional("NAME_PLATE_UNIT_ADDED", "ThreatAwareness", function(_, unit)
+        O.OnNamePlateAdded(unit)
+        -- Initial observations never produce a lost transition, so do not
+        -- suppress a real transition from another continuously observed mob.
+        TA.Refresh()
+    end)
+    eventRouter.RegisterOptional("NAME_PLATE_UNIT_REMOVED", "ThreatAwareness", function(_, unit)
+        O.OnNamePlateRemoved(unit)
+        TA.Refresh()
+    end)
 end

@@ -11,12 +11,12 @@ local generalRows = {}
 local generalRowsByKey = {}
 local hotRows = {}
 local hotRowsByKey = {}
-local resetBarBtn, resetSettingsBtn, resetMinimapBtn, prepareDisableBtn, factoryResetBtn
+local resetBarBtn, resetSettingsBtn, resetMinimapBtn, threatAwarenessResetBtn, prepareDisableBtn, factoryResetBtn
 local lfgAlertsResetBtn, dungeonBoardResetBtn
-local behaviorSection, alertsSection, dungeonBoardSection, displaySection, hudDisplaysSection
+local behaviorSection, alertsSection, dungeonBoardSection, displaySection, threatAwarenessSection, hudDisplaysSection
 local hotSection, compatibilitySection
 local positionsSection, dangerSection
-local resetRow, cleanseResetRow, lfgAlertsResetRow, dungeonBoardResetRow
+local resetRow, threatAwarenessResetRow, cleanseResetRow, lfgAlertsResetRow, dungeonBoardResetRow
 local compatibilityRow, compatibilityLabel, prepareDisableRow, factoryRow
 local prepareDisableArmed, prepareDisableToken = false, 0
 local factoryResetArmed, factoryResetToken = false, 0
@@ -41,6 +41,9 @@ local SUPPORT_FEATURE_BY_SETTING = {
     rangeCheckEnabled = "rangeFade",
     threatEnabled = "threat",
     threatPercentEnabled = "threat",
+    threatAwarenessEnabled = "threat",
+    threatAwarenessMode = "threat",
+    threatAwarenessSoundKey = "threat",
     hotEnabled = "hotTracking",
 }
 
@@ -133,8 +136,8 @@ local function Layout()
     for _, entry in ipairs(hotRows) do entry.row:Hide() end
     for _, frame in ipairs({
         behaviorSection, alertsSection, dungeonBoardSection, displaySection,
-        hudDisplaysSection, hotSection, compatibilitySection, positionsSection, dangerSection,
-        resetRow, cleanseResetRow, lfgAlertsResetRow, dungeonBoardResetRow,
+        threatAwarenessSection, hudDisplaysSection, hotSection, compatibilitySection, positionsSection, dangerSection,
+        resetRow, threatAwarenessResetRow, cleanseResetRow, lfgAlertsResetRow, dungeonBoardResetRow,
         compatibilityRow, prepareDisableRow, factoryRow,
     }) do
         if frame then frame:Hide() end
@@ -163,6 +166,10 @@ local function Layout()
                 row.frame.value:SetSelectedKey(D.DungeonBoardSettings.GetRole())
             elseif row.svKey == "dungeonBoardSoundKey" then
                 row.frame.value:SetSelectedKey(D.DungeonBoardSettings.GetSoundKey())
+            elseif row.svKey == "threatAwarenessMode" then
+                row.frame.value:SetSelectedKey(D.ThreatAwareness.GetMode())
+            elseif row.svKey == "threatAwarenessSoundKey" then
+                row.frame.value:SetSelectedKey(D.ThreatAwareness.GetSoundKey())
             elseif row.svKey == "dungeonBoardLevelsBelow"
                 or row.svKey == "dungeonBoardLevelsAbove"
             then
@@ -253,6 +260,21 @@ local function Layout()
                 threatMargin.frame.label:SetTextColor(0.45, 0.45, 0.45)
             end
         end
+        entries[#entries + 1] = { frame = threatAwarenessSection, height = 16, gap = 10 }
+        addSetting("threatAwarenessEnabled")
+        addSetting("threatAwarenessMode")
+        addSetting("threatAwarenessSoundKey")
+        local awarenessEnabled = D.IsSavedFeatureEnabled("threatAwarenessEnabled")
+        local soundRow = generalRowsByKey.threatAwarenessSoundKey
+        if soundRow and GetSettingSupport("threatAwarenessSoundKey") then
+            if awarenessEnabled then
+                soundRow.frame.value:Enable()
+                soundRow.frame.label:SetTextColor(0.9, 0.9, 0.9)
+            else
+                soundRow.frame.value:Disable()
+                soundRow.frame.label:SetTextColor(0.45, 0.45, 0.45)
+            end
+        end
         addSetting("showUnitTargets")
         addSetting("hotEnabled")
 
@@ -288,6 +310,7 @@ local function Layout()
         addSetting("automaticConsumablesEnabled")
         entries[#entries + 1] = { frame = positionsSection, height = 16, gap = 10 }
         entries[#entries + 1] = { frame = resetRow, height = 32 }
+        entries[#entries + 1] = { frame = threatAwarenessResetRow, height = 32 }
     elseif activePage == "healthChat" then
         entries[#entries + 1] = { frame = alertsSection, height = 16, gap = 9 }
         addSetting("lowHealthThreshold")
@@ -381,6 +404,45 @@ local function AddDungeonBoardRolePreference()
     frame.value = value
     frame.label = label
     AddGeneralRow(frame, "dungeonBoardRole")
+end
+
+local function AddThreatAwarenessModePreference()
+    local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    label:SetPoint("LEFT", frame, "LEFT", 8, 0)
+    label:SetWidth(155); label:SetJustifyH("LEFT"); label:SetText("Presentation")
+    local value = UIH.CreateDropdown(frame, 220, 22)
+    value:SetOptions({
+        { key = "radar", label = "Pack Radar" },
+        { key = "alarm", label = "Loss Alarm" },
+        { key = "queue", label = "Threat Queue" },
+    })
+    value:SetPoint("RIGHT", frame, "RIGHT", -5, 0)
+    value:SetSelectionCallback(function(mode)
+        if refreshing then return end
+        D.ThreatAwareness.SetMode(mode)
+        D.RequestConfigRefresh()
+    end)
+    frame.label, frame.value = label, value
+    AddGeneralRow(frame, "threatAwarenessMode")
+end
+
+local function AddThreatAwarenessSoundPreference()
+    local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    label:SetPoint("LEFT", frame, "LEFT", 8, 0)
+    label:SetWidth(155); label:SetJustifyH("LEFT"); label:SetText("Lost-threat sound")
+    local value = UIH.CreateDropdown(frame, 220, 22)
+    value:SetOptions(D.Sounds.GetOptions(true)); value:SetArrowShown(false)
+    value:SetPoint("RIGHT", frame, "RIGHT", -5, 0)
+    value:SetSelectionCallback(function(soundKey)
+        if refreshing then return end
+        D.ThreatAwareness.SetSoundKey(soundKey)
+        D.ThreatAwareness.PreviewSound()
+        D.RequestConfigRefresh()
+    end)
+    frame.label, frame.value = label, value
+    AddGeneralRow(frame, "threatAwarenessSoundKey")
 end
 
 local function AddSelfBuffPreference()
@@ -563,7 +625,7 @@ function G.Create(parent, deps)
         "IsHotTrackKnown", "IsPartyBuffKnown", "IsSavedFeatureEnabled",
         "IsSelfBuffKnown", "Print", "RequestConfigRefresh", "SetAddonEnabled",
         "SetHotTrackEnabled", "SetSavedFeature", "SetSelfBuffPreference", "Sounds",
-        "SyncVisualTicker", "Threat", "ConsumableBar", "DungeonBoardSettings",
+        "SyncVisualTicker", "Threat", "ThreatAwareness", "ConsumableBar", "DungeonBoardSettings",
         "CleanseWatch",
     }) do
         assert(deps[key] ~= nil, "CoreSettingsPages missing dependency: " .. key)
@@ -582,6 +644,7 @@ function G.Create(parent, deps)
     alertsSection = UIH.CreateFormSection(form.content, form.rowWidth, "Alerts and reminders")
     dungeonBoardSection = UIH.CreateFormSection(form.content, form.rowWidth, "Dungeon Board")
     displaySection = UIH.CreateFormSection(form.content, form.rowWidth, "Frame details")
+    threatAwarenessSection = UIH.CreateFormSection(form.content, form.rowWidth, "Threat awareness")
     hudDisplaysSection = UIH.CreateFormSection(form.content, form.rowWidth, "HUD displays")
     hotSection = UIH.CreateFormSection(form.content, form.rowWidth, "Tracked heal-over-time effects")
     compatibilitySection = UIH.CreateFormSection(form.content, form.rowWidth,
@@ -631,6 +694,12 @@ function G.Create(parent, deps)
     end
     AddCheckbox("Show party threat status", "threatEnabled", refreshThreatSetting)
     AddCheckbox("Show threat margin for the current target", "threatPercentEnabled", refreshThreatSetting)
+    AddCheckbox("Show multi-enemy Threat Awareness HUD", "threatAwarenessEnabled", function()
+        D.ThreatAwareness.Refresh(true)
+        D.SyncVisualTicker()
+    end)
+    AddThreatAwarenessModePreference()
+    AddThreatAwarenessSoundPreference()
     AddCheckbox("Show each party member's target and target-of-target", "showUnitTargets")
     AddCheckbox("Show heal-over-time duration bars", "hotEnabled", D.InitHotSpells)
 
@@ -671,6 +740,19 @@ function G.Create(parent, deps)
     resetMinimapBtn = UIH.CreateButton(resetRow, "Minimap Button", resetWidth, 22)
     resetMinimapBtn:SetPoint("LEFT", resetSettingsBtn, "RIGHT", 6, 0)
     resetMinimapBtn:SetScript("OnClick", D.ApplyDefaultMinimapPosition)
+
+    threatAwarenessResetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    local threatAwarenessResetLabel = threatAwarenessResetRow:CreateFontString(
+        nil, "ARTWORK", "GameFontHighlightSmall")
+    threatAwarenessResetLabel:SetPoint("LEFT", threatAwarenessResetRow, "LEFT", 8, 0)
+    threatAwarenessResetLabel:SetText("Threat Awareness HUD")
+    threatAwarenessResetBtn = UIH.CreateButton(
+        threatAwarenessResetRow, "Reset Position", 126, 22)
+    threatAwarenessResetBtn:SetPoint("RIGHT", threatAwarenessResetRow, "RIGHT", -5, 0)
+    threatAwarenessResetBtn:SetScript("OnClick", function()
+        D.ThreatAwareness.ResetPosition()
+        D.ThreatAwareness.Refresh(true)
+    end)
 
     cleanseResetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local cleanseResetLabel = cleanseResetRow:CreateFontString(
@@ -793,6 +875,7 @@ function G.GetResetButtons()
         bar = resetBarBtn,
         settings = resetSettingsBtn,
         minimap = resetMinimapBtn,
+        threatAwareness = threatAwarenessResetBtn,
         lfgAlerts = lfgAlertsResetBtn,
         dungeonBoard = dungeonBoardResetBtn,
         prepareDisable = prepareDisableBtn,

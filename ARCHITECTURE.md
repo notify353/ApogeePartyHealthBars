@@ -61,6 +61,8 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `MouseButtonData`, `MouseButtonLayouts`, `MouseButtonActions`, `MouseButtonsSettingsPage`: fixed Mouse Button 3–5 combat definitions, independent per-spec/per-form profiles, right-of-Mouse-Wheel 3×3 HUD geometry, and uniform configuration
 - `RaidMarkers`: compact right-aligned target marker controls with stable external height reporting
 - `Threat`: primary player/party threat
+- `ThreatObserver`: dynamic hostile-token discovery, GUID deduplication, normalized group-threat margins, severity ranking, immutable pack snapshots, transition detection, and short last-seen loss retention
+- `ThreatAwareness`: passive profile-owned Pack Radar, Loss Alarm, and Threat Queue presentation, movable configuration preview, and throttled tanked-to-lost sound policy
 - `BindingStore`, `BindingController`, `PartyFrameClickBindings`: typed Party Frame Click spell/item persistence, adjacent gesture swaps, cursor-based destination assignment, and native unit-targeted secure actions
 - `CoreSettingsPages`: focused Frames, Health & Chat, Buffs & Cleansing, Dungeon Board, and Maintenance pages; feature toggles, HUD display preferences, alert preferences, HoT controls, compact position resets, and destructive reset confirmation
 - `PartyFrameClicksSettingsPage`: fixed-gesture Party Frame Click action rows, inline movement and clearing, display refresh, and right-click clearing compatibility
@@ -95,7 +97,9 @@ The data and pure-policy chain loads as `DungeonBoardCatalog` → `DungeonBoardA
 - Persist only the Dungeon Board watched role, sound choice, level-window offsets, and feed position in the active character-owned profile; requests, official results, and notification history remain session-only.
 - Treat basic unit health and frame construction as the required baseline while aura, range, prediction, threat, markers, assignment, bindings, state layouts, and profile sharing degrade independently.
 - Never mutate secure attributes, position, visibility, or mouse state during combat.
-- Keep every displayed unit inside `UnitTopology`; event routing, trackers, and layout must not grow independent token-pattern rules.
+- Keep party-frame units inside `UnitTopology`; event routing, trackers, and layout must not grow independent player/party token-pattern rules. Dynamic hostile nameplate and target-chain discovery belongs exclusively to `ThreatObserver` and must not alter fixed party-frame topology.
+- Treat Threat Awareness as an observable-token view, never a complete combat-enemy list. Deduplicate hostile sources by GUID, label reduced coverage when no hostile nameplate tokens are observable, and never present cached threat values as live after the final token disappears.
+- Keep Threat Awareness passive and non-secure. Sounds may fire only for a continuously observed tanked-to-lost transition and must remain suppressed for initial discovery, repeated lost refreshes, stale records, previews, and mode changes.
 - Poll target-chain identity and values at the normal visual cadence because Anniversary's Blizzard raid frames document unreliable second-depth target events.
 - Keep health rendering role-neutral inside `UnitBar`; player self-buffs, target crowd control, action HUDs, raid markers, and primary threat attach through explicit anchors.
 - Keep crowd-control identity, class ownership, activation mode, primary category, secondary capabilities, creature restrictions, pet source, labels, and automatic-display policy inside `CrowdControl`; `ShortcutBar` owns discovery, rendering, and secure execution only.

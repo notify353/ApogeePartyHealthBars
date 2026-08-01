@@ -33,6 +33,13 @@ local FEATURE_DEFAULTS = {
     cleanseWatchY = 0,
     threatEnabled = true,
     threatPercentEnabled = true,
+    threatAwarenessEnabled = false,
+    threatAwarenessMode = "radar",
+    threatAwarenessSoundKey = "alarm_soft",
+    threatAwarenessPoint = "CENTER",
+    threatAwarenessRelPoint = "CENTER",
+    threatAwarenessX = 0,
+    threatAwarenessY = 40,
     targetEffectRemindersEnabled = true,
     targetEffectRefreshThreshold = 3,
     dungeonBoardRole = "healer",
@@ -67,6 +74,11 @@ end
 local function NormalizeDungeonBoardRole(value)
     if value == "tank" then return "tank" end
     return "healer"
+end
+
+local function NormalizeThreatAwarenessMode(value)
+    if value == "alarm" or value == "queue" then return value end
+    return "radar"
 end
 
 -- Compatibility boundary for profiles created before the internal terminology
@@ -135,11 +147,16 @@ function E.InitializeSavedVariables(saved, characterSaved)
     end
     saved.dungeonBoardRole = NormalizeDungeonBoardRole(dungeonBoardRole)
     saved.dungeonBoardMode = nil
+    saved.threatAwarenessMode = NormalizeThreatAwarenessMode(saved.threatAwarenessMode)
 
     for key, defaultValue in pairs(FEATURE_DEFAULTS) do
         if saved[key] == nil then
             saved[key] = defaultValue
         end
+    end
+    if ApogeePartyHealthBars_Sounds then
+        saved.threatAwarenessSoundKey = ApogeePartyHealthBars_Sounds.NormalizeKey(
+            saved.threatAwarenessSoundKey, "alarm_soft", true)
     end
     -- Loading the addon is the enable action. The internal flag is only kept
     -- false for the remainder of a session after restoring owned bindings so

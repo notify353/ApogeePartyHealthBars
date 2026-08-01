@@ -8,11 +8,19 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
+- Added an opt-in movable Threat Awareness HUD with Pack Radar, Loss Alarm, and Threat Queue modes; the selected presentation previews simulated enemies while configuring it. It combines observable targets and hostile nameplates, ranks enemies by tanking risk, retains brief last-seen loss warnings, and plays one throttled sound only when a continuously observed enemy changes from tanked to lost.
 - Added character-wide native equipment loadouts under Manage → Loadouts. Capture current gear with optional ignored slots, then explicitly attach a loadout to Shortcut Bar, Keyboard, Mouse Wheel, or Mouse Buttons actions; full sets equip out of combat while combat macros attempt only included weapon slots.
 - Generated shield-required Warrior and Paladin ability macros now wait until a shield is equipped, avoiding the invalid-cast equipment error while an attached loadout swaps weapons.
 
 ### Changed
 
+- Threat Awareness now highlights the player's current target with a restrained row tint and edge marker while keeping the HUD passive and non-clickable.
+- Threat Awareness rows omit party-victim and severity labels, giving enemy names and the color-coded risk bars more room under pressure.
+- Threat Awareness removes its mode header and backing panel, leaving compact enemy names, severity rails, and risk bars floating cleanly over gameplay.
+- Threat Awareness demos now use the same chrome-free presentation as the live HUD with shorter mode explanations.
+- Threat Queue now shows the five most urgent enemies at full size before summarizing additional observations with `+N`.
+- Threat Awareness places raid markers beside the risk bar so enemy names share a clean left alignment.
+- Safe Threat Awareness bars retain a visible green minimum instead of collapsing into an ambiguous sliver at high threat margins.
 - Attack-oriented generated macros and bundled recipes now acquire an enemy when needed and guard `/startattack` with `[harm,nodead]`, preventing “Nothing to attack” errors when no enemy is available; Warrior utility is no longer treated as an attack.
 
 ## [0.46.0] - 2026-07-30

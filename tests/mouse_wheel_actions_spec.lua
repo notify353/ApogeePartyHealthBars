@@ -16,6 +16,7 @@ local function widget()
     for _, name in ipairs(noops) do value[name] = function() end end
     function value:SetPoint(...) self.point = { ... } end
     function value:SetDesaturated(desaturated) self.desaturated = desaturated end
+    function value:SetTexture(texture) self.texturePath = texture end
     function value:SetColorTexture(r, g, b, a) self.color = { r, g, b, a } end
     function value:SetCooldown(start, duration) self.cooldown = { start, duration } end
     function value:SetText(text) self.text = text end
@@ -106,7 +107,9 @@ function GetSpellInfo(identifier)
     local name = type(identifier) == "string"
         and identifier:gsub("%s*%(Rank %d+%)$", "") or spellNamesById[identifier]
     if name then
-        return name, nil, 135274, nil, nil, nil,
+        local icon = name == "Charge" and 132337
+            or name == "Hamstring" and 132316 or 135274
+        return name, nil, icon, nil, nil, nil,
             type(identifier) == "number" and identifier or nil
     end
 end
@@ -285,7 +288,8 @@ assert(wheel.GetSlot(PRIMARY, data.SLOTS[1].id).macroText == attackPrefix .. "He
     and wheel.GetSlot(PRIMARY, data.SLOTS[4].id).macroText == attackPrefix .. "Hamstring",
     "Warrior attacks did not receive the shared startattack policy")
 assert(wheel.GetSlot(PRIMARY, data.SLOTS[3].id).macroText == "/cast Battle Shout"
-    and wheel.GetSlot(PRIMARY, data.SLOTS[5].id).macroText == attackPrefix .. "Charge"
+    and wheel.GetSlot(PRIMARY, data.SLOTS[5].id).macroText
+        == "/targetenemy [noexists][dead][help]\n/cast [combat] Hamstring; Charge\n/startattack [harm,nodead]"
     and wheel.GetSlot(PRIMARY, data.SLOTS[6].id).macroText == attackPrefix .. "Pummel",
     "Warrior attack-family policy misclassified utility, gap-closing, or interrupt actions")
 local wheelOverflow, wheelOverflowMessage = wheel.AssignSpell(PRIMARY, nil, nil, "Overflow Wheel Spell")
@@ -382,6 +386,35 @@ assert(normalUpIcon.template ~= "SecureActionButtonTemplate" and normalUpIcon.pa
     "wheel HUD visual icon became a protected descendant of the player-row layout")
 assert(type(normalUpIcon.scripts.OnEnter) == "function" and type(normalUpIcon.scripts.OnLeave) == "function",
     "wheel HUD icon has no tooltip scripts")
+
+assert(wheel.AssignSpell(PRIMARY, "normalUp", 100, "Charge"),
+    "contextual Charge test assignment failed")
+for _, slot in ipairs(data.SLOTS) do wheel.SetSlotSound(PRIMARY, slot.id, "none") end
+wheel.SetSlotSound(PRIMARY, "normalUp", "toast")
+cooldownStart, cooldownDuration = 20, 8
+wheel.Refresh()
+local soundsBeforeCombatSwitch = #playedSounds
+inCombat = true
+cooldownStart, cooldownDuration = 0, 0
+wheel.Refresh()
+assert(normalUpIcon.texture.texturePath == 132316,
+    "Wheel HUD did not switch from Charge to Hamstring in combat")
+assert(#playedSounds == soundsBeforeCombatSwitch and normalUpIcon.pulseUntil == nil,
+    "Wheel contextual spell transition emitted a false ready alert")
+inCombat = false
+wheel.Refresh()
+assert(normalUpIcon.texture.texturePath == 132337,
+    "Wheel HUD did not switch back to Charge out of combat")
+assert(#playedSounds == soundsBeforeCombatSwitch and normalUpIcon.pulseUntil == nil,
+    "Wheel return to Charge emitted a false ready alert")
+assert(wheel.ApplyMacro(PRIMARY, "normalUp", "/cast Custom Charge"))
+inCombat = true
+wheel.Refresh()
+assert(normalUpIcon.texture.texturePath == 132337,
+    "custom Charge macro incorrectly retained generated contextual HUD behavior")
+inCombat = false
+assert(wheel.AssignSpell(PRIMARY, "normalUp", nil, warriorSpells[1]))
+wheel.SetSlotSound(PRIMARY, "normalUp", "none")
 wheel.Refresh()
 assert(not normalUpIcon.texture.desaturated and normalUpIcon.alpha == 1,
     "ready wheel spell did not use tracker-ready styling")

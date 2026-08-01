@@ -51,7 +51,7 @@ function Factory.Create(options)
     local secureButtons, hudIcons, slotById = {}, {}, {}
     local bindingManager, pendingSecure = nil, false
     local feedbackTicker
-    local previousStates, lastSoundAt, cooldownAlertArmed = {}, {}, {}
+    local previousStates, lastSoundAt, cooldownAlertArmed, activeSpellKeys = {}, {}, {}, {}
     local initialized = false
     local feedbackSlotId, feedbackUntil = nil, 0
     local FEEDBACK_DURATION = 0.75
@@ -175,6 +175,7 @@ function Factory.Create(options)
 
     local function clearSlotFeedback(slotId)
         previousStates[slotId], lastSoundAt[slotId], cooldownAlertArmed[slotId] = nil, nil, nil
+        activeSpellKeys[slotId] = nil
         local icon = hudIcons[slotId]
         if not icon then return end
         icon.pulseUntil = nil
@@ -283,15 +284,17 @@ function Factory.Create(options)
         return known
     end
 
-    local function isKnownSpell(entry, resolvedName, known)
-        if known[resolvedName] == true or known[entry.spellName] == true then return true end
+    local function isKnownSpell(entry, resolvedName, resolvedId, known)
+        if known[resolvedName] == true then return true end
         local spells = ApogeePartyHealthBars_PlayerSpells
         return spells and spells.IsKnownSpell
-            and spells.IsKnownSpell(entry.spellId, entry.spellName) == true
+            and spells.IsKnownSpell(resolvedId or entry.spellId,
+                resolvedName or entry.spellName) == true
     end
 
     local function spellInfo(entry)
         if not entry then return nil, nil, nil end
+        if Actions.ResolveRuntimeSpell then return Actions.ResolveRuntimeSpell(entry) end
         return Actions.ResolveDisplay(entry)
     end
 
@@ -356,7 +359,7 @@ function Factory.Create(options)
         end
         local name, icon, spellId = spellInfo(entry)
         if not name then return "invalid", nil, 0, 0, nil, false end
-        local available = isKnownSpell(entry, name, known)
+        local available = isKnownSpell(entry, name, spellId, known)
         if not available then return "unavailable", icon, 0, 0, nil, false end
         local identifier = spellId or entry.spellId or name
         if isCurrent(identifier) then return "current", icon, 0, 0, nil, true end
@@ -883,8 +886,17 @@ function Factory.Create(options)
             local icon, entry = hudIcons[slot.id], W.GetSlot(activeLayoutKey, slot.id)
             if icon then
                 if hasMacro(entry) and Actions.GetName(entry) then
+                    local activeName, _, activeId = spellInfo(entry)
                     local status, texture, start, duration, charges, available, reason, gcdOnly, alertableCooldown =
                         evaluate(entry, known)
+                    local activeSpellKey = entry.kind == "item"
+                        and "item:" .. tostring(entry.itemId)
+                        or "spell:" .. tostring(activeId or activeName)
+                    if activeSpellKeys[slot.id] ~= nil
+                            and activeSpellKeys[slot.id] ~= activeSpellKey then
+                        clearSlotFeedback(slot.id)
+                    end
+                    activeSpellKeys[slot.id] = activeSpellKey
                     icon.emptyFill:Hide()
                     icon.texture:Show()
                     icon.texture:SetTexture(texture or QUESTION_MARK)
@@ -920,7 +932,7 @@ function Factory.Create(options)
                     icon.texture:Hide(); icon.emptyFill:Show(); icon:SetAlpha(0.48)
                     for _, border in ipairs(icon.borders) do border:SetColorTexture(0.25, 0.25, 0.27, 1) end
                     icon.cooldown:Hide(); icon.count:SetText("")
-                    previousStates[slot.id], cooldownAlertArmed[slot.id] = nil, nil
+                    previousStates[slot.id], cooldownAlertArmed[slot.id], activeSpellKeys[slot.id] = nil, nil, nil
                 end
             end
         end

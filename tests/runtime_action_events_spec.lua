@@ -80,7 +80,6 @@ local ui = {
     RefreshMouseWheelPage = function() record("ui-wheel") end,
     RefreshMouseButtonsPage = function() record("ui-buttons") end,
     RefreshPartyFrameClicksPage = function() record("ui-healing") end,
-    RefreshMacroPanel = function() record("ui-macros") end,
     RefreshLoadoutsPage = function() record("ui-loadouts") end,
     RefreshLoadoutsFromInventory = function() record("ui-loadouts-inventory") end,
 }
@@ -221,8 +220,8 @@ reset()
 dispatch("UNIT_PET", "party1")
 dispatch("UNIT_PET", "player")
 dispatch("PET_BAR_UPDATE")
-expect({ "shortcut-resolve", "ui-macros", "shortcut-resolve", "ui-macros" },
-    "pet action refresh filtering changed")
+expect({ "shortcut-resolve", "shortcut-resolve" },
+    "pet action refresh filtering changed after Macro Library removal")
 
 reset()
 dispatch("PET_BAR_UPDATE_COOLDOWN")
@@ -241,7 +240,7 @@ dispatch("SPELLS_CHANGED")
 expect({
     "class-bindings", "player-spells", "shortcut-resolve", "wheel-layouts",
     "keys-layouts", "buttons-layouts", "wheel-refresh", "keys-refresh", "buttons-refresh",
-    "ui-macros", "request-update",
+    "request-update",
 }, "stable spell-layout refresh order changed")
 
 reset()
@@ -250,7 +249,7 @@ dispatch("SPELLS_CHANGED")
 expect({
     "class-bindings", "player-spells", "shortcut-resolve", "wheel-layouts",
     "keys-layouts", "buttons-layouts", "ui-keys", "ui-wheel", "ui-buttons",
-    "ui-macros", "request-update",
+    "request-update",
 }, "changed spell-layout refresh order changed")
 
 reset()

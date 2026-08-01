@@ -1,6 +1,6 @@
 ApogeePartyHealthBars_S = { sv = {
     enabled = true, targetEffectRemindersEnabled = true, targetEffectRefreshThreshold = 3,
-    targetEffectDisabled = {}, targetEffectPriority = {}, targetEffectThresholds = {},
+    targetEffectDisabled = {}, targetEffectPriority = {},
 } }
 
 local definitions = {
@@ -180,12 +180,21 @@ currentClass = "WARLOCK"
 targetExists = true
 playerAuraSnapshot.auras = {}
 T.OnContextChanged()
-T.AdjustThreshold("first", 1)
-assert(T.GetThreshold("first") == 4 and T.HasThresholdOverride("first"),
-    "per-spell threshold override did not persist")
-T.ResetThreshold("first")
-assert(T.GetThreshold("first") == 3 and not T.HasThresholdOverride("first"),
-    "threshold reset did not restore inheritance")
+auraSnapshot.playerBySpellId[21] = { spellId = 21, duration = 18, expirationTime = 114 }
+auraSnapshot.playerBySpellId[41] = { spellId = 41, duration = 18, expirationTime = 114 }
+T.Refresh(false)
+assert(#shown == 0, "effects outside the shared reminder threshold were shown")
+T.AdjustThreshold(1)
+assert(ApogeePartyHealthBars_S.sv.targetEffectRefreshThreshold == 4,
+    "shared reminder threshold did not persist")
+assert(#shown == 0, "shared reminder threshold changed an effect too early")
+T.AdjustThreshold(1)
+assert(#shown == 2 and shown[1].key == "first" and shown[2].key == "curseB"
+        and shown[1].threshold == 5 and shown[2].threshold == 5,
+    "shared reminder threshold did not apply to every enabled effect")
+assert(T.GetThreshold == nil and T.HasThresholdOverride == nil
+        and T.ResetThreshold == nil and T.AdjustDefaultThreshold == nil,
+    "removed individual reminder timing APIs were still exposed")
 T.Refresh(true)
 assert(invalidations > 0, "explicit refresh did not invalidate the target aura cache")
 

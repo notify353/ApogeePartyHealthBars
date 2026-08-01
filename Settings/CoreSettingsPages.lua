@@ -11,12 +11,12 @@ local generalRows = {}
 local generalRowsByKey = {}
 local hotRows = {}
 local hotRowsByKey = {}
-local resetBarBtn, resetSettingsBtn, resetMinimapBtn, threatAwarenessResetBtn, prepareDisableBtn, factoryResetBtn
+local resetBarBtn, resetSettingsBtn, resetMinimapBtn, threatAwarenessResetBtn, buffThanksResetBtn, prepareDisableBtn, factoryResetBtn
 local lfgAlertsResetBtn, dungeonBoardResetBtn
 local behaviorSection, alertsSection, dungeonBoardSection, displaySection, threatAwarenessSection, hudDisplaysSection
 local hotSection, compatibilitySection
 local positionsSection, dangerSection
-local resetRow, threatAwarenessResetRow, cleanseResetRow, lfgAlertsResetRow, dungeonBoardResetRow
+local resetRow, threatAwarenessResetRow, cleanseResetRow, buffThanksResetRow, lfgAlertsResetRow, dungeonBoardResetRow
 local compatibilityRow, compatibilityLabel, prepareDisableRow, factoryRow
 local prepareDisableArmed, prepareDisableToken = false, 0
 local factoryResetArmed, factoryResetToken = false, 0
@@ -26,7 +26,7 @@ local activePage = "frames"
 local PAGE_HINTS = {
     frames = "Choose party-frame behavior, details, and nearby HUD displays.",
     healthChat = "Configure low-health and name-mention alerts.",
-    buffsCleanse = "Configure buff and cleansing reminders.",
+    buffsCleanse = "Configure buff and cleansing reminders; samples remain visible and draggable while this page is open.",
     dungeon = "Configure LFG results and alerts.",
     maintenance = "Restore bindings or reset this character.",
 }
@@ -45,6 +45,7 @@ local SUPPORT_FEATURE_BY_SETTING = {
     threatAwarenessMode = "threat",
     threatAwarenessSoundKey = "threat",
     hotEnabled = "hotTracking",
+    buffThanksEnabled = "buffThanks",
 }
 
 local function GetSettingSupport(svKey)
@@ -137,7 +138,8 @@ local function Layout()
     for _, frame in ipairs({
         behaviorSection, alertsSection, dungeonBoardSection, displaySection,
         threatAwarenessSection, hudDisplaysSection, hotSection, compatibilitySection, positionsSection, dangerSection,
-        resetRow, threatAwarenessResetRow, cleanseResetRow, lfgAlertsResetRow, dungeonBoardResetRow,
+        resetRow, threatAwarenessResetRow, cleanseResetRow, buffThanksResetRow,
+        lfgAlertsResetRow, dungeonBoardResetRow,
         compatibilityRow, prepareDisableRow, factoryRow,
     }) do
         if frame then frame:Hide() end
@@ -243,6 +245,7 @@ local function Layout()
         entries[#entries + 1] = { frame = behaviorSection, height = 16, gap = 9 }
         addSetting("showAllSlots")
         addSetting("combatUIAutoHide")
+        addSetting("hideUIErrors")
         entries[#entries + 1] = { frame = displaySection, height = 16, gap = 10 }
         addSetting("shieldEnabled")
         addSetting("incomingHealEnabled")
@@ -321,12 +324,14 @@ local function Layout()
     elseif activePage == "buffsCleanse" then
         entries[#entries + 1] = { frame = alertsSection, height = 16, gap = 9 }
         addSetting("cleanseWatchEnabled")
+        addSetting("buffThanksEnabled")
         addSetting("partyBuffEnabled")
         addSetting("selfBuffEnabled")
         addSetting("selfBuffPreference")
         addSetting("clickableBuffIcons")
         entries[#entries + 1] = { frame = positionsSection, height = 16, gap = 10 }
         entries[#entries + 1] = { frame = cleanseResetRow, height = 32 }
+        entries[#entries + 1] = { frame = buffThanksResetRow, height = 32 }
     elseif activePage == "dungeon" then
         entries[#entries + 1] = { frame = dungeonBoardSection, height = 16, gap = 9 }
         addSetting("dungeonBoardRole")
@@ -626,7 +631,8 @@ function G.Create(parent, deps)
         "IsSelfBuffKnown", "Print", "RequestConfigRefresh", "SetAddonEnabled",
         "SetHotTrackEnabled", "SetSavedFeature", "SetSelfBuffPreference", "Sounds",
         "SyncVisualTicker", "Threat", "ThreatAwareness", "ConsumableBar", "DungeonBoardSettings",
-        "CleanseWatch",
+        "UIErrorSuppressor",
+        "CleanseWatch", "BuffThanks",
     }) do
         assert(deps[key] ~= nil, "CoreSettingsPages missing dependency: " .. key)
     end
@@ -657,6 +663,10 @@ function G.Create(parent, deps)
         local saved = D.GetSavedVariables()
         D.CombatUIFader.ApplyEnabledState(saved and saved.combatUIAutoHide)
     end)
+    AddCheckbox("Hide Blizzard UI error messages", "hideUIErrors", function()
+        local saved = D.GetSavedVariables()
+        D.UIErrorSuppressor.ApplyEnabledState(saved and saved.hideUIErrors)
+    end)
     AddCheckbox("Show brief action feedback text", "actionFeedbackEnabled", function()
         D.ActionHud.Clear()
     end)
@@ -672,6 +682,10 @@ function G.Create(parent, deps)
     AddCheckbox("Show Cleanse Watch for removable party debuffs", "cleanseWatchEnabled", function()
         D.CleanseWatch.RefreshCapabilities()
     end)
+    AddCheckbox("Enable Thank You prompts for lasting buffs and player cleanses",
+        "buffThanksEnabled", function()
+            D.BuffThanks.Refresh()
+        end)
     AddDungeonBoardRolePreference()
     AddDungeonBoardFeedPreference()
     AddDungeonBoardSoundPreference()
@@ -765,6 +779,19 @@ function G.Create(parent, deps)
     cleanseResetButton:SetScript("OnClick", function()
         D.CleanseWatch.ResetPosition()
         D.CleanseWatch.Refresh()
+    end)
+
+    buffThanksResetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    local buffThanksResetLabel = buffThanksResetRow:CreateFontString(
+        nil, "ARTWORK", "GameFontHighlightSmall")
+    buffThanksResetLabel:SetPoint("LEFT", buffThanksResetRow, "LEFT", 8, 0)
+    buffThanksResetLabel:SetText("Thank You prompts")
+    buffThanksResetBtn = UIH.CreateButton(
+        buffThanksResetRow, "Reset Position", 126, 22)
+    buffThanksResetBtn:SetPoint("RIGHT", buffThanksResetRow, "RIGHT", -5, 0)
+    buffThanksResetBtn:SetScript("OnClick", function()
+        D.BuffThanks.ResetPosition()
+        D.BuffThanks.Refresh()
     end)
 
     lfgAlertsResetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
@@ -876,6 +903,7 @@ function G.GetResetButtons()
         settings = resetSettingsBtn,
         minimap = resetMinimapBtn,
         threatAwareness = threatAwarenessResetBtn,
+        buffThanks = buffThanksResetBtn,
         lfgAlerts = lfgAlertsResetBtn,
         dungeonBoard = dungeonBoardResetBtn,
         prepareDisable = prepareDisableBtn,

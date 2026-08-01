@@ -44,6 +44,7 @@ local function widget(shown)
     function value:SetAlpha(alpha) self.alpha = alpha end
     function value:SetColorTexture(r, g, b, a) self.color = { r, g, b, a } end
     function value:SetDesaturated(desaturated) self.desaturated = desaturated end
+    function value:SetTexture(texture) self.texturePath = texture end
     function value:EnableMouse(enabled) self.mouseEnabled = enabled end
     function value:CreateTexture() return widget() end
     function value:CreateFontString() return widget() end
@@ -85,6 +86,8 @@ local spellbook = {
 for slot = 5, 12 do
     spellbook[#spellbook + 1] = { name = "Test Spell " .. slot, id = 6000 + slot, icon = 135812 }
 end
+spellbook[#spellbook + 1] = { name = "Charge", id = 100, icon = 132337 }
+spellbook[#spellbook + 1] = { name = "Hamstring", id = 1715, icon = 132316 }
 function GetNumSpellTabs() return 1 end
 function GetSpellTabInfo() return nil, nil, 0, #spellbook end
 function GetSpellBookItemName(slot) return spellbook[slot].name, "Rank 1" end
@@ -283,6 +286,41 @@ ApogeePartyHealthBars_S.configMode = false
 shortcuts.RefreshSecureActions()
 assert(not visualButtons[1].mouseEnabled and castButton.mouseEnabled,
     "Shortcut runtime did not restore mouse handling to its secure cast overlay")
+
+assert(shortcuts.AssignSpell(4, 100, "Charge"),
+    "contextual Shortcut Charge assignment failed")
+for slot = 1, 4 do shortcuts.SetSlotSound(slot, "none") end
+shortcuts.SetSlotSound(4, "toast")
+spellCooldownStart, spellCooldownDuration = 20, 8
+shortcuts.Refresh()
+local contextualShortcutIcon = visualButtons[4]
+local soundsBeforeShortcutCombatSwitch = playedSounds
+inCombat = true
+spellCooldownStart, spellCooldownDuration = 0, 0
+shortcuts.Refresh()
+assert(contextualShortcutIcon.texture.texturePath == 132316,
+    "Shortcut HUD did not switch from Charge to Hamstring in combat")
+assert(playedSounds == soundsBeforeShortcutCombatSwitch
+        and contextualShortcutIcon.pulseUntil == nil,
+    "Shortcut contextual spell transition emitted a false ready alert")
+inCombat = false
+shortcuts.Refresh()
+assert(contextualShortcutIcon.texture.texturePath == 132337,
+    "Shortcut HUD did not switch back to Charge out of combat")
+assert(playedSounds == soundsBeforeShortcutCombatSwitch
+        and contextualShortcutIcon.pulseUntil == nil,
+    "Shortcut return to Charge emitted a false ready alert")
+assert(shortcuts.ApplyMacro(4, "/cast Custom Charge"))
+inCombat = true
+shortcuts.Refresh()
+assert(contextualShortcutIcon.texture.texturePath == 132337,
+    "custom Shortcut Charge macro incorrectly retained contextual HUD behavior")
+inCombat = false
+assert(shortcuts.ClearSlot(4), "contextual Shortcut test action did not clear")
+spellbook[#spellbook] = nil
+spellbook[#spellbook] = nil
+ApogeePartyHealthBars_ActionMacros.InvalidateRuntimeSpellCache()
+shortcuts.ResolveAndRefresh()
 
 geometryNeedsLayout = true
 local beforeAssignmentLayout = layoutRequests

@@ -57,6 +57,31 @@ assert(not capabilities.IsFeatureAvailable("auraReminders")
 UnitBuff = function() return nil end
 assert(capabilities.IsFeatureAvailable("auraReminders"),
     "legacy aura support was not detected")
+assert(not capabilities.IsFeatureAvailable("buffThanks"),
+    "Buff Thanks was accepted without combat-log and emote support")
+assert(capabilities.GetFeatureReason("buffThanks"):find("combat%-log"),
+    "missing Buff Thanks APIs did not provide a useful compatibility reason")
+CombatLogGetCurrentEventInfo = nil
+DoEmote = noop
+C_PlayerInfo = { GUIDIsPlayer = function() return true end }
+C_CombatLog = {
+    GetCurrentEventInfo = noop,
+    DoesObjectMatchFilter = function() return false end,
+}
+Enum = { CombatLogObject = {
+    TypePlayer = 1024, AffiliationMine = 1, AffiliationParty = 2, AffiliationRaid = 4,
+} }
+assert(capabilities.IsFeatureAvailable("buffThanks"),
+    "namespaced Classic Era Buff Thanks APIs were not detected")
+
+C_CombatLog, C_PlayerInfo = nil, nil
+CombatLogGetCurrentEventInfo = noop
+GUIDIsPlayer = function() return true end
+bit = { band = function(left, right)
+    return math.floor(left / right) % 2 == 1 and right or 0
+end }
+assert(capabilities.IsFeatureAvailable("buffThanks"),
+    "legacy Buff Thanks API fallbacks were not detected")
 
 assert(not capabilities.IsFeatureAvailable("boundActions"),
     "incomplete binding API was accepted")
@@ -94,7 +119,7 @@ C_EncodingUtil = {
     CompressString = noop, DecompressString = noop,
     EncodeBase64 = noop, DecodeBase64 = noop,
 }
-Enum = { CompressionMethod = {}, Base64Variant = {} }
+Enum.CompressionMethod, Enum.Base64Variant = {}, {}
 assert(not capabilities.IsFeatureAvailable("profileSharing"),
     "profile sharing accepted missing compression or Base64 enum members")
 Enum.CompressionMethod.Deflate = 1

@@ -14,6 +14,7 @@ function C.Exit()
     if D.TargetEffectHud then D.TargetEffectHud.RefreshVisibility() end
     if D.DungeonBoardFeed then D.DungeonBoardFeed.SetUnlocked(false) end
     if D.CleanseWatch then D.CleanseWatch.SetUnlocked(false) end
+    if D.BuffThanks then D.BuffThanks.SetUnlocked(false) end
     if D.ThreatAwareness then D.ThreatAwareness.SetUnlocked(false) end
     D.SettingsSurfaces.SetConfigurationActive(false)
     D.panel:EnableMouse(false)
@@ -52,6 +53,7 @@ function C.SetAddonEnabled(enabled)
         D.HideAllSecureOverlays()
         if D.TargetEffectHud then D.TargetEffectHud.Hide() end
         if D.ThreatAwareness then D.ThreatAwareness.Hide() end
+        if D.BuffThanks then D.BuffThanks.Hide() end
         C.Exit()
     end
     D.UpdateMinimapButtonStyle()

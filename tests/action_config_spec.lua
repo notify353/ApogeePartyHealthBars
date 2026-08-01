@@ -171,33 +171,12 @@ config.OpenEditor({ macroText = "/cast Draft", resetText = "/cast Reset", onSave
 buttons.Cancel.scripts.OnClick()
 assert(not overlay:IsShown() and editor:GetText() == "", "Cancel did not discard the macro draft")
 
-assert(config.OpenViewer({
-    title = "View macro", actionName = "Spam-Safe Wand Shoot",
-    macroText = "/cast !Shoot", copyable = true,
-}), "read-only macro viewer did not open")
-assert(overlay:IsShown() and not editor.focused and editor:GetText() == "/cast !Shoot"
-        and not buttons.Reset:IsShown() and buttons.Cancel.label:GetText() == "Close"
-        and buttons.Save.label:GetText() == "Select to Copy" and buttons.Save:IsEnabled(),
-    "read-only macro viewer did not use the compact viewer controls")
-editor:UserSetText("/say changed")
-assert(editor:GetText() == "/cast !Shoot", "read-only macro viewer accepted edits")
-buttons.Save.scripts.OnClick()
-assert(editor.focused and editor.highlighted and overlay:IsShown(),
-    "read-only macro viewer did not select executable text for copying")
-buttons.Cancel.scripts.OnClick()
-
-config.OpenViewer({
-    title = "View syntax reference", actionName = "Condition placeholders",
-    macroText = "[condition]", copyable = false,
-})
-assert(not buttons.Save:IsEnabled() and buttons.Save.label:GetText() == "Reference only",
-    "reference viewer allowed conceptual syntax to be copied")
-buttons.Cancel.scripts.OnClick()
-
+assert(config.OpenViewer == nil,
+    "removed Macro Library read-only viewer was still exposed")
 config.OpenEditor({ macroText = "/cast Renew", resetText = "/cast Renew", onSave = function() return true end })
 assert(buttons.Reset:IsShown() and buttons.Cancel.label:GetText() == "Cancel"
         and buttons.Save.label:GetText() == "Save",
-    "opening an editor after the viewer did not restore editing controls")
+    "focused action editor controls changed after viewer removal")
 buttons.Cancel.scripts.OnClick()
 
 print("PASS focused action macro editor")

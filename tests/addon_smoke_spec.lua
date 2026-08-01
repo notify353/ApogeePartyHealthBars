@@ -136,7 +136,12 @@ C_AddOns = {
     end,
 }
 BOOKTYPE_SPELL, BOOKTYPE_PET = "spell", "pet"
-RAID_CLASS_COLORS = { WARRIOR = { r = 0.8, g = 0.6, b = 0.4 } }
+RAID_CLASS_COLORS = {
+    WARRIOR = { r = 0.8, g = 0.6, b = 0.4 },
+    PRIEST = { r = 1, g = 1, b = 1 },
+    DRUID = { r = 1, g = 0.49, b = 0.04 },
+    MAGE = { r = 0.25, g = 0.78, b = 0.92 },
+}
 PowerBarColor = { MANA = { r = 0, g = 0, b = 1 } }
 FACTION_HORDE, FACTION_ALLIANCE = "Horde", "Alliance"
 
@@ -441,6 +446,8 @@ assert(earlyDotRefreshOk,
     "pre-login DoT context refresh failed before HUD initialization: "
         .. tostring(earlyDotRefreshError))
 router.Dispatch("PLAYER_LOGIN")
+assert(ApogeePartyHealthBars_UIErrorSuppressor.IsEnabled(),
+    "PLAYER_LOGIN did not initialize default-on Blizzard UI error suppression")
 local dotHudAnchor = ApogeePartyHealthBars_TargetEffectHud.GetAnchor()
 assert(dotHudAnchor and dotHudAnchor.frameType == "Frame" and dotHudAnchor.template == nil
         and dotHudAnchor.scripts.OnClick == nil and dotHudAnchor == targetEffectRow,
@@ -730,15 +737,9 @@ assert(wheelPanelRefreshCount == 1,
 wheelRuntime.RefreshLayouts = originalRefreshLayouts
 configUI.RefreshMouseWheelPage = originalRefreshMouseWheelPage
 
-local originalRefreshMacroPanel = configUI.RefreshMacroPanel
-local macroPanelRefreshCount = 0
-configUI.RefreshMacroPanel = function() macroPanelRefreshCount = macroPanelRefreshCount + 1 end
 router.Dispatch("UNIT_PET", "party1")
 router.Dispatch("UNIT_PET", "player")
 router.Dispatch("PET_BAR_UPDATE")
-assert(macroPanelRefreshCount == 2,
-    "player pet changes did not refresh pet-dependent macro requirements")
-configUI.RefreshMacroPanel = originalRefreshMacroPanel
 
 local originalSpecChanged = wheelRuntime.OnActiveSpecChanged
 local specChangeCount = 0
@@ -836,8 +837,13 @@ assert(table.concat(ApogeePartyHealthBars_SettingsUI.groupOrder, ",")
     "settings groups did not follow the compact task order")
 assert(table.concat(ApogeePartyHealthBars_SettingsUI.pageOrder, ",")
         == "frames,partyFrameClicks,shortcuts,keyboard,mouseWheel,mouseButtons,"
-            .. "healthChat,buffsCleanse,targetEffects,dungeon,profiles,macros,loadouts,maintenance",
+            .. "healthChat,buffsCleanse,targetEffects,dungeon,profiles,loadouts,maintenance",
     "settings pages did not retain every configuration workflow")
+assert(ApogeePartyHealthBars_MacroData == nil
+        and ApogeePartyHealthBars_MacroLibrary == nil
+        and ApogeePartyHealthBars_MacroLibrarySettingsPage == nil
+        and configUI.RefreshMacroPanel == nil,
+    "removed Macro Library interfaces were still loaded")
 assert(SpellBookFrame:IsShown(), "opening settings did not open the spellbook")
 assert(spellbookOpenCount == 1, "spellbook did not open exactly once")
 assert(directSpellbookToggleCount == 0, "add-on called ToggleSpellBook directly")
@@ -908,21 +914,58 @@ assert(existingShortcutButton.shown and existingShortcutButton.mouseEnabled
 SpellBookFrame:Hide()
 
 ApogeePartyHealthBars_S.configMode = true
+ApogeePartyHealthBars_SettingsSurfaces.SetConfigurationActive(true)
+ApogeePartyHealthBars_SettingsUI.ActivatePage("macros")
+assert(ApogeePartyHealthBars_S.activeSettingsPageKey == "frames",
+    "retired Macro Library page key did not fall back to Frames")
+ApogeePartyHealthBars_S.sv.buffThanksEnabled = false
+local buffThanksPreviewRow = ApogeePartyHealthBars_BuffThanks.GetRows()[1]
+assert(ApogeePartyHealthBars_BuffThanks.GetFrame().width == 326
+        and buffThanksPreviewRow.gestureButtons[1].width == 20
+        and #buffThanksPreviewRow.gestureButtons == 1
+        and buffThanksPreviewRow.gestureButtons[1].icon.texture
+            == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\ApogeePartyHealthBarsLogo.png"
+        and buffThanksPreviewRow.gestureButtons[1].background == nil
+        and buffThanksPreviewRow.rail ~= nil
+        and buffThanksPreviewRow.summary ~= nil
+        and buffThanksPreviewRow.dismiss == nil
+        and buffThanksPreviewRow.background ~= nil,
+    "Buff Thanks did not use the shaded Threat Awareness HUD treatment")
 for _, key in ipairs({
     "frames", "partyFrameClicks", "shortcuts", "keyboard", "mouseWheel",
     "mouseButtons", "healthChat", "buffsCleanse", "targetEffects", "dungeon",
-    "profiles", "macros", "maintenance",
+    "profiles", "maintenance",
 }) do
     ApogeePartyHealthBars_SettingsUI.ActivatePage(key)
     assert(ApogeePartyHealthBars_S.activeSettingsPageKey == key, "could not activate settings page: " .. key)
     assert(ApogeePartyHealthBars_CleanseWatch.IsUnlocked()
                 == (key == "buffsCleanse")
+            and ApogeePartyHealthBars_BuffThanks.IsUnlocked()
+                == (key == "buffsCleanse")
             and ApogeePartyHealthBars_DungeonBoardFeed.IsUnlocked()
                 == (key == "dungeon"),
         "settings page exposed an unrelated configuration preview: " .. key)
+    local buffThanksSurface = ApogeePartyHealthBars_SettingsSurfaces.Get("buffThanks")
+    assert(buffThanksSurface.previewDock == nil and buffThanksSurface.automaticChrome == false,
+        "Buff Thanks preview retained LFG-style docking or configuration chrome: " .. key)
+    if key == "buffsCleanse" then
+        local previewRows = ApogeePartyHealthBars_BuffThanks.GetRows()
+        assert(previewRows[1]:IsShown() and previewRows[2]:IsShown()
+                and previewRows[3]:IsShown()
+                and previewRows[2].rail.color[1] == RAID_CLASS_COLORS.DRUID.r
+                and previewRows[2].rail.color[2] == RAID_CLASS_COLORS.DRUID.g
+                and previewRows[2].rail.color[3] == RAID_CLASS_COLORS.DRUID.b
+                and previewRows[2].summary:GetText():find(
+                    "Cleansed: Crippling Poison", 1, true),
+            "Thank You settings demo did not show multiple helpers and a cleanse")
+    end
     assert(not ApogeePartyHealthBars_TargetEffectHud.GetAnchor():IsShown()
+            and ApogeePartyHealthBars_BuffThanks.GetFrame():IsShown()
+                == (key == "buffsCleanse")
             and (key == "buffsCleanse"
                 or not ApogeePartyHealthBars_CleanseWatch.GetFrame():IsShown())
+            and (key == "buffsCleanse"
+                or not ApogeePartyHealthBars_BuffThanks.GetFrame():IsShown())
             and (key == "dungeon"
                 or not ApogeePartyHealthBars_DungeonBoardFeed.GetFrame():IsShown()),
         "settings page left an unrelated auxiliary surface visible: " .. key)
@@ -934,6 +977,8 @@ for _, key in ipairs({
         "single-page settings group did not use a static page heading: " .. key)
     ApogeePartyHealthBars_SettingsUI.RefreshPage(key, true)
 end
+ApogeePartyHealthBars_S.sv.buffThanksEnabled = true
+ApogeePartyHealthBars_BuffThanks.Refresh()
 ApogeePartyHealthBars_SettingsUI.ActivatePage("profiles")
 ApogeePartyHealthBars_SettingsUI.RefreshPage("profiles")
 assert(ApogeePartyHealthBars_ProfilesSettingsPage.GetProfileDropdown().selectedKey
@@ -1025,15 +1070,11 @@ assert(removedDungeonRolePreferences.cleanseWatchPoint == "TOPRIGHT"
     "new saved variables did not default Cleanse Watch to the top-right")
 local fractionalDotPreferences = {
     targetEffectRefreshThreshold = 4.6,
-    targetEffectThresholds = { corruption = 6.4, immolate = 30.8, invalid = 0 / 0 },
     dungeonBoardLevelsBelow = -2,
     dungeonBoardLevelsAbove = 90,
 }
 ApogeePartyHealthBars_Effects.InitializeSavedVariables(fractionalDotPreferences, {})
 assert(fractionalDotPreferences.targetEffectRefreshThreshold == 5
-        and fractionalDotPreferences.targetEffectThresholds.corruption == 6
-        and fractionalDotPreferences.targetEffectThresholds.immolate == 30
-        and fractionalDotPreferences.targetEffectThresholds.invalid == nil
         and fractionalDotPreferences.dungeonBoardLevelsBelow == 0
         and fractionalDotPreferences.dungeonBoardLevelsAbove == 60,
     "numeric profile settings were not normalized to their supported ranges")

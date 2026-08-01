@@ -30,11 +30,13 @@ local mainBar = newFrame(0.6)
 local mainButton = newFrame(1, mainBar)
 local minimap = newFrame(0.8)
 local currentBar = newFrame(0.7)
+local targetFrame = newFrame(0.9)
 
 MainMenuBar = mainBar
 MainActionBar = mainBar -- Duplicate globals must resolve to one root.
 MinimapCluster = minimap
 MultiBar5 = currentBar
+TargetFrame = targetFrame
 
 -- Obsolete names from the old add-on must not be used.
 PetActionBarFrame = newFrame()
@@ -47,13 +49,15 @@ dofile("PartyFrames/CombatUIFader.lua")
 local fader = ApogeePartyHealthBars_CombatUIFader
 
 local resolved = fader.ResolveFrames()
-assert(#resolved == 3, "frame resolution did not ignore missing, duplicate, or obsolete frames")
-assert(resolved[1] == mainBar and resolved[2] == currentBar and resolved[3] == minimap,
+assert(#resolved == 4, "frame resolution did not ignore missing, duplicate, or obsolete frames")
+assert(resolved[1] == mainBar and resolved[2] == currentBar and resolved[3] == targetFrame
+        and resolved[4] == minimap,
     "frame resolution did not use the current root-frame order")
 
 fader.Initialize(false)
 assert(not fader.IsEnabled(), "combat UI fade should initialize disabled")
-assert(mainBar.alpha == 0.6 and currentBar.alpha == 0.7 and minimap.alpha == 0.8,
+assert(mainBar.alpha == 0.6 and currentBar.alpha == 0.7 and targetFrame.alpha == 0.9
+        and minimap.alpha == 0.8,
     "disabled initialization changed frame alpha")
 
 local function update(elapsed)
@@ -67,13 +71,15 @@ fader.OnCombatStart()
 update(0.1)
 assert(mainBar.alpha > 0 and mainBar.alpha < 0.6, "combat fade did not start")
 update(0.1)
-assert(mainBar.alpha == 0 and currentBar.alpha == 0 and minimap.alpha == 0,
+assert(mainBar.alpha == 0 and currentBar.alpha == 0 and targetFrame.alpha == 0
+        and minimap.alpha == 0,
     "combat fade did not hide all tracked roots")
 
 mouseFoci = { mainButton }
 update(0.05)
 update(0.2)
-assert(mainBar.alpha == 0.6 and currentBar.alpha == 0.7 and minimap.alpha == 0.8,
+assert(mainBar.alpha == 0.6 and currentBar.alpha == 0.7 and targetFrame.alpha == 0.9
+        and minimap.alpha == 0.8,
     "descendant hover did not reveal every tracked root at its saved alpha")
 
 mouseFoci = {}
@@ -82,7 +88,8 @@ assert(mainBar.alpha == 0.6, "UI faded before the pointer-leave delay")
 update(0.01)
 assert(mainBar.alpha > 0, "leave delay skipped directly to fully hidden")
 update(0.19)
-assert(mainBar.alpha == 0 and currentBar.alpha == 0 and minimap.alpha == 0,
+assert(mainBar.alpha == 0 and currentBar.alpha == 0 and targetFrame.alpha == 0
+        and minimap.alpha == 0,
     "UI did not fade after the pointer-leave delay")
 
 mouseFoci = { minimap }
@@ -96,7 +103,8 @@ assert(minimap.alpha == 0.8, "brief pointer movement interrupted reveal before t
 inCombat = false
 fader.OnCombatEnd()
 assert(not driver.shown, "combat end did not stop hover polling")
-assert(mainBar.alpha == 0.6 and currentBar.alpha == 0.7 and minimap.alpha == 0.8,
+assert(mainBar.alpha == 0.6 and currentBar.alpha == 0.7 and targetFrame.alpha == 0.9
+        and minimap.alpha == 0.8,
     "combat end did not restore non-default alpha values")
 
 inCombat = true
@@ -110,7 +118,8 @@ assert(mainBar.alpha == 0.6 and fadingOutAlpha < 0.6,
     "hover did not reverse an in-progress combat fade")
 fader.ApplyEnabledState(false)
 assert(not fader.IsEnabled() and not driver.shown, "disabling did not stop the combat fade")
-assert(mainBar.alpha == 0.6 and currentBar.alpha == 0.7 and minimap.alpha == 0.8,
+assert(mainBar.alpha == 0.6 and currentBar.alpha == 0.7 and targetFrame.alpha == 0.9
+        and minimap.alpha == 0.8,
     "disabling did not restore saved alpha values")
 
 print("combat_ui_fader_spec: ok")

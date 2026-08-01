@@ -197,6 +197,19 @@ function A.ScanUnitHelpfulAuras(unitId)
     return snapshot
 end
 
+function A.FindUnitHelpfulAuraBySpellId(unitId, spellId)
+    if not unitId or type(spellId) ~= "number"
+        or not UnitExists or not UnitExists(unitId) then
+        return nil
+    end
+    for index = 1, 40 do
+        local aura = AuraFromIndex(unitId, index)
+        if not aura then break end
+        if aura.spellId == spellId then return aura end
+    end
+    return nil
+end
+
 function A.BeginAuraCacheGeneration()
     S.auraCacheGen = (S.auraCacheGen or 0) + 1
 end

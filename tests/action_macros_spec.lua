@@ -50,7 +50,6 @@ local standardShieldRequiredFamilies = {
     { 20925, "Holy Shield" },
     { 31935, "Avenger's Shield" },
 }
-local shieldAttackIds = { [72] = true, [20243] = true, [23922] = true }
 local spellNames = {
     [133] = "Fireball", [15407] = "Mind Flay", [5019] = "Shoot",
     [75] = "Auto Shot", [6603] = "Attack",
@@ -127,11 +126,9 @@ local targetPrefix = "/targetenemy [noexists][dead][help]\n"
 local attackPrefix = targetPrefix .. "/startattack [harm,nodead]\n/cast "
 for _, family in ipairs(normalMeleeFamilies) do
     local castName = family[2] .. "(Rank 9)"
-    local castPrefix = shieldAttackIds[family[1]]
-            and attackPrefix .. "[equipped:Shields] " or attackPrefix
     assert(actions.GetSpellTemplateId(castName, family[1]) == "melee-attack",
         family[2] .. " did not receive the curated melee policy")
-    assert(actions.BuildDefaultSpellMacro(castName, family[1]) == castPrefix .. castName,
+    assert(actions.BuildDefaultSpellMacro(castName, family[1]) == attackPrefix .. castName,
         family[2] .. " lost target, attack, cast, or rank behavior")
 end
 
@@ -167,10 +164,11 @@ for _, family in ipairs({
 end
 for _, family in ipairs(warriorShieldRequiredFamilies) do
     local castName = family[2] .. "(Rank 1)"
-    local expectedPrefix = shieldAttackIds[family[1]] and attackPrefix or "/cast "
+    local expectedPrefix = actions.GetSpellTemplateId(castName, family[1]) == "melee-attack"
+            and attackPrefix or "/cast "
     assert(actions.BuildDefaultSpellMacro(castName, family[1])
-            == expectedPrefix .. "[equipped:Shields] " .. castName,
-        family[2] .. " lost its attack or shield policy")
+            == expectedPrefix .. castName,
+        family[2] .. " lost its cast or attack policy")
 end
 local warriorItem = actions.CreateItem(1251, "Linen Bandage", "none")
 assert(warriorItem.macroText == "/use Linen Bandage",
@@ -178,8 +176,8 @@ assert(warriorItem.macroText == "/use Linen Bandage",
 for _, family in ipairs(standardShieldRequiredFamilies) do
     local castName = family[2] .. "(Rank 1)"
     assert(actions.BuildDefaultSpellMacro(castName, family[1])
-            == "/cast [equipped:Shields] " .. castName,
-        family[2] .. " did not wait for an equipped shield")
+            == "/cast " .. castName,
+        family[2] .. " did not receive a direct cast")
 end
 
 spellNames[90001] = "Heroic Strike"
@@ -213,13 +211,13 @@ assert(actions.Normalize(curated).macroText == curated.macroText
 
 local shieldAction = actions.CreateSpell(72, "Shield Bash(Rank 1)", "none")
 assert(shieldAction.macroText
-        == attackPrefix .. "[equipped:Shields] Shield Bash(Rank 1)",
-    "new shield action did not receive the equipped-shield guard")
+        == attackPrefix .. "Shield Bash(Rank 1)",
+    "new Shield Bash action did not receive a direct cast after the attack policy")
 shieldAction.macroText = "/cast Shield Bash(Rank 1)"
 assert(actions.Normalize(shieldAction).macroText == "/cast Shield Bash(Rank 1)"
         and actions.ResetMacro(shieldAction)
-            == attackPrefix .. "[equipped:Shields] Shield Bash(Rank 1)",
-    "custom shield macro was changed or Reset did not restore the shield guard")
+            == attackPrefix .. "Shield Bash(Rank 1)",
+    "custom shield macro was changed or Reset did not restore the generated cast")
 
 local created = actions.CreateSpell(133, "Fireball(Rank 1)", "toast")
 assert(created.kind == "spell" and created.spellId == 133 and created.spellName == "Fireball(Rank 1)"

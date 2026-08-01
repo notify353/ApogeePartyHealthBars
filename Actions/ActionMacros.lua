@@ -34,22 +34,6 @@ local STEALTH_SAFE_MELEE_ATTACK_FAMILY_IDS = {
     1082, 1822, 5221, 33876, 33878, 1079, 22568, 6807, 33745, 779, 16979,
 }
 
--- These abilities are rejected by the client unless a shield is
--- equipped. The generated condition suppresses that failed cast while an
--- attached loadout's earlier /equipset or /equipslot line equips the shield.
--- A weapon-swap global cooldown can still make the successful cast require a
--- second press.
-local SHIELD_REQUIRED_FAMILY_IDS = {
-    72,    -- Shield Bash
-    871,   -- Shield Wall
-    2565,  -- Shield Block
-    20243, -- Devastate
-    20925, -- Holy Shield
-    23920, -- Spell Reflection
-    23922, -- Shield Slam
-    31935, -- Avenger's Shield
-}
-
 local function getSpellInfo(identifier)
     if identifier == nil then return nil, nil end
     if C_Spell and type(C_Spell.GetSpellInfo) == "function" then
@@ -119,16 +103,10 @@ local function classifySpell(spellId, spellName)
     return "standard-spell"
 end
 
-local function requiresShield(spellId, spellName)
-    local assignedName = getValidatedAssignedName(spellId, spellName)
-    return assignedName and matchesFamily(assignedName, SHIELD_REQUIRED_FAMILY_IDS) or false
-end
-
-local function renderSpellTemplate(spellName, templateId, shieldRequired)
+local function renderSpellTemplate(spellName, templateId)
     if type(spellName) ~= "string" or not spellName:find("%S") then return nil end
     if templateId == "melee-auto" then return TARGET_ENEMY .. "\n" .. START_ATTACK end
     local castPrefix = templateId == "ranged-auto" and "!" or ""
-    if shieldRequired then castPrefix = "[equipped:Shields] " .. castPrefix end
     local castLine = "/cast " .. castPrefix .. spellName
     if templateId == "ranged-auto" then
         return TARGET_ENEMY .. "\n" .. castLine .. "\n" .. START_ATTACK
@@ -145,8 +123,7 @@ end
 function A.BuildDefaultSpellMacro(spellName, spellId)
     return renderSpellTemplate(
         spellName,
-        classifySpell(spellId, spellName),
-        requiresShield(spellId, spellName)
+        classifySpell(spellId, spellName)
     )
 end
 

@@ -1,5 +1,6 @@
 dofile("Core/Data.lua")
 dofile("PartyFrames/AccessoryLayout.lua")
+ApogeePartyHealthBars_S = { sv = { enabled = true } }
 
 local created = {}
 local applied = {}
@@ -16,6 +17,8 @@ local function widget(parent)
     local noops = { "RegisterForClicks", "SetAllPoints", "SetWidth", "SetHeight" }
     for _, name in ipairs(noops) do value[name] = function() end end
     function value:SetSize(width, height) self.width, self.height = width, height end
+    function value:GetWidth() return self.width or 1 end
+    function value:GetHeight() return self.height or 1 end
     function value:CreateTexture()
         local texture = widget(self)
         self.textures[#self.textures + 1] = texture
@@ -67,14 +70,17 @@ end
 C_NamePlate = {
     GetNamePlateForUnit = function(unit) return plates[unit] end,
 }
+dofile("PartyFrames/TargetNameplateHud.lua")
 dofile("PartyFrames/RaidMarkers.lua")
+local hud = ApogeePartyHealthBars_TargetNameplateHud
 local markers = ApogeePartyHealthBars_RaidMarkers
 markers.Initialize()
 
 local container = markers.GetContainer()
+local root = hud.GetContainer()
 local moon, cross, skull = markers.GetButton(1), markers.GetButton(2), markers.GetButton(3)
-assert(container and skull and cross and moon and #created == 4,
-    "expected one reusable marker row with three buttons")
+assert(root and container and skull and cross and moon and #created == 5,
+    "expected one shared nameplate root and one reusable marker row with three buttons")
 assert(not container.shown, "marker row appeared before the target nameplate was observed")
 local markerSize = ApogeePartyHealthBars_C.ACCESSORY_ICON_SIZE * 2
 assert(container.width == 3 * markerSize + 2 * 6
@@ -91,12 +97,13 @@ assert(skull.scripts.OnEnter == nil and skull.scripts.OnLeave == nil,
 assert(#moon.textures == 1 and #cross.textures == 1 and #skull.textures == 1,
     "raid-marker controls retained mouseover or selection textures")
 
-markers.OnNamePlateAdded("nameplate1")
-assert(container.shown and container.parent == plates.nameplate1
-        and markers.GetBoundUnit() == "nameplate1",
+hud.OnNamePlateAdded("nameplate1"); markers.Refresh()
+assert(root.shown and root.parent == plates.nameplate1
+        and container.parent == root and hud.GetBoundUnit() == "nameplate1",
     "current target controls did not attach to its observed nameplate")
-assert(container.points[1][1] == "BOTTOM" and container.points[1][2] == plates.nameplate1
-        and container.points[1][3] == "TOP" and container.points[1][4] == 0,
+assert(root.points[1][1] == "BOTTOM" and root.points[1][2] == plates.nameplate1
+        and root.points[1][3] == "TOP" and root.points[1][4] == 0
+        and root.points[1][5] == 2,
     "marker row was not centered above the nameplate")
 assert(not skull.texture.desaturated and skull.texture.alpha == 1,
     "unused marker was not shown in full color")
@@ -127,10 +134,10 @@ assert(units.nameplate1.marker == 8,
 units.target = { guid = "Creature-2", hostile = true, dead = false }
 units.nameplate2 = { guid = "Creature-2", hostile = true, dead = false }
 plates.nameplate2 = widget(UIParent)
-markers.OnNamePlateAdded("nameplate2")
-assert(container.parent == plates.nameplate2 and markers.GetBoundUnit() == "nameplate2",
+hud.OnNamePlateAdded("nameplate2"); markers.Refresh()
+assert(root.parent == plates.nameplate2 and hud.GetBoundUnit() == "nameplate2",
     "target change did not move the reusable row to the matching nameplate")
-markers.OnNamePlateAdded("nameplate1")
+hud.OnNamePlateAdded("nameplate1")
 markers.Refresh()
 assert(skull.texture.alpha == 1 and cross.texture.alpha == 1 and moon.texture.alpha == 1,
     "controls inferred unavailable markers from another mob")
@@ -145,29 +152,31 @@ assert(applied[#applied][2] == 7 and units.nameplate2.marker == 7
     "replacement marker state was not synchronized")
 
 units.target.guid = "Creature-mismatch"
-markers.OnTargetChanged()
-assert(not container.shown and markers.GetBoundUnit() == nil,
+hud.OnTargetChanged(); markers.Refresh()
+assert(not root.shown and hud.GetBoundUnit() == nil,
     "GUID mismatch left controls attached to a stale nameplate")
 units.target.guid = "Creature-2"
-markers.OnTargetChanged()
-assert(container.shown and markers.GetBoundUnit() == "nameplate2",
+hud.OnTargetChanged(); markers.Refresh()
+assert(root.shown and hud.GetBoundUnit() == "nameplate2",
     "controls did not return after the matching target was restored")
 
 units.target.hostile, units.nameplate2.hostile = false, false
 markers.Refresh()
-assert(not container.shown, "friendly target displayed raid-marker controls")
+hud.Refresh(); markers.Refresh()
+assert(not root.shown, "friendly target displayed raid-marker controls")
 units.target.hostile, units.nameplate2.hostile = true, true
 units.target.dead, units.nameplate2.dead = true, true
 markers.Refresh()
-assert(not container.shown, "dead target displayed controls")
+hud.Refresh(); markers.Refresh()
+assert(not root.shown, "dead target displayed controls")
 units.target.dead, units.nameplate2.dead = false, false
 markers.Refresh()
 
-markers.OnNamePlateRemoved("nameplate2")
-assert(not container.shown and container.parent == UIParent and markers.GetBoundUnit() == nil,
+hud.OnNamePlateRemoved("nameplate2"); markers.Refresh()
+assert(not root.shown and root.parent == UIParent and hud.GetBoundUnit() == nil,
     "removed nameplate retained the reusable marker row")
-markers.OnNamePlateAdded("nameplate2")
-assert(container.shown and container.parent == plates.nameplate2,
+hud.OnNamePlateAdded("nameplate2"); markers.Refresh()
+assert(root.shown and root.parent == plates.nameplate2,
     "recycled nameplate did not reacquire the marker row")
 
 units.nameplate2.marker, units.target.marker = 8, 8
@@ -179,8 +188,8 @@ assert(markers.GetAssignedGuid == nil and markers.OnCombatLogEvent == nil,
     "removed marker-assignment tracking APIs were still exposed")
 
 units.target = nil
-markers.OnTargetChanged()
-assert(not container.shown, "controls remained visible without a target")
+hud.OnTargetChanged(); markers.Refresh()
+assert(not root.shown, "controls remained visible without a target")
 local applyCount = #applied
 skull.scripts.OnClick()
 assert(#applied == applyCount, "detached marker button applied to a stale unit")

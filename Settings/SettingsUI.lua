@@ -132,7 +132,6 @@ end
 local function SetContextualPreviews(pageKey)
     local active = S.configMode == true
     if not active then return end
-    if D.TargetEffectHud then D.TargetEffectHud.SetUnlocked(active and pageKey == "targetEffects") end
     if D.CleanseWatch then
         D.CleanseWatch.SetUnlocked(active and pageKey == "buffsCleanse")
     end

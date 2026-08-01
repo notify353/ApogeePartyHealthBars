@@ -1,12 +1,12 @@
 local Accessory = ApogeePartyHealthBars_AccessoryLayout
 local ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities
+local NameplateHud = ApogeePartyHealthBars_TargetNameplateHud
 
 ApogeePartyHealthBars_RaidMarkers = {}
 local M = ApogeePartyHealthBars_RaidMarkers
 
 local ICON_TEXTURE = "Interface\\TargetingFrame\\UI-RaidTargetingIcons"
 local INACTIVE_SELECTION_ALPHA = 0.18
-local NAMEPLATE_GAP = 2
 local MARKER_GAP = 6
 local MARKER_SIZE = Accessory.GetIconSize() * 2
 
@@ -17,11 +17,8 @@ local MARKERS = {
 }
 
 local buttons = {}
-local nameplateUnits = {}
 local supportedMarkers = { [5] = true, [7] = true, [8] = true }
 local container
-local boundUnit
-local boundGuid
 
 local function IsSupported()
     return not ClientCapabilities or ClientCapabilities.IsFeatureAvailable("raidMarkers")
@@ -40,37 +37,12 @@ local function SetMarkerState(button, currentTargetMarker, hasSupportedSelection
     button.texture:SetAlpha(inactiveSelection and INACTIVE_SELECTION_ALPHA or 1)
 end
 
-local function Detach()
-    boundUnit, boundGuid = nil, nil
-    if not container then return end
-    container:Hide()
-    container:ClearAllPoints()
-    if UIParent and container.SetParent then container:SetParent(UIParent) end
-end
-
-local function ResolveTargetNameplate()
-    if not IsLivingHostile("target") or not UnitGUID then return nil end
-    local targetGuid = UnitGUID("target")
-    if not targetGuid then return nil end
-    for unit in pairs(nameplateUnits) do
-        if UnitExists(unit) and UnitGUID(unit) == targetGuid then
-            local plate
-            if C_NamePlate and C_NamePlate.GetNamePlateForUnit then
-                local ok, result = pcall(C_NamePlate.GetNamePlateForUnit, unit)
-                if ok then plate = result end
-            end
-            if plate then return unit, targetGuid, plate end
-        end
-    end
-    return nil
-end
-
 local function ApplyMarker(index)
-    local unit, guid = boundUnit, boundGuid
+    local unit, guid = NameplateHud.GetBoundUnit(), NameplateHud.GetBoundGuid()
     if not unit or not guid or not SetRaidTarget or not UnitGUID then return end
     if not IsLivingHostile(unit) or UnitGUID(unit) ~= guid
-        or not UnitExists("target") or UnitGUID("target") ~= guid then
-        M.Refresh()
+        or not IsLivingHostile("target") or UnitGUID("target") ~= guid then
+        NameplateHud.Refresh()
         return
     end
     local currentMarker = GetRaidTargetIndex and GetRaidTargetIndex(unit)
@@ -111,6 +83,8 @@ function M.Initialize()
     for position, definition in ipairs(MARKERS) do
         buttons[position] = CreateMarkerButton(container, definition, position)
     end
+    NameplateHud.RegisterSurface("raidMarkers", container, 1, 0)
+    NameplateHud.SetSurfaceEnabled("raidMarkers", true)
     M.Refresh()
 end
 
@@ -119,18 +93,9 @@ local function RefreshInternal()
     if not container then M.Initialize() end
     if not container then return end
 
-    local unit, guid, plate = ResolveTargetNameplate()
-    if not unit then
-        Detach()
-        return
-    end
-
+    local unit = NameplateHud.GetBoundUnit()
+    if not unit then return end
     local currentMarker = GetRaidTargetIndex and GetRaidTargetIndex(unit)
-    boundUnit, boundGuid = unit, guid
-    container:SetParent(plate)
-    container:ClearAllPoints()
-    container:SetPoint("BOTTOM", plate, "TOP", 0, NAMEPLATE_GAP)
-    container:SetFrameLevel((plate:GetFrameLevel() or 0) + 20)
     local hasSupportedSelection = supportedMarkers[currentMarker] == true
     for position, definition in ipairs(MARKERS) do
         SetMarkerState(
@@ -138,31 +103,13 @@ local function RefreshInternal()
             currentMarker == definition.index,
             hasSupportedSelection)
     end
-    container:Show()
 end
 
 function M.Refresh()
     RefreshInternal()
 end
 
-function M.OnNamePlateAdded(unit)
-    if type(unit) == "string" then nameplateUnits[unit] = true end
-    M.Refresh()
-end
-
-function M.OnNamePlateRemoved(unit)
-    if type(unit) ~= "string" then return end
-    nameplateUnits[unit] = nil
-    if boundUnit == unit then Detach() end
-    M.Refresh()
-end
-
-function M.OnTargetChanged()
-    M.Refresh()
-end
-
 -- Read-only diagnostics used by regression tests.
 function M.GetButton(position) return buttons[position] end
 function M.GetContainer() return container end
-function M.GetBoundUnit() return boundUnit end
 M.IsSupported = IsSupported

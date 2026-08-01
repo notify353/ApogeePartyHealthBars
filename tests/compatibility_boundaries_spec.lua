@@ -48,6 +48,13 @@ local rules = {
         token = "SetRaidTarget(",
         allowed = { ApogeePartyHealthBars_RaidMarkers = true },
     },
+    {
+        token = "C_NamePlate.GetNamePlateForUnit",
+        allowed = {
+            ApogeePartyHealthBars_ClientCapabilities = true,
+            ApogeePartyHealthBars_TargetNameplateHud = true,
+        },
+    },
 }
 
 local toc = assert(io.open("ApogeePartyHealthBars.toc", "rb"))

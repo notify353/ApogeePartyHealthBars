@@ -78,6 +78,15 @@ GetShapeshiftForm = function() return 0 end
 assert(capabilities.IsFeatureAvailable("formLayouts"),
     "form API family was not detected")
 
+SetRaidTarget = noop
+GetRaidTargetIndex = noop
+assert(not capabilities.IsFeatureAvailable("raidMarkers")
+        and not capabilities.Has("nameplates"),
+    "raid markers were accepted without supported nameplates")
+C_NamePlate = { GetNamePlateForUnit = noop }
+assert(capabilities.Has("nameplates") and capabilities.IsFeatureAvailable("raidMarkers"),
+    "shared nameplate and raid-marker capabilities were not detected independently")
+
 assert(not capabilities.IsFeatureAvailable("profileSharing"),
     "missing profile codec APIs were accepted")
 C_EncodingUtil = {

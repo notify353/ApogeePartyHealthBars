@@ -89,10 +89,6 @@ local RENAMED_SETTINGS_FIELDS = {
     dotDisabled = "targetEffectDisabled",
     dotPriority = "targetEffectPriority",
     dotThresholds = "targetEffectThresholds",
-    dotHudPoint = "targetEffectHudPoint",
-    dotHudRelPoint = "targetEffectHudRelPoint",
-    dotHudX = "targetEffectHudX",
-    dotHudY = "targetEffectHudY",
 }
 
 local RENAMED_ACTION_FIELDS = {
@@ -113,6 +109,12 @@ function E.InitializeSavedVariables(saved, characterSaved)
     local version = tonumber(saved.schemaVersion) or 0
     MigrateRenamedFields(saved, RENAMED_SETTINGS_FIELDS)
     MigrateRenamedFields(characterSaved, RENAMED_ACTION_FIELDS)
+    for _, key in ipairs({
+        "targetEffectHudPoint", "targetEffectHudRelPoint", "targetEffectHudX", "targetEffectHudY",
+        "dotHudPoint", "dotHudRelPoint", "dotHudX", "dotHudY",
+    }) do
+        saved[key] = nil
+    end
 
     if version < 1 then
         if saved.partyBuffEnabled == nil then

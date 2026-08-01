@@ -62,11 +62,16 @@ local CAPABILITIES = {
                 and isFunction(UnitDetailedThreatSituation)
         end,
     },
+    nameplates = {
+        reason = "This client does not provide supported target nameplates.",
+        detect = function()
+            return C_NamePlate and isFunction(C_NamePlate.GetNamePlateForUnit)
+        end,
+    },
     raidMarkers = {
         reason = "This client does not provide raid-marker controls.",
         detect = function()
             return isFunction(SetRaidTarget) and isFunction(GetRaidTargetIndex)
-                and C_NamePlate and isFunction(C_NamePlate.GetNamePlateForUnit)
         end,
     },
     spellbook = {
@@ -186,7 +191,7 @@ local FEATURES = {
     rangeFade = { label = "Range fading", requires = { "range" } },
     incomingHeals = { label = "Incoming heal overlay", requires = { "incomingHeals" } },
     threat = { label = "Threat indicators", requires = { "threat" } },
-    raidMarkers = { label = "Raid-marker controls", requires = { "raidMarkers" } },
+    raidMarkers = { label = "Raid-marker controls", requires = { "nameplates", "raidMarkers" } },
     spellAssignment = { label = "Spellbook assignment", requires = { "spellbook" } },
     itemAssignment = { label = "Item assignment", requires = { "items" } },
     equipmentLoadouts = { label = "Equipment loadouts", requires = { "equipmentSets" } },
@@ -200,8 +205,8 @@ local FEATURES = {
         requires = { "groupFinderListings" },
     },
     targetEffectReminders = {
-        label = "DoT & Debuff reminders",
-        requires = { "harmfulAuras", "spellbook", "dotActionState" },
+        label = "Target Effects reminders",
+        requires = { "nameplates", "harmfulAuras", "spellbook", "dotActionState" },
     },
 }
 

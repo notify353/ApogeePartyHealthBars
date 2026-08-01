@@ -29,8 +29,9 @@ fixtures. Do not reuse them for new APIs, variables, files, or documentation.
   Library, Keyboard, Mouse Wheel, and Mouse Buttons.
 - `PartyFrames/`: secure unit frames, health/power rendering, layout, auras,
   healing indicators, fixed-row threat, dynamic hostile threat observation,
-  and attached utilities. Dynamic hostile tokens remain private to the threat
-  domain and never extend fixed party-frame topology.
+  the shared current-target nameplate HUD, and attached utilities. Dynamic
+  hostile tokens remain private to the threat domain and never extend fixed
+  party-frame topology.
 - `Reminders/`: buff, cleansing, health/chat, and Target Effects reminders.
 - `DungeonBoard/`: catalog, policy, session runtime, adapters, and presentation.
 - `Profiles/`: character-owned profile storage and portable profile codec.

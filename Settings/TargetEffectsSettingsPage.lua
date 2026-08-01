@@ -6,7 +6,7 @@ local DC = ApogeePartyHealthBars_TargetEffectsSettingsPage
 
 local D, page, form
 local rows = {}
-local enabledRow, defaultRow, resetRow, spellSection
+local enabledRow, defaultRow, previewRow, spellSection
 local refreshing = false
 
 local function setChecked(check, value)
@@ -97,7 +97,7 @@ function DC.Refresh()
     local entries = {
         { frame = enabledRow, height = 32 },
         { frame = defaultRow, height = 32 },
-        { frame = resetRow, height = 32 },
+        { frame = previewRow, height = 50 },
         { frame = spellSection, height = 16, gap = 10 },
     }
     for index, entry in ipairs(known) do
@@ -125,7 +125,7 @@ function DC.Create(parent, deps)
     page:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -C.BIND_PAD, C.BIND_PAD)
     page:Hide()
     form = UIH.CreateFormScaffold(page, "ApogeePartyHealthBarsTargetEffectsSettingsPageScroll",
-        "Remind you when maintained effects are missing or expiring on your target.", false)
+        "Show missing or expiring maintained effects above the visible target nameplate.", false)
     enabledRow = checkboxRow(form.content, "Enable target-effect reminders")
     defaultRow = stepperRow(form.content, "Remind when this much time remains")
     defaultRow.decrease:SetScript("OnClick", function() D.TargetEffectTracker.AdjustDefaultThreshold(-1); DC.Refresh() end)
@@ -134,12 +134,13 @@ function DC.Create(parent, deps)
         if refreshing then return end
         D.TargetEffectTracker.SetFeatureEnabled(self:GetChecked()); DC.Refresh()
     end)
-    resetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
-    local reset = UIH.CreateButton(resetRow, "Reset Reminder Position", 168, 22)
-    reset:SetPoint("LEFT", resetRow, "LEFT", 8, 0)
-    reset:SetScript("OnClick", function() D.TargetEffectHud.ResetPosition() end)
-    local hint = resetRow:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    hint:SetPoint("LEFT", reset, "RIGHT", 8, 0); hint:SetText("Drag while settings are open")
+    previewRow = UIH.CreateFormRow(form.content, form.rowWidth, 50)
+    local previewLabel = previewRow:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    previewLabel:SetPoint("TOP", previewRow, "TOP", 0, -4)
+    previewLabel:SetText("Nameplate reminder preview")
+    local preview = D.TargetEffectHud.CreateConfigurationPreview(previewRow)
+    preview:SetPoint("BOTTOM", previewRow, "BOTTOM", 0, 4)
+    previewRow.preview = preview
     spellSection = UIH.CreateFormSection(form.content, form.rowWidth,
         "Learned target effects — priority and reminder timing")
     DC.Refresh()
@@ -148,3 +149,4 @@ end
 
 function DC.GetRows() return rows end
 function DC.GetForm() return form end
+function DC.GetPreviewRow() return previewRow end

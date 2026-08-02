@@ -70,6 +70,7 @@ D.FAMILIES = {
             -- relevant when comparing otherwise equal stacks.
             strengthFromApplications = true,
         }),
+    maintained("disarm", "WARRIOR", "Disarm", { 676 }),
 
     maintained("demoralizingRoar", "DRUID", "Demoralizing Roar",
         { 99,1735,9490,9747,9898,26998 }, {

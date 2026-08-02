@@ -11,7 +11,7 @@ Serpent Sting, Wyvern Sting, Pyroblast, Shadow Word: Pain, Holy Fire, Devouring
 Plague, Garrote, Rupture, Flame Shock, Corruption, Immolate, Curse of Agony,
 Curse of Doom, Siphon Life, Unstable Affliction, Seed of Corruption, and Rend.
 It also includes manually maintained core debuffs: Demoralizing Shout,
-Thunder Clap, Sunder Armor, Demoralizing Roar, both Faerie Fire variants,
+Thunder Clap, Sunder Armor, Disarm, Demoralizing Roar, both Faerie Fire variants,
 Hunter's Mark, Scorpid Sting, Expose Armor, the non-damaging Warlock curses,
 Paladin judgements, and Stormstrike. Battle Shout is the maintained helpful
 exception: it tracks the player's aura and does not require a hostile target.
@@ -49,8 +49,9 @@ contract accurately.
    highest Spellbook ID selected by the HUD.
 2. Apply each effect to a hostile target and confirm its observed aura ID,
    duration, expiration, and `sourceUnit`.
-3. Have another player apply the identical effect and confirm it does not
-   satisfy the reminder.
+3. Have another player apply the identical effect and confirm player-owned
+   damage effects still remind while maintained debuffs, including Disarm,
+   are satisfied.
 4. Repeat talent-group, level, race, stealth, and form/stance transitions.
 5. Repeat missing, threshold, range, resource, real-cooldown, GCD, dead target,
    friendly target, and target-switch cases in Classic Era and TBC Anniversary.

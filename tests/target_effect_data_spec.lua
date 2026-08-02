@@ -4,7 +4,7 @@ dofile("Reminders/TargetEffects/TargetEffectData.lua")
 local Data = ApogeePartyHealthBars_TargetEffectData
 
 local expected = {
-    WARRIOR = { "battleShout", "demoralizingShout", "thunderClap", "sunderArmor" },
+    WARRIOR = { "battleShout", "demoralizingShout", "thunderClap", "sunderArmor", "disarm" },
     DRUID = { "demoralizingRoar", "faerieFire", "faerieFireFeral" },
     HUNTER = { "huntersMark", "scorpidSting" },
     ROGUE = { "exposeArmor" },
@@ -65,5 +65,11 @@ assert(Data.Get("demoralizingShout").casterCentered
 assert(Data.Get("battleShout").auraUnit == "player"
         and Data.Get("battleShout").casterCentered,
     "Battle Shout must track the player's helpful aura without a hostile target")
+local disarm = Data.Get("disarm")
+assert(disarm.castIds[1] == 676 and #disarm.castIds == 1
+        and disarm.auraIds[1] == 676 and #disarm.auraIds == 1
+        and disarm.ownerPolicy == "any"
+        and disarm.defaultPriority > Data.Get("sunderArmor").defaultPriority,
+    "Disarm did not use its cast/aura ID or follow existing Warrior maintained effects")
 
 print("PASS maintained DoT and debuff catalog")

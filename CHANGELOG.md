@@ -14,6 +14,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
+- Added Warrior Disarm to the default-on Target Effects reminders, using its active target aura plus the existing usability, cooldown, and range checks.
 - Added default-on Thank You prompts for lasting buffs cast by players outside your group and successful cleanses performed by any other player. Each prompt identifies the player and helpful action and offers one compact directed Thank icon without changing targets or sending an emote automatically; Reminders → Buffs & Cleansing provides an enable checkbox and a draggable multi-giver demo that remains visible while the feature is disabled.
 - Added a default-on profile setting under Frames → Behavior that hides Blizzard's red UI error messages and their associated sounds or vocals.
 - Added an opt-in movable Threat Awareness HUD with Pack Radar, Loss Alarm, and Threat Queue modes; the selected presentation previews simulated enemies while configuring it. It combines observable targets and hostile nameplates, ranks enemies by tanking risk, retains brief last-seen loss warnings, and plays one throttled sound only when a continuously observed enemy changes from tanked to lost.

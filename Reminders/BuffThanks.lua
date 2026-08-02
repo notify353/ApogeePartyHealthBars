@@ -26,6 +26,7 @@ local rows = {}
 local entries = {}
 local pending = {}
 local unlocked = false
+local suppressBuffsUntil = 0
 
 local function saved() return S.sv or {} end
 local function now() return D and D.Now and D.Now() or 0 end
@@ -183,10 +184,16 @@ function Thanks.AddOpportunity(guid, playerName, reasonKind, spellId, spellName,
     return true
 end
 
-local function auraQualifies(aura, spellId)
+local function auraQualifies(aura, spellId, observedAt)
     if not aura or aura.spellId ~= spellId then return false end
     local duration = tonumber(aura.duration)
-    return duration == nil or duration == 0 or duration >= MIN_DURATION
+    if duration ~= nil and duration ~= 0 and duration < MIN_DURATION then return false end
+    local expirationTime = tonumber(aura.expirationTime)
+    if duration and duration > 0 and expirationTime and expirationTime > 0
+        and observedAt and expirationTime - duration < observedAt - PENDING_LIFETIME then
+        return false
+    end
+    return true
 end
 
 function Thanks.VerifyPending()
@@ -206,11 +213,11 @@ function Thanks.VerifyPending()
         if D.Auras.FindUnitHelpfulAuraBySpellId then
             matched = auraQualifies(
                 D.Auras.FindUnitHelpfulAuraBySpellId("player", candidate.spellId),
-                candidate.spellId)
+                candidate.spellId, candidate.observedAt)
         else
             matched = false
             for _, aura in ipairs(snapshot.auras or {}) do
-                if auraQualifies(aura, candidate.spellId) then
+                if auraQualifies(aura, candidate.spellId, candidate.observedAt) then
                     matched = true
                     break
                 end
@@ -289,6 +296,8 @@ function Thanks.HandleCombatLogInfo(info)
     end
     if info[2] ~= "SPELL_AURA_APPLIED" or info[15] ~= "BUFF" then return false end
     if not isOutsideGroupPlayer(info[4], info[6]) then return false end
+    local timestamp = now()
+    if timestamp < suppressBuffsUntil then return false end
     local spellId, spellName = info[12], info[13]
     if type(spellId) ~= "number" or type(spellName) ~= "string" or spellName == "" then
         return false
@@ -296,7 +305,8 @@ function Thanks.HandleCombatLogInfo(info)
     local key = tostring(info[4]) .. "\031" .. tostring(spellId)
     pending[key] = {
         sourceGUID = info[4], sourceName = info[5], sourceFlags = info[6],
-        spellId = spellId, spellName = spellName, expiresAt = now() + PENDING_LIFETIME,
+        spellId = spellId, spellName = spellName, observedAt = timestamp,
+        expiresAt = timestamp + PENDING_LIFETIME,
     }
     Thanks.VerifyPending()
     return true
@@ -415,7 +425,11 @@ function Thanks.Build()
     end)
     frame:SetScript("OnUpdate", function(self, elapsed)
         self.elapsed = (self.elapsed or 0) + elapsed
-        if self.elapsed >= 0.2 then self.elapsed = 0; Thanks.Expire() end
+        if self.elapsed >= 0.2 then
+            self.elapsed = 0
+            Thanks.VerifyPending()
+            Thanks.Expire()
+        end
     end)
     Thanks.RestorePosition()
     render()
@@ -484,7 +498,12 @@ function Thanks.GetUnavailableReason()
 end
 function Thanks.ResetSession()
     entries, pending = {}, {}
+    suppressBuffsUntil = 0
     render()
+end
+function Thanks.BeginWorldSession()
+    Thanks.ResetSession()
+    suppressBuffsUntil = now() + PENDING_LIFETIME
 end
 Thanks.GESTURES = GESTURES
 Thanks.MAX_ENTRIES = MAX_ENTRIES

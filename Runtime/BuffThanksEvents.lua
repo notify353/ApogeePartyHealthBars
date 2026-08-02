@@ -16,7 +16,7 @@ function Events.Register(eventRouter, deps)
     for _, event in ipairs({ "PLAYER_LOGIN", "PLAYER_ENTERING_WORLD" }) do
         eventRouter.RegisterOptional(event, "BuffThanks", function(eventName)
             local ok, err = pcall(function()
-                Thanks.ResetSession()
+                Thanks.BeginWorldSession()
                 Thanks.RestorePosition()
             end)
             if not ok then deps.Print("event error (" .. eventName .. "): " .. tostring(err)) end

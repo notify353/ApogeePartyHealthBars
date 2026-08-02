@@ -8,6 +8,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Fixed
 
+- Retried brief player-aura verification so newly applied outside-player buffs are not missed when combat-log and aura updates arrive out of order.
+- Prevented persisted long-duration buffs from producing stale Thank You prompts when logging in or entering the world.
 - Kept the draggable Tank Threat Control preview consistently below the main Settings window, including when first created after Settings opens, so a saved or dragged HUD position cannot cover configuration controls.
 - Fixed live Tank Threat Control enemies, including lost mobs, remaining hidden behind `+N MORE` while a non-live last-seen warning occupied or filled a visible slot.
 - Fixed the Thank You prompt position row overlapping the final Health & Chat setting after switching reminder pages.

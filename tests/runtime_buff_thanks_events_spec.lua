@@ -3,6 +3,7 @@ ApogeePartyHealthBars_BuffThanks = {
     OnCombatLog = function() calls[#calls + 1] = "combat" end,
     VerifyPending = function() calls[#calls + 1] = "verify" end,
     ResetSession = function() calls[#calls + 1] = "reset" end,
+    BeginWorldSession = function() calls[#calls + 1] = "begin" end,
     RestorePosition = function() calls[#calls + 1] = "restore" end,
 }
 
@@ -22,7 +23,7 @@ optional.COMBAT_LOG_EVENT_UNFILTERED[1].callback("COMBAT_LOG_EVENT_UNFILTERED")
 optional.UNIT_AURA[1].callback("UNIT_AURA", "party1")
 optional.UNIT_AURA[1].callback("UNIT_AURA", "player")
 optional.PLAYER_LOGIN[1].callback("PLAYER_LOGIN")
-assert(table.concat(calls, ",") == "combat,verify,reset,restore",
+assert(table.concat(calls, ",") == "combat,verify,begin,restore",
     "Buff Thanks runtime events dispatched unexpected lifecycle calls")
 
 print("PASS Buff Thanks runtime events")

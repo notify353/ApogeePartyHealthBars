@@ -1,6 +1,10 @@
 local actionStart, actionDuration, actionEnabled, actionGCD = 10, 8, true, false
 local gcdStart, gcdDuration = 20, 1.5
 local requestedSpell
+local inCombat = false
+
+ApogeePartyHealthBars_S = { sv = { enabled = true } }
+function InCombatLockdown() return inCombat end
 
 C_Spell = {
     GetSpellCooldown = function(identifier)
@@ -41,6 +45,16 @@ assert(not cooldowns.IsAlertable(8, true, false),
     "global cooldown was classified as alertable")
 assert(cooldowns.IsAlertable(0, true, true),
     "zero usable charges did not override duration classification")
+assert(not cooldowns.IsReadyFeedbackAllowed(),
+    "ready feedback was allowed outside combat")
+inCombat = true
+assert(cooldowns.IsReadyFeedbackAllowed(),
+    "ready feedback was suppressed during combat")
+ApogeePartyHealthBars_S.sv.enabled = false
+assert(not cooldowns.IsReadyFeedbackAllowed(),
+    "globally disabled add-on allowed ready feedback during combat")
+ApogeePartyHealthBars_S.sv.enabled = true
+inCombat = false
 
 local armed = {}
 assert(not cooldowns.UpdateAlertState(armed, "slot", false, nil,
@@ -55,6 +69,26 @@ assert(cooldowns.UpdateAlertState(armed, "slot", true, "cooldown",
 assert(not cooldowns.UpdateAlertState(armed, "slot", true, "ready",
         "ready", false, false),
     "settled ready state repeated an alert")
+
+inCombat = true
+armed.slot = true
+assert(not cooldowns.UpdateAlertState(armed, "slot", true, "cooldown",
+        "resource", false, false) and armed.slot == true,
+    "in-combat resource shortage consumed a pending cooldown alert")
+assert(cooldowns.UpdateAlertState(armed, "slot", true, "resource",
+        "ready", false, false) and armed.slot == nil,
+    "resource recovery did not finish the pending cooldown alert")
+
+inCombat = false
+armed.slot = true
+assert(not cooldowns.UpdateAlertState(armed, "slot", true, "cooldown",
+        "resource", false, false) and armed.slot == nil,
+    "out-of-combat resource shortage retained a pending cooldown alert")
+inCombat = true
+assert(not cooldowns.UpdateAlertState(armed, "slot", true, "resource",
+        "ready", false, false),
+    "discarded out-of-combat cooldown alert leaked into the next combat")
+inCombat = false
 
 armed.slot = true
 assert(not cooldowns.UpdateAlertState(armed, "slot", true, "cooldown",

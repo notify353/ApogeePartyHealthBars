@@ -411,7 +411,9 @@ local function SyncSecureAction(icon, info)
         and Actions.BuildRuntimeMacro(info.entry) or info.macroText
     if not macroText then
         macroText = info.kind == "item"
-            and Actions.BuildDefaultItemMacro(info.name)
+            and Actions.BuildDefaultItemMacro(
+                info.name,
+                info.entry and info.entry.itemId or info.itemId)
             or Actions.BuildDefaultSpellMacro(info.castName or info.name)
     end
     castButton:SetAttribute("type", "macro")
@@ -732,7 +734,7 @@ function T.Refresh(suppressSound)
             icon.interruptBadge:SetShown(isInterrupt)
             icon.shortcutInfo = info
             icon.shortcutReason = reason
-            if cooldownFinished then
+            if cooldownFinished and Cooldowns.IsReadyFeedbackAllowed() then
                 icon.pulseUntil = now + C.SHORTCUT_READY_PULSE
                 local entry = entries and info.slot and entries[info.slot]
                 local canSound = not suppressSound and not soundPlayed and IsSoundsEnabled()

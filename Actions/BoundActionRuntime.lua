@@ -919,7 +919,7 @@ function Factory.Create(options)
                     local cooldownFinished = Cooldowns.UpdateAlertState(
                         cooldownAlertArmed, slot.id, initialized, previousStates[slot.id],
                         status, gcdOnly, alertableCooldown)
-                    if cooldownFinished then
+                    if cooldownFinished and Cooldowns.IsReadyFeedbackAllowed() then
                         icon.pulseUntil = now + C.SHORTCUT_READY_PULSE
                         local soundKey = W.GetSlotSoundKey(activeLayoutKey, slot.id)
                         if not soundPlayed and soundKey and soundKey ~= "none"

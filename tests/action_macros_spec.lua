@@ -15,8 +15,9 @@ local normalMeleeFamilies = {
     { 694, "Mocking Blow" }, { 12809, "Concussion Blow" }, { 34428, "Victory Rush" },
     { 2973, "Raptor Strike" }, { 1495, "Mongoose Bite" },
     { 19306, "Counterattack" }, { 2974, "Wing Clip" },
-    { 35395, "Crusader Strike" }, { 20271, "Judgement" }, { 17364, "Stormstrike" },
+    { 35395, "Crusader Strike" }, { 17364, "Stormstrike" },
 }
+local distanceFamilies = { { 20271, "Judgement" } }
 local stealthSafeFamilies = {
     { 1752, "Sinister Strike" }, { 53, "Backstab" }, { 2098, "Eviscerate" },
     { 1943, "Rupture" }, { 16511, "Hemorrhage" }, { 14278, "Ghostly Strike" },
@@ -55,6 +56,7 @@ local spellNames = {
     [75] = "Auto Shot", [6603] = "Attack",
 }
 for _, family in ipairs(normalMeleeFamilies) do spellNames[family[1]] = family[2] end
+for _, family in ipairs(distanceFamilies) do spellNames[family[1]] = family[2] end
 for _, family in ipairs(stealthSafeFamilies) do spellNames[family[1]] = family[2] end
 for _, family in ipairs(excludedFamilies) do spellNames[family[1]] = family[2] end
 for _, family in ipairs(warriorShieldRequiredFamilies) do spellNames[family[1]] = family[2] end
@@ -88,49 +90,50 @@ C_Spell = {
 ApogeePartyHealthBars_ShortcutItems = {
     GetInfo = function(id) if id == 1251 then return "Linen Bandage", 134436 end end,
     GetCount = function(id) return id == 1251 and 1 or 0 end,
+    IsPlayerGroundExplosive = function(id) return id == 4358 end,
 }
 dofile("Actions/ActionData.lua")
 dofile("Actions/ActionMacros.lua")
 local actions = ApogeePartyHealthBars_ActionMacros
 
-local expected = "/cast Fireball(Rank 1)"
+local expected = "/use Fireball(Rank 1)"
 assert(actions.BuildDefaultSpellMacro("Fireball(Rank 1)", 133) == expected,
     "shared default action macro changed")
 assert(actions.BuildDefaultSpellMacro("") == nil, "blank spell generated a macro")
 
 local mindFlay = actions.CreateSpell(15407, "Mind Flay(Rank 1)", "none")
 assert(mindFlay.macroText
-    == "/cast Mind Flay(Rank 1)",
+    == "/use Mind Flay(Rank 1)",
     "ordinary spell received an unexpected generated condition")
 local shoot = actions.CreateSpell(5019, "Shoot", "none")
 assert(shoot.macroText
-    == "/targetenemy [noexists][dead][help]\n/cast !Shoot\n/startattack [harm,nodead]",
-    "ranged auto-attack was not spam-safe with a melee fallback")
+    == "/targetenemy\n/use !Shoot",
+    "ranged auto-attack was not spam-safe with unconditional enemy targeting")
 local autoShot = actions.CreateSpell(75, "Auto Shot", "none")
 assert(autoShot.macroText
-    == "/targetenemy [noexists][dead][help]\n/cast !Auto Shot\n/startattack [harm,nodead]",
+    == "/targetenemy\n/use !Auto Shot",
     "Auto Shot was not classified as a ranged auto-attack")
 assert(actions.BuildDefaultSpellMacro("Shoot", nil)
-        == "/targetenemy [noexists][dead][help]\n/cast !Shoot\n/startattack [harm,nodead]",
+        == "/targetenemy\n/use !Shoot",
     "name-only Shoot was not protected when the client predicate returned false")
 assert(actions.CreateSpell(6603, "Attack", "none").macroText
-    == "/targetenemy [noexists][dead][help]\n/startattack [harm,nodead]",
+    == "/startattack",
     "melee Attack did not receive its dedicated non-toggle template")
 assert(actions.GetSpellTemplateId("Fireball(Rank 1)", 133) == "standard-spell"
         and actions.GetSpellTemplateId("Shoot", 5019) == "ranged-auto"
         and actions.GetSpellTemplateId("Auto Shot", 75) == "ranged-auto"
+        and actions.GetSpellTemplateId("Judgement", 20271) == "distance-attack"
         and actions.GetSpellTemplateId("Attack", 6603) == "melee-auto",
     "spell template classification lost a smart macro family")
 
-local targetPrefix = "/targetenemy [noexists][dead][help]\n"
-local attackPrefix = targetPrefix .. "/startattack [harm,nodead]\n/cast "
+local targetPrefix = "/targetenemy\n/use "
+local attackPrefix = "/startattack\n/use "
 for _, family in ipairs(normalMeleeFamilies) do
     local castName = family[2] .. "(Rank 9)"
     local templateId = family[1] == 100
         and "warrior-charge-hamstring" or "melee-attack"
     local expectedMacro = family[1] == 100
-        and targetPrefix .. "/cast [combat] Hamstring; " .. castName
-            .. "\n/startattack [harm,nodead]"
+        and "/startattack\n/use [combat] Hamstring; " .. castName
         or attackPrefix .. castName
     assert(actions.GetSpellTemplateId(castName, family[1]) == templateId,
         family[2] .. " did not receive the curated melee policy")
@@ -138,9 +141,17 @@ for _, family in ipairs(normalMeleeFamilies) do
         family[2] .. " lost target, attack, cast, or rank behavior")
 end
 
+for _, family in ipairs(distanceFamilies) do
+    local useName = family[2] .. "(Rank 9)"
+    assert(actions.GetSpellTemplateId(useName, family[1]) == "distance-attack"
+            and actions.BuildDefaultSpellMacro(useName, family[1])
+                == targetPrefix .. useName,
+        family[2] .. " did not receive the reviewed distance policy")
+end
+
 local charge = actions.CreateSpell(100, "Charge(Rank 2)", "none")
-assert(charge.macroText == targetPrefix
-        .. "/cast [combat] Hamstring; Charge(Rank 2)\n/startattack [harm,nodead]",
+assert(charge.macroText
+        == "/startattack\n/use [combat] Hamstring; Charge(Rank 2)",
     "Charge did not generate the contextual Hamstring template")
 local affectingCombat = false
 function UnitAffectingCombat() return affectingCombat end
@@ -165,7 +176,7 @@ assert(activeName == "Charge" and activeId == 100 and not contextual,
     "custom Charge macro was treated as a generated contextual action")
 affectingCombat = false
 
-local stealthPrefix = targetPrefix .. "/startattack [harm,nodead,nostealth]\n/cast "
+local stealthPrefix = "/startattack [nostealth]\n/use "
 for _, family in ipairs(stealthSafeFamilies) do
     local castName = family[2] .. "(Rank 9)"
     assert(actions.GetSpellTemplateId(castName, family[1]) == "stealth-safe-melee-attack",
@@ -186,14 +197,14 @@ spellNames[1715] = "Hamstring"
 
 spellNames[100], spellNames[1715] = "Carga", "Seccionar"
 assert(actions.BuildDefaultSpellMacro("Carga(Rango 2)", 100)
-        == targetPrefix .. "/cast [combat] Seccionar; Carga(Rango 2)\n/startattack [harm,nodead]",
+        == "/startattack\n/use [combat] Seccionar; Carga(Rango 2)",
     "contextual Charge/Hamstring template did not use localized canonical names")
 spellNames[100], spellNames[1715] = "Charge", "Hamstring"
 
 for _, family in ipairs(excludedFamilies) do
     local castName = family[2] .. "(Rank 3)"
     assert(actions.GetSpellTemplateId(castName, family[1]) == "standard-spell"
-        and actions.BuildDefaultSpellMacro(castName, family[1]) == "/cast " .. castName,
+        and actions.BuildDefaultSpellMacro(castName, family[1]) == "/use " .. castName,
         family[2] .. " unexpectedly received automatic attack behavior")
 end
 
@@ -205,13 +216,13 @@ for _, family in ipairs({
     spellNames[family[1]] = family[2]
     assert(actions.GetSpellTemplateId(family[2], family[1]) == "standard-spell"
             and actions.BuildDefaultSpellMacro(family[2], family[1])
-                == "/cast " .. family[2],
+                == "/use " .. family[2],
         family[2] .. " did not remain a direct utility cast")
 end
 for _, family in ipairs(warriorShieldRequiredFamilies) do
     local castName = family[2] .. "(Rank 1)"
     local expectedPrefix = actions.GetSpellTemplateId(castName, family[1]) == "melee-attack"
-            and attackPrefix or "/cast "
+            and attackPrefix or "/use "
     assert(actions.BuildDefaultSpellMacro(castName, family[1])
             == expectedPrefix .. castName,
         family[2] .. " lost its cast or attack policy")
@@ -219,11 +230,18 @@ end
 local warriorItem = actions.CreateItem(1251, "Linen Bandage", "none")
 assert(warriorItem.macroText == "/use Linen Bandage",
     "attack-family policy added attack behavior to an item")
+assert(actions.BuildDefaultItemMacro("Dynamita localizada", 4358)
+        == "/use [@player] Dynamita localizada"
+        and actions.BuildDefaultItemMacro("Dynamita localizada")
+            == "/use Dynamita localizada"
+        and actions.BuildDefaultItemMacro("Ordinary Item", 99999)
+            == "/use Ordinary Item",
+    "item defaults did not apply the ID-based player-ground policy")
 for _, family in ipairs(standardShieldRequiredFamilies) do
     local castName = family[2] .. "(Rank 1)"
     assert(actions.BuildDefaultSpellMacro(castName, family[1])
-            == "/cast " .. castName,
-        family[2] .. " did not receive a direct cast")
+            == "/use " .. castName,
+        family[2] .. " did not receive a direct use action")
 end
 
 spellNames[90001] = "Heroic Strike"
@@ -237,13 +255,13 @@ assert(actions.BuildDefaultSpellMacro("Golpe siniestro(Rango 9)", 90002)
 spellNames[1752] = "Sinister Strike"
 spellNames[78] = nil
 assert(actions.BuildDefaultSpellMacro("Heroic Strike(Rank 1)", 90001)
-    == "/cast Heroic Strike(Rank 1)",
-    "missing canonical spell metadata did not fail closed to a direct cast")
+    == "/use Heroic Strike(Rank 1)",
+    "missing canonical spell metadata did not fail closed to a direct use action")
 spellNames[78] = "Heroic Strike"
 assert(actions.BuildDefaultSpellMacro("Polymorph(Rank 1)", 78)
-        == "/cast Polymorph(Rank 1)"
+        == "/use Polymorph(Rank 1)"
     and actions.BuildDefaultSpellMacro("Polymorph(Rank 1)", 75)
-        == "/cast Polymorph(Rank 1)",
+        == "/use Polymorph(Rank 1)",
     "mismatched saved spell identity injected attack behavior into crowd control")
 
 local curated = actions.CreateSpell(78, "Heroic Strike(Rank 1)", "none")
@@ -258,7 +276,7 @@ assert(actions.Normalize(curated).macroText == curated.macroText
 local shieldAction = actions.CreateSpell(72, "Shield Bash(Rank 1)", "none")
 assert(shieldAction.macroText
         == attackPrefix .. "Shield Bash(Rank 1)",
-    "new Shield Bash action did not receive a direct cast after the attack policy")
+    "new Shield Bash action did not receive a direct use after the attack policy")
 shieldAction.macroText = "/cast Shield Bash(Rank 1)"
 assert(actions.Normalize(shieldAction).macroText == "/cast Shield Bash(Rank 1)"
         and actions.ResetMacro(shieldAction)
@@ -277,6 +295,20 @@ assert(item.kind == "item" and item.itemId == 1251 and item.itemName == "Linen B
     and item.macroText == "/use Linen Bandage" and item.soundKey == "toast",
     "typed item creation lost item metadata")
 assert(actions.BuildDefaultMacro(item) == "/use Linen Bandage", "item default macro changed")
+local explosive = actions.CreateItem(4358, "Dynamita localizada", "none")
+assert(explosive.macroText == "/use [@player] Dynamita localizada"
+        and actions.BuildDefaultMacro(explosive) == explosive.macroText,
+    "new explosive item did not receive its player-ground default")
+local missingExplosiveMacro = actions.Normalize({
+    kind = "item", itemId = 4358, itemName = "Dynamita localizada",
+})
+assert(missingExplosiveMacro.macroText == "/use [@player] Dynamita localizada",
+    "explosive item without saved macro did not receive the current default")
+explosive.macroText = "/use Dynamita localizada"
+assert(actions.Normalize(explosive).macroText == "/use Dynamita localizada"
+        and actions.Clone(explosive).macroText == "/use Dynamita localizada"
+        and actions.ResetMacro(explosive) == "/use [@player] Dynamita localizada",
+    "existing explosive macro was rewritten or Reset missed the smart default")
 local renamedGenerated = actions.CreateItem(1251, "Old Bandage", "none")
 assert(actions.ResolveDisplay(renamedGenerated) == "Linen Bandage"
     and renamedGenerated.itemName == "Linen Bandage"

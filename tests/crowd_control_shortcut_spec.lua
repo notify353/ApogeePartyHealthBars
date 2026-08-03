@@ -176,7 +176,7 @@ assert(visualButtons[2].points[1][1] == "BOTTOMLEFT"
 assert(secureButtons[1].attributes.unit == nil)
 assert(secureButtons[2].attributes.unit == nil and secureButtons[2].attributes.type == "macro"
     and secureButtons[2].attributes.macrotext:find(
-        "/cast Localized Polymorph(Rank 1)", 1, true))
+        "/use Localized Polymorph(Rank 1)", 1, true))
 local function FindDisplay(canonical)
     for index, button in ipairs(visualButtons) do
         local definition = button.shortcutInfo and button.shortcutInfo.crowdControl

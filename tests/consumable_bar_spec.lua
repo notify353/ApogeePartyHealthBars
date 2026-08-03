@@ -73,7 +73,7 @@ ApogeePartyHealthBars_AccessoryLayout = {
     end,
 }
 
-local bagIds = { 101, 102, 103, 104, 105, 106, 107, 108 }
+local bagIds = { 101, 102, 103, 104, 105, 106, 107, 4358 }
 local assignedIds = {}
 ApogeePartyHealthBars_ShortcutItems = {
     ScanConsumables = function(limit, excludeItem)
@@ -92,6 +92,11 @@ ApogeePartyHealthBars_ShortcutItems = {
     GetInfo = function(itemId) return "Item " .. itemId, itemId * 10 end,
     Evaluate = function(entry)
         return "ready", entry.itemId * 10, 0, 0, tostring(entry.itemId - 100), true, nil, false
+    end,
+}
+ApogeePartyHealthBars_ActionMacros = {
+    BuildDefaultItemMacro = function(itemName, itemId)
+        return (itemId == 4358 and "/use [@player] " or "/use ") .. itemName
     end,
 }
 
@@ -128,9 +133,11 @@ assert(icons[1].points[1][4] == 0 and icons[1].points[1][5] == 0
         and icons[6].points[1][4] == 135 and icons[6].points[1][5] == 0
         and icons[7].points[1][4] == 0 and icons[7].points[1][5] == -27,
     "consumable bar did not fill rows from left to right")
-assert(icons[1].castButton:GetAttribute("macrotext") == "/use item:101"
+assert(icons[1].castButton:GetAttribute("macrotext") == "/use Item 101"
         and icons[1].castButton.mouseEnabled,
     "automatic consumable did not receive a clickable secure item action")
+assert(icons[8].castButton:GetAttribute("macrotext") == "/use [@player] Item 4358",
+    "automatic explosive did not receive the shared player-ground item macro")
 icons[1].castButton.scripts.OnEnter(icons[1].castButton)
 assert(nativeTooltip and nativeTooltip[1] == icons[1].castButton
         and nativeTooltip[2] == 101 and nativeTooltip[3] == "Item 101",

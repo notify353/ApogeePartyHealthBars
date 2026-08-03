@@ -8,6 +8,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Fixed
 
+- Prevented globally disabled action runtimes from emitting cooldown-ready sounds or pulses during combat.
 - Retried brief player-aura verification so newly applied outside-player buffs are not missed when combat-log and aura updates arrive out of order.
 - Prevented persisted long-duration buffs from producing stale Thank You prompts when logging in or entering the world.
 - Kept the draggable Tank Threat Control preview consistently below the main Settings window, including when first created after Settings opens, so a saved or dragged HUD position cannot cover configuration controls.
@@ -16,6 +17,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
+- Added one-press player-feet macros for reviewed thrown dynamite, bombs, grenades, and specialty explosives across Shortcut Bar, Keyboard, Mouse Wheel, Mouse Buttons, and Automatic Consumables; existing saved macros remain unchanged until reassigned or reset.
 - Added Warrior Disarm to the default-on Target Effects reminders, using its active target aura plus the existing usability, cooldown, and range checks.
 - Added default-on Thank You prompts for lasting buffs cast by players outside your group and successful cleanses performed by any other player. Each prompt identifies the player and helpful action and offers one compact directed Thank icon without changing targets or sending an emote automatically; Reminders → Buffs & Cleansing provides an enable checkbox and a draggable multi-giver demo that remains visible while the feature is disabled.
 - Added a default-on profile setting under Frames → Behavior that hides Blizzard's red UI error messages and their associated sounds or vocals.
@@ -24,6 +26,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Simplified new and reset configurable spell macros to use `/use` throughout, with only `/startattack` for reviewed close combat and bare `/targetenemy` for reviewed distance actions; existing saved and custom macros remain unchanged.
+- Limited per-action ready sounds and pulses to combat, delayed them after cooldown completion until the action has enough power, and discarded pending feedback on combat exit so it cannot alert in the next fight.
 - Polished every Settings page with a dedicated page header, clearer section hierarchy, semantic primary and destructive actions, readable two-tier action rows, visible overflow cues, inline unavailable states, and contextually docked previews while preserving the compact window footprint.
 - Moved Tank Threat Control configuration and its draggable preview from Frames → Party Frames to a dedicated Reminders → Threat Control page.
 - Reworked Threat Awareness into one Tank Threat Control queue: up to five stable enemy rows now use centered right-growing threat-lead and left-growing recovery bars, hidden lost mobs replace the safest visible held mob, and the legacy presentation preference remains profile-compatible without affecting runtime behavior.

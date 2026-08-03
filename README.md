@@ -67,32 +67,30 @@ Manage → Loadouts uses WoW's native character-wide equipment sets. Equip the i
 Ordinary spell assignments in Shortcut Bar, Keyboard, Mouse Wheel, and Mouse Buttons start with this generated macro:
 
 ```text
-/cast Spell Name
+/use Spell Name
 ```
 
-The direct default deliberately does not add conditions, retarget, or start attacking, so heals, utility, Stealth, crowd control, and ordinary damage spells retain their normal behavior. Actual channeled spells can use an optional spell-specific `[nochanneling:Spell Name]` condition through the macro editor when preventing self-restarts is worth giving up normal spell queuing.
+The direct default deliberately does not add conditions, retarget, or start attacking, so heals, utility, Stealth, crowd control, and ordinary damage spells retain their normal behavior. WoW's `/use` command invokes a spell when its argument is not an item. Actual channeled spells can use an optional spell-specific `[nochanneling:Spell Name]` condition through the macro editor when preventing self-restarts is worth giving up normal spell queuing.
 
 Reviewed melee combat families instead keep weapon swings active when the assigned ability cannot fire because of resources, stance, range, or cooldown:
 
 ```text
-/targetenemy [noexists][dead][help]
-/startattack [harm,nodead]
-/cast Heroic Strike
+/startattack
+/use Heroic Strike
 ```
 
-This policy applies only to reviewed attacks, damaging interrupts, and hostile gap-closers. It preserves a living hostile target or finds one when the current target is missing, dead, or friendly; the guarded `/startattack` line begins combat only with a living hostile target. Warrior shouts, stances, defensive cooldowns, taunts, fears, disarms, and other non-damaging utility remain direct casts. Shield-required abilities use an unconditional `/cast` so an equipment condition cannot silently suppress them; the client still reports when a shield is required. With an attached shield loadout, a weapon-swap global cooldown can require a second press to cast the ability. Reviewed Rogue and Feral Druid attacks, including Feral Charge, use `/startattack [harm,nodead,nostealth]` so a failed press cannot waste Stealth or Prowl. Their stealth openers, control, friendly movement, forms, buffs, heals, dispels, taunts, pet commands, caster damage, targetless utility, and ordinary Hunter shots remain direct casts. Items remain direct `/use` actions and never start attacking. Party Frame Clicks assignments continue using native unit-targeted actions without generated macros. Queued next-swing abilities use normal `/cast`, preserving deliberate queue cancellation; users can add the toggle-locked `!` form through the focused per-action macro editor when desired.
+This policy applies only to reviewed attacks, damaging interrupts, and hostile gap-closers. Close-combat templates use `/startattack` without also changing targets. Warrior shouts, stances, defensive cooldowns, taunts, fears, disarms, and other non-damaging utility remain direct `/use` actions. Shield-required abilities use an unconditional `/use` so an equipment condition cannot silently suppress them; the client still reports when a shield is required. With an attached shield loadout, a weapon-swap global cooldown can require a second press to use the ability. Reviewed Rogue and Feral Druid attacks, including Feral Charge, use `/startattack [nostealth]` so a failed press cannot waste Stealth or Prowl. Their stealth openers, control, friendly movement, forms, buffs, heals, dispels, taunts, pet commands, caster damage, targetless utility, and ordinary Hunter shots remain direct actions. Items remain direct `/use` actions and never start attacking; reviewed ground-targeted explosives add only a player-placement condition. Party Frame Clicks assignments continue using native unit-targeted actions without generated macros. Queued next-swing abilities use normal `/use`, preserving deliberate queue cancellation; users can add the toggle-locked `!` form through the focused per-action macro editor when desired.
 
 Warrior Charge assignments use one contextual reviewed-melee action: Charge and its exact assigned rank are used out of combat, while the highest learned Hamstring is used in combat. The live HUD follows that choice for its icon, range, usability, and cooldown state. Existing or customized macro text is never rewritten; reassign Charge or use Reset in its macro editor to adopt the generated pairing.
 
-Melee Attack uses conditional enemy targeting plus `/startattack`. Auto Shot, wand Shoot, and other client-confirmed ranged auto-attacks additionally use `!Spell Name` so repeated presses cannot toggle the repeating attack off, followed by `/startattack` as a close-range melee fallback:
+Melee Attack uses only `/startattack`. Reviewed distance actions such as Judgement, plus Auto Shot, wand Shoot, and other client-confirmed ranged auto-attacks, use bare `/targetenemy` instead of starting melee. Repeating ranged attacks additionally use `!Spell Name` so repeated presses cannot toggle them off:
 
 ```text
-/targetenemy [noexists][dead][help]
-/cast !Shoot
-/startattack [harm,nodead]
+/targetenemy
+/use !Shoot
 ```
 
-Existing macro text is preserved; assign the action again or use Reset in its macro editor to adopt the latest generated template.
+Bare `/targetenemy` intentionally selects a nearby enemy on every press, even when another hostile target is already selected. Existing macro text is preserved; assign the action again or use Reset in its macro editor to adopt the latest generated template.
 
 Item assignments in Shortcut Bar, Keyboard, Mouse Wheel, and Mouse Buttons start with the localized item name:
 
@@ -100,11 +98,19 @@ Item assignments in Shortcut Bar, Keyboard, Mouse Wheel, and Mouse Buttons start
 /use Item Name
 ```
 
-Each compact action row identifies itself as a Spell or Item and has Ready sound, Gear, Macro, movement, and Clear controls. The selected sound and ready pulse occur only after an observed non-global cooldown longer than 1.5 seconds finishes, or when an action recovers from zero charges. Actions without cooldowns and changes to range, target, resources, usability, or carried quantity stay silent. Gear selects an optional native loadout without changing the saved action macro. Macro opens a focused editor with Reset, Cancel, Save, and a 255-byte runtime counter; its equipment-prefix bytes are shown separately and reduce the available action-body limit. Blank or oversized text cannot be saved. Clear removes an action. Clearing a Shortcut Bar row compacts the list, while moving a Keyboard, Mouse Wheel, or Mouse Buttons action swaps its complete trigger, macro, loadout, and sound payload with the adjacent position.
+Reviewed thrown dynamite, bombs, grenades, and specialty explosives instead target the player's position automatically:
+
+```text
+/use [@player] Explosive Name
+```
+
+One press therefore places the explosive at the player's feet without a second aiming click. Existing saved item macros remain unchanged; reassign the item or use Reset in its macro editor to adopt the player-feet default.
+
+Each compact action row identifies itself as a Spell or Item and has Ready sound, Gear, Macro, movement, and Clear controls. While the player is in combat, the selected sound and ready pulse occur after an observed non-global cooldown longer than 1.5 seconds finishes and the action has enough power to be used, or when an action recovers from zero charges. If the cooldown finishes before enough Rage, Mana, Energy, or other power is available, feedback waits until the power requirement is met. Leaving combat discards that pending feedback, and a cooldown that finishes outside combat stays silent and does not alert after combat begins. Actions without cooldowns and unrelated changes to range, target, resources, usability, or carried quantity stay silent. Gear selects an optional native loadout without changing the saved action macro. Macro opens a focused editor with Reset, Cancel, Save, and a 255-byte runtime counter; its equipment-prefix bytes are shown separately and reduce the available action-body limit. Blank or oversized text cannot be saved. Clear removes an action. Clearing a Shortcut Bar row compacts the list, while moving a Keyboard, Mouse Wheel, or Mouse Buttons action swaps its complete trigger, macro, loadout, and sound payload with the adjacent position.
 
 Party Frame Clicks uses the same scrollable action-row presentation as Shortcut Bar, Keyboard, Mouse Wheel, and Mouse Buttons, but deliberately omits macro and sound controls: its native secure action is what preserves the clicked health-bar unit. Gesture labels remain fixed while `^` and `v` swap complete spell/item assignments between adjacent triggers. The Shortcut Bar and active Keyboard, Mouse Wheel, and Mouse Buttons HUDs show spell range/cooldown state plus item icons, carried quantities, usability, and cooldowns. Depleted items stay assigned in every feature, so they become available automatically when restocked. Item range prediction is intentionally omitted because normal item targeting and custom macros may behave differently.
 
-Frames → Party Frames includes the Automatic Consumables setting. This dedicated two-row, six-column HUD sits one icon space to the right of Mouse Buttons and shows up to 12 carried consumables without creating empty placeholders or changing the Shortcut Bar. Items already assigned to the active Shortcut Bar, Keyboard, Mouse Wheel, or Mouse Buttons layout are omitted. It scans ordinary carried bags after bag updates and again after `/reload`, deduplicates stacks, and prioritizes potions, bandages, food and drink, elixirs and flasks, scrolls, item enhancements, then other usable consumables. Its secure item set remains fixed during combat and catches up after combat ends.
+Frames → Party Frames includes the Automatic Consumables setting. This dedicated two-row, six-column HUD sits one icon space to the right of Mouse Buttons and shows up to 12 carried consumables without creating empty placeholders or changing the Shortcut Bar. Items already assigned to the active Shortcut Bar, Keyboard, Mouse Wheel, or Mouse Buttons layout are omitted. It scans ordinary carried bags after bag updates and again after `/reload`, deduplicates stacks, and prioritizes potions, bandages, food and drink, elixirs and flasks, scrolls, item enhancements, then reviewed thrown explosives and other usable consumables. Recognized explosives use the same player-feet macro as manual action assignments. Its secure item set remains fixed during combat and catches up after combat ends.
 
 Keyboard uses this fixed action order in settings and the same keyboard-shaped arrangement on the player HUD:
 

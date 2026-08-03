@@ -147,7 +147,8 @@ function UnitPowerType() return 1, "RAGE" end
 PowerBarColor = { RAGE = { r = 0.90, g = 0.18, b = 0.18 } }
 local playedSounds = {}
 function PlaySound(sound, channel) playedSounds[#playedSounds + 1] = { sound, channel } end
-function GetTime() return 10 end
+local now = 10
+function GetTime() return now end
 BOOKTYPE_SPELL = "spell"
 local itemCount, itemCooldown, itemUsable = 4, 0, true
 C_Item = {
@@ -249,7 +250,7 @@ assert(bindings.MOUSEWHEELUP == "SOMEOTHERADDONACTION",
     "editing a Wheel action silently reclaimed its physical binding")
 bindings.MOUSEWHEELUP = "CLICK ApogeePartyHealthBarsWheelNormalUp:LeftButton"
 assert(wheel.GetSlot(PRIMARY, "normalUp").macroText
-    == "/cast Flash Heal",
+    == "/use Flash Heal",
     "Warrior utility assignment unexpectedly started attacking")
 assert(not wheel.GetSlot(PRIMARY, "normalUp").macroText:find("#showtooltip", 1, true),
     "Spellbook assignment still seeded #showtooltip")
@@ -282,14 +283,14 @@ for index, slot in ipairs(data.SLOTS) do
     assert(wheel.AssignSpell(PRIMARY, slot.id, nil, warriorSpells[index]),
         "manual setup failed for " .. slot.id)
 end
-local attackPrefix = "/targetenemy [noexists][dead][help]\n/startattack [harm,nodead]\n/cast "
+local attackPrefix = "/startattack\n/use "
 assert(wheel.GetSlot(PRIMARY, data.SLOTS[1].id).macroText == attackPrefix .. "Heroic Strike"
     and wheel.GetSlot(PRIMARY, data.SLOTS[2].id).macroText == attackPrefix .. "Sunder Armor"
     and wheel.GetSlot(PRIMARY, data.SLOTS[4].id).macroText == attackPrefix .. "Hamstring",
     "Warrior attacks did not receive the shared startattack policy")
-assert(wheel.GetSlot(PRIMARY, data.SLOTS[3].id).macroText == "/cast Battle Shout"
+assert(wheel.GetSlot(PRIMARY, data.SLOTS[3].id).macroText == "/use Battle Shout"
     and wheel.GetSlot(PRIMARY, data.SLOTS[5].id).macroText
-        == "/targetenemy [noexists][dead][help]\n/cast [combat] Hamstring; Charge\n/startattack [harm,nodead]"
+        == "/startattack\n/use [combat] Hamstring; Charge"
     and wheel.GetSlot(PRIMARY, data.SLOTS[6].id).macroText == attackPrefix .. "Pummel",
     "Warrior attack-family policy misclassified utility, gap-closing, or interrupt actions")
 local wheelOverflow, wheelOverflowMessage = wheel.AssignSpell(PRIMARY, nil, nil, "Overflow Wheel Spell")
@@ -469,13 +470,57 @@ assert(normalUpIcon.pulseUntil == nil,
 assert(#playedSounds == soundsBeforeRangeRecovery,
     "range, resource, target, usability, or availability recovery played a cooldown alert")
 cooldownStart, cooldownDuration, currentCharges, maximumCharges = 20, 8, 0, 2; wheel.Refresh()
+local soundsBeforeOutOfCombatCompletion = #playedSounds
+local pulseBeforeOutOfCombatCompletion = normalUpIcon.pulseUntil
+cooldownStart, cooldownDuration, currentCharges, maximumCharges = 0, 0, 1, 2; wheel.Refresh()
+assert(#playedSounds == soundsBeforeOutOfCombatCompletion
+        and normalUpIcon.pulseUntil == pulseBeforeOutOfCombatCompletion,
+    "out-of-combat zero-charge recovery emitted ready feedback")
+inCombat = true
+wheel.Refresh()
+assert(#playedSounds == soundsBeforeOutOfCombatCompletion
+        and normalUpIcon.pulseUntil == pulseBeforeOutOfCombatCompletion,
+    "entering combat after zero-charge recovery emitted delayed ready feedback")
+cooldownStart, cooldownDuration, currentCharges, maximumCharges = 20, 8, 0, 2; wheel.Refresh()
 local soundsBeforeCooldownFinished = #playedSounds
 cooldownStart, cooldownDuration, currentCharges, maximumCharges = 0, 0, 1, 2; wheel.Refresh()
-assert(normalUpIcon.pulseUntil ~= nil, "zero-charge recovery did not set a cooldown-ready pulse")
+assert(normalUpIcon.pulseUntil ~= nil, "in-combat zero-charge recovery did not set a cooldown-ready pulse")
 assert(normalUpIcon.pulseBorder[1].alpha and normalUpIcon.pulseBorder[1].alpha > 0.99,
     "cooldown-ready pulse did not start fully visible")
 assert(#playedSounds == soundsBeforeCooldownFinished + 1,
-    "zero-charge recovery did not play its selected cooldown alert")
+    "in-combat zero-charge recovery did not play its selected cooldown alert")
+now = 13
+normalUpIcon.pulseUntil = nil
+wheel.Refresh()
+cooldownStart, cooldownDuration, currentCharges, maximumCharges = 20, 8, nil, nil
+usable, noResource = true, false
+wheel.Refresh()
+local soundsBeforeResourceWait = #playedSounds
+cooldownStart, cooldownDuration = 0, 0
+usable, noResource = false, true
+wheel.Refresh()
+assert(#playedSounds == soundsBeforeResourceWait and normalUpIcon.pulseUntil == nil,
+    "insufficient power did not delay Wheel cooldown-ready feedback")
+usable, noResource = true, false
+wheel.Refresh()
+assert(#playedSounds == soundsBeforeResourceWait + 1 and normalUpIcon.pulseUntil ~= nil,
+    "power recovery did not emit pending Wheel cooldown-ready feedback")
+now = 16
+normalUpIcon.pulseUntil = nil
+wheel.Refresh()
+cooldownStart, cooldownDuration = 20, 8
+wheel.Refresh()
+local soundsBeforeDisabledCompletion = #playedSounds
+ApogeePartyHealthBars_S.sv.enabled = false
+cooldownStart, cooldownDuration = 0, 0
+wheel.Refresh()
+assert(#playedSounds == soundsBeforeDisabledCompletion and normalUpIcon.pulseUntil == nil,
+    "disabled Wheel runtime emitted cooldown-ready feedback")
+ApogeePartyHealthBars_S.sv.enabled = true
+wheel.Refresh()
+assert(#playedSounds == soundsBeforeDisabledCompletion and normalUpIcon.pulseUntil == nil,
+    "re-enabled Wheel runtime emitted delayed feedback from its disabled state")
+inCombat = false
 local soundsBeforeReassign = #playedSounds
 rangeResult = 0; wheel.Refresh()
 rangeResult = 1
@@ -528,11 +573,27 @@ itemUsable = true
 itemCooldown = 9
 wheel.Refresh()
 assert(normalUpIcon.cooldown.cooldown[2] == 9, "Wheel item cooldown was not displayed")
+local soundsBeforeOutOfCombatItemCooldown = #playedSounds
+local pulseBeforeOutOfCombatItemCooldown = normalUpIcon.pulseUntil
+itemCooldown = 0
+wheel.Refresh()
+assert(#playedSounds == soundsBeforeOutOfCombatItemCooldown
+        and normalUpIcon.pulseUntil == pulseBeforeOutOfCombatItemCooldown,
+    "out-of-combat Wheel item cooldown emitted ready feedback")
+inCombat = true
+wheel.Refresh()
+assert(#playedSounds == soundsBeforeOutOfCombatItemCooldown
+        and normalUpIcon.pulseUntil == pulseBeforeOutOfCombatItemCooldown,
+    "entering combat after a Wheel item cooldown emitted delayed ready feedback")
+itemCooldown = 9
+wheel.Refresh()
 local soundsBeforeItemCooldown = #playedSounds
 itemCooldown = 0
 wheel.Refresh()
-assert(#playedSounds == soundsBeforeItemCooldown + 1,
-    "completed Wheel item cooldown did not play its selected alert")
+assert(#playedSounds == soundsBeforeItemCooldown + 1
+        and normalUpIcon.pulseUntil ~= nil,
+    "in-combat Wheel item cooldown did not emit ready feedback")
+inCombat = false
 itemCooldown = 9
 wheel.Refresh()
 itemCount = 0

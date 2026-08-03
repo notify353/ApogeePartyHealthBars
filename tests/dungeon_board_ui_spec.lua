@@ -358,6 +358,16 @@ assert(#partiallyEligible == 2
         and partiallyEligible[1].text == "Zul'Farrak  •  44-54",
     "Healer view retained an out-of-range dungeon from a mixed request")
 
+local heroic = UI.BuildEntries({
+    {
+        source = "channel", sender = "Heroic", dungeonKeys = { "RAMPS" },
+        neededRoles = { "healer" }, status = "matched", heroic = true,
+        lastSeen = 199,
+    },
+}, "tbcAnniversary", 200, "healer", 70)
+assert(#heroic == 2 and heroic[2].dungeonChatLabel == "H Ramps",
+    "Heroic Dungeon Board request did not expose its canonical chat label")
+
 assert(not UI.IsShown(), "Dungeon Board started visible")
 snapshot = {
     {
@@ -487,7 +497,7 @@ guildWho.scripts.OnLeave()
 guildWho.scripts.OnClick()
 guildWhisper.scripts.OnClick()
 assert(actionCalls[1] == "who:Guildie"
-        and actionCalls[2] == "whisper:Guildie:healer:Blackrock Depths"
+        and actionCalls[2] == "whisper:Guildie:healer:BRD"
         and UI.IsShown(),
     "Who or Whisper did not preserve its context or unexpectedly close the board")
 

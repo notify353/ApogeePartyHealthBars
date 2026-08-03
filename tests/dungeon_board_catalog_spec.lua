@@ -56,6 +56,8 @@ for _, definition in ipairs(tbc) do
     end
     assert(type(definition.aliases) == "table" and #definition.aliases > 0,
         definition.key .. " has no aliases")
+    assert(type(definition.chatLabel) == "string" and definition.chatLabel:find("%S"),
+        definition.key .. " has no chat label")
 
     for index, alias in ipairs(definition.aliases) do
         assert(type(alias) == "string" and alias ~= "", definition.key .. " has an empty alias")
@@ -78,6 +80,14 @@ rfc.aliases[1] = "changed"
 local freshRfc = Catalog.GetDungeon("RFC")
 assert(freshRfc.name == "Ragefire Chasm" and freshRfc.aliases[1] == "rfc",
     "catalog callers can mutate private definitions")
+assert(Catalog.GetDungeon("DM").chatLabel == "VC"
+        and Catalog.GetDungeon("STK").chatLabel == "Stocks"
+        and Catalog.GetDungeon("GNO").chatLabel == "Gnomer"
+        and Catalog.GetDungeon("MAR").chatLabel == "Mara"
+        and Catalog.GetDungeon("STR").chatLabel == "Strat"
+        and Catalog.GetDungeon("SCH").chatLabel == "Scholo"
+        and Catalog.GetDungeon("RAMPS").chatLabel == "Ramps",
+    "catalog did not preserve canonical player-facing dungeon chat labels")
 assert(Catalog.GetDungeon("UNKNOWN") == nil, "unknown dungeon key resolved unexpectedly")
 assert(Catalog.IsFivePlayer("RFC") and not Catalog.IsFivePlayer("UBRS"),
     "five-player catalog boundary changed")

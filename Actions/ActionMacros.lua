@@ -17,6 +17,50 @@ local WARRIOR_CHARGE_FAMILY_IDS = { WARRIOR_CHARGE_ID }
 local MELEE_AUTO_ATTACK_IDS = { [6603] = true }
 local RANGED_AUTO_ATTACK_IDS = { [75] = true, [5019] = true }
 
+local BATTLE_STANCE_ID = 2457
+local DEFENSIVE_STANCE_ID = 71
+local BERSERKER_STANCE_ID = 2458
+local CAT_FORM_ID = 768
+local BEAR_FORM_ID = 5487
+local DIRE_BEAR_FORM_ID = 9634
+local PROWL_ID = 5215
+local ROGUE_STEALTH_ID = 1784
+
+-- The client reports that a spell is unusable in the current form, but does
+-- not expose a documented destination-form ID. Keep this policy deliberately
+-- reviewed and family-based so ranks and localized clients remain supported.
+-- Multiple allowed forms are retained to fail closed when there is no unique
+-- destination from the current layout.
+local FORM_REQUIREMENT_FAMILIES = {
+    -- Warrior: Battle Stance only.
+    { spellIds = { 100, 7384, 694, 20230, 12328 }, formIds = { BATTLE_STANCE_ID } },
+    -- Warrior: Defensive Stance only.
+    { spellIds = { 355, 6572, 2565, 871, 676, 12809, 20243, 23922, 3411 },
+        formIds = { DEFENSIVE_STANCE_ID } },
+    -- Warrior: Berserker Stance only.
+    { spellIds = { 20252, 6552, 18499, 1719, 1680 }, formIds = { BERSERKER_STANCE_ID } },
+    -- Warrior abilities with more than one valid stance remain ordinary casts
+    -- when assigned from a third stance.
+    { spellIds = { 6343, 72, 772, 23920 },
+        formIds = { BATTLE_STANCE_ID, DEFENSIVE_STANCE_ID } },
+    { spellIds = { 1715, 5308, 34428 },
+        formIds = { BATTLE_STANCE_ID, BERSERKER_STANCE_ID } },
+
+    -- Druid: Cat and Bear/Dire Bear action families.
+    { spellIds = { 1082, 1822, 5221, 1079, 22568, 5217, 8998, 1850, 5225, 33876, PROWL_ID },
+        formIds = { CAT_FORM_ID } },
+    { spellIds = { 6807, 6795, 99, 5229, 5211, 779, 5209, 22842, 16979, 33878, 33745 },
+        formIds = { BEAR_FORM_ID, DIRE_BEAR_FORM_ID } },
+    { spellIds = { 16857 }, formIds = { CAT_FORM_ID, BEAR_FORM_ID, DIRE_BEAR_FORM_ID } },
+
+    -- Druid stealth attacks resolve to the nested Cat/Prowl layout and are
+    -- intentionally rejected by the direct-transition resolver.
+    { spellIds = { 6785, 9005 }, formIds = { PROWL_ID } },
+
+    -- Rogue: directly reachable Stealth-only actions.
+    { spellIds = { 8676, 1833, 703, 921, 6770, 14183 }, formIds = { ROGUE_STEALTH_ID } },
+}
+
 -- Canonical rank-one or talent spell IDs are used only to resolve the client's
 -- localized family name. Assigned ranks are matched by that localized name so
 -- the policy does not depend on English text or on enumerating every rank.
@@ -77,6 +121,12 @@ local function matchesFamily(assignedName, canonicalIds)
         if canonicalName and canonicalName == assignedName then return true end
     end
     return false
+end
+
+local function copyIds(ids)
+    local result = {}
+    for index, id in ipairs(ids or {}) do result[index] = id end
+    return result
 end
 
 local function getValidatedAssignedName(spellId, spellName)
@@ -157,6 +207,22 @@ end
 function A.GetSpellTemplateId(spellName, spellId)
     if type(spellName) ~= "string" or not spellName:find("%S") then return nil end
     return classifySpell(spellId, spellName)
+end
+
+function A.GetRequiredFormSpellIds(spellName, spellId)
+    local assignedName = getValidatedAssignedName(spellId, spellName)
+    if not assignedName then return nil end
+    for _, family in ipairs(FORM_REQUIREMENT_FAMILIES) do
+        if matchesFamily(assignedName, family.spellIds) then
+            return copyIds(family.formIds)
+        end
+    end
+    return nil
+end
+
+function A.BuildFormTransitionMacro(formName)
+    if type(formName) ~= "string" or not formName:find("%S") then return nil end
+    return "/cast " .. formName
 end
 
 local function playerIsInCombat()

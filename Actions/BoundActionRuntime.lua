@@ -38,6 +38,7 @@ function Factory.Create(options)
         "Initialize", "GetLayouts", "HasStates", "GetActiveKey", "GetActiveSpecKey",
         "GetSlots", "GetSlot", "SetSlot", "IsKnownLayout", "GetActiveStateValue",
         "GetMaxStateValue", "GetStateDriver", "RefreshActiveContext", "GetOptions",
+        "ResolveDirectTransition",
     }) do
         assert(type(options.layouts[method]) == "function",
             "bound action runtime layouts require " .. method)
@@ -144,6 +145,32 @@ function Factory.Create(options)
     local function hasMacro(entry)
         return type(entry) == "table" and type(entry.macroText) == "string"
             and entry.macroText:find("%S") ~= nil and type(Actions.GetName(entry)) == "string"
+    end
+
+    local function resolveFormTransition(layoutKey, entry)
+        if type(entry) ~= "table" or entry.kind ~= "spell"
+                or type(Actions.GetRequiredFormSpellIds) ~= "function" then
+            return nil
+        end
+        local allowed = Actions.GetRequiredFormSpellIds(entry.spellName, entry.spellId)
+        if not allowed then return nil end
+        return WL.ResolveDirectTransition(layoutKey, allowed)
+    end
+
+    local function buildDefaultMacro(layoutKey, entry)
+        local transition = resolveFormTransition(layoutKey, entry)
+        if transition and type(Actions.BuildFormTransitionMacro) == "function" then
+            local macro = Actions.BuildFormTransitionMacro(transition.label)
+            if macro then return macro, transition end
+        end
+        return Actions.BuildDefaultMacro(entry), nil
+    end
+
+    local function generatedFormTransition(layoutKey, entry)
+        if not hasMacro(entry) then return nil end
+        local macro, transition = buildDefaultMacro(layoutKey, entry)
+        if transition and entry.macroText == macro then return transition end
+        return nil
     end
 
     local function ownedAction(slot)
@@ -351,7 +378,7 @@ function Factory.Create(options)
         if isHelpful(identifier) and UnitCanAssist and not UnitCanAssist("player", "target") then return "Target must be friendly" end
     end
 
-    local function evaluate(entry, known)
+    local function evaluate(entry, known, transition)
         if entry and entry.kind == "item" then
             local state, icon, start, duration, count, available, reason, gcdOnly = Items.Evaluate(entry)
             return state, icon, start, duration, count, available, reason, gcdOnly,
@@ -378,6 +405,28 @@ function Factory.Create(options)
         if enabled and ((duration > 0 and not gcdOnly and not rechargingWithCharge) or noCharges) then
             return "cooldown", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil,
                 true, nil, gcdOnly, alertableCooldown
+        end
+        if transition then
+            local transitionIdentifier = transition.spellId or transition.label
+            local transitionUsable, transitionNoResource = true, false
+            if C_Spell and C_Spell.IsSpellUsable then
+                transitionUsable, transitionNoResource = C_Spell.IsSpellUsable(transitionIdentifier)
+            elseif IsUsableSpell then
+                transitionUsable, transitionNoResource = IsUsableSpell(transitionIdentifier)
+            end
+            if transitionNoResource then
+                return "resource", icon, start, duration,
+                    maxCharges and maxCharges > 1 and tostring(charges or 0) or nil,
+                    true, nil, gcdOnly
+            end
+            if not transitionUsable then
+                return "unusable", icon, start, duration,
+                    maxCharges and maxCharges > 1 and tostring(charges or 0) or nil,
+                    true, nil, gcdOnly
+            end
+            return "ready", icon, start, duration,
+                maxCharges and maxCharges > 1 and tostring(charges or 0) or nil,
+                true, nil, gcdOnly
         end
         if noResource then return "resource", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil, true, nil, gcdOnly end
         local inRange = getRange(identifier)
@@ -606,12 +655,19 @@ function Factory.Create(options)
         local previous = W.GetSlot(layoutKey, slotId)
         local entry = Actions.CreateSpell(spellId, spellName, previous and previous.soundKey)
         if not entry then return false, "could not store that spell." end
+        local defaultMacro, transition = buildDefaultMacro(layoutKey, entry)
+        entry.macroText = defaultMacro
         WL.SetSlot(layoutKey, slotId, entry)
         clearSlotFeedback(slotId)
         -- Editing an action must never claim or repair physical bindings.
         -- Startup and lifecycle reconciliation own that state.
         W.RefreshSecureActions(); W.Refresh(); requestLayout()
         notifyConsumableAssignmentsChanged()
+        if transition then
+            return true, "assigned |cff00ff00" .. spellName .. "|r to " .. slot.label
+                .. "; it switches to " .. transition.label .. ". Assign " .. spellName
+                .. " to " .. slot.label .. " in " .. transition.label .. ".", slotId
+        end
         return true, "assigned |cff00ff00" .. spellName .. "|r to " .. slot.label .. ".", slotId
     end
 
@@ -693,11 +749,14 @@ function Factory.Create(options)
 
     function W.ResetMacro(layoutKey, slotId)
         if not W.CanEditLayout(layoutKey) then return nil end
-        return Actions.ResetMacro(W.GetSlot(layoutKey, slotId))
+        local entry = W.GetSlot(layoutKey, slotId)
+        return entry and buildDefaultMacro(layoutKey, entry) or nil
     end
 
     function W.IsMacroCustomized(layoutKey, slotId)
-        return Actions.IsCustomized(W.GetSlot(layoutKey, slotId))
+        local entry = W.GetSlot(layoutKey, slotId)
+        if not entry then return false end
+        return entry.macroText ~= buildDefaultMacro(layoutKey, entry)
     end
 
     function W.FindFirstEmptySlot(layoutKey)
@@ -887,8 +946,9 @@ function Factory.Create(options)
             if icon then
                 if hasMacro(entry) and Actions.GetName(entry) then
                     local activeName, _, activeId = spellInfo(entry)
+                    local transition = generatedFormTransition(activeLayoutKey, entry)
                     local status, texture, start, duration, charges, available, reason, gcdOnly, alertableCooldown =
-                        evaluate(entry, known)
+                        evaluate(entry, known, transition)
                     local activeSpellKey = entry.kind == "item"
                         and "item:" .. tostring(entry.itemId)
                         or "spell:" .. tostring(activeId or activeName)

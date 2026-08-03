@@ -93,6 +93,7 @@ local function makeLayouts(slotId, actionName)
         GetStateDriver = function() return "0" end,
         RefreshActiveContext = function() return false end,
         GetOptions = function() return { { key = "base", label = "Base" } } end,
+        ResolveDirectTransition = function() return nil end,
     }
 end
 
@@ -125,6 +126,7 @@ local function makeCompositeLayouts(slotId)
         end,
         RefreshActiveContext = function() return false end,
         GetOptions = function() return {} end,
+        ResolveDirectTransition = function() return nil end,
     }
 end
 

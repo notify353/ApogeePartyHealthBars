@@ -87,6 +87,13 @@ assert(layouts.HasStates() and #layouts.GetLayouts() == 2
 assert(layouts.GetSlot("spell:2457", "normalUp").macroText == "/cast Base Spell"
     and layouts.GetSlot("spell:71", "normalUp") == nil,
     "populated hidden Base was not preserved without keeping later states nonempty")
+local transition = layouts.ResolveDirectTransition("spell:71", { 2457 })
+assert(transition and transition.key == "spell:2457"
+        and transition.label == "Battle Stance" and transition.spellId == 2457,
+    "Warrior direct stance transition did not resolve by stable spell ID")
+assert(layouts.ResolveDirectTransition("spell:2457", { 2457 }) == nil
+        and layouts.ResolveDirectTransition("spell:2457", { 2457, 71 }) == nil,
+    "current or ambiguous Warrior stance generated a transition")
 layouts.GetSlot("spell:2457", "normalUp").macroText = "/cast Battle Spell"
 assert(layouts.GetSlot("base", "normalUp").macroText == "/cast Base Spell",
     "state layout did not remain independent from Base")
@@ -158,6 +165,13 @@ assert(layouts.GetSlot(prowlKey, "normalUp") == nil,
 assert(layouts.GetStateDriver()
     == "[form:1,stealth] 3; [form:1] 1; [form:2] 2; 0",
     "Prowl condition was not ordered before ordinary Cat Form")
+transition = layouts.ResolveDirectTransition("spell:5487", { 768 })
+assert(transition and transition.key == "spell:768" and transition.label == "Cat Form",
+    "Druid direct form transition did not resolve")
+assert(layouts.ResolveDirectTransition(prowlKey, { 768 }) == nil,
+    "Cat/Prowl did not satisfy its parent Cat Form requirement")
+assert(layouts.ResolveDirectTransition("base", { 5215 }) == nil,
+    "nested Prowl layout was accepted as a direct transition")
 stealthed = false
 
 class, forms, activeForm = "PRIEST", {}, 0
@@ -177,6 +191,9 @@ layouts.RefreshActiveContext()
 assert(layouts.IsKnownLayout("spell:1784")
     and layouts.GetStateDriver() == "[stealth] 1; 0",
     "learned Rogue Stealth did not receive a fallback state")
+transition = layouts.ResolveDirectTransition("base", { 1784 })
+assert(transition and transition.key == "spell:1784" and transition.label == "Stealth",
+    "direct Rogue Stealth transition was rejected as nested")
 stealthed = true
 assert(layouts.GetActiveKey() == "spell:1784",
     "Rogue Stealth fallback did not become active")

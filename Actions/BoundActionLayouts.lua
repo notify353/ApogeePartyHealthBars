@@ -313,6 +313,37 @@ function Factory.Create(options)
         end
         return result
     end
+    function L.ResolveDirectTransition(sourceLayoutKey, allowedFormSpellIds)
+        if type(allowedFormSpellIds) ~= "table" then return nil end
+        local source = layoutByKey[sourceLayoutKey]
+        if not source then return nil end
+
+        local allowed = {}
+        for _, spellId in ipairs(allowedFormSpellIds) do
+            spellId = tonumber(spellId)
+            if spellId and spellId > 0 then allowed[spellId] = true end
+        end
+        if not next(allowed) then return nil end
+
+        if source.spellId and allowed[source.spellId] then return nil end
+        local parent = source.parentKey and layoutByKey[source.parentKey]
+        if parent and parent.spellId and allowed[parent.spellId] then return nil end
+
+        local destination
+        for _, definition in ipairs(layouts) do
+            if definition.spellId and allowed[definition.spellId]
+                    and not definition.parentKey then
+                if destination then return nil end
+                destination = definition
+            end
+        end
+        if not destination then return nil end
+        return {
+            key = destination.key,
+            label = destination.label,
+            spellId = destination.spellId,
+        }
+    end
     function L.HasStates() return maxStateValue > 0 end
     function L.HasBaseLayout() return layoutByKey[L.BASE_KEY] ~= nil end
     function L.IsKnownLayout(layoutKey) return layoutByKey[layoutKey] ~= nil end

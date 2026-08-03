@@ -54,6 +54,10 @@ local standardShieldRequiredFamilies = {
 local spellNames = {
     [133] = "Fireball", [15407] = "Mind Flay", [5019] = "Shoot",
     [75] = "Auto Shot", [6603] = "Attack",
+    [2457] = "Battle Stance", [71] = "Defensive Stance",
+    [2458] = "Berserker Stance", [768] = "Cat Form",
+    [5487] = "Bear Form", [9634] = "Dire Bear Form",
+    [5215] = "Prowl", [1784] = "Stealth",
 }
 for _, family in ipairs(normalMeleeFamilies) do spellNames[family[1]] = family[2] end
 for _, family in ipairs(distanceFamilies) do spellNames[family[1]] = family[2] end
@@ -125,6 +129,42 @@ assert(actions.GetSpellTemplateId("Fireball(Rank 1)", 133) == "standard-spell"
         and actions.GetSpellTemplateId("Judgement", 20271) == "distance-attack"
         and actions.GetSpellTemplateId("Attack", 6603) == "melee-auto",
     "spell template classification lost a smart macro family")
+
+local requiredForms = actions.GetRequiredFormSpellIds("Charge(Rank 1)", 100)
+assert(requiredForms and #requiredForms == 1 and requiredForms[1] == 2457,
+    "Charge did not resolve its unique Battle Stance requirement")
+requiredForms[1] = 999
+assert(actions.GetRequiredFormSpellIds("Charge(Rank 1)", 100)[1] == 2457,
+    "form requirement callers could mutate the reviewed catalog")
+requiredForms = actions.GetRequiredFormSpellIds("Taunt(Rank 1)", 355)
+assert(requiredForms and #requiredForms == 1 and requiredForms[1] == 71,
+    "Taunt did not resolve its unique Defensive Stance requirement")
+requiredForms = actions.GetRequiredFormSpellIds("Pummel(Rank 1)", 6552)
+assert(requiredForms and #requiredForms == 1 and requiredForms[1] == 2458,
+    "Pummel did not resolve its unique Berserker Stance requirement")
+requiredForms = actions.GetRequiredFormSpellIds("Claw(Rank 1)", 1082)
+assert(requiredForms and #requiredForms == 1 and requiredForms[1] == 768,
+    "Claw did not resolve its Cat Form requirement")
+requiredForms = actions.GetRequiredFormSpellIds("Maul(Rank 1)", 6807)
+assert(requiredForms and #requiredForms == 2
+        and requiredForms[1] == 5487 and requiredForms[2] == 9634,
+    "Maul did not preserve Bear and Dire Bear destination identities")
+requiredForms = actions.GetRequiredFormSpellIds("Cheap Shot(Rank 1)", 1833)
+assert(requiredForms and #requiredForms == 1 and requiredForms[1] == 1784,
+    "Cheap Shot did not resolve its Rogue Stealth requirement")
+requiredForms = actions.GetRequiredFormSpellIds("Ravage(Rank 1)", 6785)
+assert(requiredForms and #requiredForms == 1 and requiredForms[1] == 5215,
+    "Ravage did not retain its nested Prowl requirement for safe rejection")
+requiredForms = actions.GetRequiredFormSpellIds("Thunder Clap(Rank 1)", 6343)
+assert(requiredForms and #requiredForms == 2
+        and requiredForms[1] == 2457 and requiredForms[2] == 71,
+    "multi-stance spell requirements lost their ambiguity")
+assert(actions.GetRequiredFormSpellIds("Fireball(Rank 1)", 133) == nil
+        and actions.GetRequiredFormSpellIds("Charge(Rank 1)", 133) == nil,
+    "unknown or mismatched spell identity received a form requirement")
+assert(actions.BuildFormTransitionMacro("Defensive Stance") == "/cast Defensive Stance"
+        and actions.BuildFormTransitionMacro("") == nil,
+    "form transition macro rendering changed")
 
 local targetPrefix = "/targetenemy\n/use "
 local attackPrefix = "/startattack\n/use "

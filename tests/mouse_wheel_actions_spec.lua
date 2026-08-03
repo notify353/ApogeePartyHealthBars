@@ -117,6 +117,7 @@ local cooldownStart, cooldownDuration, currentCharges, maximumCharges = 0, 0, ni
 local gcdStart, gcdDuration = 0, 0
 local reportedGcd
 local usable, noResource = true, false
+local usabilityByIdentifier = {}
 local currentSpell = false
 local rangeResult = 1
 local targetExists, targetDead, targetAttackable, targetAssistable = true, false, true, true
@@ -133,7 +134,11 @@ C_Spell = {
     end,
 }
 function GetSpellCharges() return currentCharges, maximumCharges end
-function IsUsableSpell() return usable, noResource end
+function IsUsableSpell(identifier)
+    local override = usabilityByIdentifier[identifier]
+    if override then return override[1], override[2] end
+    return usable, noResource
+end
 function IsCurrentSpell() return currentSpell end
 function SpellHasRange() return 1 end
 function IsSpellInRange() return rangeResult end
@@ -291,7 +296,7 @@ assert(wheel.GetSlot(PRIMARY, data.SLOTS[1].id).macroText == attackPrefix .. "He
 assert(wheel.GetSlot(PRIMARY, data.SLOTS[3].id).macroText == "/use Battle Shout"
     and wheel.GetSlot(PRIMARY, data.SLOTS[5].id).macroText
         == "/startattack\n/use [combat] Hamstring; Charge"
-    and wheel.GetSlot(PRIMARY, data.SLOTS[6].id).macroText == attackPrefix .. "Pummel",
+    and wheel.GetSlot(PRIMARY, data.SLOTS[6].id).macroText == "/cast Berserker Stance",
     "Warrior attack-family policy misclassified utility, gap-closing, or interrupt actions")
 local wheelOverflow, wheelOverflowMessage = wheel.AssignSpell(PRIMARY, nil, nil, "Overflow Wheel Spell")
 assert(not wheelOverflow and wheelOverflowMessage:find("Drop onto a gesture", 1, true),
@@ -318,8 +323,43 @@ local inactiveAssigned, inactiveMessage = wheel.AssignSpell(defensive, "normalUp
 assert(not inactiveAssigned and inactiveMessage:find("Change to that state", 1, true),
     "inactive state accepted a spell assignment")
 activeState = 2
-assert(wheel.AssignSpell(defensive, "normalUp", nil, "Charge"),
+local transitionAssigned, transitionMessage = wheel.AssignSpell(
+    defensive, "normalUp", nil, "Charge")
+assert(transitionAssigned and transitionMessage:find("switches to Battle Stance", 1, true)
+        and transitionMessage:find("Assign Charge", 1, true),
     "state-specific wheel spell assignment failed")
+assert(wheel.GetSlot(defensive, "normalUp").macroText == "/cast Battle Stance"
+        and not wheel.IsMacroCustomized(defensive, "normalUp")
+        and wheel.ResetMacro(defensive, "normalUp") == "/cast Battle Stance",
+    "wrong-stance assignment did not receive its generated transition macro")
+local transitionIcon = wheel.GetHudIcon("normalUp")
+assert(wheel.ApplyMacro(defensive, "normalUp", "/cast Custom Charge")
+        and wheel.IsMacroCustomized(defensive, "normalUp")
+        and wheel.ResetMacro(defensive, "normalUp") == "/cast Battle Stance",
+    "custom wrong-stance macro or layout-aware Reset was not preserved")
+usable = false
+usabilityByIdentifier[2457] = { true, false }
+wheel.Refresh()
+assert(transitionIcon.texture.desaturated and transitionIcon.alpha == 0.48,
+    "custom wrong-stance macro incorrectly received generated transition readiness")
+usable = true
+usabilityByIdentifier[2457] = nil
+assert(wheel.AssignSpell(defensive, "normalUp", nil, "Charge"),
+    "transition assignment could not be restored after customization")
+cooldownStart, cooldownDuration = 20, 8
+usable = false
+usabilityByIdentifier[2457] = { true, false }
+wheel.Refresh()
+assert(transitionIcon.texture.texturePath == 132337
+        and transitionIcon.cooldown.cooldown[1] == 20
+        and transitionIcon.cooldown.cooldown[2] == 8,
+    "form transition did not retain the assigned spell icon and cooldown")
+cooldownStart, cooldownDuration = 0, 0
+wheel.Refresh()
+assert(not transitionIcon.texture.desaturated and transitionIcon.alpha == 1,
+    "ready destination stance was judged by the unusable assigned spell")
+usable = true
+usabilityByIdentifier[2457] = nil
 assert(wheel.AssignItem(defensive, "shiftDown", 1251, "Linen Bandage"),
     "state-specific Wheel item assignment failed")
 assert(wheel.GetSlot(defensive, "shiftDown").kind == "item"
@@ -334,7 +374,7 @@ assert(stateSecure.stateDrivers.wheelstate
     == "[form:1] 1; [form:2] 2; [form:3] 3; 1",
     "secure state driver did not cover every detected form")
 assert(stateSecure.attributes["wheel-macro-1"]:find(warriorSpells[1], 1, true)
-    and stateSecure.attributes["wheel-macro-2"]:find("Charge", 1, true),
+    and stateSecure.attributes["wheel-macro-2"]:find("Battle Stance", 1, true),
     "secure action did not preload independent Warrior state macros")
 
 local bindingSavesBeforeSpecChange = saveCount
@@ -375,7 +415,7 @@ activeState = 2
 wheel.OnStateChanged()
 wheel.RefreshSecureActions()
 assert(wheel.GetActiveLayoutKey() == defensive
-    and stateSecure.attributes.macrotext:find("Charge", 1, true),
+    and stateSecure.attributes.macrotext:find("Battle Stance", 1, true),
     "active state did not select its secure macro layout")
 activeState = 1
 wheel.OnStateChanged()

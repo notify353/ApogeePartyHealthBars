@@ -21,7 +21,11 @@ local function widget()
         end,
         RegisterUnitEvent = function() end,
         CreateTexture = function() return widget() end,
-        CreateFontString = function() return widget() end,
+        CreateFontString = function(_, _, _, template)
+            local fontString = widget()
+            fontString.fontTemplate = template
+            return fontString
+        end,
         CreateAnimationGroup = function() return widget() end,
         CreateAnimation = function() return widget() end,
         GetHighlightTexture = function() return widget() end,
@@ -33,7 +37,7 @@ local function widget()
         GetCenter = function() return 100, 100 end,
         GetRect = function() return 10, 10, 200, 26 end,
         GetPoint = function() return "CENTER", UIParent, "CENTER", 0, 0 end,
-        GetVerticalScroll = function() return 0 end,
+        GetVerticalScroll = function(self) return self.verticalScroll or 0 end,
         GetVerticalScrollRange = function() return 0 end,
         GetID = function() return 1 end,
         IsShown = function(self) return self.shown end,
@@ -82,18 +86,20 @@ local function widget()
         GetText = function(self) return self.text or "" end,
         SetTexture = function(self, value) self.texture = value end,
         SetColorTexture = function(self, ...) self.color = { ... } end,
+        SetBackdropColor = function(self, ...) self.backdropColor = { ... } end,
         SetJustifyH = function(self, value) self.justifyH = value end,
+        SetVerticalScroll = function(self, value) self.verticalScroll = value end,
     }
     local noopMethods = {
         "SetAllPoints",
         "SetTexCoord", "SetDrawLayer", "SetHorizTile", "SetVertTile",
         "EnableMouseWheel", "SetMovable", "SetClampedToScreen",
-        "SetHighlightTexture", "SetBackdrop", "SetBackdropColor", "SetBackdropBorderColor",
+        "SetHighlightTexture", "SetBackdrop", "SetBackdropBorderColor",
         "SetStatusBarTexture", "SetStatusBarColor", "SetMinMaxValues", "SetValue",
         "SetFontObject", "SetFont", "SetTextColor",
         "SetJustifyV", "SetWidth", "SetHeight", "SetWordWrap", "SetMaxLines",
         "SetVertexColor", "SetScrollChild",
-        "SetVerticalScroll", "SetMultiLine", "SetAutoFocus", "SetTextInsets",
+        "SetMultiLine", "SetAutoFocus", "SetTextInsets",
         "SetFocus", "ClearFocus", "HighlightText", "Enable", "Disable",
         "SetDesaturated", "SetCooldown", "Clear", "SetDuration", "SetFromAlpha", "SetToAlpha", "SetOrder",
         "Play", "Stop", "StartMoving", "StopMovingOrSizing",
@@ -338,12 +344,8 @@ assert(tocLoadOrder["PartyFrames/AccessoryLayout.lua"]
         < tocLoadOrder["PartyFrames/PlayerUtility.lua"]
     and tocLoadOrder["PartyFrames/AccessoryLayout.lua"]
         < tocLoadOrder["Actions/ShortcutBar.lua"]
-    and tocLoadOrder["PartyFrames/AccessoryLayout.lua"]
-        < tocLoadOrder["PartyFrames/RaidMarkers.lua"]
     and tocLoadOrder["PartyFrames/TargetNameplateHud.lua"]
-        < tocLoadOrder["Reminders/TargetEffects/TargetEffectHud.lua"]
-    and tocLoadOrder["PartyFrames/TargetNameplateHud.lua"]
-        < tocLoadOrder["PartyFrames/RaidMarkers.lua"],
+        < tocLoadOrder["Reminders/TargetEffects/TargetEffectHud.lua"],
     "nameplate or compact accessory consumers loaded before their shared dependency")
 assert(tocLoadOrder["Actions/MouseWheel/MouseWheelLayouts.lua"]
     < tocLoadOrder["Actions/MouseWheel/MouseWheelActions.lua"],
@@ -452,6 +454,10 @@ assert(type(ApogeePartyHealthBars_DungeonBoardUI.Toggle) == "function"
         and type(ApogeePartyHealthBars_DungeonBoardGroupFinder.RequestRefresh) == "function"
         and type(ApogeePartyHealthBars_DungeonBoardFeed.SetUnlocked) == "function",
     "Dungeon Board focused APIs were not loaded")
+assert(type(ApogeePartyHealthBars_DungeonGuideUI.Toggle) == "function"
+        and type(ApogeePartyHealthBars_DungeonGuidePolicy.GetRecommendationForGuid) == "function"
+        and type(ApogeePartyHealthBars_RaidMarkers.EvaluateCurrentTarget) == "function",
+    "Dungeon Guide focused APIs were not loaded")
 assert(ApogeePartyHealthBarsDungeonBoard.topLevel,
     "Dungeon Board did not participate in native active-window stacking")
 assert(type(ApogeePartyHealthBars_BuffReminders.RefreshKnownSpells) == "function",
@@ -834,6 +840,37 @@ assert(ApogeePartyHealthBars_DungeonBoardUI.IsShown(),
 SlashCmdList.APOGEEPARTYHEALTHBARS("board")
 assert(not ApogeePartyHealthBars_DungeonBoardUI.IsShown(),
     "Dungeon Board slash command did not close the window")
+assert(not ApogeePartyHealthBars_DungeonGuideUI.IsShown(), "Dungeon Guide started visible")
+assert(ApogeePartyHealthBarsDungeonGuide.backdropColor[4] == 1,
+    "Dungeon Book did not use its required opaque backdrop")
+assert(ApogeePartyHealthBarsDungeonGuide.foundation.color[4] == 1
+        and ApogeePartyHealthBarsDungeonGuide.contentBackground.color[4] == 1,
+    "Dungeon Book did not create solid full-window and reading foundations")
+assert(ApogeePartyHealthBarsDungeonGuide.body.fontTemplate == "GameFontHighlight",
+    "Dungeon Book retained undersized body typography")
+local originalClientInfo = ApogeePartyHealthBars_ClientCapabilities.GetClientInfo
+ApogeePartyHealthBars_ClientCapabilities.GetClientInfo = function()
+    return { flavor = "classicEra", interface = 11509 }
+end
+SlashCmdList.APOGEEPARTYHEALTHBARS("guide")
+assert(ApogeePartyHealthBars_DungeonGuideUI.IsShown(), "Dungeon Guide slash command did not open the Book")
+local guideDungeonDropdown, guideSectionDropdown, guideScroll =
+    ApogeePartyHealthBars_DungeonGuideUI.GetNavigationControls()
+guideScroll:SetVerticalScroll(240)
+local armoryChoice = assert(guideSectionDropdown.optionButtons[3],
+    "Dungeon Book did not create all four Scarlet Monastery wing choices")
+armoryChoice.scripts.OnClick(armoryChoice)
+assert(guideScroll:GetVerticalScroll() == 0,
+    "changing Dungeon Book wings retained the previous chapter's scroll offset")
+guideDungeonDropdown:Open()
+assert(guideDungeonDropdown.popup:IsShown() and guideDungeonDropdown.dismiss:IsShown(),
+    "Dungeon Book guide selector did not open for popup-dismissal regression setup")
+ApogeePartyHealthBarsDungeonGuide.scripts.OnHide()
+assert(not guideDungeonDropdown.popup:IsShown() and not guideDungeonDropdown.dismiss:IsShown(),
+    "hiding Dungeon Book left its UIParent-owned dropdown visible")
+SlashCmdList.APOGEEPARTYHEALTHBARS("guide")
+assert(not ApogeePartyHealthBars_DungeonGuideUI.IsShown(), "Dungeon Guide slash command did not close the Book")
+ApogeePartyHealthBars_ClientCapabilities.GetClientInfo = originalClientInfo
 local function ClickMinimapButton()
     local preClick = minimapButton.scripts.PreClick
     if preClick then preClick(minimapButton, "LeftButton") end
@@ -894,8 +931,11 @@ assert(table.concat(ApogeePartyHealthBars_SettingsUI.groupOrder, ",")
     "settings groups did not follow the compact task order")
 assert(table.concat(ApogeePartyHealthBars_SettingsUI.pageOrder, ",")
         == "frames,partyFrameClicks,shortcuts,keyboard,mouseWheel,mouseButtons,"
-            .. "healthChat,buffsCleanse,targetEffects,threatControl,dungeon,profiles,loadouts,maintenance",
+            .. "healthChat,buffsCleanse,targetEffects,threatControl,dungeon,dungeonGuide,profiles,loadouts,maintenance",
     "settings pages did not retain every configuration workflow")
+assert(ApogeePartyHealthBars_SettingsUI.pages.dungeonGuide.summary
+        == "Learn reviewed mob priorities and configure automatic target marking.",
+    "Dungeon Guide settings still described the removed live coach")
 assert(ApogeePartyHealthBars_MacroData == nil
         and ApogeePartyHealthBars_MacroLibrary == nil
         and ApogeePartyHealthBars_MacroLibrarySettingsPage == nil
@@ -990,7 +1030,7 @@ assert(ApogeePartyHealthBars_BuffThanks.GetFrame().width == 326
     "Buff Thanks did not use the shaded Threat Awareness HUD treatment")
 for _, key in ipairs({
     "frames", "partyFrameClicks", "shortcuts", "keyboard", "mouseWheel",
-    "mouseButtons", "healthChat", "buffsCleanse", "targetEffects", "threatControl", "dungeon",
+    "mouseButtons", "healthChat", "buffsCleanse", "targetEffects", "threatControl", "dungeon", "dungeonGuide",
     "profiles", "maintenance",
 }) do
     ApogeePartyHealthBars_SettingsUI.ActivatePage(key)
@@ -1033,7 +1073,7 @@ for _, key in ipairs({
                 and ApogeePartyHealthBarsBindPanel.frameStrata == "DIALOG",
             "Tank Threat Control preview could render above the settings window")
     end
-    local singlePageGroup = key == "frames" or key == "dungeon"
+    local singlePageGroup = key == "frames"
     assert(ApogeePartyHealthBars_SettingsUI.pageDropdown:IsShown()
             == not singlePageGroup
             and ApogeePartyHealthBars_SettingsUI.pageTitle:IsShown()
@@ -1109,6 +1149,10 @@ assert(ApogeePartyHealthBars_S.sv.dungeonBoardRole == "healer"
         and ApogeePartyHealthBars_S.sv.dungeonBoardLevelsBelow == 10
         and ApogeePartyHealthBars_S.sv.dungeonBoardLevelsAbove == 3,
     "Dungeon Board should default to Healer with feed alerts and its standard level window")
+assert(ApogeePartyHealthBars_S.sv.dungeonGuideAutoMarkEnabled == true,
+    "automatic Dungeon Guide marking should default on")
+assert(ApogeePartyHealthBars_S.sv.dungeonGuideCoachEnabled == nil,
+    "retired Dungeon Guide coach preference persisted")
 assert(next(ApogeePartyHealthBars_C.SHORTCUT_CLASS_DEFAULTS) == nil,
     "Shortcut slots should start empty for every class")
 assert(ApogeePartyHealthBars_S.sv.lowHealthThreshold == 50, "low-health threshold should default to 50%")

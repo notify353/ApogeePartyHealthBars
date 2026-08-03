@@ -69,7 +69,7 @@ local CAPABILITIES = {
         end,
     },
     raidMarkers = {
-        reason = "This client does not provide raid-marker controls.",
+        reason = "This client does not provide automatic raid marking.",
         detect = function()
             return isFunction(SetRaidTarget) and isFunction(GetRaidTargetIndex)
         end,
@@ -213,7 +213,7 @@ local FEATURES = {
     rangeFade = { label = "Range fading", requires = { "range" } },
     incomingHeals = { label = "Incoming heal overlay", requires = { "incomingHeals" } },
     threat = { label = "Threat indicators", requires = { "threat" } },
-    raidMarkers = { label = "Raid-marker controls", requires = { "nameplates", "raidMarkers" } },
+    raidMarkers = { label = "Automatic dungeon marking", requires = { "raidMarkers" } },
     spellAssignment = { label = "Spellbook assignment", requires = { "spellbook" } },
     itemAssignment = { label = "Item assignment", requires = { "items" } },
     equipmentLoadouts = { label = "Equipment loadouts", requires = { "equipmentSets" } },

@@ -23,7 +23,6 @@ ApogeePartyHealthBars_DungeonBoardEvents = {
         assert(router.name == "router" and deps.name == "deps")
     end,
 }
-
 dofile("Runtime/RuntimeEvents.lua")
 local events = ApogeePartyHealthBars_RuntimeEvents
 

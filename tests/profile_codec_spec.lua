@@ -34,6 +34,8 @@ local profile = {
             enabled = true, hideUIErrors = false,
             buffThanksEnabled = true, buffThanksPoint = "TOP",
             buffThanksRelPoint = "TOP", buffThanksX = 0, buffThanksY = -120,
+            dungeonGuideAutoMarkEnabled = true, dungeonGuidePoint = "TOP",
+            dungeonGuideRelPoint = "TOP", dungeonGuideX = 18, dungeonGuideY = -42,
         },
         actions = { shortcuts = { {
             kind = "spell", spellName = "Flash Heal(Rank 7)",
@@ -53,6 +55,10 @@ assert(envelope.profileName == "Raid" and envelope.classToken == "PRIEST"
     and envelope.payload.settings.hideUIErrors == false
     and envelope.payload.settings.buffThanksEnabled == true
     and envelope.payload.settings.buffThanksY == -120
+    and envelope.payload.settings.dungeonGuideAutoMarkEnabled == true
+    and envelope.payload.settings.dungeonGuidePoint == "TOP"
+    and envelope.payload.settings.dungeonGuideX == 18
+    and envelope.payload.settings.dungeonGuideY == -42
     and envelope.payload.actions.shortcuts[1].macroText
         == "/cast [@mouseover,help,nodead] Flash Heal(Rank 7)",
     "share metadata did not round-trip")

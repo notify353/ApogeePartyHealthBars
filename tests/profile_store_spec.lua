@@ -50,6 +50,9 @@ ApogeePartyHealthBars_Effects = {
         if settings.dungeonBoardFeedEnabled == nil then
             settings.dungeonBoardFeedEnabled = true
         end
+        if settings.dungeonGuideAutoMarkEnabled == nil then
+            settings.dungeonGuideAutoMarkEnabled = true
+        end
         if settings.cleanseWatchPoint == nil then
             settings.cleanseWatchPoint = "TOPRIGHT"
         end
@@ -166,6 +169,7 @@ assert(created.payload.settings.enabled
         and created.payload.settings.automaticConsumablesEnabled == true
         and created.payload.settings.dungeonBoardRole == "healer"
         and created.payload.settings.dungeonBoardFeedEnabled == true
+        and created.payload.settings.dungeonGuideAutoMarkEnabled == true
         and created.payload.settings.cleanseWatchPoint == "TOPRIGHT"
         and created.payload.settings.cleanseWatchRelPoint == "TOPRIGHT"
         and created.payload.settings.cleanseWatchX == 0
@@ -309,6 +313,9 @@ local sanitized = store.NormalizePayload({ settings = {
     dungeonBoardLevelsBelow = 12, dungeonBoardLevelsAbove = 4,
     dungeonBoardFeedPoint = "TOP", dungeonBoardFeedRelPoint = "TOP",
     dungeonBoardFeedX = 18, dungeonBoardFeedY = -36,
+    dungeonGuideAutoMarkEnabled = true,
+    dungeonGuidePoint = "TOP", dungeonGuideRelPoint = "TOP",
+    dungeonGuideX = 24, dungeonGuideY = -48,
     buffThanksEnabled = false, buffThanksPoint = "TOP", buffThanksRelPoint = "TOP",
     buffThanksX = 12, buffThanksY = -140,
 }, actions = {} })
@@ -339,6 +346,12 @@ assert(sanitized.settings.buffThanksEnabled == false
         and sanitized.settings.buffThanksX == 12
         and sanitized.settings.buffThanksY == -140,
     "Buff Thanks profile preferences did not survive normalization")
+assert(sanitized.settings.dungeonGuideAutoMarkEnabled == true
+        and sanitized.settings.dungeonGuidePoint == "TOP"
+        and sanitized.settings.dungeonGuideRelPoint == "TOP"
+        and sanitized.settings.dungeonGuideX == 24
+        and sanitized.settings.dungeonGuideY == -48,
+    "Dungeon Guide profile preferences did not survive normalization")
 
 local legacyAccount = { schemaVersion = 1, profileStore = {
     schemaVersion = 1,

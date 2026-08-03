@@ -1,197 +1,115 @@
-dofile("Core/Data.lua")
-dofile("PartyFrames/AccessoryLayout.lua")
 ApogeePartyHealthBars_S = { sv = { enabled = true } }
 
-local created = {}
+local featureSupported = true
+ApogeePartyHealthBars_ClientCapabilities = {
+    IsFeatureAvailable = function(key)
+        return key == "raidMarkers" and featureSupported
+    end,
+}
+
+local enabled = false
+local inCombat = false
+local recommendation
 local applied = {}
-local units = {
-    target = { guid = "Creature-1", hostile = true, dead = false, marker = nil },
-    nameplate1 = { guid = "Creature-1", hostile = true, dead = false, marker = nil },
+local target = {
+    exists = true,
+    hostile = true,
+    dead = false,
+    guid = "Creature-0-0-0-0-4293-0000000001",
+    marker = nil,
 }
-local plates = {}
 
-local function widget(parent)
-    local value = {
-        parent = parent, points = {}, scripts = {}, textures = {}, shown = true, lines = {},
-    }
-    local noops = { "RegisterForClicks", "SetAllPoints", "SetWidth", "SetHeight" }
-    for _, name in ipairs(noops) do value[name] = function() end end
-    function value:SetSize(width, height) self.width, self.height = width, height end
-    function value:GetWidth() return self.width or 1 end
-    function value:GetHeight() return self.height or 1 end
-    function value:CreateTexture()
-        local texture = widget(self)
-        self.textures[#self.textures + 1] = texture
-        return texture
-    end
-    function value:SetTexture(path) self.texturePath = path end
-    function value:SetTexCoord(...) self.texCoord = { ... } end
-    function value:SetDesaturated(desaturated) self.desaturated = desaturated end
-    function value:SetAlpha(alpha) self.alpha = alpha end
-    function value:SetColorTexture(...) self.color = { ... } end
-    function value:AddLine(text) self.lines[#self.lines + 1] = text end
-    function value:SetScript(name, callback) self.scripts[name] = callback end
-    function value:SetPoint(...) self.points[#self.points + 1] = { ... } end
-    function value:ClearAllPoints() self.points = {} end
-    function value:SetParent(newParent) self.parent = newParent end
-    function value:GetParent() return self.parent end
-    function value:GetFrameLevel() return self.frameLevel or 1 end
-    function value:SetFrameLevel(level) self.frameLevel = level end
-    function value:IsShown() return self.shown end
-    function value:SetShown(shown) self.shown = shown end
-    function value:Show() self.shown = true end
-    function value:Hide() self.shown = false end
-    return value
-end
-
-UIParent = widget()
-plates.nameplate1 = widget(UIParent)
-function CreateFrame(_, _, parent)
-    local frame = widget(parent)
-    created[#created + 1] = frame
-    return frame
-end
-function UnitExists(unit) return units[unit] ~= nil end
+function UnitExists(unit) return unit == "target" and target.exists end
 function UnitCanAttack(source, unit)
-    return source == "player" and units[unit] and units[unit].hostile
+    return source == "player" and unit == "target" and target.hostile
 end
-function UnitIsDeadOrGhost(unit) return units[unit] and units[unit].dead end
-function UnitGUID(unit) return units[unit] and units[unit].guid end
-function GetRaidTargetIndex(unit) return units[unit] and units[unit].marker end
-function SetRaidTarget(unit, index)
-    applied[#applied + 1] = { unit, index }
-    local marker = index
-    if index == 0 then marker = nil end
-    if units[unit] then units[unit].marker = marker end
-    if units.target and units[unit] and units.target.guid == units[unit].guid then
-        units.target.marker = marker
-    end
+function UnitIsDeadOrGhost(unit) return unit == "target" and target.dead end
+function UnitGUID(unit) return unit == "target" and target.guid or nil end
+function GetRaidTargetIndex(unit) return unit == "target" and target.marker or nil end
+function InCombatLockdown() return inCombat end
+function SetRaidTarget(unit, markerIndex)
+    applied[#applied + 1] = { unit, markerIndex, target.guid }
+    target.marker = markerIndex
 end
-C_NamePlate = {
-    GetNamePlateForUnit = function(unit) return plates[unit] end,
-}
-dofile("PartyFrames/TargetNameplateHud.lua")
+
 dofile("PartyFrames/RaidMarkers.lua")
-local hud = ApogeePartyHealthBars_TargetNameplateHud
-local markers = ApogeePartyHealthBars_RaidMarkers
-markers.Initialize()
+local Markers = ApogeePartyHealthBars_RaidMarkers
 
-local container = markers.GetContainer()
-local root = hud.GetContainer()
-local moon, cross, skull = markers.GetButton(1), markers.GetButton(2), markers.GetButton(3)
-assert(root and container and skull and cross and moon and #created == 5,
-    "expected one shared nameplate root and one reusable marker row with three buttons")
-assert(not container.shown, "marker row appeared before the target nameplate was observed")
-local markerSize = ApogeePartyHealthBars_C.ACCESSORY_ICON_SIZE * 2
-assert(container.width == 3 * markerSize + 2 * 6
-        and container.height == markerSize
-        and moon.width == markerSize and moon.height == markerSize
-        and cross.width == markerSize and skull.width == markerSize,
-    "raid-marker controls and click targets were not doubled in size")
-assert(moon.points[1][1] == "LEFT" and moon.points[1][4] == 0
-        and cross.points[1][4] == markerSize + 6
-        and skull.points[1][4] == 2 * (markerSize + 6),
-    "Moon, Cross, and Skull did not use the roomier reversed spacing")
-assert(skull.scripts.OnEnter == nil and skull.scripts.OnLeave == nil,
-    "raid-marker hover tooltips were still installed")
-assert(#moon.textures == 1 and #cross.textures == 1 and #skull.textures == 1,
-    "raid-marker controls retained mouseover or selection textures")
+local valid, validationError = pcall(Markers.Initialize, {})
+assert(not valid and tostring(validationError):find("policy and settings", 1, true),
+    "automatic raid markers accepted incomplete dependencies")
 
-hud.OnNamePlateAdded("nameplate1"); markers.Refresh()
-assert(root.shown and root.parent == plates.nameplate1
-        and container.parent == root and hud.GetBoundUnit() == "nameplate1",
-    "current target controls did not attach to its observed nameplate")
-assert(root.points[1][1] == "BOTTOM" and root.points[1][2] == plates.nameplate1
-        and root.points[1][3] == "TOP" and root.points[1][4] == 0
-        and root.points[1][5] == 2,
-    "marker row was not centered above the nameplate")
-assert(not skull.texture.desaturated and skull.texture.alpha == 1,
-    "unused marker was not shown in full color")
+Markers.Initialize({
+    Policy = { GetRecommendationForGuid = function() return recommendation end },
+    Settings = { GetAutoMarkEnabled = function() return enabled end },
+})
 
-skull.scripts.OnClick()
-assert(applied[1][1] == "nameplate1" and applied[1][2] == 8,
-    "Skull did not use the bound nameplate unit token")
-assert(skull.selectionBorder == nil,
-    "marker controls retained a redundant selected-marker border")
-assert(skull.texture.alpha == 1 and not skull.texture.desaturated
-        and cross.texture.alpha == 0.18 and cross.texture.desaturated
-        and moon.texture.alpha == 0.18 and moon.texture.desaturated,
-    "non-selected marker controls were not strongly faded")
-skull.scripts.OnClick()
-assert(applied[2][1] == "nameplate1" and applied[2][2] == 0
-        and units.nameplate1.marker == nil,
-    "clicking the current marker did not remove it")
-assert(skull.texture.alpha == 1 and cross.texture.alpha == 1 and moon.texture.alpha == 1,
-    "clearing the selected marker did not restore available controls")
+local function evaluate(markerIndex)
+    recommendation = markerIndex and { markerIndex = markerIndex } or nil
+    return Markers.EvaluateCurrentTarget()
+end
 
-units.nameplate1.marker, units.target.marker = 1, 1
-markers.Refresh()
-units.nameplate1.marker, units.target.marker = nil, nil
-skull.scripts.OnClick()
-assert(units.nameplate1.marker == 8,
-    "regression setup did not assign Skull before changing targets")
+evaluate(8)
+assert(#applied == 0, "disabled automatic marking changed the target")
 
-units.target = { guid = "Creature-2", hostile = true, dead = false }
-units.nameplate2 = { guid = "Creature-2", hostile = true, dead = false }
-plates.nameplate2 = widget(UIParent)
-hud.OnNamePlateAdded("nameplate2"); markers.Refresh()
-assert(root.parent == plates.nameplate2 and hud.GetBoundUnit() == "nameplate2",
-    "target change did not move the reusable row to the matching nameplate")
-hud.OnNamePlateAdded("nameplate1")
-markers.Refresh()
-assert(skull.texture.alpha == 1 and cross.texture.alpha == 1 and moon.texture.alpha == 1,
-    "controls inferred unavailable markers from another mob")
-skull.scripts.OnClick()
-assert(applied[#applied][1] == "nameplate2" and applied[#applied][2] == 8
-        and units.nameplate2.marker == 8,
-    "marker did not apply to the current target nameplate")
-cross.scripts.OnClick()
-assert(applied[#applied][2] == 7 and units.nameplate2.marker == 7
-        and cross.texture.alpha == 1 and not cross.texture.desaturated
-        and skull.texture.alpha == 0.18 and moon.texture.alpha == 0.18,
-    "replacement marker state was not synchronized")
+enabled = true
+ApogeePartyHealthBars_S.sv.enabled = false
+evaluate(8)
+assert(#applied == 0, "automatic marking ignored the add-on enabled state")
+ApogeePartyHealthBars_S.sv.enabled = true
 
-units.target.guid = "Creature-mismatch"
-hud.OnTargetChanged(); markers.Refresh()
-assert(not root.shown and hud.GetBoundUnit() == nil,
-    "GUID mismatch left controls attached to a stale nameplate")
-units.target.guid = "Creature-2"
-hud.OnTargetChanged(); markers.Refresh()
-assert(root.shown and hud.GetBoundUnit() == "nameplate2",
-    "controls did not return after the matching target was restored")
+target.exists = false
+evaluate(8)
+target.exists = true
+target.hostile = false
+evaluate(8)
+target.hostile = true
+target.dead = true
+evaluate(8)
+target.dead = false
+assert(#applied == 0, "invalid, friendly, or dead targets were marked")
 
-units.target.hostile, units.nameplate2.hostile = false, false
-markers.Refresh()
-hud.Refresh(); markers.Refresh()
-assert(not root.shown, "friendly target displayed raid-marker controls")
-units.target.hostile, units.nameplate2.hostile = true, true
-units.target.dead, units.nameplate2.dead = true, true
-markers.Refresh()
-hud.Refresh(); markers.Refresh()
-assert(not root.shown, "dead target displayed controls")
-units.target.dead, units.nameplate2.dead = false, false
-markers.Refresh()
+evaluate(nil)
+recommendation = { markerKey = "none", markerIndex = nil }
+Markers.EvaluateCurrentTarget()
+assert(#applied == 0, "unknown or No Mark recommendations applied a marker")
 
-hud.OnNamePlateRemoved("nameplate2"); markers.Refresh()
-assert(not root.shown and root.parent == UIParent and hud.GetBoundUnit() == nil,
-    "removed nameplate retained the reusable marker row")
-hud.OnNamePlateAdded("nameplate2"); markers.Refresh()
-assert(root.shown and root.parent == plates.nameplate2,
-    "recycled nameplate did not reacquire the marker row")
+for _, markerIndex in ipairs({ 8, 7, 5 }) do
+    target.marker = nil
+    target.guid = target.guid .. tostring(markerIndex)
+    local result = evaluate(markerIndex)
+    assert(result == recommendation
+            and applied[#applied][1] == "target"
+            and applied[#applied][2] == markerIndex,
+        "out-of-combat target did not receive its recommended marker")
+end
+assert(#applied == 3,
+    "rapid target cycling retained assignment state instead of evaluating each target")
 
-units.nameplate2.marker, units.target.marker = 8, 8
-markers.Refresh()
-assert(skull.texture.alpha == 1 and cross.texture.alpha == 0.18
-        and moon.texture.alpha == 0.18,
-    "external live marker state did not refresh the controls")
-assert(markers.GetAssignedGuid == nil and markers.OnCombatLogEvent == nil,
-    "removed marker-assignment tracking APIs were still exposed")
+target.marker = 1
+evaluate(8)
+assert(#applied == 3 and target.marker == 1,
+    "an existing target marker was replaced or cleared")
 
-units.target = nil
-hud.OnTargetChanged(); markers.Refresh()
-assert(not root.shown, "controls remained visible without a target")
-local applyCount = #applied
-skull.scripts.OnClick()
-assert(#applied == applyCount, "detached marker button applied to a stale unit")
+inCombat = true
+target.marker = nil
+evaluate(7)
+evaluate(5)
+assert(#applied == 3, "Cross or Moon was applied during combat")
+local result = evaluate(8)
+assert(result == recommendation and #applied == 4 and target.marker == 8,
+    "Skull was not applied during combat")
 
-print("PASS raid markers")
+featureSupported = false
+target.marker = nil
+evaluate(8)
+assert(#applied == 4, "unsupported raid-marker APIs were used")
+
+assert(Markers.GetContainer == nil
+        and Markers.GetButton == nil
+        and Markers.SetRecommendation == nil
+        and Markers.GetAssignedGuid == nil
+        and Markers.OnCombatLogEvent == nil,
+    "removed marker UI or assignment-tracking APIs were still exposed")
+
+print("PASS stateless automatic dungeon marking")

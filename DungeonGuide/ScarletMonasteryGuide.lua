@@ -25,15 +25,15 @@ mob("sentry", 4283, "Scarlet Sentry", "none", 60, "cleanup melee",
     "It is a routine melee body and should not distract from casters or dangerous undead.", { "Melee attacks" }, "Tank normally and kill late.", "Humanoid", "Normal humanoid control works.")
 mob("unfetteredSpirit", 4308, "Unfettered Spirit", "none", 70, "cleanup spirit",
     "It is a lower-priority spirit in mixed pulls.", { "Spirit attacks" }, "Tank and clean up late.", "Undead", "Shackle Undead and Turn Undead work.")
-mob("vishas", 3983, "Interrogator Vishas", "none", 80, "boss; face away and cleanse Immolate",
-    "A single boss does not need a kill-order mark; the important choice is positioning and his damage-over-time effect.", { "Immolate" }, "Face him away, dispel Immolate when available, and use steady mitigation.", "Humanoid", "Boss control is unreliable; use interrupts and stuns only when permitted.", {}, true)
-mob("thalnos", 4543, "Bloodmage Thalnos", "none", 90, "boss caster; interrupt and spread from AoE",
+mob("vishas", 3983, "Interrogator Vishas", "circle", 80, "boss; face away and cleanse Immolate",
+    "Circle identifies the boss; the important choices are positioning and handling his damage-over-time effect.", { "Immolate" }, "Face him away, dispel Immolate when available, and use steady mitigation.", "Humanoid", "Boss control is unreliable; use interrupts and stuns only when permitted.", {}, true)
+mob("thalnos", 4543, "Bloodmage Thalnos", "circle", 90, "boss caster; interrupt and spread from AoE",
     "The fight is about limiting his close-range fire and shadow magic, not target ambiguity.", { "Shadow Bolt", "Flame Spike", "Fire Nova" }, "Interrupt Shadow Bolt; ranged players spread and stay outside close-range fire effects.", "Humanoid", "Boss control is unreliable; use interrupts.", {}, true)
-mob("azshir", 6490, "Azshir the Sleepless", "none", 100, "rare boss; interrupt and guard against fear",
-    "This rare is fought alone; preventing fear from reaching uncleared mobs matters more than a marker.", { "Terrify", "Soul Siphon", "Call of the Grave" }, "Clear nearby mobs, interrupt when possible, and keep feared players away from extra pulls.", "Undead", "Boss immunities may apply; use interrupts.", {}, true)
-mob("fallenChampion", 6488, "Fallen Champion", "none", 110, "rare boss; face Cleave away",
+mob("azshir", 6490, "Azshir the Sleepless", "circle", 100, "rare boss; interrupt and guard against fear",
+    "Circle identifies the rare while preventing fear from reaching uncleared mobs remains the main concern.", { "Terrify", "Soul Siphon", "Call of the Grave" }, "Clear nearby mobs, interrupt when possible, and keep feared players away from extra pulls.", "Undead", "Boss immunities may apply; use interrupts.", {}, true)
+mob("fallenChampion", 6488, "Fallen Champion", "circle", 110, "rare boss; face Cleave away",
     "This rare is a single durable melee target whose frontal cleave punishes loose facing.", { "Cleave", "Berserker Stance" }, "Face away and keep the party behind it.", "Undead", "Boss immunities may apply; use undead control only if accepted.", {}, true)
-mob("ironspine", 6489, "Ironspine", "none", 120, "rare boss; spread for Poison Cloud",
+mob("ironspine", 6489, "Ironspine", "circle", 120, "rare boss; spread for Poison Cloud",
     "This rare is a single encounter whose area poison, rather than target order, threatens the party.", { "Poison Cloud", "Curse of Weakness" }, "Spread, move from Poison Cloud, and remove poison or curse when available.", "Undead", "Boss control is generally unreliable.", {}, true)
 
 -- Library
@@ -51,9 +51,9 @@ mob("trackingHound", 4304, "Scarlet Tracking Hound", "moon", 60, "control one ex
     "Moon removes one body from a hound-heavy pull while the group kills the handler.", { "Fast beast melee" }, "Control one when the pack is large; otherwise tank and cleave.", "Beast", "Hibernate, Scare Beast, roots, and slows work.", { "Do not Moon a lone hound or a pack the group can safely cleave." })
 mob("gallant", 4287, "Scarlet Gallant", "none", 70, "cleanup melee",
     "It is a routine melee target behind healers, casters, handlers, and Monks.", { "Melee attacks" }, "Tank normally and kill late.", "Humanoid", "Normal humanoid control works.")
-mob("loksey", 3974, "Houndmaster Loksey", "none", 80, "boss; control and kill hounds first",
-    "The boss is obvious; controlling his three elite hounds is the meaningful marking decision.", { "Three Tracking Hounds", "Battle Shout", "Low-health Bloodlust" }, "Moon one hound if needed, kill the uncontrolled hounds, then finish Loksey.", "Humanoid", "Control hounds with beast CC; boss control is unreliable.", { "Skull the first uncontrolled hound when the group needs an explicit focus." }, true)
-mob("doan", 6487, "Arcanist Doan", "none", 90, "boss caster; interrupt, then retreat for blast",
+mob("loksey", 3974, "Houndmaster Loksey", "circle", 80, "boss; control and kill hounds first",
+    "Circle identifies Loksey while controlling his three elite hounds remains the encounter's key target decision.", { "Three Tracking Hounds", "Battle Shout", "Low-health Bloodlust" }, "Moon one hound if needed, kill the uncontrolled hounds, then finish Loksey.", "Humanoid", "Control hounds with beast CC; boss control is unreliable.", { "Skull the first uncontrolled hound when the group needs an explicit focus." }, true)
+mob("doan", 6487, "Arcanist Doan", "circle", 90, "boss caster; interrupt, then retreat for blast",
     "This single-target fight is governed by cast response and positioning.", { "Silence", "Arcane Explosion", "Detonation" }, "Interrupt when possible and retreat for his large explosion.", "Humanoid", "Boss control is unreliable; use interrupts.", {}, true)
 
 -- Armory
@@ -75,8 +75,8 @@ mob("fireElemental", 575, "Fire Elemental", "none", 80, "pet cleanup; hold threa
     "The Conjuror is the priority; its elemental remains after the owner falls.", { "Fire attacks" }, "Pick it up and clean it after marked enemies.", "Elemental", "Banish and elemental-specific control may work.")
 mob("trainee", 6575, "Scarlet Trainee", "none", 90, "low-priority cleanup",
     "Trainees are low-pressure bodies compared with Armory elites.", { "Light melee attacks" }, "Tank and cleave late.", "Humanoid", "Normal humanoid control works.")
-mob("herod", 3975, "Herod", "none", 100, "boss; face away and avoid Whirlwind",
-    "The single boss needs positioning, not a kill-order marker.", { "Whirlwind", "Enrage" }, "Face away, move out during Whirlwind, and pick up trainees afterward.", "Humanoid", "Boss control is unreliable.", {}, true)
+mob("herod", 3975, "Herod", "circle", 100, "boss; face away and avoid Whirlwind",
+    "Circle identifies the boss while safe positioning remains more important than a kill-order marker.", { "Whirlwind", "Enrage" }, "Face away, move out during Whirlwind, and pick up trainees afterward.", "Humanoid", "Boss control is unreliable.", {}, true)
 
 -- Cathedral
 mob("abbot", 4303, "Scarlet Abbot", "skull", 10, "healer; interrupt and kill first",
@@ -89,11 +89,11 @@ mob("champion", 4302, "Scarlet Champion", "cross", 50, "dangerous melee; face aw
     "Its melee pressure deserves the second marker after healers and casters.", { "Heavy melee attacks" }, "Face away, mitigate, and kill second.", "Humanoid", "Disarm and normal humanoid control work.")
 mob("centurion", 4301, "Scarlet Centurion", "cross", 60, "dangerous melee; kill second",
     "It is a higher-pressure melee target than routine defenders.", { "Heavy melee attacks" }, "Use control or mitigation and kill after Skull.", "Humanoid", "Disarm and normal humanoid control work.")
-mob("whitemane", 3977, "High Inquisitor Whitemane", "skull", 80, "after resurrection: interrupt and kill",
-    "After Mograine is resurrected, Whitemane's healing makes her the decisive focus target.", { "Heal", "Resurrection phase" }, "Interrupt healing and focus Whitemane after the resurrection.", "Humanoid", "Boss control is unreliable; interrupts are essential.", { "Before the resurrection sequence, follow the encounter rather than forcing the mark." }, true)
-mob("mograine", 3976, "Scarlet Commander Mograine", "none", 90, "initial boss; use Cross only after resurrection",
-    "Mograine begins as the only active boss, so a static Cross would be wrong until Whitemane resurrects him.", { "Heavy melee", "Resurrection phase" }, "Initially face him away and follow the encounter; after resurrection, Cross him behind Skull Whitemane.", "Humanoid", "Boss control is unreliable.", { "Clear the chapel before engaging. The Book's resurrection rule supplies the conditional Cross assignment." }, true)
-mob("fairbanks", 4542, "High Inquisitor Fairbanks", "none", 100, "hidden boss; interrupt healing",
+mob("whitemane", 3977, "High Inquisitor Whitemane", "circle", 80, "after resurrection: interrupt and focus healing",
+    "Circle identifies Whitemane; after Mograine is resurrected, her healing makes her the decisive focus target.", { "Heal", "Resurrection phase" }, "Interrupt healing and focus Whitemane after the resurrection.", "Humanoid", "Boss control is unreliable; interrupts are essential.", { "Before the resurrection sequence, follow the encounter rather than forcing a kill-order mark." }, true)
+mob("mograine", 3976, "Scarlet Commander Mograine", "circle", 90, "initial boss; face away through both phases",
+    "Circle identifies Mograine through both phases while the encounter state determines when damage can continue.", { "Heavy melee", "Resurrection phase" }, "Face him away, follow the resurrection sequence, then control his melee pressure while interrupting Whitemane.", "Humanoid", "Boss control is unreliable.", { "Clear the chapel before engaging and keep both bosses positioned safely after the resurrection." }, true)
+mob("fairbanks", 4542, "High Inquisitor Fairbanks", "circle", 100, "hidden boss; interrupt healing",
     "This optional single boss has no competing kill target.", { "Healing and holy magic" }, "Interrupt healing and maintain steady mitigation.", "Humanoid", "Boss control is unreliable; use interrupts.", {}, true)
 
 Catalog.RegisterGuide({
@@ -102,7 +102,7 @@ Catalog.RegisterGuide({
     sections = {
         { key = "graveyard", name = "Graveyard", entries = { "scryer", "anguishedDead", "torturer", "hauntingPhantasm", "illusionaryPhantasm", "sentry", "unfetteredSpirit", "vishas", "thalnos", "azshir", "fallenChampion", "ironspine" }, rules = {
             { title = "Undead control", guidance = "Shackle or Turn one dangerous undead when the pull is larger than the group can safely stabilize." },
-            { title = "Rare bosses", guidance = "Treat Graveyard rares as single-target mechanics checks; do not let their No Mark entry imply that they are harmless." },
+            { title = "Rare bosses", guidance = "Circle identifies each Graveyard rare; treat the encounter as a single-target mechanics check rather than a kill-order problem." },
         } },
         { key = "library", name = "Library", entries = { "adept", "diviner", "chaplain", "beastmaster", "monk", "trackingHound", "gallant", "loksey", "doan" }, rules = {
             { title = "Chaplain plus Diviner", guidance = "Skull and interrupt the Chaplain first, then make the Diviner the next focus. Moon either caster only when reliable CC is safer than a fast kill." },
@@ -115,7 +115,7 @@ Catalog.RegisterGuide({
         { key = "cathedral", name = "Cathedral", entries = { "abbot", "wizard", "chaplain", "sorcerer", "myrmidon", "champion", "monk", "defender", "centurion", "whitemane", "mograine", "fairbanks" }, rules = {
             { title = "Extra healer or caster", guidance = "Moon an additional Abbot, Chaplain, Wizard, or Sorcerer when the pull contains more priority casters than the group can interrupt." },
             { title = "Chapel safety", guidance = "Clear the chapel before engaging Mograine; the resurrection encounter can otherwise chain nearby Scarlet packs." },
-            { title = "Resurrection phase", guidance = "After Whitemane resurrects Mograine, Skull Whitemane and Cross Mograine. Interrupt Whitemane's healing while the tank faces Mograine away." },
+            { title = "Resurrection phase", guidance = "After Whitemane resurrects Mograine, focus and interrupt Whitemane's healing while the tank faces Mograine away." },
         } },
     },
 })

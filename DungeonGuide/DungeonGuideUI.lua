@@ -7,7 +7,7 @@ local selectedGuideKey, selectedSectionKey
 
 local MARKER_COLORS = {
     skull = "|cffffd34e", cross = "|cffff6666",
-    moon = "|cff8fb8ff", none = "|cffb8bec9",
+    moon = "|cff8fb8ff", circle = "|cffffa040", none = "|cffb8bec9",
 }
 local GOLD = "|cffffd34e"
 local MUTED_GOLD = "|cffd8b85a"
@@ -55,15 +55,24 @@ function UI.BuildChapterText(guide, sectionKey, catalog, includeLegend)
     for _, candidate in ipairs(guide.sections) do
         if candidate.key == sectionKey then section = candidate break end
     end
-    if not section then return "Choose a wing to read its guide." end
+    if not section then return "Choose a chapter to read its guide." end
     local lines = {}
     if includeLegend ~= false then
         lines[#lines + 1] = "MARKER LEGEND"
-        lines[#lines + 1] = "SKULL — first kill    CROSS — second kill    MOON — crowd control    NO MARK — mechanics or cleanup"
+        lines[#lines + 1] = "SKULL — first kill    CROSS — second kill    MOON — crowd control"
+        lines[#lines + 1] = "CIRCLE — boss    NO MARK — mechanics or cleanup"
         lines[#lines + 1] = ""
     end
     lines[#lines + 1] = GOLD .. escape(guide.name .. " — " .. section.name) .. RESET
     lines[#lines + 1] = ""
+    if section.route and #section.route > 0 then
+        lines[#lines + 1] = GOLD .. "ROUTE" .. RESET
+        for index, instruction in ipairs(section.route) do
+            lines[#lines + 1] = MUTED_GOLD .. index .. "." .. RESET
+                .. "  " .. escape(instruction)
+        end
+        lines[#lines + 1] = ""
+    end
     for _, mobKey in ipairs(section.entries) do
         local mob = guide.mobs[mobKey]
         local marker = catalog.GetMarker(mob.marker)
@@ -194,16 +203,18 @@ function UI.Build(deps)
     dungeonLabel:SetText("DUNGEON")
     guideDropdown = UIH.CreateDropdown(window, 330, 28, 350)
     guideDropdown:SetPoint("TOPLEFT", window, "TOPLEFT", 22, -88)
-    local wingLabel = window:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    wingLabel:SetPoint("TOPLEFT", window, "TOPLEFT", 376, -67)
-    wingLabel:SetText("WING")
+    local chapterLabel = window:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    chapterLabel:SetPoint("TOPLEFT", window, "TOPLEFT", 376, -67)
+    chapterLabel:SetText("CHAPTER")
+    window.chapterLabel = chapterLabel
     sectionDropdown = UIH.CreateDropdown(window, 250, 28, 270)
     sectionDropdown:SetPoint("TOPLEFT", window, "TOPLEFT", 374, -88)
     guideDropdown:SetSelectionCallback(selectGuide)
     sectionDropdown:SetSelectionCallback(selectSection)
     local legend = window:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     legend:SetPoint("LEFT", window, "TOPLEFT", 26, -153)
-    legend:SetText("|cffffd34eSKULL|r  First kill     |cffff6666CROSS|r  Second kill     |cff8fb8ffMOON|r  Crowd control     |cffb8bec9NO MARK|r  Mechanics or cleanup")
+    legend:SetText("|cffffd34eSKULL|r  First kill     |cffff6666CROSS|r  Second kill     |cff8fb8ffMOON|r  Crowd control\n|cffffa040CIRCLE|r  Boss     |cffb8bec9NO MARK|r  Mechanics or cleanup")
+    window.legend = legend
     scroll = CreateFrame("ScrollFrame", nil, window, "UIPanelScrollFrameTemplate")
     scroll:SetPoint("TOPLEFT", window, "TOPLEFT", 28, -190)
     scroll:SetPoint("BOTTOMRIGHT", window, "BOTTOMRIGHT", -42, 26)

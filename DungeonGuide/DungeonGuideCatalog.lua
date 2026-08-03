@@ -8,10 +8,12 @@ local CC_TEXT_LIMIT = 110
 local ABILITY_TEXT_LIMIT = 60
 local EXCEPTION_TEXT_LIMIT = 140
 local RULE_TEXT_LIMIT = 180
+local ROUTE_TEXT_LIMIT = 180
 local MARKERS = {
     skull = { key = "skull", label = "SKULL", index = 8 },
     cross = { key = "cross", label = "CROSS", index = 7 },
     moon = { key = "moon", label = "MOON", index = 5 },
+    circle = { key = "circle", label = "CIRCLE", index = 2 },
     none = { key = "none", label = "NO MARK" },
 }
 local guides, guideOrder, instanceIndex = {}, {}, {}
@@ -57,6 +59,9 @@ local function validateMob(key, mob, ids)
     assert(type(key) == "string" and key ~= "", "guide mob key is required")
     assert(type(mob) == "table" and nonblank(mob.name), "guide mob name is required: " .. key)
     assert(MARKERS[mob.marker], "unsupported guide marker: " .. tostring(mob.marker))
+    assert(mob.boss == nil or type(mob.boss) == "boolean", "invalid guide boss flag: " .. key)
+    assert(not mob.boss or mob.marker == "circle", "guide boss marker must be circle: " .. key)
+    assert(mob.marker ~= "circle" or mob.boss, "guide Circle marker requires boss flag: " .. key)
     assert(type(mob.priority) == "number" and mob.priority >= 0, "invalid guide priority: " .. key)
     assert(nonblank(mob.liveReason), "guide live reason is required: " .. key)
     assert(#mob.liveReason <= LIVE_TEXT_LIMIT, "guide live reason is too long: " .. key)
@@ -124,6 +129,8 @@ function C.ValidateGuide(guide)
             assert(nonblank(rule.title) and nonblank(rule.guidance), "invalid guide pack rule")
             assert(#rule.guidance <= RULE_TEXT_LIMIT, "guide pack rule is too long: " .. rule.title)
         end
+        validateStringList(section.route or {}, "guide section route: " .. section.key, false,
+            ROUTE_TEXT_LIMIT)
     end
     for key in pairs(guide.mobs) do assert(referenced[key], "unreferenced guide mob: " .. key) end
     return true
@@ -192,5 +199,6 @@ function C.GetBookTextLimits()
         rationale = RATIONALE_TEXT_LIMIT, response = RESPONSE_TEXT_LIMIT,
         cc = CC_TEXT_LIMIT, ability = ABILITY_TEXT_LIMIT,
         exception = EXCEPTION_TEXT_LIMIT, rule = RULE_TEXT_LIMIT,
+        route = ROUTE_TEXT_LIMIT,
     }
 end

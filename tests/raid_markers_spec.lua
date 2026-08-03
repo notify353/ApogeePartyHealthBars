@@ -74,7 +74,7 @@ recommendation = { markerKey = "none", markerIndex = nil }
 Markers.EvaluateCurrentTarget()
 assert(#applied == 0, "unknown or No Mark recommendations applied a marker")
 
-for _, markerIndex in ipairs({ 8, 7, 5 }) do
+for _, markerIndex in ipairs({ 8, 7, 5, 2 }) do
     target.marker = nil
     target.guid = target.guid .. tostring(markerIndex)
     local result = evaluate(markerIndex)
@@ -83,27 +83,32 @@ for _, markerIndex in ipairs({ 8, 7, 5 }) do
             and applied[#applied][2] == markerIndex,
         "out-of-combat target did not receive its recommended marker")
 end
-assert(#applied == 3,
+assert(#applied == 4,
     "rapid target cycling retained assignment state instead of evaluating each target")
 
 target.marker = 1
-evaluate(8)
-assert(#applied == 3 and target.marker == 1,
+evaluate(2)
+assert(#applied == 4 and target.marker == 1,
     "an existing target marker was replaced or cleared")
 
 inCombat = true
 target.marker = nil
 evaluate(7)
 evaluate(5)
-assert(#applied == 3, "Cross or Moon was applied during combat")
+assert(#applied == 4, "Cross or Moon was applied during combat")
 local result = evaluate(8)
-assert(result == recommendation and #applied == 4 and target.marker == 8,
+assert(result == recommendation and #applied == 5 and target.marker == 8,
     "Skull was not applied during combat")
+target.marker = nil
+target.guid = target.guid .. "2"
+result = evaluate(2)
+assert(result == recommendation and #applied == 6 and target.marker == 2,
+    "Circle was not applied to a boss during combat")
 
 featureSupported = false
 target.marker = nil
 evaluate(8)
-assert(#applied == 4, "unsupported raid-marker APIs were used")
+assert(#applied == 6, "unsupported raid-marker APIs were used")
 
 assert(Markers.GetContainer == nil
         and Markers.GetButton == nil

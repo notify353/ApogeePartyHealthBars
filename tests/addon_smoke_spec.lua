@@ -848,6 +848,11 @@ assert(ApogeePartyHealthBarsDungeonGuide.foundation.color[4] == 1
     "Dungeon Book did not create solid full-window and reading foundations")
 assert(ApogeePartyHealthBarsDungeonGuide.body.fontTemplate == "GameFontHighlight",
     "Dungeon Book retained undersized body typography")
+assert(ApogeePartyHealthBarsDungeonGuide.chapterLabel:GetText() == "CHAPTER",
+    "Dungeon Book navigation still described every dungeon section as a wing")
+assert(ApogeePartyHealthBarsDungeonGuide.legend:GetText():find("CIRCLE", 1, true)
+        and ApogeePartyHealthBarsDungeonGuide.legend:GetText():find("Boss", 1, true),
+    "Dungeon Book's live marker legend omitted the universal boss Circle")
 local originalClientInfo = ApogeePartyHealthBars_ClientCapabilities.GetClientInfo
 ApogeePartyHealthBars_ClientCapabilities.GetClientInfo = function()
     return { flavor = "classicEra", interface = 11509 }
@@ -856,12 +861,15 @@ SlashCmdList.APOGEEPARTYHEALTHBARS("guide")
 assert(ApogeePartyHealthBars_DungeonGuideUI.IsShown(), "Dungeon Guide slash command did not open the Book")
 local guideDungeonDropdown, guideSectionDropdown, guideScroll =
     ApogeePartyHealthBars_DungeonGuideUI.GetNavigationControls()
+assert(guideDungeonDropdown.optionButtons[2]
+        and guideDungeonDropdown.optionButtons[2].label:GetText() == "Gnomeregan",
+    "Dungeon Book did not expose Gnomeregan after Scarlet Monastery")
 guideScroll:SetVerticalScroll(240)
 local armoryChoice = assert(guideSectionDropdown.optionButtons[3],
-    "Dungeon Book did not create all four Scarlet Monastery wing choices")
+    "Dungeon Book did not create all four Scarlet Monastery chapter choices")
 armoryChoice.scripts.OnClick(armoryChoice)
 assert(guideScroll:GetVerticalScroll() == 0,
-    "changing Dungeon Book wings retained the previous chapter's scroll offset")
+    "changing Dungeon Book chapters retained the previous chapter's scroll offset")
 guideDungeonDropdown:Open()
 assert(guideDungeonDropdown.popup:IsShown() and guideDungeonDropdown.dismiss:IsShown(),
     "Dungeon Book guide selector did not open for popup-dismissal regression setup")

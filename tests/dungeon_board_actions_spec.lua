@@ -43,23 +43,32 @@ assert(not available and reason:find("unavailable", 1, true),
     "Who ignored Blizzard's disabled Who-list rule")
 C_GameRules.IsGameRuleActive = function() return false end
 
-assert(Actions.OpenWhisper("Player-Realm", "healer", "Wailing Caverns"),
+assert(Actions.OpenWhisper("Player-Realm", "healer", "WC"),
     "whisper rejected a supported realm-qualified player")
 assert(#whisperCalls == 1 and whisperCalls[1][1] == "Player-Realm"
         and whisperCalls[1][2]
-            == "Hi, do you still need a Healer for Wailing Caverns?",
+            == "heals for WC?",
     "whisper did not prefill the native composer for the exact player and dungeon")
 
 ChatFrameUtil = nil
 ChatFrame_SendTellWithMessage = function(playerName, message)
     whisperCalls[#whisperCalls + 1] = { "legacy:" .. playerName, message }
 end
-assert(Actions.OpenWhisper("Legacy-Realm", "tank", "Blackrock Depths")
+assert(Actions.OpenWhisper("Legacy-Realm", "tank", "BRD")
         and whisperCalls[2][1] == "legacy:Legacy-Realm"
         and whisperCalls[2][2]
-            == "Hi, do you still need a Tank for Blackrock Depths?",
+            == "tank for BRD?",
     "whisper did not prefill the Classic legacy composer")
 ChatFrame_SendTellWithMessage = nil
+ChatFrameUtil = {
+    SendTellWithMessage = function(playerName, message)
+        whisperCalls[#whisperCalls + 1] = { playerName, message }
+    end,
+}
+assert(Actions.OpenWhisper("Player-Realm", "healer", "")
+        and whisperCalls[3][2] == "heals?",
+    "whisper without a dungeon did not use the terse role-only fallback")
+ChatFrameUtil = nil
 available, reason = Actions.CanWhisper("Player-Realm")
 assert(not available and reason:find("unavailable", 1, true),
     "whisper accepted a missing native composer")
@@ -76,10 +85,10 @@ ChatFrameUtil = {
     SendTellWithMessage = function() error("expected whisper failure") end,
 }
 local whispered, whisperFailure = Actions.OpenWhisper(
-    "Player-Realm", "healer", "Wailing Caverns")
+    "Player-Realm", "healer", "WC")
 assert(not whispered and whisperFailure:find("expected whisper failure", 1, true),
     "whisper API failure was not returned to the UI")
-assert(#whisperCalls == 2,
+assert(#whisperCalls == 3,
     "whisper action unexpectedly sent or recorded an additional message")
 
 assert(C_FriendList ~= nil,

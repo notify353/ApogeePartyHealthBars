@@ -29,6 +29,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Shortened Dungeon Board and LFG Alert whisper drafts to player-like role and dungeon shorthand, including familiar dungeon chat labels and `H` prefixes for Heroic runs.
+
 - Simplified new and reset configurable spell macros to use `/use` throughout, with only `/startattack` for reviewed close combat and bare `/targetenemy` for reviewed distance actions; existing saved and custom macros remain unchanged.
 - Limited per-action ready sounds and pulses to combat, delayed them after cooldown completion until the action has enough power, and discarded pending feedback on combat exit so it cannot alert in the next fight.
 - Polished every Settings page with a dedicated page header, clearer section hierarchy, semantic primary and destructive actions, readable two-tier action rows, visible overflow cues, inline unavailable states, and contextually docked previews while preserving the compact window footprint.

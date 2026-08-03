@@ -224,6 +224,7 @@ function UI.BuildEntries(snapshot, clientFlavor, atTime, role, playerLevel, leve
                 isBlizzard = request.source == "blizzard",
                 playerName = playerName,
                 dungeonName = dungeon.name,
+                dungeonChatLabel = (request.heroic and "H " or "") .. dungeon.chatLabel,
             }
         end
     end
@@ -370,7 +371,7 @@ local function renderEntryActions(entryFrame, entry)
             or whisperReason,
         function()
             reportActionResult(D.Actions.OpenWhisper(
-                entry.playerName, currentRole(), entry.dungeonName))
+                entry.playerName, currentRole(), entry.dungeonChatLabel))
         end)
     actions[#actions + 1] = entryFrame.actions.whisper
 

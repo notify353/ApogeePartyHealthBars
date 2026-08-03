@@ -88,7 +88,8 @@ local function whisperDungeonNames(entry)
     local result = {}
     for _, key in ipairs(entry.dungeonKeys or {}) do
         local dungeon = D.Catalog.GetDungeon(key)
-        result[#result + 1] = dungeon and dungeon.name or key
+        local label = dungeon and dungeon.chatLabel or key
+        result[#result + 1] = (entry.heroic and "H " or "") .. label
     end
     return table.concat(result, " / ")
 end

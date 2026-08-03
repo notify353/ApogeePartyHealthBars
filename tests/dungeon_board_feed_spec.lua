@@ -211,7 +211,7 @@ assert(firstRow.who.enabled and firstRow.whisper.enabled
 firstRow.who.scripts.OnClick()
 firstRow.whisper.scripts.OnClick()
 assert(actionCalls[1] == "who:one"
-        and actionCalls[2] == "whisper:one:tank:Wailing Caverns",
+        and actionCalls[2] == "whisper:one:tank:WC",
     "LFG Alert action did not preserve the player, role, and dungeon")
 
 soundKey = "alarm_soft"
@@ -307,14 +307,16 @@ assert(Feed.IngestOpportunity(
         opportunity("after-enable", "guild", "WC", { "tank" }), now),
     "new live opportunity was not accepted after re-enabling LFG Alerts")
 
-local multiDungeon = opportunity("multi", "channel", "WC", { "tank" })
-multiDungeon.dungeonKeys = { "WC", "SFK" }
+playerLevel = 70
+local multiDungeon = opportunity("multi", "channel", "RAMPS", { "tank" })
+multiDungeon.dungeonKeys = { "RAMPS", "BF" }
+multiDungeon.heroic = true
 now = 56
 assert(Feed.IngestOpportunity(multiDungeon, now),
     "multi-dungeon opportunity did not enter LFG Alerts")
 firstRow.whisper.scripts.OnClick()
 assert(actionCalls[#actionCalls]
-        == "whisper:multi:tank:Wailing Caverns / Shadowfang Keep",
-    "multi-dungeon LFG Alert whisper did not preserve displayed dungeon order")
+        == "whisper:multi:tank:H Ramps / H BF",
+    "multi-dungeon LFG Alert whisper did not preserve chat labels, heroic status, or order")
 
 print("PASS Dungeon Board real-time LFG Alerts policy")

@@ -8,8 +8,8 @@ future-client procedure.
 
 | Flavor | Product | Directory | Version | Interface |
 | --- | --- | --- | --- | --- |
-| Classic Era | `wow_classic_era` | `_classic_era_` | 1.15.9.68808 | `11509` |
-| TBC Anniversary | `wow_anniversary` | `_anniversary_` | 2.5.6.68775 | `20506` |
+| Classic Era | `wow_classic_era` | `_classic_era_` | 1.15.9.68940 | `11509` |
+| TBC Anniversary | `wow_anniversary` | `_anniversary_` | 2.5.6.68941 | `20506` |
 
 Both clients load the same repository, ordered Lua file list, SavedVariables,
 TOC, and release ZIP. Runtime identity is `classicEra`, `tbcAnniversary`, or
@@ -70,6 +70,12 @@ workspace. Run `scripts/set-dev-links.ps1 -Target All` with WoW closed, then
 worktrees only when different branches are being tested intentionally.
 
 ## Acceptance Record
+
+Owner-confirmed release acceptance completed on 2026-08-02 for `v0.47.0`:
+
+- Classic Era 1.15.9.68940 — Merritt, Priest — full checklist passed.
+- TBC Anniversary 2.5.6.68941 — Bold, Warrior — full checklist passed.
+- The pass included the release checklist and detailed dual-client matrix below.
 
 Owner-confirmed release acceptance completed on 2026-07-21 for `v0.44.0`:
 

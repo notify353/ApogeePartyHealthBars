@@ -6,6 +6,17 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+### Added
+
+- Added a scalable read-only Dungeon Guide domain with a validated Scarlet Monastery strategy pack covering all four wings, their trash, bosses, Graveyard rares, CC guidance, exceptions, and encounter rules. Open its movable Dungeon Book with `/aphb guide` or Dungeon → Dungeon Guide.
+- Added default-on automatic Dungeon Guide marking: targeting a cataloged hostile applies Skull, Cross, or Moon out of combat and Skull only during combat, while preserving any marker already on the target.
+- Styled the Dungeon Book as a fully opaque, high-contrast reading window with distinct navigation, marker legend, and strategy sections plus larger structured mob guidance.
+- Reduced Dungeon Book repetition to a concise reusable entry standard: Why, Plan, combined Watch/CC, and conditional If; compact strategy summaries are not repeated in Book chapters.
+
+### Changed
+
+- Removed the Dungeon Guide coaching text, recommendation glow, and Moon/Cross/Skull nameplate buttons in favor of stateless target-driven marking that does not require visible nameplates or track packs.
+
 ## [0.47.0] - 2026-08-02
 
 ### Fixed

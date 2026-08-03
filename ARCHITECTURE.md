@@ -17,9 +17,13 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `DungeonBoardFeed`: display-only three-entry chat/guild opportunity feed with 30-second lifetime, final-five-second fade, material-change deduplication, guild emphasis, and throttled optional sound
 - `DungeonBoardUI`: beginner-facing request explanations, full-name and level-range presentation, labeled original slang, plain-language role controls, an opaque high-contrast top-level panel, adaptive compact request cards, manual official refresh state, source/member presentation, highlighted guild requests, dungeon-first catalog grouping, and age refresh
 - `DungeonBoardEvents`: authoritative chat/guild payload adaptation plus Group Finder result/failure/update routing and login initialization
+- `DungeonGuideCatalog`, `ScarletMonasteryGuide`: validated immutable dungeon/wing/mob strategy specification keyed by client flavor, instance ID, and NPC ID, with semantic markers, live reasons, full rationale, responses, creature-type CC, exceptions, and conditional pack rules
+- `DungeonGuidePolicy`: pure creature-GUID parsing, instance/flavor gating, NPC resolution, and compact current-target recommendation generation
+- `DungeonGuideSettings`: profile-owned automatic-marking toggle and Dungeon Book position; chapter selection remains session-only
+- `DungeonGuideUI`, `DungeonGuideSettingsPage`: scalable read-only Book rendering and Dungeon settings access without editable strategy fields or hover-only explanations
 - `PlayerContext`: normalized class, race, level, active talent group/tree/ranks, form/stance, and stealth state shared by context-sensitive features
 - `LifecycleEvents`: login/bootstrap, world and roster changes, combat transitions, and combat-log fan-out
-- `UnitEvents`: tracked-unit aura invalidation, shield synchronization, health/power update policy, targets, threat, and raid-marker refreshes
+- `UnitEvents`: tracked-unit aura invalidation, shield synchronization, health/power update policy, targets, threat, and nameplate lifecycle routing
 - `ActionEvents`: spell/spec/form transitions, binding reconciliation, action-state refreshes, item and native equipment-set updates, and macro requirements
 - `TargetEffectEvents`: target-aura invalidation plus event-driven spell, talent, form, resource, cooldown, and usability refresh policy
 - `CleanseEvents`: party-aura, roster, spellbook, pet, and post-combat Cleanse Watch refresh policy
@@ -61,8 +65,8 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `MouseWheelData`, `MouseWheelLayouts`, `MouseWheelActions`, `MouseWheelSettingsPage`: fixed gesture definitions, Mouse Wheel-specific shared-runtime policy, active talent-spec profiles, per-form typed shortcut layouts, right-side HUD geometry, and compact configuration
 - `KeyboardData`, `KeyboardLayouts`, `KeyboardActions`, `KeyboardSettingsPage`: fixed keyboard definitions, Keyboard-specific shared-runtime policy, independent empty per-spec/per-form profiles, bottom-aligned left-side HUD geometry, and uniform row-based configuration
 - `MouseButtonData`, `MouseButtonLayouts`, `MouseButtonActions`, `MouseButtonsSettingsPage`: fixed Mouse Button 3–5 combat definitions, independent per-spec/per-form profiles, right-of-Mouse-Wheel 3×3 HUD geometry, and uniform configuration
-- `TargetNameplateHud`: current-target GUID/nameplate matching, reusable nameplate attachment, and independently collapsing marker and Target Effects rows
-- `RaidMarkers`: large clickable Moon, Cross, and Skull controls registered as the lower target-nameplate row
+- `TargetNameplateHud`: current-target GUID/nameplate matching and reusable attachment for passive Target Effects
+- `RaidMarkers`: stateless current-target Dungeon Guide marking, limited to Skull during combat and preserving markers already present on the target
 - `Threat`: primary player/party threat
 - `ThreatObserver`: dynamic hostile-token discovery, GUID deduplication, signed player tank-control values, severity ranking, immutable pack snapshots, transition detection, and short last-seen loss retention
 - `ThreatAwareness`: passive profile-owned five-slot Tank Threat Control presentation, stable per-pull row reconciliation, overflow loss promotion, movable configuration preview, and throttled tanked-to-lost sound policy
@@ -78,6 +82,10 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 ## Dungeon Board TOC Order
 
 The data and pure-policy chain loads as `DungeonBoardCatalog` → `DungeonBoardActivityData` → `DungeonBoardClassifier` → `DungeonBoardEligibility` → `DungeonBoardRuntime` → `DungeonBoardGroupFinder` → `DungeonBoardActions`. After shared `UIHelpers` and `Sounds` are available, `DungeonBoardSettings` → `DungeonBoardFeed` → `DungeonBoardUI` load in that order. `DungeonBoardEvents` loads with the other event subscribers, and `ApogeePartyHealthBars.lua` remains the final composition root.
+
+## Dungeon Guide TOC Order
+
+The reviewed data chain loads as `DungeonGuideCatalog` → strategy packs such as `ScarletMonasteryGuide` → `DungeonGuidePolicy`. After shared UI primitives and saved settings are available, `DungeonGuideSettings` → `DungeonGuideUI` load. `RaidMarkers` consumes the policy and setting from the final composition root, while the existing lifecycle target-change path invokes it. Adding another dungeon is data-only: register a guide, sections, NPC records, and pack rules without modifying the Book or marker controller.
 
 ## Invariants
 
@@ -100,7 +108,10 @@ The data and pure-policy chain loads as `DungeonBoardCatalog` → `DungeonBoardA
 - Treat basic unit health and frame construction as the required baseline while aura, range, prediction, threat, markers, assignment, bindings, state layouts, and profile sharing degrade independently.
 - Never mutate secure attributes, position, visibility, or mouse state during combat.
 - Keep party-frame units inside `UnitTopology`; event routing, trackers, and layout must not grow independent player/party token-pattern rules. Dynamic hostile nameplate and target-chain discovery belongs exclusively to `ThreatObserver` and must not alter fixed party-frame topology.
-- Keep current-target nameplate discovery and attachment inside `TargetNameplateHud`; raid markers and Target Effects own only their row content and enabled state. Keep markers nearest the nameplate, Target Effects above them, and collapse either row without reserving a gap.
+- Keep current-target nameplate discovery and attachment inside `TargetNameplateHud`; Target Effects owns its passive row content and enabled state, and absent content collapses without reserving a gap.
+- Treat Dungeon Guide content as a single validated specification for both the Book and automatic marker controller. Resolve mobs only from creature GUID NPC IDs within an explicitly supported client flavor and instance; never use localized unit names. Require rationale and bounded strategy text for every recommendation, return catalog copies to callers, and reject invalid markers, IDs, ordering, and references at registration.
+- Keep Book entries concise and consistent across strategy packs: marker/name, Why, Plan, combined Watch/CC, and conditional If only when needed. Retain `liveReason` only as bounded compact strategy metadata; do not render live coaching text. Enforce bounded Book prose so later dungeons cannot gradually become walls of text.
+- Keep the Dungeon Guide advisory and current-target-only: no automatic targeting or marking, pack scanning, party-capability inference, party-member assignment, or spell execution. Blizzard's selected marker remains authoritative and must coexist with a disagreeing recommendation.
 - Treat Tank Threat Control as an observable-token view, never a complete combat-enemy list. Deduplicate hostile sources by GUID, express held lead and lost recovery as one signed player-control value, label reduced coverage when no hostile nameplate tokens are observable, and never present cached threat values as live after the final token disappears.
 - Keep Tank Threat Control passive and non-secure. Preserve stable row slots until the observed pack empties, promoting a hidden live loss over a non-live last-seen warning first and then the safest visible held mob without otherwise reordering. Sounds may fire only for a continuously observed tanked-to-lost transition and must remain suppressed for initial discovery, repeated lost refreshes, stale records, and previews.
 - Poll target-chain identity and values at the normal visual cadence because Anniversary's Blizzard raid frames document unreliable second-depth target events.

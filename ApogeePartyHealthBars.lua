@@ -30,7 +30,7 @@ local unitAPI = ApogeePartyHealthBars_UnitAPI
 local unitBar = ApogeePartyHealthBars_UnitBar
 local playerUtility = ApogeePartyHealthBars_PlayerUtility
 
-local panel, configUI, minimapController, dungeonBoardUI
+local panel, configUI, minimapController, dungeonBoardUI, dungeonGuideUI
 local rows = {}
 
 local throttleFrame = CreateFrame("Frame")
@@ -514,6 +514,19 @@ dungeonBoardSettings.Initialize({
     Sounds = ApogeePartyHealthBars_Sounds,
 })
 
+local dungeonGuideSettings = ApogeePartyHealthBars_DungeonGuideSettings
+dungeonGuideSettings.Initialize({ GetSavedVariables = function() return S.sv end })
+local dungeonGuidePolicy = ApogeePartyHealthBars_DungeonGuidePolicy
+dungeonGuidePolicy.Initialize({
+    Catalog = ApogeePartyHealthBars_DungeonGuideCatalog,
+    GetClientFlavor = GetDungeonBoardClientFlavor,
+    GetInstanceId = function()
+        if not GetInstanceInfo then return nil end
+        return select(8, GetInstanceInfo())
+    end,
+})
+M.Initialize({ Policy = dungeonGuidePolicy, Settings = dungeonGuideSettings })
+
 local mentionAlerts = ApogeePartyHealthBars_MentionAlerts
 mentionAlerts.Initialize({
     GetSavedVariables = function() return S.sv end,
@@ -603,6 +616,13 @@ dungeonBoardUI = ApogeePartyHealthBars_DungeonBoardUI.Build({
     ApplyBackdrop = ApplyBackdrop,
     Print = Print,
 })
+dungeonGuideUI = ApogeePartyHealthBars_DungeonGuideUI.Build({
+    Catalog = ApogeePartyHealthBars_DungeonGuideCatalog,
+    Policy = dungeonGuidePolicy,
+    Settings = dungeonGuideSettings,
+    GetClientFlavor = GetDungeonBoardClientFlavor,
+    ApplyBackdrop = ApplyBackdrop,
+})
 playerUtility.Attach(rows[1].primary, {
     ShouldShowSelfBuffIcon = ShouldShowSelfBuffIcon,
     IsSelfBuffKnown = buffReminders.IsSelfKnown,
@@ -687,8 +707,6 @@ UpdateUI = function()
     elseif doValues then
         UpdateRowValues()
     end
-
-    M.Refresh()
 
     ClearDirtyFlags()
 end
@@ -844,7 +862,11 @@ SlashCmdList.APOGEEPARTYHEALTHBARS = function(message)
         dungeonBoardUI.Toggle()
         return
     end
-    Print("use /aphb board to toggle Dungeon Board.")
+    if command == "guide" then
+        dungeonGuideUI.Toggle()
+        return
+    end
+    Print("use /aphb board for Dungeon Board or /aphb guide for Dungeon Guide.")
 end
 
 
@@ -965,6 +987,9 @@ configUI = ApogeePartyHealthBars_SettingsUI.Build({
     CleanseWatch             = cleanseWatch,
     BuffThanks               = buffThanks,
     ThreatAwareness          = threatAwareness,
+    DungeonGuideSettings    = dungeonGuideSettings,
+    DungeonGuideUI          = dungeonGuideUI,
+    RaidMarkers             = M,
     GetSavedVariables        = function() return S.sv end,
         CoreSettingsPages = {
         ForceRefresh                = ForceRefresh,

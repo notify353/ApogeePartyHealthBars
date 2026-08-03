@@ -81,7 +81,6 @@ function L.Register(eventRouter, deps)
                 RunStep("Keyboard", K.InitializeSaved)
                 RunStep("Mouse Buttons", B.InitializeSaved)
                 RunStep("Consumables", CB.Initialize)
-                RunStep("Raid markers", M.Initialize)
                 RunStep("Physical bindings", function()
                     local bindingsOk, bindingsCode, bindingsDetail
                     if S.sv and S.sv.enabled then
@@ -141,7 +140,7 @@ function L.Register(eventRouter, deps)
 
             elseif event == "PLAYER_TARGET_CHANGED" then
                 RunStep("Target nameplate HUD", N.OnTargetChanged)
-                RunStep("Raid markers", M.Refresh)
+                RunStep("Automatic raid marking", M.EvaluateCurrentTarget)
                 RunStep("Shortcuts", T.Rebaseline)
                 RunStep("Mouse Wheel", W.Refresh)
                 RunStep("Keyboard", K.Refresh)

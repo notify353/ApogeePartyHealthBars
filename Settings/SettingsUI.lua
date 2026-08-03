@@ -9,6 +9,7 @@ local BC = ApogeePartyHealthBars_MouseButtonsSettingsPage
 local LC = ApogeePartyHealthBars_LoadoutsSettingsPage
 local PC = ApogeePartyHealthBars_ProfilesSettingsPage
 local DC = ApogeePartyHealthBars_TargetEffectsSettingsPage
+local DGC = ApogeePartyHealthBars_DungeonGuideSettingsPage
 local AC = ApogeePartyHealthBars_ActionSettingsComponents
 local UIH = ApogeePartyHealthBars_UIHelpers
 
@@ -19,6 +20,7 @@ local built = false
 local D
 local configPanel, profileLabel, pageDropdown, pageTitle, pageSummary
 local profilesPage, coreSettingsPagesFrame, targetEffectsPage, partyFrameClicksPage, shortcutBarPage
+local dungeonGuidePage
 local keyboardPage, mouseWheelPage, mouseButtonsPage, loadoutsPage
 local pages, groups, allFrames = {}, {}, {}
 local pageOrder, groupOrder = {}, { "frames", "actions", "reminders", "dungeon", "manage" }
@@ -277,6 +279,7 @@ function UI.Build(deps)
     profilesPage = PC.Create(configPanel, D)
     coreSettingsPagesFrame = GC.Create(configPanel, BuildCoreSettingsPagesDeps())
     targetEffectsPage = DC.Create(configPanel, D)
+    dungeonGuidePage = DGC.Create(configPanel, D)
     partyFrameClicksPage = HC.Create(configPanel, D)
     shortcutBarPage = SC.Create(configPanel, D)
     keyboardPage = KC.Create(configPanel, D)
@@ -358,6 +361,12 @@ function UI.Build(deps)
         frame = coreSettingsPagesFrame, configure = function() GC.SetPage("dungeon") end,
         refresh = GC.Refresh, hint = GC.GetForm().hint, layout = GC.GetForm(),
         summary = "Configure LFG results and alerts.",
+    })
+    RegisterPage({
+        key = "dungeonGuide", group = "dungeon", label = "Dungeon Guide",
+        frame = dungeonGuidePage, refresh = DGC.Refresh,
+        hint = DGC.GetForm().hint, layout = DGC.GetForm(),
+        summary = "Learn reviewed mob priorities and configure automatic target marking.",
     })
     RegisterPage({
         key = "profiles", group = "manage", label = "Profiles",

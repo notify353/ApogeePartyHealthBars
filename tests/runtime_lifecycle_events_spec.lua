@@ -48,8 +48,7 @@ ApogeePartyHealthBars_ConsumableBar = {
     OnBagUpdate = function() record("consumable-bags") end,
 }
 ApogeePartyHealthBars_RaidMarkers = {
-    Initialize = function() record("raid-init") end,
-    Refresh = function() record("raid-target") end,
+    EvaluateCurrentTarget = function() record("raid-auto") end,
 }
 ApogeePartyHealthBars_TargetNameplateHud = {
     OnTargetChanged = function() record("nameplate-target") end,
@@ -157,7 +156,7 @@ dispatch("PLAYER_LOGIN")
 expect({
     "saved-variables", "binding-store", "fader-init:true", "ui-errors-init:true",
     "class-bindings", "shortcut-init",
-    "wheel-init", "keys-init", "buttons-init", "consumable-init", "raid-init", "bindings-claim", "player-spells", "restore-position", "update-header",
+    "wheel-init", "keys-init", "buttons-init", "consumable-init", "bindings-claim", "player-spells", "restore-position", "update-header",
     "minimap", "shield-seed", "force-refresh",
 }, "PLAYER_LOGIN order changed")
 assert(ApogeePartyHealthBars_S.sv == ApogeePartyHealthSV
@@ -224,7 +223,7 @@ expect({ "player-spells", "minimap", "shield-seed", "threat", "request-update" }
 
 reset()
 dispatch("PLAYER_TARGET_CHANGED")
-expect({ "nameplate-target", "raid-target", "shortcut-rebaseline", "wheel-refresh", "keys-refresh", "buttons-refresh", "threat", "request-update" },
+expect({ "nameplate-target", "raid-auto", "shortcut-rebaseline", "wheel-refresh", "keys-refresh", "buttons-refresh", "threat", "request-update" },
     "target-change order changed")
 
 reset()

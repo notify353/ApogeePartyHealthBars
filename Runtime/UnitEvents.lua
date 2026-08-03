@@ -1,7 +1,6 @@
 local S = ApogeePartyHealthBars_S
 local A = ApogeePartyHealthBars_Auras
 local T = ApogeePartyHealthBars_ShortcutBar
-local M = ApogeePartyHealthBars_RaidMarkers
 local N = ApogeePartyHealthBars_TargetNameplateHud
 local H = ApogeePartyHealthBars_Threat
 local O = ApogeePartyHealthBars_ThreatObserver
@@ -89,7 +88,6 @@ function U.Register(eventRouter, deps)
         eventRouter.RegisterOptional(event, "Bootstrap", HandleEvent)
     end
 
-    eventRouter.RegisterOptional("RAID_TARGET_UPDATE", "RaidMarkers", M.Refresh)
     for _, event in ipairs({ "UNIT_THREAT_SITUATION_UPDATE", "UNIT_THREAT_LIST_UPDATE" }) do
         eventRouter.RegisterOptional(event, "Threat", function()
             H.Refresh()
@@ -98,7 +96,6 @@ function U.Register(eventRouter, deps)
     end
     eventRouter.RegisterOptional("NAME_PLATE_UNIT_ADDED", "TargetNameplateHud", function(_, unit)
         N.OnNamePlateAdded(unit)
-        M.Refresh()
     end)
     eventRouter.RegisterOptional("NAME_PLATE_UNIT_ADDED", "ThreatAwareness", function(_, unit)
         O.OnNamePlateAdded(unit)
@@ -108,7 +105,6 @@ function U.Register(eventRouter, deps)
     end)
     eventRouter.RegisterOptional("NAME_PLATE_UNIT_REMOVED", "TargetNameplateHud", function(_, unit)
         N.OnNamePlateRemoved(unit)
-        M.Refresh()
     end)
     eventRouter.RegisterOptional("NAME_PLATE_UNIT_REMOVED", "ThreatAwareness", function(_, unit)
         O.OnNamePlateRemoved(unit)

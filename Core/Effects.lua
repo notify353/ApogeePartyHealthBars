@@ -61,6 +61,11 @@ local FEATURE_DEFAULTS = {
     dungeonBoardRelPoint = "TOP",
     dungeonBoardX = 0,
     dungeonBoardY = -20,
+    dungeonGuideAutoMarkEnabled = true,
+    dungeonGuidePoint = "CENTER",
+    dungeonGuideRelPoint = "CENTER",
+    dungeonGuideX = 0,
+    dungeonGuideY = 0,
 }
 
 local function NormalizeDotThreshold(value, fallback)
@@ -148,6 +153,7 @@ function E.InitializeSavedVariables(saved, characterSaved)
     saved.lowHealthSoundEnabled = nil
     saved.spellTrackerEnabled = nil
     saved.spellTrackerSoundsEnabled = nil
+    saved.dungeonGuideCoachEnabled = nil
     local dungeonBoardRole = saved.dungeonBoardRole
     if dungeonBoardRole ~= "tank" and dungeonBoardRole ~= "healer" then
         dungeonBoardRole = saved.dungeonBoardMode

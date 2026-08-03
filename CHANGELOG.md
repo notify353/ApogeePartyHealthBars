@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.47.0] - 2026-08-02
+
 ### Fixed
 
 - Prevented globally disabled action runtimes from emitting cooldown-ready sounds or pulses during combat.

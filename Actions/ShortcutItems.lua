@@ -2,6 +2,25 @@ ApogeePartyHealthBars_ShortcutItems = {}
 local I = ApogeePartyHealthBars_ShortcutItems
 local Cooldowns = ApogeePartyHealthBars_ActionCooldowns
 
+-- Reviewed ground-targeted explosives whose safest generated action places the
+-- effect at the player's feet. Keep this ID-based so localized item names do
+-- not affect behavior, and do not include self-centered or deployable devices.
+local PLAYER_GROUND_EXPLOSIVE_IDS = {
+    -- Dynamite
+    [4358] = true, [4365] = true, [4378] = true, [10507] = true,
+    [18641] = true, [6714] = true, [18588] = true,
+    -- Bombs
+    [4360] = true, [4374] = true, [4370] = true, [4380] = true,
+    [4394] = true, [10514] = true, [10562] = true, [10586] = true,
+    [16005] = true, [16040] = true, [4852] = true, [23736] = true,
+    [23826] = true,
+    -- Grenades
+    [4390] = true, [15993] = true, [23737] = true, [32413] = true,
+    [10830] = true,
+    -- Portable Bronze Mortar
+    [4403] = true,
+}
+
 local function validItemId(value)
     return type(value) == "number" and value > 0 and math.floor(value) == value and value or nil
 end
@@ -10,6 +29,11 @@ local function validItemInfo(value)
     return validItemId(value)
         or (type(value) == "string" and value ~= "" and value)
         or nil
+end
+
+function I.IsPlayerGroundExplosive(itemId)
+    itemId = validItemId(itemId)
+    return itemId ~= nil and PLAYER_GROUND_EXPLOSIVE_IDS[itemId] == true
 end
 
 function I.GetInfo(itemId)
@@ -175,7 +199,8 @@ function I.ScanConsumables(limit, excludeItem)
             local useEffectName = getUseEffect(itemInfo)
             if itemId and not seen[itemId] and not isQuestItem(bag, slot)
                 and (not excludeItem or not excludeItem(itemId))
-                and I.IsConsumable(itemInfo) and useEffectName ~= nil then
+                and (I.IsConsumable(itemInfo) or I.IsPlayerGroundExplosive(itemId))
+                and useEffectName ~= nil then
                 seen[itemId] = true
                 local name, icon = I.GetInfo(itemId)
                 local instantIcon, classId, subclassId = getInstantClassification(itemInfo)
@@ -192,7 +217,8 @@ function I.ScanConsumables(limit, excludeItem)
                     classId = classId,
                     subclassId = subclassId,
                     itemLevel = itemLevel,
-                    priority = CONSUMABLE_SUBCLASS_PRIORITY[subclassId] or 7,
+                    priority = I.IsPlayerGroundExplosive(itemId)
+                        and 7 or CONSUMABLE_SUBCLASS_PRIORITY[subclassId] or 7,
                     groupName = type(useEffectName) == "string" and useEffectName
                         or bagName or name or "",
                 }

@@ -21,7 +21,7 @@ ApogeePartyHealthBars_C = {
     SHORTCUT_CLASS_DEFAULTS = { MAGE = { "Fireball", "Frostbolt", "Fire Blast" } },
 }
 ApogeePartyHealthBars_S = {
-    sv = {},
+    sv = { enabled = true },
     charSv = {
         shortcuts = {},
     },
@@ -207,7 +207,7 @@ assert(seeded[1].spellName == "Fireball(Rank 1)"
         and seeded[1].macroText == "/cast Old Fireball Name"
         and secureButtons[1].attributes.macrotext == "/cast Old Fireball Name",
     "Shortcut metadata refresh rewrote a saved macro without Reset")
-seeded[1].macroText = "/cast Fireball(Rank 1)"
+seeded[1].macroText = "/use Fireball(Rank 1)"
 shortcuts.ResolveAndRefresh()
 assert(ApogeePartyHealthBars_S.charSv.shortcutDefaultsVersion == 1)
 assert(shortcuts.SetSlotSound(1, "toast") == "toast",
@@ -223,16 +223,34 @@ assert(shortcuts.SetSlotSound(1, "none") == "none")
 assert(shortcuts.SetSlotSound(99, "alarm_soft") == nil,
     "missing Shortcut slot accepted a dropdown sound")
 assert(shortcuts.SetSlotSound(1, "toast") == "toast")
+local soundsBeforePreview = playedSounds
+assert(shortcuts.PreviewSound("toast") and playedSounds == soundsBeforePreview + 1,
+    "Shortcut sound preview was suppressed outside combat")
 spellCooldownStart, spellCooldownDuration, reportedGcd = 10, 1.5, true
 shortcuts.Refresh()
 spellCooldownStart, spellCooldownDuration, reportedGcd = 10, 8, false
+shortcuts.Refresh()
+local soundsBeforeOutOfCombatCompletion = playedSounds
+local pulseBeforeOutOfCombatCompletion = visualButtons[1].pulseUntil
+spellCooldownStart, spellCooldownDuration = 0, 0
+shortcuts.Refresh()
+assert(playedSounds == soundsBeforeOutOfCombatCompletion
+        and visualButtons[1].pulseUntil == pulseBeforeOutOfCombatCompletion,
+    "out-of-combat Shortcut cooldown completion emitted ready feedback")
+inCombat = true
+shortcuts.Refresh()
+assert(playedSounds == soundsBeforeOutOfCombatCompletion
+        and visualButtons[1].pulseUntil == pulseBeforeOutOfCombatCompletion,
+    "entering combat after a Shortcut cooldown completion emitted delayed ready feedback")
+spellCooldownStart, spellCooldownDuration = 10, 8
 shortcuts.Refresh()
 local soundsBeforeRealCooldownFinished = playedSounds
 spellCooldownStart, spellCooldownDuration = 0, 0
 shortcuts.Refresh()
 assert(playedSounds == soundsBeforeRealCooldownFinished + 1
         and visualButtons[1].pulseUntil ~= nil,
-    "delayed post-cast Shortcut cooldown sample did not arm its completion alert")
+    "in-combat Shortcut cooldown completion did not emit ready feedback")
+inCombat = false
 local soundsBeforeGlobalCooldown = playedSounds
 local pulseBeforeGlobalCooldown = visualButtons[1].pulseUntil
 spellCooldownStart, spellCooldownDuration, reportedGcd = 10, 1.5, true
@@ -266,7 +284,7 @@ assert(#castButton.registeredClicks == 1 and castButton.registeredClicks[1] == "
     "Shortcut secure overlay was not restricted to one release phase")
 assert(castButton.attributes.type == "macro")
 assert(castButton.attributes.macrotext
-    == "/cast Fireball(Rank 1)")
+    == "/use Fireball(Rank 1)")
 assert(castButton.attributes.type1 == "macro")
 assert(castButton.attributes.macrotext1 == castButton.attributes.macrotext)
 assert(castButton.shown and castButton.mouseEnabled, "Shortcut cast button is not clickable")
@@ -334,7 +352,7 @@ assert(shortcuts.ApplyMacro(4, "/cast Custom Arcane Action"), "custom Shortcut m
 assert(not shortcuts.ApplyMacro(4, "  \n\t"), "blank Shortcut macro was accepted")
 assert(shortcuts.AssignSpell(4, 5143, "Arcane Missiles"), "Shortcut replacement failed")
 assert(shortcuts.GetSlots()[4].soundKey == "toast"
-    and shortcuts.GetSlots()[4].macroText:find("/cast Arcane Missiles", 1, true),
+    and shortcuts.GetSlots()[4].macroText:find("/use Arcane Missiles", 1, true),
     "Shortcut replacement did not preserve sound and regenerate its macro")
 local moved, movedTo = shortcuts.MoveSlot(4, -1)
 assert(moved and movedTo == 3 and shortcuts.GetSlots()[3].spellName == "Arcane Missiles(Rank 1)"
@@ -367,11 +385,27 @@ itemUsable = true
 itemCooldown = 12
 shortcuts.Refresh()
 assert(shortcuts.GetSlotState(4) == "cooldown", "item Shortcut cooldown was not evaluated")
+local soundsBeforeOutOfCombatItemCooldown = playedSounds
+local pulseBeforeOutOfCombatItemCooldown = visualButtons[4].pulseUntil
+itemCooldown = 0
+shortcuts.Refresh()
+assert(playedSounds == soundsBeforeOutOfCombatItemCooldown
+        and visualButtons[4].pulseUntil == pulseBeforeOutOfCombatItemCooldown,
+    "out-of-combat item Shortcut cooldown emitted ready feedback")
+inCombat = true
+shortcuts.Refresh()
+assert(playedSounds == soundsBeforeOutOfCombatItemCooldown
+        and visualButtons[4].pulseUntil == pulseBeforeOutOfCombatItemCooldown,
+    "entering combat after an item Shortcut cooldown emitted delayed ready feedback")
+itemCooldown = 12
+shortcuts.Refresh()
 local soundsBeforeItemCooldown = playedSounds
 itemCooldown = 0
 shortcuts.Refresh()
-assert(playedSounds == soundsBeforeItemCooldown + 1,
-    "completed item Shortcut cooldown did not play its selected alert")
+assert(playedSounds == soundsBeforeItemCooldown + 1
+        and visualButtons[4].pulseUntil ~= nil,
+    "in-combat item Shortcut cooldown did not emit ready feedback")
+inCombat = false
 itemCooldown = 12
 shortcuts.Refresh()
 itemCount = 0
@@ -426,10 +460,10 @@ assert(visualButtons[7].points[1][4] == 0
     "Shortcuts 7 through 12 did not continue on the second row")
 assert(secureButtons[7].shown and secureButtons[7].mouseEnabled
     and secureButtons[7].attributes.macrotext:find(
-        "/cast Test Spell 7(Rank 1)", 1, true)
+        "/use Test Spell 7(Rank 1)", 1, true)
     and secureButtons[12].shown and secureButtons[12].mouseEnabled
     and secureButtons[12].attributes.macrotext:find(
-        "/cast Test Spell 12(Rank 1)", 1, true),
+        "/use Test Spell 12(Rank 1)", 1, true),
     "second-row Shortcuts did not receive clickable secure actions")
 local overflowAssigned, overflowMessage = shortcuts.AssignSpell(nil, 7000, "Overflow Spell")
 assert(not overflowAssigned and overflowMessage:find("Drop onto a row", 1, true),
@@ -486,15 +520,15 @@ assert(dropButton.shown, "Shortcut HUD add target did not return after combat")
 ApogeePartyHealthBars_S.configMode = false
 shortcuts.SetSpellbookOpen(false)
 shortcuts.Layout()
-local expectedCastNames = {
-    "Fireball(Rank 1)", "Frostbolt(Rank 1)",
-    "Fire Blast(Rank 1)", "Arcane Missiles(Rank 1)",
+local expectedMacroLines = {
+    "/use Fireball(Rank 1)", "/use Frostbolt(Rank 1)",
+    "/use Fire Blast(Rank 1)", "/use Arcane Missiles(Rank 1)",
 }
-for index, expectedCastName in ipairs(expectedCastNames) do
+for index, expectedMacroLine in ipairs(expectedMacroLines) do
     local assignedButton = assert(secureButtons[index], "missing secure Shortcut button " .. index)
     assert(assignedButton.attributes.type == "macro"
         and assignedButton.attributes.macrotext:find(
-            "/cast " .. expectedCastName, 1, true),
+            expectedMacroLine, 1, true),
         "secure Shortcut button " .. index .. " lost its macro after assignment")
     assert(assignedButton.shown and assignedButton.mouseEnabled,
         "secure Shortcut button " .. index .. " stopped receiving clicks after assignment")
@@ -535,7 +569,7 @@ inCombat = false
 assert(shortcuts.ClearSlot(1), "Shortcut did not clear after leaving combat")
 assert(castButton.attributes.type == "macro"
     and castButton.attributes.macrotext:find(
-        "/cast Frostbolt(Rank 1)", 1, true),
+        "/use Frostbolt(Rank 1)", 1, true),
     "remaining Shortcuts did not compact after clearing the first slot")
 assert(castButton.shown and castButton.mouseEnabled, "compacted Shortcut was not clickable")
 local trailingCastButton = secureButtons[4]

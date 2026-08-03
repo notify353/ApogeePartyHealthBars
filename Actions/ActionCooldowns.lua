@@ -44,17 +44,26 @@ function A.IsAlertable(duration, gcdOnly, noCharges)
         or (gcdOnly ~= true and (tonumber(duration) or 0) > A.MIN_ALERTABLE_DURATION)
 end
 
+function A.IsReadyFeedbackAllowed()
+    local session = ApogeePartyHealthBars_S
+    return session and session.sv and session.sv.enabled == true
+        and InCombatLockdown and InCombatLockdown() == true
+end
+
 function A.UpdateAlertState(armed, key, initialized, previousState, state,
         gcdOnly, alertable)
     if initialized and state == "cooldown" and alertable then
         armed[key] = true
     end
+    local waitingForResource = state == "resource"
+        and A.IsReadyFeedbackAllowed()
+        and armed[key] == true
     local finished = initialized
-        and previousState == "cooldown"
         and state ~= "cooldown"
+        and state ~= "resource"
         and state ~= "unavailable"
         and gcdOnly ~= true
         and armed[key] == true
-    if state ~= "cooldown" then armed[key] = nil end
+    if state ~= "cooldown" and not waitingForResource then armed[key] = nil end
     return finished
 end

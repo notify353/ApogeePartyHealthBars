@@ -206,18 +206,59 @@ function IsUsableSpell() return true, false end
 function GetSpellCooldown() return 0, 0, 1 end
 function GetSpellCharges() return nil, nil end
 local smokeItemCount, smokeItemCooldown, smokeItemName = 3, 0, "Linen Bandage"
+local smokeExplosiveCount, smokeExplosiveName = 2, "Localized Dynamite"
+local function ResolveSmokeItemId(itemInfo)
+    return tonumber(itemInfo)
+        or tonumber(type(itemInfo) == "string" and itemInfo:match("item:(%d+)") or nil)
+end
 C_Item = {
-    GetItemInfo = function(itemId)
+    GetItemInfo = function(itemInfo)
+        local itemId = ResolveSmokeItemId(itemInfo)
         if itemId == 1251 then return smokeItemName, nil, nil, nil, nil, nil, nil, nil, nil, 134436 end
+        if itemId == 4358 then
+            return smokeExplosiveName, nil, nil, 10, nil, nil, nil, nil, nil, 133714
+        end
     end,
-    GetItemInfoInstant = function(itemId) if itemId == 1251 then return itemId, nil, nil, nil, 134436 end end,
-    GetItemCount = function(itemId) return itemId == 1251 and smokeItemCount or 0 end,
-    IsUsableItem = function(itemId) return itemId == 1251, false end,
+    GetItemInfoInstant = function(itemInfo)
+        local itemId = ResolveSmokeItemId(itemInfo)
+        if itemId == 1251 then return itemId, nil, nil, nil, 134436, 0, 7 end
+        if itemId == 4358 then return itemId, nil, nil, nil, 133714, 7, 2 end
+    end,
+    IsConsumableItem = function(itemInfo)
+        return ResolveSmokeItemId(itemInfo) == 1251
+    end,
+    GetItemCount = function(itemId)
+        if itemId == 1251 then return smokeItemCount end
+        return itemId == 4358 and smokeExplosiveCount or 0
+    end,
+    IsUsableItem = function(itemId) return itemId == 1251 or itemId == 4358, false end,
+    GetItemSpell = function(itemInfo)
+        local itemId = ResolveSmokeItemId(itemInfo)
+        if itemId == 1251 then return "First Aid", 746 end
+        if itemId == 4358 then return "Throw Dynamite", 4064 end
+    end,
 }
 C_Container = {
     GetItemCooldown = function(itemId) return 0, smokeItemCooldown, 1 end,
-    GetContainerItemID = function() return 1251 end,
+    GetContainerNumSlots = function(bag) return bag == 0 and 2 or 0 end,
+    GetContainerItemID = function(bag, slot)
+        if bag ~= 0 then return nil end
+        return slot == 1 and 1251 or slot == 2 and 4358 or nil
+    end,
+    GetContainerItemInfo = function(bag, slot)
+        local itemId = bag == 0 and (slot == 1 and 1251 or slot == 2 and 4358) or nil
+        if not itemId then return nil end
+        return {
+            itemID = itemId,
+            hyperlink = "item:" .. itemId,
+            itemName = itemId == 1251 and smokeItemName or smokeExplosiveName,
+            iconFileID = itemId == 1251 and 134436 or 133714,
+        }
+    end,
+    GetContainerItemQuestInfo = function() return { isQuestItem = false } end,
 }
+BACKPACK_CONTAINER = 0
+NUM_BAG_SLOTS = 4
 function GetTime() return 1 end
 local cursorX, cursorY = 100, 100
 function GetCursorPosition() return cursorX, cursorY end
@@ -448,6 +489,13 @@ assert(earlyDotRefreshOk,
 router.Dispatch("PLAYER_LOGIN")
 assert(ApogeePartyHealthBars_UIErrorSuppressor.IsEnabled(),
     "PLAYER_LOGIN did not initialize default-on Blizzard UI error suppression")
+local automaticConsumables = ApogeePartyHealthBars_ConsumableBar.GetEntries()
+local automaticConsumableIcons = ApogeePartyHealthBars_ConsumableBar.GetIcons()
+assert(#automaticConsumables == 2
+        and automaticConsumables[2].itemId == 4358
+        and automaticConsumableIcons[2].castButton:GetAttribute("macrotext")
+            == "/use [@player] Localized Dynamite",
+    "automatic consumables did not include the Trade Goods explosive with a player-feet macro")
 local dotHudAnchor = ApogeePartyHealthBars_TargetEffectHud.GetAnchor()
 assert(dotHudAnchor and dotHudAnchor.frameType == "Frame" and dotHudAnchor.template == nil
         and dotHudAnchor.scripts.OnClick == nil and dotHudAnchor == targetEffectRow,
@@ -599,7 +647,8 @@ local wheelLayout = wheelRuntime.GetActiveLayoutKey()
 local buttonLayout = buttonRuntime.GetActiveLayoutKey()
 assert(keysRuntime.AssignSpell(keysLayout, "key1", 9001, "Fireball")
     and keysRuntime.AssignSpell(keysLayout, "keyF", 9003, "Frostbolt")
-    and keysRuntime.AssignItem(keysLayout, "keyG", 1251, "Linen Bandage"),
+    and keysRuntime.AssignItem(keysLayout, "keyG", 1251, "Linen Bandage")
+    and keysRuntime.AssignItem(keysLayout, "keyT", 4358, "Localized Dynamite"),
     "Keys did not accept spell and usable-item actions")
 assert(wheelRuntime.AssignSpell(wheelLayout, "normalUp", 9001, "Fireball"),
     "the same action could not be assigned across Keys and Wheel")
@@ -614,11 +663,19 @@ assert(keysRuntime.GetSlotSoundKey(keysLayout, "keyF") == "toast",
     "Keys did not persist its action sound")
 local keyFSecure = assert(keysRuntime.GetSecureButton("keyF"), "Keys secure button was missing")
 local keyGSecure = assert(keysRuntime.GetSecureButton("keyG"), "Keys item secure button was missing")
+local keyTSecure = assert(keysRuntime.GetSecureButton("keyT"), "Keys explosive button was missing")
 assert(keyFSecure:GetAttribute("macrotext"):find("/run ApogeeKeysFeedback(10)", 1, true)
         and keyFSecure:GetAttribute("macrotext"):find("/cast [@mouseover,help] Frostbolt", 1, true),
     "Keys secure spell macro lost feedback or customized text")
 assert(keyGSecure:GetAttribute("macrotext"):find("/use Linen Bandage", 1, true),
     "Keys secure item macro was not configured")
+assert(keyTSecure:GetAttribute("macrotext"):find(
+        "/use [@player] Localized Dynamite", 1, true),
+    "Keys explosive did not receive the shared player-feet macro")
+for _, entry in ipairs(ApogeePartyHealthBars_ConsumableBar.GetEntries()) do
+    assert(entry.itemId ~= 4358,
+        "manually assigned explosive remained duplicated in Automatic Consumables")
+end
 assert(keyGIcon.count:GetText() == "3", "Keys item HUD did not show its carried quantity")
 local emptyKeySecure = keysRuntime.GetSecureButton("key2")
 local emptyWheelSecure = wheelRuntime.GetSecureButton("ctrlUp")
@@ -856,9 +913,9 @@ local existingShortcutButton = assert(shortcutButtons[1], "missing existing Shor
 local addedShortcutButton = assert(shortcutButtons[2], "missing newly assigned Shortcut secure button")
 local itemShortcutButton = assert(shortcutButtons[3], "missing item Shortcut secure button")
 assert(existingShortcutButton.attributes.type == "macro"
-    and existingShortcutButton.attributes.macrotext:find("/cast Fireball(Rank 1)", 1, true))
+    and existingShortcutButton.attributes.macrotext:find("/use Fireball(Rank 1)", 1, true))
 assert(addedShortcutButton.attributes.type == "macro"
-    and addedShortcutButton.attributes.macrotext:find("/cast Frostbolt(Rank 1)", 1, true))
+    and addedShortcutButton.attributes.macrotext:find("/use Frostbolt(Rank 1)", 1, true))
 assert(itemShortcutButton.attributes.type == "macro"
     and itemShortcutButton.attributes.macrotext == "/use Linen Bandage")
 smokeItemCount = 0
@@ -887,8 +944,8 @@ RunFrameUpdates()
 assert(existingShortcutButton.pointWrites > existingImmediatePoints
         and addedShortcutButton.pointWrites > addedImmediatePoints,
     "settings close did not reconcile Shortcut overlays on the next frame")
-assert(existingShortcutButton.attributes.macrotext:find("/cast Fireball(Rank 1)", 1, true)
-        and addedShortcutButton.attributes.macrotext:find("/cast Frostbolt(Rank 1)", 1, true),
+assert(existingShortcutButton.attributes.macrotext:find("/use Fireball(Rank 1)", 1, true)
+        and addedShortcutButton.attributes.macrotext:find("/use Frostbolt(Rank 1)", 1, true),
     "settings close changed Shortcut secure attributes")
 assert(existingShortcutButton.shown and existingShortcutButton.mouseEnabled
         and addedShortcutButton.shown and addedShortcutButton.mouseEnabled,

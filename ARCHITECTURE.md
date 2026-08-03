@@ -27,10 +27,10 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `RuntimeEvents`: thin subscriber registration coordinator
 - `Sounds`: shared sound catalog, saved-key normalization, and SFX playback
 - `CrowdControl`: class-owned active-control catalog, control categories, activation modes, automatic-display policy, and per-class allocation bounds
-- `ShortcutItems`: shared item-information, carried-count, usability, cooldown, and depletion evaluation
+- `ShortcutItems`: shared item-information, carried-count, usability, cooldown, depletion evaluation, and ID-based player-ground explosive policy
 - `ActionData`: macro-independent spell/item identity, legacy normalization, cloning, and display resolution shared by every configurable action feature
 - `EquipmentSets`: native character-wide equipment-set capability, capture/update mutations, ignored-slot policy, name-based action attachment, hybrid combat/out-of-combat prefix composition, and combined runtime byte validation
-- `ActionMacros`: shared action-intent template rendering and documentation metadata, direct spell/item defaults, localized curated melee and stealth-safe families, dedicated repeating ranged-attack quality-of-life behavior, sound/macro extensions, custom-text detection, equipment-prefix composition, and 255-byte validation for Shortcuts, Keyboard, Mouse Wheel, and Mouse Buttons
+- `ActionMacros`: shared action-intent template rendering and documentation metadata, direct `/use` spell/item defaults, player-feet explosive defaults, localized curated melee, distance, and stealth-safe families, dedicated repeating ranged-attack quality-of-life behavior, sound/macro extensions, custom-text detection, equipment-prefix composition, and 255-byte validation for Shortcuts, Keyboard, Mouse Wheel, and Mouse Buttons
 - `ActionSettingsComponents`: shared scrollable action-list scaffold and compact row state used by Healing, Shortcuts, Keyboard, Mouse Wheel, and Mouse Buttons, plus the loadout picker and focused macro editor used by the macro-capable features
 - `UIHelpers`: common buttons, dropdowns, tabs, scrolling, shared panel backdrops, and the non-action form scaffold used by Profiles, General, and Macros
 - `SettingsSurfaces`: opt-in opaque-black configuration chrome, native top-level interaction stacking, shared configuration strata, and combat-safe runtime-strata restoration
@@ -123,6 +123,8 @@ The data and pure-policy chain loads as `DungeonBoardCatalog` → `DungeonBoardA
 - Keep cleanse spell preference and removable-type policy inside `CleanseData`; keep the five unit targets and four type slots stable, and defer every secure Cleanse Watch mutation until combat ends.
 - Keep Target Effect family, rank, replacement, exclusivity, race, form, and target policy inside `TargetEffectData`; `TargetEffectTracker` may suggest only, and the live `TargetEffectHud` must remain non-secure, cast-free, mouse-disabled, and nameplate-only.
 - Preserve every nonblank saved macro exactly during normalization, metadata refresh, profiles, imports, and migration; regenerate defaults only for new assignments, explicit resets, or legacy entries without macro text.
+- Generate configurable spell actions with `/use`; reviewed close-combat templates may add only `/startattack`, while reviewed distance templates may add only bare `/targetenemy`. Keep ordinary spells free of automatic enemy commands and retain only the stealth and contextual Charge conditions required by their reviewed behavior.
+- Keep player-feet item targeting limited to the reviewed ID catalog in `ShortcutItems`; do not infer ground targeting from localized names or broad item subclasses that also contain self-centered and deployable explosives.
 - Infer generated attack behavior only from Blizzard's auto-attack predicates or the reviewed canonical spell-family policy; class, harmfulness, range, resource type, and cast time are not sufficient.
 - Keep generated-template documentation sourced from `ActionMacros` so the Macros glossary cannot drift from runtime output.
 - Keep Party Frame Click actions macro-independent; native secure spell/item actions must retain the clicked health-bar unit.

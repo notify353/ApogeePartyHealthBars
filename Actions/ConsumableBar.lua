@@ -1,6 +1,7 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local Items = ApogeePartyHealthBars_ShortcutItems
+local Actions = ApogeePartyHealthBars_ActionMacros
 local UIH = ApogeePartyHealthBars_UIHelpers
 local Accessory = ApogeePartyHealthBars_AccessoryLayout
 
@@ -140,7 +141,8 @@ local function SyncSecureAction(icon, info)
         return
     end
 
-    local macroText = "/use item:" .. tostring(info.itemId)
+    local macroText = Actions.BuildDefaultItemMacro(info.itemName, info.itemId)
+        or "/use item:" .. tostring(info.itemId)
     castButton:SetAttribute("type", "macro")
     castButton:SetAttribute("macrotext", macroText)
     castButton:SetAttribute("type1", "macro")

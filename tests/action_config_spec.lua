@@ -146,7 +146,7 @@ assert(config.OpenEditor({
     title = "Edit Spell macro",
     actionName = "Charge(Rank 1)",
     macroText = "/cast Charge(Rank 1)",
-    resetText = "/targetenemy [noexists][dead][help]\n/startattack [harm,nodead]\n/cast Charge(Rank 1)",
+    resetText = "/startattack\n/use [combat] Hamstring; Charge(Rank 1)",
     onSave = function(body) savedBody = body; return true, "saved" end,
     onSaved = function(message) savedNotice = message end,
 }), "focused action editor did not open")
@@ -157,7 +157,7 @@ assert(not buttons.Save:IsEnabled(), "focused action editor allowed a blank save
 editor:SetText(string.rep("x", 256))
 assert(not buttons.Save:IsEnabled(), "focused action editor allowed an over-255-byte save")
 buttons.Reset.scripts.OnClick()
-assert(editor:GetText() == "/targetenemy [noexists][dead][help]\n/startattack [harm,nodead]\n/cast Charge(Rank 1)"
+assert(editor:GetText() == "/startattack\n/use [combat] Hamstring; Charge(Rank 1)"
     and buttons.Save:IsEnabled(), "Reset did not restore the generated draft")
 
 editor:SetText("/cast Custom Charge")

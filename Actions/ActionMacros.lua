@@ -1,15 +1,16 @@
 local Sounds = ApogeePartyHealthBars_Sounds
 local Data = ApogeePartyHealthBars_ActionData
 local EquipmentSets = ApogeePartyHealthBars_EquipmentSets
+local Items = ApogeePartyHealthBars_ShortcutItems
 
 ApogeePartyHealthBars_ActionMacros = {}
 local A = ApogeePartyHealthBars_ActionMacros
 
 A.MAX_BODY_BYTES = 255
 
-local TARGET_ENEMY = "/targetenemy [noexists][dead][help]"
-local START_ATTACK = "/startattack [harm,nodead]"
-local START_ATTACK_OUT_OF_STEALTH = "/startattack [harm,nodead,nostealth]"
+local TARGET_ENEMY = "/targetenemy"
+local START_ATTACK = "/startattack"
+local START_ATTACK_OUT_OF_STEALTH = "/startattack [nostealth]"
 local WARRIOR_CHARGE_ID = 100
 local WARRIOR_HAMSTRING_ID = 1715
 local WARRIOR_CHARGE_FAMILY_IDS = { WARRIOR_CHARGE_ID }
@@ -27,7 +28,12 @@ local MELEE_ATTACK_FAMILY_IDS = {
     -- Hunter
     2973, 1495, 19306, 2974,
     -- Paladin and Shaman
-    35395, 20271, 17364,
+    35395, 17364,
+}
+
+local DISTANCE_ATTACK_FAMILY_IDS = {
+    -- Paladin
+    20271,
 }
 
 local STEALTH_SAFE_MELEE_ATTACK_FAMILY_IDS = {
@@ -106,33 +112,39 @@ local function classifySpell(spellId, spellName)
             and getSpellInfo(WARRIOR_HAMSTRING_ID) then
         return "warrior-charge-hamstring"
     end
+    if matchesFamily(assignedName, DISTANCE_ATTACK_FAMILY_IDS) then
+        return "distance-attack"
+    end
     if matchesFamily(assignedName, MELEE_ATTACK_FAMILY_IDS) then return "melee-attack" end
     return "standard-spell"
 end
 
 local function renderSpellTemplate(spellName, templateId)
     if type(spellName) ~= "string" or not spellName:find("%S") then return nil end
-    if templateId == "melee-auto" then return TARGET_ENEMY .. "\n" .. START_ATTACK end
-    local castPrefix = templateId == "ranged-auto" and "!" or ""
-    local castLine = "/cast " .. castPrefix .. spellName
+    if templateId == "melee-auto" then return START_ATTACK end
+    local usePrefix = templateId == "ranged-auto" and "!" or ""
+    local useLine = "/use " .. usePrefix .. spellName
     if templateId == "ranged-auto" then
-        return TARGET_ENEMY .. "\n" .. castLine .. "\n" .. START_ATTACK
+        return TARGET_ENEMY .. "\n" .. useLine
     end
     if templateId == "warrior-charge-hamstring" then
         local hamstringName = getSpellInfo(WARRIOR_HAMSTRING_ID)
         if hamstringName then
-            return TARGET_ENEMY .. "\n/cast [combat] " .. hamstringName .. "; "
-                .. spellName .. "\n" .. START_ATTACK
+            return START_ATTACK .. "\n/use [combat] " .. hamstringName .. "; "
+                .. spellName
         end
         templateId = "melee-attack"
     end
+    if templateId == "distance-attack" then
+        return TARGET_ENEMY .. "\n" .. useLine
+    end
     if templateId == "melee-attack" then
-        return TARGET_ENEMY .. "\n" .. START_ATTACK .. "\n" .. castLine
+        return START_ATTACK .. "\n" .. useLine
     end
     if templateId == "stealth-safe-melee-attack" then
-        return TARGET_ENEMY .. "\n" .. START_ATTACK_OUT_OF_STEALTH .. "\n" .. castLine
+        return START_ATTACK_OUT_OF_STEALTH .. "\n" .. useLine
     end
-    return castLine
+    return useLine
 end
 
 function A.BuildDefaultSpellMacro(spellName, spellId)
@@ -223,14 +235,20 @@ function A.ResolveRuntimeSpell(entry, inCombat)
         activeAvailable, true
 end
 
-function A.BuildDefaultItemMacro(itemName)
+function A.BuildDefaultItemMacro(itemName, itemId)
     if type(itemName) ~= "string" or not itemName:find("%S") then return nil end
+    if Items and Items.IsPlayerGroundExplosive
+            and Items.IsPlayerGroundExplosive(itemId) then
+        return "/use [@player] " .. itemName
+    end
     return "/use " .. itemName
 end
 
 function A.BuildDefaultMacro(entry)
     if type(entry) ~= "table" then return nil end
-    if entry.kind == "item" then return A.BuildDefaultItemMacro(entry.itemName) end
+    if entry.kind == "item" then
+        return A.BuildDefaultItemMacro(entry.itemName, entry.itemId)
+    end
     return A.BuildDefaultSpellMacro(entry.spellName, entry.spellId)
 end
 
@@ -255,7 +273,7 @@ end
 function A.CreateItem(itemId, itemName, soundKey)
     local entry = Data.CreateItem(itemId, itemName)
     if not entry then return nil end
-    entry.macroText = A.BuildDefaultItemMacro(entry.itemName)
+    entry.macroText = A.BuildDefaultItemMacro(entry.itemName, entry.itemId)
     entry.soundKey = Sounds.NormalizeKey(soundKey, "none", true)
     return entry
 end

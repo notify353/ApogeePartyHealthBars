@@ -22,6 +22,7 @@ C_Item = {
             [300] = { "Quest Draught", 40, 3000 },
             [400] = { "Sword", 50, 4000 },
             [500] = { "Flavor Consumable", 5, 5000 },
+            [4358] = { "Localized Dynamite", 10, 43580 },
         }
         local value = data[itemId]
         if value then return value[1], nil, nil, value[2], 60, nil, nil, nil, nil, value[3] end
@@ -30,9 +31,10 @@ C_Item = {
         local itemId = ResolveTestItemId(itemInfo)
         if itemId == 118 then return itemId, nil, nil, nil, 134335 end
         local subclasses = { [100] = 1, [101] = 1, [102] = 1, [200] = 5, [300] = 1,
-            [400] = 7, [500] = 8, [1251] = 7 }
+            [400] = 7, [500] = 8, [1251] = 7, [4358] = 2 }
         if subclasses[itemId] then
-            return itemId, nil, nil, nil, itemId * 10, itemId == 400 and 2 or 0,
+            return itemId, nil, nil, nil, itemId * 10,
+                (itemId == 400 or itemId == 4358) and 7 or 0,
                 subclasses[itemId]
         end
     end,
@@ -44,13 +46,14 @@ C_Item = {
         if itemId == 500 or itemId == 400 then return nil end
         if itemId == 100 or itemId == 102 then return "Restore Mana", 10000 + itemId end
         if itemId == 101 then return "Restore Health", 10000 + itemId end
+        if itemId == 4358 then return "Throw Dynamite", 10000 + itemId end
         return itemId == 1251 and "First Aid" or "Use Item"
     end,
     IsConsumableItem = function(itemInfo) return ResolveTestItemId(itemInfo) ~= 400 end,
 }
 local bagItems = {
     [0] = { 100, 1251, 100, 300 },
-    [1] = { 400, 200, 500, 101, 102 },
+    [1] = { 400, 200, 500, 101, 102, 4358 },
 }
 C_Container = {
     GetItemCooldown = function(itemId)
@@ -85,6 +88,22 @@ dofile("Actions/ActionCooldowns.lua")
 dofile("Actions/ShortcutItems.lua")
 local items = ApogeePartyHealthBars_ShortcutItems
 
+local playerGroundExplosiveIds = {
+    4358, 4365, 4378, 10507, 18641, 6714, 18588,
+    4360, 4374, 4370, 4380, 4394, 10514, 10562, 10586, 16005, 16040,
+    4852, 23736, 23826,
+    4390, 15993, 23737, 32413, 10830,
+    4403,
+}
+for _, explosiveId in ipairs(playerGroundExplosiveIds) do
+    assert(items.IsPlayerGroundExplosive(explosiveId),
+        "reviewed explosive missing from player-ground policy: " .. explosiveId)
+end
+for _, excludedId in ipairs({ 10646, 23827, 4395, 4384, 4367, 1251 }) do
+    assert(not items.IsPlayerGroundExplosive(excludedId),
+        "excluded or ordinary item entered player-ground policy: " .. excludedId)
+end
+
 local name, icon, itemId = items.GetInfo(1251)
 assert(name == "Linen Bandage" and icon == 134436 and itemId == 1251,
     "Classic Era's shorter GetItemInfo result was not normalized")
@@ -106,12 +125,15 @@ assert(state == "unavailable" and count == "0" and not available
         and entry.itemId == 1251 and entry.itemName == "Linen Bandage",
     "unavailable Classic Era item assignment was mutated or discarded")
 
-local candidates, total = items.ScanConsumables(4)
-assert(total == 5 and #candidates == 4,
+local candidates, total = items.ScanConsumables(6)
+assert(total == 6 and #candidates == 6,
     "bag scan did not deduplicate, filter, or limit automatic consumables")
 assert(candidates[1].itemId == 101 and candidates[2].itemId == 102
-        and candidates[3].itemId == 100 and candidates[4].itemId == 1251,
+        and candidates[3].itemId == 100 and candidates[4].itemId == 1251
+        and candidates[6].itemId == 4358,
     "automatic consumables did not group use-effect families before item-level ordering")
+assert(candidates[6].priority == 7,
+    "recognized Trade Goods explosive did not follow ordinary fallback priority")
 assert(linkUseEffectChecks > 0,
     "automatic consumable scan did not use the bag-resolved item hyperlink")
 

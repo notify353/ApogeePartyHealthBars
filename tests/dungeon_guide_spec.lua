@@ -1,13 +1,15 @@
 dofile("DungeonGuide/DungeonGuideCatalog.lua")
 dofile("DungeonGuide/ScarletMonasteryGuide.lua")
+dofile("DungeonGuide/GnomereganGuide.lua")
 dofile("DungeonGuide/DungeonGuidePolicy.lua")
 dofile("DungeonGuide/DungeonGuideSettings.lua")
 dofile("DungeonGuide/DungeonGuideUI.lua")
 
 local Catalog = ApogeePartyHealthBars_DungeonGuideCatalog
 local guides = Catalog.ListGuides("classicEra")
-assert(#guides == 1 and guides[1].key == "scarletMonastery",
-    "Scarlet Monastery guide was not enumerated for Classic Era")
+assert(#guides == 2 and guides[1].key == "scarletMonastery"
+        and guides[2].key == "gnomeregan",
+    "Dungeon Guides were not enumerated in their registered order for Classic Era")
 local guide = guides[1]
 assert(#guide.sections == 4
         and guide.sections[1].key == "graveyard"
@@ -32,8 +34,55 @@ for _, npcId in ipairs(requiredIds) do
         "missing or incomplete Scarlet Monastery NPC: " .. npcId)
 end
 assert(Catalog.FindMob("classicEra", 189, 999999) == nil, "unknown NPC returned guide advice")
+
+local gnomeregan = Catalog.GetGuide("gnomeregan", "classicEra")
+assert(gnomeregan and #gnomeregan.sections == 4
+        and gnomeregan.sections[1].key == "hallOfGears"
+        and gnomeregan.sections[2].key == "dormitoryLaunchBay"
+        and gnomeregan.sections[3].key == "engineeringLabs"
+        and gnomeregan.sections[4].key == "tinkersCourt",
+    "Gnomeregan did not preserve its four-chapter route order")
+local dormitoryRoute = table.concat(gnomeregan.sections[2].route, " ")
+assert(dormitoryRoute:find("Alliance", 1, true)
+        and dormitoryRoute:find("Horde", 1, true)
+        and dormitoryRoute:find("hostile", 1, true),
+    "Gnomeregan Clean Zone guidance should warn Horde groups about hostile NPCs")
+assert(Catalog.GetGuideForInstance("classicEra", 90).key == "gnomeregan"
+        and Catalog.GetGuideForInstance("tbcAnniversary", 90).key == "gnomeregan"
+        and Catalog.GetGuideForInstance("unsupported", 90) == nil
+        and Catalog.GetGuideForInstance("classicEra", 721) == nil,
+    "Gnomeregan client or instance gating drifted")
+local gnomereganIds = {
+    [6206] = "caverndeepBurrower", [6211] = "caverndeepReaver",
+    [6212] = "darkIronAgent", [6215] = "chomper", [6218] = "irradiatedSlime",
+    [6219] = "corrosiveLurker", [6220] = "irradiatedHorror",
+    [6222] = "leprousTechnician", [6223] = "leprousDefender",
+    [6224] = "leprousMachinesmith", [6225] = "mechanoTank",
+    [6226] = "mechanoFlamewalker", [6227] = "mechanoFrostwalker",
+    [6228] = "darkIronAmbassador", [6229] = "crowdPummeler",
+    [6230] = "peacekeeper", [6232] = "arcaneNullifier",
+    [6233] = "mechanizedSentry", [6234] = "mechanizedGuardian",
+    [6235] = "electrocutioner", [6329] = "irradiatedPillager",
+    [7079] = "viscousFallout", [7361] = "grubbis", [7738] = "burningServant",
+    [7800] = "thermaplugg", [7849] = "mobileAlertSystem",
+    [7915] = "walkingBomb", [8035] = "darkIronLandMine",
+}
+for npcId, expectedKey in pairs(gnomereganIds) do
+    local guideMob, mobKey = Catalog.FindMob("classicEra", 90, npcId)
+    assert(mobKey == expectedKey and guideMob and guideMob.rationale:match("%S")
+            and guideMob.cc:match("%S")
+            and #guideMob.liveReason <= Catalog.GetLiveTextLimit(),
+        "missing, mismatched, or incomplete Gnomeregan NPC: " .. npcId)
+end
+assert(Catalog.FindMob("classicEra", 90, 999999) == nil,
+    "unknown Gnomeregan NPC returned guide advice")
+local mutatedGnomeregan = Catalog.GetGuide("gnomeregan", "classicEra")
+mutatedGnomeregan.sections[1].route[1] = "mutated"
+assert(Catalog.GetGuide("gnomeregan", "classicEra").sections[1].route[1] ~= "mutated",
+    "catalog callers could mutate Gnomeregan route guidance")
 assert(Catalog.GetMarker("skull").index == 8 and Catalog.GetMarker("cross").index == 7
-        and Catalog.GetMarker("moon").index == 5 and Catalog.GetMarker("none").index == nil,
+        and Catalog.GetMarker("moon").index == 5 and Catalog.GetMarker("circle").index == 2
+        and Catalog.GetMarker("none").index == nil,
     "semantic marker mapping changed")
 
 guide.name = "mutated"
@@ -41,18 +90,32 @@ guide.mobs.scryer.rationale = "mutated"
 local fresh = Catalog.GetGuide("scarletMonastery", "classicEra")
 assert(fresh.name == "Scarlet Monastery" and fresh.mobs.scryer.rationale ~= "mutated",
     "catalog callers could mutate reviewed strategy data")
-assert(fresh.mobs.mograine.marker == "none",
-    "Mograine's pre-resurrection baseline was not No Mark")
+for _, registeredGuide in ipairs(Catalog.ListGuides("classicEra")) do
+    for mobKey, mobData in pairs(registeredGuide.mobs) do
+        if mobData.boss then
+            assert(mobData.marker == "circle",
+                registeredGuide.key .. " boss did not use Circle: " .. mobKey)
+        end
+    end
+end
+assert(fresh.mobs.whitemane.marker == "circle" and fresh.mobs.mograine.marker == "circle"
+        and fresh.mobs.azshir.marker == "circle",
+    "Scarlet Monastery main, phase, or rare bosses did not use Circle")
 local cathedralRules
 for _, section in ipairs(fresh.sections) do
     if section.key == "cathedral" then cathedralRules = section.rules end
 end
 local hasResurrectionRule = false
 for _, rule in ipairs(cathedralRules or {}) do
-    if rule.guidance:find("Cross Mograine", 1, true) then hasResurrectionRule = true end
+    if rule.title == "Resurrection phase"
+            and rule.guidance:find("focus", 1, true)
+            and not rule.guidance:find("Skull", 1, true)
+            and not rule.guidance:find("Cross", 1, true) then
+        hasResurrectionRule = true
+    end
 end
 assert(hasResurrectionRule,
-    "Mograine did not keep a safe No Mark baseline plus documented post-resurrection Cross rule")
+    "Scarlet Cathedral resurrection guidance retained conflicting boss marker language")
 
 local Policy = ApogeePartyHealthBars_DungeonGuidePolicy
 local flavor, instanceId = "classicEra", 189
@@ -70,6 +133,30 @@ local recommendation = Policy.GetRecommendationForGuid(scryerGuid)
 assert(recommendation.markerKey == "skull" and recommendation.markerIndex == 8
         and recommendation.mobName == "Scarlet Scryer",
     "policy did not resolve the reviewed Scryer recommendation")
+for _, npcId in ipairs({ 3977, 3976, 6490 }) do
+    local bossRecommendation = Policy.GetRecommendationForGuid(
+        "Creature-0-1-189-1-" .. npcId .. "-0000000001")
+    assert(bossRecommendation and bossRecommendation.boss
+            and bossRecommendation.markerKey == "circle"
+            and bossRecommendation.markerIndex == 2,
+        "Scarlet Monastery boss policy did not resolve Circle for NPC " .. npcId)
+end
+instanceId = 90
+local gnomereganRecommendations = {
+    [7849] = { "skull", 8 },
+    [6233] = { "cross", 7 },
+    [6206] = { "moon", 5 },
+    [6225] = { "none", nil },
+    [6215] = { "circle", 2 },
+    [7800] = { "circle", 2 },
+}
+for npcId, expected in pairs(gnomereganRecommendations) do
+    local resolved = Policy.GetRecommendationForGuid(
+        "Creature-0-1-90-1-" .. npcId .. "-0000000001")
+    assert(resolved and resolved.markerKey == expected[1]
+            and resolved.markerIndex == expected[2],
+        "Gnomeregan marker policy drifted for NPC " .. npcId)
+end
 instanceId = 999
 assert(Policy.GetRecommendationForGuid(scryerGuid) == nil, "unsupported instance leaked advice")
 instanceId, flavor = 189, "unsupported"
@@ -93,6 +180,7 @@ assert(point == "CENTER" and relativePoint == "CENTER" and x == 0 and y == 0,
 local UI = ApogeePartyHealthBars_DungeonGuideUI
 local chapter = UI.BuildChapterText(fresh, "library", Catalog)
 assert(chapter:find("MARKER LEGEND", 1, true)
+        and chapter:find("CIRCLE — boss", 1, true)
         and chapter:find("Scarlet Adept", 1, true)
         and chapter:find("Houndmaster Loksey", 1, true)
         and chapter:find("Chaplain plus Diviner", 1, true)
@@ -103,6 +191,15 @@ assert(chapter:find("MARKER LEGEND", 1, true)
     "read-only chapter omitted its legend, entries, rationale, CC, or pack rules")
 assert(not chapter:find("|cffd8b85aLIVE", 1, true),
     "Dungeon Book repeated compact strategy metadata beside the full rationale")
+local gnomereganChapter = UI.BuildChapterText(gnomeregan, "tinkersCourt", Catalog)
+assert(gnomereganChapter:find("ROUTE", 1, true)
+        and gnomereganChapter:find("1.", 1, true)
+        and gnomereganChapter:find("Dark Iron Land Mine", 1, true)
+        and gnomereganChapter:find("Bomb controls", 1, true),
+    "Gnomeregan chapter omitted route, hazards, or encounter rules")
+assert(UI.BuildChapterText(gnomeregan, "missing", Catalog)
+        == "Choose a chapter to read its guide.",
+    "Dungeon Book empty-state terminology was not chapter-generic")
 assert(UI.EstimateTextHeight(string.rep("x", 200) .. "\nshort") >= 60,
     "Book height fallback did not account for wrapped long text")
 for _, section in ipairs(fresh.sections) do
@@ -121,6 +218,14 @@ local invalid = {
     sections = { { key = "one", name = "One", entries = { "one" } } },
 }
 assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted an unsupported marker")
+invalid.mobs.one.marker = "skull"
+invalid.mobs.one.boss = true
+assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted a non-Circle boss marker")
+invalid.mobs.one.marker = "circle"
+invalid.mobs.one.boss = "yes"
+assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted a non-boolean boss flag")
+invalid.mobs.one.boss = nil
+assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted Circle on a non-boss entry")
 invalid.mobs.one.marker = "skull"
 invalid.mobs.one.liveReason = string.rep("x", Catalog.GetLiveTextLimit() + 1)
 assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted oversized live text")
@@ -143,6 +248,11 @@ invalid.mobs.one.abilities = {}
 invalid.mobs.one.rationale = string.rep("x", Catalog.GetBookTextLimits().rationale + 1)
 assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted an oversized Book rationale")
 invalid.mobs.one.rationale = "valid"
+invalid.sections[1].route = { false }
+assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted malformed route guidance")
+invalid.sections[1].route = { string.rep("x", Catalog.GetBookTextLimits().route + 1) }
+assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted oversized route guidance")
+invalid.sections[1].route = { "valid" }
 invalid.instanceIds = { 1, 1 }
 assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted a duplicate instance ID")
 

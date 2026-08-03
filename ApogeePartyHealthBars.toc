@@ -12,6 +12,7 @@ Reminders/CleanseData.lua
 DungeonBoard/DungeonBoardCatalog.lua
 DungeonGuide/DungeonGuideCatalog.lua
 DungeonGuide/ScarletMonasteryGuide.lua
+DungeonGuide/GnomereganGuide.lua
 DungeonGuide/DungeonGuidePolicy.lua
 DungeonBoard/DungeonBoardActivityData.lua
 DungeonBoard/DungeonBoardClassifier.lua

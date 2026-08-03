@@ -5,7 +5,8 @@ ApogeePartyHealthBars_RaidMarkers = {}
 local M = ApogeePartyHealthBars_RaidMarkers
 
 local D
-local SUPPORTED_MARKERS = { [5] = true, [7] = true, [8] = true }
+local SUPPORTED_MARKERS = { [2] = true, [5] = true, [7] = true, [8] = true }
+local COMBAT_MARKERS = { [2] = true, [8] = true }
 
 local function IsSupported()
     return (not ClientCapabilities
@@ -39,7 +40,7 @@ function M.EvaluateCurrentTarget()
     local recommendation = guid and D.Policy.GetRecommendationForGuid(guid) or nil
     local markerIndex = recommendation and recommendation.markerIndex
     if not SUPPORTED_MARKERS[markerIndex] then return nil end
-    if InCombatLockdown and InCombatLockdown() and markerIndex ~= 8 then return nil end
+    if InCombatLockdown and InCombatLockdown() and not COMBAT_MARKERS[markerIndex] then return nil end
     if GetRaidTargetIndex("target") then return nil end
 
     SetRaidTarget("target", markerIndex)

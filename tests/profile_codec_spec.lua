@@ -34,7 +34,8 @@ local profile = {
             enabled = true, hideUIErrors = false,
             buffThanksEnabled = true, buffThanksPoint = "TOP",
             buffThanksRelPoint = "TOP", buffThanksX = 0, buffThanksY = -120,
-            dungeonGuideAutoMarkEnabled = true, dungeonGuidePoint = "TOP",
+            dungeonGuideAutoMarkEnabled = true,
+            dungeonGuidePoint = "TOP",
             dungeonGuideRelPoint = "TOP", dungeonGuideX = 18, dungeonGuideY = -42,
         },
         actions = { shortcuts = { {

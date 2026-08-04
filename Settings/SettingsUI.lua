@@ -345,10 +345,10 @@ function UI.Build(deps)
         summary = "Configure buff and cleansing reminders.",
     })
     RegisterPage({
-        key = "targetEffects", group = "reminders", label = "Target Effects",
+        key = "targetEffects", group = "reminders", label = "Target HUD",
         frame = targetEffectsPage, refresh = DC.Refresh, hint = DC.GetForm().hint, layout = DC.GetForm(),
-        featureKey = "targetEffectReminders",
-        summary = "Show missing or expiring effects on your current target.",
+        featureKey = "targetHud",
+        summary = "Show player health, power, and maintained-effect reminders above your target.",
     })
     RegisterPage({
         key = "threatControl", group = "reminders", label = "Threat Control",

@@ -9,27 +9,46 @@ ApogeePartyHealthBars_ClientCapabilities = {
 
 local enabled = false
 local inCombat = false
-local recommendation
-local applied = {}
-local target = {
-    exists = true,
-    hostile = true,
-    dead = false,
-    guid = "Creature-0-0-0-0-4293-0000000001",
-    marker = nil,
-}
+local applyAllowed = true
+local attempts = {}
+local recommendations = {}
+local targets = {}
+local current
 
-function UnitExists(unit) return unit == "target" and target.exists end
-function UnitCanAttack(source, unit)
-    return source == "player" and unit == "target" and target.hostile
+local function addTarget(guid, markerIndex)
+    local entry = {
+        guid = guid, marker = nil, exists = true, hostile = true, dead = false,
+    }
+    targets[guid] = entry
+    recommendations[guid] = markerIndex and { markerIndex = markerIndex } or nil
+    return entry
 end
-function UnitIsDeadOrGhost(unit) return unit == "target" and target.dead end
-function UnitGUID(unit) return unit == "target" and target.guid or nil end
-function GetRaidTargetIndex(unit) return unit == "target" and target.marker or nil end
+
+local function selectTarget(guid)
+    current = targets[guid]
+    return current
+end
+
+local function setManualMarker(entry, markerIndex)
+    if markerIndex then
+        for _, target in pairs(targets) do
+            if target.marker == markerIndex then target.marker = nil end
+        end
+    end
+    entry.marker = markerIndex
+end
+
+function UnitExists(unit) return unit == "target" and current and current.exists end
+function UnitCanAttack(source, unit)
+    return source == "player" and unit == "target" and current and current.hostile
+end
+function UnitIsDeadOrGhost(unit) return unit == "target" and current and current.dead end
+function UnitGUID(unit) return unit == "target" and current and current.guid or nil end
+function GetRaidTargetIndex(unit) return unit == "target" and current and current.marker or nil end
 function InCombatLockdown() return inCombat end
 function SetRaidTarget(unit, markerIndex)
-    applied[#applied + 1] = { unit, markerIndex, target.guid }
-    target.marker = markerIndex
+    attempts[#attempts + 1] = { unit, markerIndex, current and current.guid }
+    if applyAllowed and current then setManualMarker(current, markerIndex) end
 end
 
 dofile("PartyFrames/RaidMarkers.lua")
@@ -39,82 +58,174 @@ local valid, validationError = pcall(Markers.Initialize, {})
 assert(not valid and tostring(validationError):find("policy and settings", 1, true),
     "automatic raid markers accepted incomplete dependencies")
 
-Markers.Initialize({
-    Policy = { GetRecommendationForGuid = function() return recommendation end },
+local deps = {
+    Policy = { GetRecommendationForGuid = function(guid) return recommendations[guid] end },
     Settings = { GetAutoMarkEnabled = function() return enabled end },
-})
+}
+Markers.Initialize(deps)
 
-local function evaluate(markerIndex)
-    recommendation = markerIndex and { markerIndex = markerIndex } or nil
-    return Markers.EvaluateCurrentTarget()
-end
-
-evaluate(8)
-assert(#applied == 0, "disabled automatic marking changed the target")
+local invalid = addTarget("invalid", 8)
+selectTarget("invalid")
+Markers.EvaluateCurrentTarget()
+assert(#attempts == 0, "disabled automatic marking changed the target")
 
 enabled = true
 ApogeePartyHealthBars_S.sv.enabled = false
-evaluate(8)
-assert(#applied == 0, "automatic marking ignored the add-on enabled state")
+Markers.EvaluateCurrentTarget()
+assert(#attempts == 0, "automatic marking ignored the add-on enabled state")
 ApogeePartyHealthBars_S.sv.enabled = true
 
-target.exists = false
-evaluate(8)
-target.exists = true
-target.hostile = false
-evaluate(8)
-target.hostile = true
-target.dead = true
-evaluate(8)
-target.dead = false
-assert(#applied == 0, "invalid, friendly, or dead targets were marked")
-
-evaluate(nil)
-recommendation = { markerKey = "none", markerIndex = nil }
+invalid.exists = false
 Markers.EvaluateCurrentTarget()
-assert(#applied == 0, "unknown or No Mark recommendations applied a marker")
+invalid.exists = true
+invalid.hostile = false
+Markers.EvaluateCurrentTarget()
+invalid.hostile = true
+invalid.dead = true
+Markers.EvaluateCurrentTarget()
+invalid.dead = false
+assert(#attempts == 0, "invalid, friendly, or dead targets were marked")
 
-for _, markerIndex in ipairs({ 8, 7, 5, 2 }) do
-    target.marker = nil
-    target.guid = target.guid .. tostring(markerIndex)
-    local result = evaluate(markerIndex)
-    assert(result == recommendation
-            and applied[#applied][1] == "target"
-            and applied[#applied][2] == markerIndex,
-        "out-of-combat target did not receive its recommended marker")
-end
-assert(#applied == 4,
-    "rapid target cycling retained assignment state instead of evaluating each target")
+recommendations.invalid = nil
+Markers.EvaluateCurrentTarget()
+recommendations.invalid = { markerKey = "none", markerIndex = nil }
+Markers.EvaluateCurrentTarget()
+recommendations.invalid = { markerIndex = 5 }
+Markers.EvaluateCurrentTarget()
+assert(#attempts == 0, "unknown, Moon, or No Auto Mark recommendations applied a marker")
 
-target.marker = 1
-evaluate(2)
-assert(#applied == 4 and target.marker == 1,
+Markers.Initialize(deps)
+inCombat = true
+local friendlyMarked = addTarget("friendly-marked", 8)
+friendlyMarked.hostile, friendlyMarked.marker = false, 8
+selectTarget(friendlyMarked.guid)
+Markers.OnCombatStarted()
+local afterFriendly = addTarget("after-friendly", 8)
+selectTarget(afterFriendly.guid)
+assert(Markers.EvaluateCurrentTarget() and afterFriendly.marker == 8,
+    "a friendly marked target falsely reserved its icon")
+
+Markers.Initialize(deps)
+local deadMarked = addTarget("dead-marked", 7)
+deadMarked.dead, deadMarked.marker = true, 7
+selectTarget(deadMarked.guid)
+Markers.OnRaidTargetUpdate()
+local afterDead = addTarget("after-dead", 7)
+selectTarget(afterDead.guid)
+assert(Markers.EvaluateCurrentTarget() and afterDead.marker == 7,
+    "a dead marked target falsely reserved its icon")
+
+Markers.Initialize(deps)
+inCombat = false
+local skullA = addTarget("skull-a", 8)
+local skullB = addTarget("skull-b", 8)
+selectTarget(skullA.guid)
+assert(Markers.EvaluateCurrentTarget() == recommendations[skullA.guid]
+        and skullA.marker == 8, "first out-of-combat Skull was not applied")
+selectTarget(skullB.guid)
+assert(Markers.EvaluateCurrentTarget() == recommendations[skullB.guid]
+        and skullA.marker == nil and skullB.marker == 8,
+    "out-of-combat target cycling did not move Skull")
+
+local crossA = addTarget("cross-a", 7)
+local circleA = addTarget("circle-a", 2)
+selectTarget(crossA.guid); Markers.EvaluateCurrentTarget()
+selectTarget(circleA.guid); Markers.EvaluateCurrentTarget()
+assert(crossA.marker == 7 and circleA.marker == 2,
+    "Cross or boss Circle was not applied out of combat")
+
+local alreadyMarked = addTarget("already-marked", 8)
+alreadyMarked.marker = 1
+selectTarget(alreadyMarked.guid)
+local attemptsBeforeExisting = #attempts
+Markers.EvaluateCurrentTarget()
+assert(#attempts == attemptsBeforeExisting and alreadyMarked.marker == 1,
     "an existing target marker was replaced or cleared")
 
 inCombat = true
-target.marker = nil
-evaluate(7)
-evaluate(5)
-assert(#applied == 4, "Cross or Moon was applied during combat")
-local result = evaluate(8)
-assert(result == recommendation and #applied == 5 and target.marker == 8,
-    "Skull was not applied during combat")
-target.marker = nil
-target.guid = target.guid .. "2"
-result = evaluate(2)
-assert(result == recommendation and #applied == 6 and target.marker == 2,
-    "Circle was not applied to a boss during combat")
+selectTarget(circleA.guid)
+Markers.OnCombatStarted()
+local skullC = addTarget("skull-c", 8)
+local crossB = addTarget("cross-b", 7)
+local circleB = addTarget("circle-b", 2)
+for _, entry in ipairs({ skullC, crossB, circleB }) do
+    selectTarget(entry.guid)
+    assert(Markers.EvaluateCurrentTarget() == nil and entry.marker == nil,
+        "combat moved an icon away from its living owner")
+end
+
+Markers.Initialize(deps)
+local manualSkull = addTarget("manual-skull", 8)
+local nextSkull = addTarget("next-skull", 8)
+local combatCross = addTarget("combat-cross", 7)
+local combatCircle = addTarget("combat-circle", 2)
+setManualMarker(manualSkull, 8)
+selectTarget(manualSkull.guid)
+Markers.OnCombatStarted()
+selectTarget(nextSkull.guid)
+assert(Markers.EvaluateCurrentTarget() == nil and nextSkull.marker == nil,
+    "an observed manual Skull was stolen during combat")
+selectTarget(combatCross.guid)
+assert(Markers.EvaluateCurrentTarget() and combatCross.marker == 7,
+    "an unlocked Cross was not assigned during combat")
+selectTarget(combatCircle.guid)
+assert(Markers.EvaluateCurrentTarget() and combatCircle.marker == 2,
+    "an unlocked boss Circle was not assigned during combat")
+combatCircle.dead, combatCircle.marker = true, nil
+local attemptsBeforeCurrentDeath = #attempts
+assert(Markers.OnUnitDied(combatCircle.guid)
+        and #attempts == attemptsBeforeCurrentDeath,
+    "death handling attempted to re-mark the dying current target")
+
+selectTarget(manualSkull.guid)
+setManualMarker(manualSkull, nil)
+Markers.OnRaidTargetUpdate()
+selectTarget(nextSkull.guid)
+assert(Markers.EvaluateCurrentTarget() and nextSkull.marker == 8,
+    "observed manual removal did not release its icon")
+selectTarget(manualSkull.guid)
+assert(Markers.EvaluateCurrentTarget() == nil and manualSkull.marker == nil,
+    "manual removal was not respected for the rest of combat")
+
+local replacementSkull = addTarget("replacement-skull", 8)
+selectTarget(replacementSkull.guid)
+assert(Markers.OnUnitDied(nextSkull.guid) and replacementSkull.marker == 8,
+    "target death did not release and reassign its marker")
+assert(not Markers.OnUnitDied(nil) and not Markers.OnUnitDied("unknown"),
+    "invalid or untracked deaths changed marker ownership")
+
+inCombat = false
+selectTarget(manualSkull.guid)
+assert(Markers.OnCombatEnded() and manualSkull.marker == 8
+        and replacementSkull.marker == nil,
+    "combat end did not clear suppression and restore fluid marking")
+
+Markers.Initialize(deps)
+inCombat = true
+applyAllowed = false
+local failedSkull = addTarget("failed-skull", 8)
+selectTarget(failedSkull.guid)
+assert(Markers.EvaluateCurrentTarget() == nil and failedSkull.marker == nil,
+    "failed raid-marker assignment was reported as successful")
+applyAllowed = true
+local successfulSkull = addTarget("successful-skull", 8)
+selectTarget(successfulSkull.guid)
+assert(Markers.EvaluateCurrentTarget() and successfulSkull.marker == 8,
+    "failed assignment created a false combat ownership lock")
 
 featureSupported = false
-target.marker = nil
-evaluate(8)
-assert(#applied == 6, "unsupported raid-marker APIs were used")
+local unsupported = addTarget("unsupported", 7)
+selectTarget(unsupported.guid)
+local attemptsBeforeUnsupported = #attempts
+Markers.EvaluateCurrentTarget()
+assert(#attempts == attemptsBeforeUnsupported,
+    "unsupported raid-marker APIs were used")
 
 assert(Markers.GetContainer == nil
         and Markers.GetButton == nil
         and Markers.SetRecommendation == nil
         and Markers.GetAssignedGuid == nil
         and Markers.OnCombatLogEvent == nil,
-    "removed marker UI or assignment-tracking APIs were still exposed")
+    "removed marker UI or combat-log assignment APIs were exposed")
 
-print("PASS stateless automatic dungeon marking")
+print("PASS sticky automatic dungeon marking")

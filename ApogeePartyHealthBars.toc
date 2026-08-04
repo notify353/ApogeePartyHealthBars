@@ -13,6 +13,9 @@ DungeonBoard/DungeonBoardCatalog.lua
 DungeonGuide/DungeonGuideCatalog.lua
 DungeonGuide/ScarletMonasteryGuide.lua
 DungeonGuide/GnomereganGuide.lua
+DungeonGuide/StockadesGuide.lua
+DungeonGuide/RazorfenKraulGuide.lua
+DungeonGuide/RazorfenDownsGuide.lua
 DungeonGuide/DungeonGuidePolicy.lua
 DungeonBoard/DungeonBoardActivityData.lua
 DungeonBoard/DungeonBoardClassifier.lua
@@ -48,6 +51,7 @@ Actions/ShortcutItems.lua
 Actions/ActionData.lua
 Actions/EquipmentSets.lua
 PartyFrames/UnitBar.lua
+PartyFrames/PlayerStatusHud.lua
 Actions/ActionMacros.lua
 Actions/ActionSettingsComponents.lua
 Actions/BoundActionLayouts.lua

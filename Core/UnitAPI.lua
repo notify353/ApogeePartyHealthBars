@@ -82,6 +82,18 @@ function U.GetPowerChannels(unitId)
     return channels
 end
 
+function U.GetPowerColor(powerType, powerToken)
+    if powerType == C.MANA_POWER then return unpack(C.MANA_BAR_COLOR) end
+    local standard = PowerBarColor and (PowerBarColor[powerToken] or PowerBarColor[powerType])
+    if standard then
+        return standard.r or standard[1] or 0.7,
+            standard.g or standard[2] or 0.7,
+            standard.b or standard[3] or 0.7, 1
+    end
+    return unpack(C.POWER_BAR_FALLBACK_COLORS[powerToken]
+        or C.POWER_BAR_FALLBACK_COLORS.DEFAULT)
+end
+
 function U.GetDefaultRange(unitId)
     if not U.Exists(unitId) or not UnitInRange then return true end
     local inRange, checkedRange = UnitInRange(unitId)

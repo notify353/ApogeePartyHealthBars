@@ -23,6 +23,11 @@ ApogeePartyHealthBars_TargetNameplateHud = {
     OnNamePlateAdded = function(unit) record("hud-plate+:" .. unit) end,
     OnNamePlateRemoved = function(unit) record("hud-plate-:" .. unit) end,
 }
+ApogeePartyHealthBars_PlayerStatusHud = { Refresh = function() record("status") end }
+ApogeePartyHealthBars_RaidMarkers = {
+    OnRaidTargetUpdate = function() record("raid-update") end,
+    OnUnitDied = function(guid) record("raid-death:" .. tostring(guid)) end,
+}
 ApogeePartyHealthBars_Threat = { Refresh = function() record("threat") end }
 ApogeePartyHealthBars_ThreatObserver = {
     OnNamePlateAdded = function(unit) record("plate+:" .. unit) end,
@@ -91,7 +96,8 @@ for _, event in ipairs({
     assert(optionalHasOwner(event, "Bootstrap"),
         "optional unit event changed registration: " .. event)
 end
-assert(not optionalHasOwner("RAID_TARGET_UPDATE", "RaidMarkers")
+assert(optionalHasOwner("RAID_TARGET_UPDATE", "RaidMarkers")
+        and optionalHasOwner("UNIT_DIED", "RaidMarkers")
         and optionalHasOwner("UNIT_THREAT_SITUATION_UPDATE", "Threat")
         and optionalHasOwner("UNIT_THREAT_LIST_UPDATE", "Threat")
         and optionalHasOwner("NAME_PLATE_UNIT_ADDED", "TargetNameplateHud")
@@ -99,6 +105,12 @@ assert(not optionalHasOwner("RAID_TARGET_UPDATE", "RaidMarkers")
         and optionalHasOwner("NAME_PLATE_UNIT_REMOVED", "TargetNameplateHud")
         and optionalHasOwner("NAME_PLATE_UNIT_REMOVED", "ThreatAwareness"),
     "visual event owners changed")
+
+dispatch("RAID_TARGET_UPDATE")
+dispatch("UNIT_DIED", "Creature-dead")
+expect({ "raid-update", "raid-death:Creature-dead" },
+    "raid-marker ownership events were not routed")
+reset()
 
 dispatch("UNIT_AURA", "party1")
 expect({ "invalidate:party1", "invalidate:target", "shield:party1", "layout" },
@@ -109,6 +121,10 @@ auraNeedsLayout = false
 dispatch("UNIT_ABSORB_AMOUNT_CHANGED", "party1")
 expect({ "invalidate:party1", "invalidate:target", "shield:party1", "values:target" },
     "absorb alias invalidation or values request changed")
+reset()
+dispatch("UNIT_ABSORB_AMOUNT_CHANGED", "player")
+expect({ "invalidate:player", "shield:player", "status", "values:player" },
+    "player absorb change did not refresh the Target HUD")
 
 reset()
 dispatch("UNIT_HEALTH", "party1")
@@ -116,23 +132,30 @@ expect({ "values:nil" }, "health aliases no longer coalesced into an all-row upd
 reset()
 dispatch("UNIT_HEAL_PREDICTION", "other")
 expect({}, "untracked heal prediction triggered an update")
+reset()
+dispatch("UNIT_HEALTH", "player")
+expect({ "status", "values:nil" }, "player health did not refresh the Target HUD")
 
+reset()
 dispatch("UNIT_DISPLAYPOWER", "player")
-expect({ "shortcut:false", "layout" }, "player display-power handling changed")
+expect({ "shortcut:false", "status", "layout" }, "player display-power handling changed")
 reset()
 dispatch("UNIT_DISPLAYPOWER", "party1")
 expect({ "layout" }, "adaptive party display-power handling changed")
 
 reset()
 dispatch("UNIT_MAXPOWER", "player")
-expect({ "shortcut:false", "layout" }, "player max-power layout handling changed")
+expect({ "shortcut:false", "status", "layout" }, "player max-power layout handling changed")
 reset()
 dispatch("UNIT_POWER_UPDATE", "player")
-expect({ "shortcut:false", "values:player" }, "player power update handling changed")
+expect({ "shortcut:false", "status", "values:player" }, "player power update handling changed")
 
 reset()
 dispatch("UNIT_CONNECTION", "party1")
 expect({ "layout" }, "connection changes stopped requesting layout")
+reset()
+dispatch("UNIT_CONNECTION", "player")
+expect({ "status", "layout" }, "player connection did not refresh the Target HUD")
 reset()
 dispatch("UNIT_TARGET", "party1")
 dispatch("UNIT_TARGET", "target")

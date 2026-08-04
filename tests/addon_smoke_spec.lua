@@ -9,7 +9,7 @@ local frames = {}
 local function widget()
     local object = {
         scripts = {}, shown = true, attributes = {}, pointWrites = 0,
-        mutations = 0, mouseEnabled = false, alpha = 1,
+        mutations = 0, mouseEnabled = false, alpha = 1, enabled = true,
     }
     local methods = {
         SetScript = function(self, name, callback) self.scripts[name] = callback end,
@@ -70,7 +70,9 @@ local function widget()
         SetPropagateMouseClicks = function(self, enabled)
             self.propagateMouseClicks = enabled
         end,
-        IsEnabled = function() return true end,
+        IsEnabled = function(self) return self.enabled ~= false end,
+        Enable = function(self) self.enabled = true end,
+        Disable = function(self) self.enabled = false end,
         GetName = function() return nil end,
         SetParent = function(self, parent) self.parent = parent end,
         GetParent = function(self) return self.parent or UIParent end,
@@ -100,7 +102,7 @@ local function widget()
         "SetJustifyV", "SetWidth", "SetHeight", "SetWordWrap", "SetMaxLines",
         "SetVertexColor", "SetScrollChild",
         "SetMultiLine", "SetAutoFocus", "SetTextInsets",
-        "SetFocus", "ClearFocus", "HighlightText", "Enable", "Disable",
+        "SetFocus", "ClearFocus", "HighlightText",
         "SetDesaturated", "SetCooldown", "Clear", "SetDuration", "SetFromAlpha", "SetToAlpha", "SetOrder",
         "Play", "Stop", "StartMoving", "StopMovingOrSizing",
     }
@@ -345,7 +347,11 @@ assert(tocLoadOrder["PartyFrames/AccessoryLayout.lua"]
     and tocLoadOrder["PartyFrames/AccessoryLayout.lua"]
         < tocLoadOrder["Actions/ShortcutBar.lua"]
     and tocLoadOrder["PartyFrames/TargetNameplateHud.lua"]
-        < tocLoadOrder["Reminders/TargetEffects/TargetEffectHud.lua"],
+        < tocLoadOrder["Reminders/TargetEffects/TargetEffectHud.lua"]
+    and tocLoadOrder["Core/UnitAPI.lua"]
+        < tocLoadOrder["PartyFrames/PlayerStatusHud.lua"]
+    and tocLoadOrder["PartyFrames/TargetNameplateHud.lua"]
+        < tocLoadOrder["PartyFrames/PlayerStatusHud.lua"],
     "nameplate or compact accessory consumers loaded before their shared dependency")
 assert(tocLoadOrder["Actions/MouseWheel/MouseWheelLayouts.lua"]
     < tocLoadOrder["Actions/MouseWheel/MouseWheelActions.lua"],
@@ -454,6 +460,19 @@ assert(type(ApogeePartyHealthBars_DungeonBoardUI.Toggle) == "function"
         and type(ApogeePartyHealthBars_DungeonBoardGroupFinder.RequestRefresh) == "function"
         and type(ApogeePartyHealthBars_DungeonBoardFeed.SetUnlocked) == "function",
     "Dungeon Board focused APIs were not loaded")
+assert(tocLoadOrder["DungeonGuide/DungeonGuideCatalog.lua"]
+        < tocLoadOrder["DungeonGuide/ScarletMonasteryGuide.lua"]
+    and tocLoadOrder["DungeonGuide/ScarletMonasteryGuide.lua"]
+        < tocLoadOrder["DungeonGuide/GnomereganGuide.lua"]
+    and tocLoadOrder["DungeonGuide/GnomereganGuide.lua"]
+        < tocLoadOrder["DungeonGuide/StockadesGuide.lua"]
+    and tocLoadOrder["DungeonGuide/StockadesGuide.lua"]
+        < tocLoadOrder["DungeonGuide/RazorfenKraulGuide.lua"]
+    and tocLoadOrder["DungeonGuide/RazorfenKraulGuide.lua"]
+        < tocLoadOrder["DungeonGuide/RazorfenDownsGuide.lua"]
+    and tocLoadOrder["DungeonGuide/RazorfenDownsGuide.lua"]
+        < tocLoadOrder["DungeonGuide/DungeonGuidePolicy.lua"],
+    "Dungeon Guide packs loaded outside their registered policy order")
 assert(type(ApogeePartyHealthBars_DungeonGuideUI.Toggle) == "function"
         and type(ApogeePartyHealthBars_DungeonGuidePolicy.GetRecommendationForGuid) == "function"
         and type(ApogeePartyHealthBars_RaidMarkers.EvaluateCurrentTarget) == "function",
@@ -470,6 +489,11 @@ assert(ApogeePartyHealthBars_EffectsTracker == nil,
     "retired EffectsTracker runtime was still loaded")
 
 local router = ApogeePartyHealthBars_EventRouter
+local playerStatusRow = ApogeePartyHealthBars_PlayerStatusHud.GetAnchor()
+assert(playerStatusRow and playerStatusRow.frameType == "Frame"
+        and playerStatusRow.template == nil and not playerStatusRow.mouseEnabled
+        and playerStatusRow.width == 159,
+    "player health and power did not create a passive lower Target HUD surface")
 local targetEffectRow = ApogeePartyHealthBars_TargetEffectHud.GetAnchor()
 assert(targetEffectRow and targetEffectRow.frameType == "Frame"
         and targetEffectRow.template == nil and not targetEffectRow.mouseEnabled,
@@ -486,7 +510,12 @@ local settingsPreviewRow = ApogeePartyHealthBars_TargetEffectsSettingsPage.GetPr
 assert(settingsPreviewRow and settingsPreviewRow.preview
         and settingsPreviewRow.preview.icons[1]
         and settingsPreviewRow.preview.icons[1].scripts.OnDragStart == nil,
-    "Target Effects settings page did not own its inline sample")
+    "Target HUD settings page did not own its effect sample")
+assert(settingsPreviewRow.statusPreview and settingsPreviewRow.statusPreview.width == 159,
+    "Target HUD settings page did not own its player-status sample")
+assert(settingsPreviewRow.statusPreview.display
+        and settingsPreviewRow.statusPreview.display.healthBar,
+    "Target HUD player-status sample did not expose its health bar")
 local earlyDotRefreshOk, earlyDotRefreshError = pcall(
     ApogeePartyHealthBars_TargetEffectHud.SetSuggestions, {})
 assert(earlyDotRefreshOk,
@@ -851,8 +880,11 @@ assert(ApogeePartyHealthBarsDungeonGuide.body.fontTemplate == "GameFontHighlight
 assert(ApogeePartyHealthBarsDungeonGuide.chapterLabel:GetText() == "CHAPTER",
     "Dungeon Book navigation still described every dungeon section as a wing")
 assert(ApogeePartyHealthBarsDungeonGuide.legend:GetText():find("CIRCLE", 1, true)
-        and ApogeePartyHealthBarsDungeonGuide.legend:GetText():find("Boss", 1, true),
-    "Dungeon Book's live marker legend omitted the universal boss Circle")
+        and ApogeePartyHealthBarsDungeonGuide.legend:GetText():find("NO AUTO MARK", 1, true)
+        and not ApogeePartyHealthBarsDungeonGuide.legend:GetText():find("MOON", 1, true)
+        and ApogeePartyHealthBarsDungeonGuide.subtitle:GetText():find(
+            "kill and boss targets", 1, true),
+    "Dungeon Book's live marker policy was incomplete or retained Moon")
 local originalClientInfo = ApogeePartyHealthBars_ClientCapabilities.GetClientInfo
 ApogeePartyHealthBars_ClientCapabilities.GetClientInfo = function()
     return { flavor = "classicEra", interface = 11509 }
@@ -862,8 +894,14 @@ assert(ApogeePartyHealthBars_DungeonGuideUI.IsShown(), "Dungeon Guide slash comm
 local guideDungeonDropdown, guideSectionDropdown, guideScroll =
     ApogeePartyHealthBars_DungeonGuideUI.GetNavigationControls()
 assert(guideDungeonDropdown.optionButtons[2]
-        and guideDungeonDropdown.optionButtons[2].label:GetText() == "Gnomeregan",
-    "Dungeon Book did not expose Gnomeregan after Scarlet Monastery")
+        and guideDungeonDropdown.optionButtons[2].label:GetText() == "Gnomeregan"
+        and guideDungeonDropdown.optionButtons[3]
+        and guideDungeonDropdown.optionButtons[3].label:GetText() == "The Stockade"
+        and guideDungeonDropdown.optionButtons[4]
+        and guideDungeonDropdown.optionButtons[4].label:GetText() == "Razorfen Kraul"
+        and guideDungeonDropdown.optionButtons[5]
+        and guideDungeonDropdown.optionButtons[5].label:GetText() == "Razorfen Downs",
+    "Dungeon Book did not expose all five strategy packs in registered order")
 guideScroll:SetVerticalScroll(240)
 local armoryChoice = assert(guideSectionDropdown.optionButtons[3],
     "Dungeon Book did not create all four Scarlet Monastery chapter choices")
@@ -941,9 +979,53 @@ assert(table.concat(ApogeePartyHealthBars_SettingsUI.pageOrder, ",")
         == "frames,partyFrameClicks,shortcuts,keyboard,mouseWheel,mouseButtons,"
             .. "healthChat,buffsCleanse,targetEffects,threatControl,dungeon,dungeonGuide,profiles,loadouts,maintenance",
     "settings pages did not retain every configuration workflow")
+assert(ApogeePartyHealthBars_SettingsUI.pages.targetEffects.label == "Target HUD"
+        and ApogeePartyHealthBars_SettingsUI.pages.targetEffects.featureKey == "targetHud"
+        and ApogeePartyHealthBars_SettingsUI.pages.targetEffects.summary
+            == "Show player health, power, and maintained-effect reminders above your target.",
+    "Target HUD settings page retained Target Effects-only navigation copy")
+local targetHudEnabledRow = ApogeePartyHealthBars_TargetEffectsSettingsPage.GetEnabledRow()
+local targetHudDefaultRow = ApogeePartyHealthBars_TargetEffectsSettingsPage.GetDefaultRow()
+local targetEffectRows = ApogeePartyHealthBars_TargetEffectsSettingsPage.GetRows()
+local originalFeatureAvailable = ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable
+local originalFeatureReason = ApogeePartyHealthBars_ClientCapabilities.GetFeatureReason
+ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable = function(featureKey)
+    if featureKey == "targetHud" then return true end
+    if featureKey == "targetEffectReminders" then return false end
+    return originalFeatureAvailable(featureKey)
+end
+ApogeePartyHealthBars_ClientCapabilities.GetFeatureReason = function(featureKey)
+    if featureKey == "targetEffectReminders" then return "Target Effects test dependency is unavailable." end
+    return originalFeatureReason(featureKey)
+end
+ApogeePartyHealthBars_TargetEffectsSettingsPage.Refresh()
+assert(targetHudEnabledRow.check:IsEnabled()
+        and not targetHudDefaultRow.decrease:IsEnabled()
+        and not targetHudDefaultRow.increase:IsEnabled(),
+    "Target HUD master control did not remain usable when effect-only APIs were unavailable")
+for _, row in ipairs(targetEffectRows) do
+    assert(not row.check:IsEnabled() and not row.up:IsEnabled() and not row.down:IsEnabled(),
+        "unsupported Target Effects retained an interactive spell control")
+end
+ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable = originalFeatureAvailable
+ApogeePartyHealthBars_ClientCapabilities.GetFeatureReason = originalFeatureReason
+ApogeePartyHealthBars_TargetEffectsSettingsPage.Refresh()
 assert(ApogeePartyHealthBars_SettingsUI.pages.dungeonGuide.summary
         == "Learn reviewed mob priorities and configure automatic target marking.",
     "Dungeon Guide settings still described the removed live coach")
+local dungeonGuideRows = ApogeePartyHealthBars_DungeonGuideSettingsPage.GetRows()
+local dungeonGuideMasterRow = dungeonGuideRows.autoMark
+ApogeePartyHealthBars_DungeonGuideSettingsPage.Refresh()
+assert(dungeonGuideMasterRow.check:GetChecked()
+        and dungeonGuideRows.autoMarkInCombat == nil,
+    "Dungeon Guide settings retained the retired combat marking option")
+assert(ApogeePartyHealthBars_DungeonGuideSettingsPage.GetForm().explanation:GetText():find(
+        "CC guidance is manual", 1, true)
+        and ApogeePartyHealthBars_DungeonGuideSettingsPage.GetForm().explanation:GetText():find(
+            "each observed mark stays", 1, true)
+        and not ApogeePartyHealthBars_DungeonGuideSettingsPage.GetForm().explanation:GetText():find(
+            "MOON", 1, true),
+    "Dungeon Guide settings did not explain sticky combat marking and manual CC")
 assert(ApogeePartyHealthBars_MacroData == nil
         and ApogeePartyHealthBars_MacroLibrary == nil
         and ApogeePartyHealthBars_MacroLibrarySettingsPage == nil
@@ -977,6 +1059,8 @@ router.Dispatch("GET_ITEM_INFO_RECEIVED", 1251, true)
 assert(ApogeePartyHealthBars_ShortcutBar.GetSlotState(3) == "ready",
     "item events did not restore a restocked Shortcut")
 ApogeePartyHealthBars_SettingsController.SetMode(false)
+assert(ApogeePartyHealthBars_TargetNameplateHud.GetSurface("playerStatus").enabled,
+    "closing Settings did not restore the enabled player-status surface")
 for _, key in ipairs(expectedConfigSurfaceKeys) do
     assert(not configSurfaces.Get(key).chrome.foundation:IsShown(),
         "configuration chrome leaked into normal gameplay: " .. key)
@@ -1019,6 +1103,7 @@ assert(existingShortcutButton.shown and existingShortcutButton.mouseEnabled
 SpellBookFrame:Hide()
 
 ApogeePartyHealthBars_S.configMode = true
+ApogeePartyHealthBars_PlayerStatusHud.RefreshVisibility()
 ApogeePartyHealthBars_SettingsSurfaces.SetConfigurationActive(true)
 ApogeePartyHealthBars_SettingsUI.ActivatePage("macros")
 assert(ApogeePartyHealthBars_S.activeSettingsPageKey == "frames",
@@ -1065,6 +1150,7 @@ for _, key in ipairs({
             "Thank You settings demo did not show multiple helpers and a cleanse")
     end
     assert(not ApogeePartyHealthBars_TargetEffectHud.GetAnchor():IsShown()
+            and not ApogeePartyHealthBars_TargetNameplateHud.GetSurface("playerStatus").enabled
             and ApogeePartyHealthBars_BuffThanks.GetFrame():IsShown()
                 == (key == "buffsCleanse")
             and (key == "buffsCleanse"
@@ -1159,6 +1245,8 @@ assert(ApogeePartyHealthBars_S.sv.dungeonBoardRole == "healer"
     "Dungeon Board should default to Healer with feed alerts and its standard level window")
 assert(ApogeePartyHealthBars_S.sv.dungeonGuideAutoMarkEnabled == true,
     "automatic Dungeon Guide marking should default on")
+assert(ApogeePartyHealthBars_S.sv.dungeonGuideAutoMarkInCombatEnabled == nil,
+    "retired automatic combat-marking preference persisted")
 assert(ApogeePartyHealthBars_S.sv.dungeonGuideCoachEnabled == nil,
     "retired Dungeon Guide coach preference persisted")
 assert(next(ApogeePartyHealthBars_C.SHORTCUT_CLASS_DEFAULTS) == nil,

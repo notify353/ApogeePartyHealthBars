@@ -7,7 +7,7 @@ local selectedGuideKey, selectedSectionKey
 
 local MARKER_COLORS = {
     skull = "|cffffd34e", cross = "|cffff6666",
-    moon = "|cff8fb8ff", circle = "|cffffa040", none = "|cffb8bec9",
+    circle = "|cffffa040", none = "|cffb8bec9",
 }
 local GOLD = "|cffffd34e"
 local MUTED_GOLD = "|cffd8b85a"
@@ -59,8 +59,8 @@ function UI.BuildChapterText(guide, sectionKey, catalog, includeLegend)
     local lines = {}
     if includeLegend ~= false then
         lines[#lines + 1] = "MARKER LEGEND"
-        lines[#lines + 1] = "SKULL — first kill    CROSS — second kill    MOON — crowd control"
-        lines[#lines + 1] = "CIRCLE — boss    NO MARK — mechanics or cleanup"
+        lines[#lines + 1] = "SKULL — automatic first kill    CROSS — automatic second kill"
+        lines[#lines + 1] = "CIRCLE — automatic boss    NO AUTO MARK — manual choice, mechanics, CC, or cleanup"
         lines[#lines + 1] = ""
     end
     lines[#lines + 1] = GOLD .. escape(guide.name .. " — " .. section.name) .. RESET
@@ -194,7 +194,8 @@ function UI.Build(deps)
     title:SetPoint("TOPLEFT", window, "TOPLEFT", 20, -12); title:SetText("Dungeon Guide")
     local subtitle = window:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -2)
-    subtitle:SetText("Read-only strategy — automatic marking follows this guide")
+    subtitle:SetText("Read-only strategy — automatic marks are limited to kill and boss targets")
+    window.subtitle = subtitle
     local close = UIH.CreateButton(window, "Close", 82, 26)
     close:SetPoint("TOPRIGHT", window, "TOPRIGHT", -14, -11)
     close:SetScript("OnClick", function() window:Hide() end)
@@ -213,7 +214,7 @@ function UI.Build(deps)
     sectionDropdown:SetSelectionCallback(selectSection)
     local legend = window:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     legend:SetPoint("LEFT", window, "TOPLEFT", 26, -153)
-    legend:SetText("|cffffd34eSKULL|r  First kill     |cffff6666CROSS|r  Second kill     |cff8fb8ffMOON|r  Crowd control\n|cffffa040CIRCLE|r  Boss     |cffb8bec9NO MARK|r  Mechanics or cleanup")
+    legend:SetText("|cffffd34eSKULL|r  Automatic first kill     |cffff6666CROSS|r  Automatic second kill\n|cffffa040CIRCLE|r  Automatic boss     |cffb8bec9NO AUTO MARK|r  Manual choice, mechanics, CC, or cleanup")
     window.legend = legend
     scroll = CreateFrame("ScrollFrame", nil, window, "UIPanelScrollFrameTemplate")
     scroll:SetPoint("TOPLEFT", window, "TOPLEFT", 28, -190)

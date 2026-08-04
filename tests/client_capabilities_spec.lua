@@ -106,11 +106,15 @@ assert(capabilities.IsFeatureAvailable("formLayouts"),
 SetRaidTarget = noop
 GetRaidTargetIndex = noop
 assert(capabilities.IsFeatureAvailable("raidMarkers")
-        and not capabilities.Has("nameplates"),
+        and not capabilities.Has("nameplates")
+        and not capabilities.IsFeatureAvailable("targetHud"),
     "automatic raid marking still required nameplates")
 C_NamePlate = { GetNamePlateForUnit = noop }
-assert(capabilities.Has("nameplates") and capabilities.IsFeatureAvailable("raidMarkers"),
-    "nameplate and raid-marker capabilities were not detected independently")
+assert(capabilities.Has("nameplates")
+        and capabilities.IsFeatureAvailable("targetHud")
+        and capabilities.IsFeatureAvailable("raidMarkers")
+        and not capabilities.IsFeatureAvailable("targetEffectReminders"),
+    "basic Target HUD, Target Effects, and raid-marker capabilities were not independent")
 
 assert(not capabilities.IsFeatureAvailable("profileSharing"),
     "missing profile codec APIs were accepted")

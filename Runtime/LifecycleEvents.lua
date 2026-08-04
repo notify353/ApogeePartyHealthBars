@@ -117,6 +117,7 @@ function L.Register(eventRouter, deps)
 
             elseif event == "PLAYER_REGEN_DISABLED" then
                 RunStep("Combat UI fading", U.OnCombatStart)
+                RunStep("Automatic raid marking", M.OnCombatStarted)
                 RunStep("Mouse Wheel", W.OnCombatStarted)
                 RunStep("Keyboard", K.OnCombatStarted)
                 RunStep("Mouse Buttons", B.OnCombatStarted)
@@ -128,6 +129,7 @@ function L.Register(eventRouter, deps)
 
             elseif event == "PLAYER_REGEN_ENABLED" then
                 RunStep("Combat UI fading", U.OnCombatEnd)
+                RunStep("Automatic raid marking", M.OnCombatEnded)
                 RunStep("Secure frames", F.FlushDeferredUpdates)
                 RunStep("Shortcuts", T.RefreshSecureActions)
                 RunStep("Mouse Wheel", W.OnCombatEnded)

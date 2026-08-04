@@ -47,12 +47,12 @@ mob("beastmaster", 4288, "Scarlet Beastmaster", "cross", 40, "hound handler; kil
     "Removing the handler after the primary caster stabilizes hound packs.", { "Commands hounds", "Melee attacks" }, "Kill second and keep hounds controlled.", "Humanoid", "Normal humanoid control works.")
 mob("monk", 4540, "Scarlet Monk", "cross", 50, "dangerous melee; control or kill second",
     "Its melee pressure deserves the second marker after healers and casters.", { "Fast melee attacks" }, "Stun, disarm, kite, or kill after Skull.", "Humanoid", "Polymorph, Sap, Fear, roots, and stuns work.")
-mob("trackingHound", 4304, "Scarlet Tracking Hound", "moon", 60, "control one extra hound",
-    "Moon removes one body from a hound-heavy pull while the group kills the handler.", { "Fast beast melee" }, "Control one when the pack is large; otherwise tank and cleave.", "Beast", "Hibernate, Scare Beast, roots, and slows work.", { "Do not Moon a lone hound or a pack the group can safely cleave." })
+mob("trackingHound", 4304, "Scarlet Tracking Hound", "none", 60, "control one extra hound",
+    "Controlling one body reduces a hound-heavy pull while the group kills the handler.", { "Fast beast melee" }, "Control one when the pack is large; otherwise tank and cleave.", "Beast", "Hibernate, Scare Beast, roots, and slows work.", { "Do not control a lone hound or a pack the group can safely cleave." })
 mob("gallant", 4287, "Scarlet Gallant", "none", 70, "cleanup melee",
     "It is a routine melee target behind healers, casters, handlers, and Monks.", { "Melee attacks" }, "Tank normally and kill late.", "Humanoid", "Normal humanoid control works.")
 mob("loksey", 3974, "Houndmaster Loksey", "circle", 80, "boss; control and kill hounds first",
-    "Circle identifies Loksey while controlling his three elite hounds remains the encounter's key target decision.", { "Three Tracking Hounds", "Battle Shout", "Low-health Bloodlust" }, "Moon one hound if needed, kill the uncontrolled hounds, then finish Loksey.", "Humanoid", "Control hounds with beast CC; boss control is unreliable.", { "Skull the first uncontrolled hound when the group needs an explicit focus." }, true)
+    "Circle identifies Loksey while controlling his three elite hounds remains the encounter's key target decision.", { "Three Tracking Hounds", "Battle Shout", "Low-health Bloodlust" }, "Control one hound if needed, kill the uncontrolled hounds, then finish Loksey.", "Humanoid", "Control hounds with beast CC; boss control is unreliable.", { "Skull the first uncontrolled hound when the group needs an explicit focus." }, true)
 mob("doan", 6487, "Arcanist Doan", "circle", 90, "boss caster; interrupt, then retreat for blast",
     "This single-target fight is governed by cast response and positioning.", { "Silence", "Arcane Explosion", "Detonation" }, "Interrupt when possible and retreat for his large explosion.", "Humanoid", "Boss control is unreliable; use interrupts.", {}, true)
 
@@ -84,7 +84,7 @@ mob("abbot", 4303, "Scarlet Abbot", "skull", 10, "healer; interrupt and kill fir
 mob("wizard", 4300, "Scarlet Wizard", "skull", 20, "dangerous caster; interrupt",
     "Its ranged magic is a primary threat when no Abbot is active.", { "Ranged magic" }, "Interrupt or line-of-sight and focus early.", "Humanoid", "Normal humanoid control works.")
 mob("sorcerer", 4294, "Scarlet Sorcerer", "cross", 40, "caster; control or kill second",
-    "It is the next caster threat after the primary Skull target.", { "Ranged magic" }, "Interrupt and kill second, or Moon when the pull has another priority caster.", "Humanoid", "Polymorph, Sap, Fear, silence, and stuns work.")
+    "It is the next caster threat after the primary Skull target.", { "Ranged magic" }, "Interrupt and kill second, or assign control when the pull has another priority caster.", "Humanoid", "Polymorph, Sap, Fear, silence, and stuns work.")
 mob("champion", 4302, "Scarlet Champion", "cross", 50, "dangerous melee; face away",
     "Its melee pressure deserves the second marker after healers and casters.", { "Heavy melee attacks" }, "Face away, mitigate, and kill second.", "Humanoid", "Disarm and normal humanoid control work.")
 mob("centurion", 4301, "Scarlet Centurion", "cross", 60, "dangerous melee; kill second",
@@ -105,15 +105,15 @@ Catalog.RegisterGuide({
             { title = "Rare bosses", guidance = "Circle identifies each Graveyard rare; treat the encounter as a single-target mechanics check rather than a kill-order problem." },
         } },
         { key = "library", name = "Library", entries = { "adept", "diviner", "chaplain", "beastmaster", "monk", "trackingHound", "gallant", "loksey", "doan" }, rules = {
-            { title = "Chaplain plus Diviner", guidance = "Skull and interrupt the Chaplain first, then make the Diviner the next focus. Moon either caster only when reliable CC is safer than a fast kill." },
-            { title = "Loksey's hounds", guidance = "Moon one Tracking Hound when needed, establish threat on the others, kill the uncontrolled hounds, then finish Loksey. Skip Moon when the group can safely cleave." },
+            { title = "Chaplain plus Diviner", guidance = "Skull and interrupt the Chaplain first, then make the Diviner the next focus. Control either caster only when reliable CC is safer than a fast kill." },
+            { title = "Loksey's hounds", guidance = "Control one Tracking Hound when needed, establish threat on the others, kill the uncontrolled hounds, then finish Loksey. Skip control when the group can safely cleave." },
         } },
         { key = "armory", name = "Armory", entries = { "protector", "evoker", "conjuror", "myrmidon", "defender", "guardsman", "soldier", "fireElemental", "trainee", "herod" }, rules = {
             { title = "Caster pull", guidance = "Line-of-sight Evokers and Conjurors. Keep elemental pets on the tank while the group removes their owner." },
             { title = "Runner exception", guidance = "A fleeing humanoid near another pack becomes the immediate control target even when its baseline entry says cleanup." },
         } },
         { key = "cathedral", name = "Cathedral", entries = { "abbot", "wizard", "chaplain", "sorcerer", "myrmidon", "champion", "monk", "defender", "centurion", "whitemane", "mograine", "fairbanks" }, rules = {
-            { title = "Extra healer or caster", guidance = "Moon an additional Abbot, Chaplain, Wizard, or Sorcerer when the pull contains more priority casters than the group can interrupt." },
+            { title = "Extra healer or caster", guidance = "Assign crowd control to an additional Abbot, Chaplain, Wizard, or Sorcerer when the pull contains more priority casters than the group can interrupt." },
             { title = "Chapel safety", guidance = "Clear the chapel before engaging Mograine; the resurrection encounter can otherwise chain nearby Scarlet packs." },
             { title = "Resurrection phase", guidance = "After Whitemane resurrects Mograine, focus and interrupt Whitemane's healing while the tank faces Mograine away." },
         } },

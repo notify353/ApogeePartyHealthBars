@@ -232,6 +232,10 @@ local FEATURES = {
         label = "Dungeon Board official listings",
         requires = { "groupFinderListings" },
     },
+    targetHud = {
+        label = "Target HUD",
+        requires = { "nameplates" },
+    },
     targetEffectReminders = {
         label = "Target Effects reminders",
         requires = { "nameplates", "harmfulAuras", "spellbook", "dotActionState" },

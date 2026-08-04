@@ -12,9 +12,8 @@ local ROUTE_TEXT_LIMIT = 180
 local MARKERS = {
     skull = { key = "skull", label = "SKULL", index = 8 },
     cross = { key = "cross", label = "CROSS", index = 7 },
-    moon = { key = "moon", label = "MOON", index = 5 },
     circle = { key = "circle", label = "CIRCLE", index = 2 },
-    none = { key = "none", label = "NO MARK" },
+    none = { key = "none", label = "NO AUTO MARK" },
 }
 local guides, guideOrder, instanceIndex = {}, {}, {}
 local SUPPORTED_FLAVORS = { classicEra = true, tbcAnniversary = true }

@@ -31,13 +31,13 @@ mob("caverndeepReaver", 6211, "Caverndeep Reaver", "cross", 30,
     { "Heavy melee attacks" },
     "Face it away, mitigate its attacks, and kill it after the primary threat.",
     "Humanoid", "Normal humanoid control works; disarm, stun, root, or fear it when the pull is crowded.")
-mob("caverndeepBurrower", 6206, "Caverndeep Burrower", "moon", 40,
+mob("caverndeepBurrower", 6206, "Caverndeep Burrower", "none", 40,
     "control one extra elite trogg",
-    "Moon removes one elite body from the large trogg pulls that make the opening route difficult to stabilize.",
+    "Controlling one elite body can make the large trogg pulls easier to stabilize.",
     { "Trogg melee attacks" },
     "Control one when several elites arrive together; otherwise tank it behind the marked kill targets.",
     "Humanoid", "Polymorph, Sap, Fear, roots, and stuns work.",
-    { "Do not Moon the only active trogg or break reliable control with area damage." })
+    { "Do not control the only active trogg or break reliable control with area damage." })
 mob("irradiatedHorror", 6220, "Irradiated Horror", "cross", 50,
     "durable elemental; kill after Skull",
     "Its sustained elemental pressure is more important than the slimes around it but lacks an urgent cast to stop.",
@@ -82,9 +82,9 @@ mob("leprousTechnician", 6222, "Leprous Technician", "skull", 20,
     { "Ranged wrench attacks" },
     "Line-of-sight or close the distance, interrupt movement with control, and kill first.",
     "Humanoid", "Polymorph, Sap, Fear, roots, and stuns work.")
-mob("leprousDefender", 6223, "Leprous Defender", "moon", 30,
+mob("leprousDefender", 6223, "Leprous Defender", "none", 30,
     "control one extra defender",
-    "Moon reduces an elite-heavy Launch Bay pull while the group removes its alarm or ranged attacker.",
+    "Controlling one defender reduces an elite-heavy pull while the group removes its alarm or ranged attacker.",
     { "Defensive melee attacks" },
     "Control one when a pack has multiple elites; otherwise tank it behind Skull and Cross.",
     "Humanoid", "Polymorph, Sap, Fear, roots, disarm, and stuns work.")

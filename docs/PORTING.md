@@ -57,7 +57,8 @@ core purpose. The following families are optional and degrade independently:
 - party range: range fading
 - incoming heals: incoming-heal overlay
 - threat: threat indicators and current-target margin
-- target nameplates: the shared Target Effects and raid-marker attachment
+- target nameplates: the shared Target HUD attachment and basic player-status surface
+- harmful auras, Spellbook, and action state: Target Effects reminders
 - raid markers: target marker controls
 - Spellbook and items: new action assignment from those sources
 - physical bindings: Keys, Wheel, and Buttons

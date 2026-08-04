@@ -35,42 +35,42 @@ C_NamePlate = { GetNamePlateForUnit = function(unit) return plates[unit] end }
 
 dofile("PartyFrames/TargetNameplateHud.lua")
 local hud = ApogeePartyHealthBars_TargetNameplateHud
-local markers, effects = widget(UIParent), widget(UIParent)
-markers:SetSize(156, 48)
+local status, effects = widget(UIParent), widget(UIParent)
+status:SetSize(159, 22)
 effects:SetSize(159, 24)
-hud.RegisterSurface("raidMarkers", markers, 1, 0)
+hud.RegisterSurface("playerStatus", status, 1, 0)
 hud.RegisterSurface("targetEffects", effects, 2, 4)
 
 local root = hud.GetContainer()
-assert(root and not root.shown and markers.parent == root and effects.parent == root,
+assert(root and not root.shown and status.parent == root and effects.parent == root,
     "registered surfaces did not share one hidden nameplate root")
 
-hud.SetSurfaceEnabled("raidMarkers", true)
+hud.SetSurfaceEnabled("playerStatus", true)
 assert(not root.shown and hud.GetBoundUnit() == nil,
     "enabled surface appeared before the matching nameplate was observed")
 hud.OnNamePlateAdded("nameplate1")
 assert(root.shown and root.parent == plates.nameplate1
         and hud.GetBoundUnit() == "nameplate1" and hud.GetBoundGuid() == "Creature-1"
-        and root.width == 156 and root.height == 48
-        and markers.points[1][1] == "BOTTOM" and markers.points[1][5] == 0
+        and root.width == 159 and root.height == 22
+        and status.points[1][1] == "BOTTOM" and status.points[1][5] == 0
         and root.points[1][1] == "BOTTOM" and root.points[1][3] == "TOP"
-        and root.points[1][5] == 2 and root.frameLevel == 27,
-    "marker-only surface did not attach with the expected nameplate geometry")
+        and root.points[1][5] == 6 and root.frameLevel == 27,
+    "status-only surface did not attach with the expected nameplate geometry")
 
 hud.SetSurfaceEnabled("targetEffects", true)
-assert(root.width == 159 and root.height == 76
-        and markers.points[1][5] == 0 and effects.points[1][5] == 52
-        and markers.shown and effects.shown,
-    "Target Effects did not stack 4px above the 48px marker row")
+assert(root.width == 159 and root.height == 50
+        and status.points[1][5] == 0 and effects.points[1][5] == 26
+        and status.shown and effects.shown,
+    "Target Effects did not stack 4px above player health and power")
 
-hud.SetSurfaceEnabled("raidMarkers", false)
+hud.SetSurfaceEnabled("playerStatus", false)
 assert(root.shown and root.width == 159 and root.height == 24
-        and effects.points[1][5] == 0 and not markers.shown,
-    "Target Effects did not collapse against the nameplate when markers were absent")
+        and effects.points[1][5] == 0 and not status.shown,
+    "Target Effects did not collapse against the nameplate when player status was absent")
 hud.SetSurfaceEnabled("targetEffects", false)
 assert(not root.shown and hud.GetBoundUnit() == nil,
     "empty nameplate HUD retained a stale attachment")
-hud.SetSurfaceEnabled("raidMarkers", true)
+hud.SetSurfaceEnabled("playerStatus", true)
 assert(root.shown and hud.GetBoundUnit() == "nameplate1",
     "re-enabling a surface did not reacquire the observed target nameplate")
 ApogeePartyHealthBars_S.sv.enabled = false

@@ -14,7 +14,8 @@ end
 function P.Refresh()
     if not page then return end
     refreshing = true
-    setChecked(enabledRow.check, D.DungeonGuideSettings.GetAutoMarkEnabled())
+    local enabled = D.DungeonGuideSettings.GetAutoMarkEnabled()
+    setChecked(enabledRow.check, enabled)
     refreshing = false
 end
 
@@ -36,6 +37,7 @@ function P.Create(parent, deps)
         if refreshing then return end
         local enabled = self:GetChecked() == true
         D.DungeonGuideSettings.SetAutoMarkEnabled(enabled)
+        P.Refresh()
         if enabled then D.RaidMarkers.EvaluateCurrentTarget() end
     end)
     openRow = UIH.CreateFormRow(form.content, form.rowWidth, 44)
@@ -50,12 +52,17 @@ function P.Create(parent, deps)
     local text = legend:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     text:SetPoint("TOPLEFT", legend, "TOPLEFT", 8, -8); text:SetPoint("RIGHT", legend, "RIGHT", -8, 0)
     text:SetJustifyH("LEFT"); text:SetJustifyV("TOP")
-    text:SetText("Out of combat: applies SKULL, CROSS, or MOON when you target a cataloged mob.\nIn combat: applies SKULL only.\n\nExisting marks are preserved. The add-on never targets mobs or casts abilities.")
+    text:SetText("Out of combat: SKULL, CROSS, and boss CIRCLE may move as you change targets.\nIn combat: each observed mark stays with its living target until removed.\n\nCC guidance is manual. Existing marks are preserved; the add-on never targets mobs or casts abilities.")
+    form.explanation = text
     UIH.LayoutForm(form, {
-        { frame = enabledRow, height = 38 }, { frame = openRow, height = 44 },
+        { frame = enabledRow, height = 38 },
+        { frame = openRow, height = 44 },
         { frame = resetRow, height = 44 }, { frame = legend, height = 94, gap = 8 },
     })
     P.Refresh()
     return page
+end
+function P.GetRows()
+    return { autoMark = enabledRow }
 end
 function P.GetForm() return form end

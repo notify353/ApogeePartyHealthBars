@@ -12,6 +12,7 @@ function C.Exit()
     if not S.configMode then return end
     S.configMode = false
     if D.TargetEffectHud then D.TargetEffectHud.RefreshVisibility() end
+    if D.PlayerStatusHud then D.PlayerStatusHud.RefreshVisibility() end
     if D.DungeonBoardFeed then D.DungeonBoardFeed.SetUnlocked(false) end
     if D.CleanseWatch then D.CleanseWatch.SetUnlocked(false) end
     if D.BuffThanks then D.BuffThanks.SetUnlocked(false) end
@@ -52,6 +53,7 @@ function C.SetAddonEnabled(enabled)
         D.panel:Hide()
         D.HideAllSecureOverlays()
         if D.TargetEffectHud then D.TargetEffectHud.Hide() end
+        if D.PlayerStatusHud then D.PlayerStatusHud.Hide() end
         if D.ThreatAwareness then D.ThreatAwareness.Hide() end
         if D.BuffThanks then D.BuffThanks.Hide() end
         C.Exit()
@@ -150,6 +152,7 @@ function C.SetMode(active)
     if active then
         S.configMode = true
         if D.TargetEffectHud then D.TargetEffectHud.RefreshVisibility() end
+        if D.PlayerStatusHud then D.PlayerStatusHud.RefreshVisibility() end
         S.activeSettingsPageKey = S.activeSettingsPageKey or "frames"
         D.panel:EnableMouse(true)
         D.panel:RegisterForDrag("LeftButton")

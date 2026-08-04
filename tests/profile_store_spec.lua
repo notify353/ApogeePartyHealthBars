@@ -212,6 +212,7 @@ local imported = {
         showAllSlots = true,
         hideUIErrors = false,
         dungeonBoardFeedEnabled = false,
+        dungeonGuideAutoMarkInCombatEnabled = true,
     }, actions = { shortcuts = {
         {
             kind = "spell", spellName = "Prayer of Healing",
@@ -223,6 +224,7 @@ local shared = assert(store.AddImported(imported))
 assert(shared.author == "Author - Realm" and shared.payload.settings.showAllSlots
         and shared.payload.settings.hideUIErrors == false
         and shared.payload.settings.dungeonBoardFeedEnabled == false
+        and shared.payload.settings.dungeonGuideAutoMarkInCombatEnabled == nil
         and shared.payload.actions.shortcuts[1].macroText
             == "/cast [mod:shift] Prayer of Healing",
     "imported metadata or payload was not preserved")
@@ -236,6 +238,7 @@ assert(active.payload.settings.x == 42 and active.payload.settings.showAllSlots
     "profile merge did not preserve absent values or replace ordered actions")
 assert(store.ReplaceImported(active.id, imported), "profile replace failed")
 assert(active.author == "Author - Realm" and active.payload.settings.x == nil
+        and active.payload.settings.dungeonGuideAutoMarkInCombatEnabled == nil
         and active.payload.actions.shortcuts[1].macroText
             == "/cast [mod:shift] Prayer of Healing",
     "profile replace retained old portable values or lost imported author")
@@ -244,6 +247,7 @@ active.payload.actions.keyboardActions.ownership = { bad = true }
 active.payload.actions.keyboardActions.enabled = true
 active.payload.actions.mouseButtonActions.ownership = { bad = true }
 active.payload.actions.mouseButtonActions.bindingVersion = 1
+active.payload.settings.dungeonGuideAutoMarkInCombatEnabled = true
 local exported = store.Exportable(active.id)
 assert(exported.payload.actions.keyboardActions.ownership == nil
     and exported.payload.actions.keyboardActions.enabled == nil,
@@ -256,6 +260,8 @@ assert(exported.payload.actions.shortcuts[1].macroText
     "profile export changed custom macro text")
 assert(exported.payload.settings.hideUIErrors == false,
     "profile export removed the UI error suppression preference")
+assert(exported.payload.settings.dungeonGuideAutoMarkInCombatEnabled == nil,
+    "profile export retained the retired combat-marking preference")
 
 local secondCharacter = { shortcuts = { { kind = "spell", spellName = "Smite" } } }
 local second = store.Initialize(account, secondCharacter, "PRIEST", "Alt - Realm")
@@ -314,6 +320,7 @@ local sanitized = store.NormalizePayload({ settings = {
     dungeonBoardFeedPoint = "TOP", dungeonBoardFeedRelPoint = "TOP",
     dungeonBoardFeedX = 18, dungeonBoardFeedY = -36,
     dungeonGuideAutoMarkEnabled = true,
+    dungeonGuideAutoMarkInCombatEnabled = true,
     dungeonGuidePoint = "TOP", dungeonGuideRelPoint = "TOP",
     dungeonGuideX = 24, dungeonGuideY = -48,
     buffThanksEnabled = false, buffThanksPoint = "TOP", buffThanksRelPoint = "TOP",
@@ -347,11 +354,17 @@ assert(sanitized.settings.buffThanksEnabled == false
         and sanitized.settings.buffThanksY == -140,
     "Buff Thanks profile preferences did not survive normalization")
 assert(sanitized.settings.dungeonGuideAutoMarkEnabled == true
+        and sanitized.settings.dungeonGuideAutoMarkInCombatEnabled == nil
         and sanitized.settings.dungeonGuidePoint == "TOP"
         and sanitized.settings.dungeonGuideRelPoint == "TOP"
         and sanitized.settings.dungeonGuideX == 24
         and sanitized.settings.dungeonGuideY == -48,
     "Dungeon Guide profile preferences did not survive normalization")
+local retiredCombatMarking = store.NormalizePayload({
+    settings = { dungeonGuideAutoMarkInCombatEnabled = true }, actions = {},
+})
+assert(retiredCombatMarking.settings.dungeonGuideAutoMarkInCombatEnabled == nil,
+    "retired Dungeon Guide combat-marking preference survived normalization")
 
 local legacyAccount = { schemaVersion = 1, profileStore = {
     schemaVersion = 1,

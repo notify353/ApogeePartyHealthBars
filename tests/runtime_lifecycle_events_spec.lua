@@ -49,6 +49,8 @@ ApogeePartyHealthBars_ConsumableBar = {
 }
 ApogeePartyHealthBars_RaidMarkers = {
     EvaluateCurrentTarget = function() record("raid-auto") end,
+    OnCombatStarted = function() record("raid-combat-start") end,
+    OnCombatEnded = function() record("raid-combat-end") end,
 }
 ApogeePartyHealthBars_TargetNameplateHud = {
     OnTargetChanged = function() record("nameplate-target") end,
@@ -169,14 +171,14 @@ reset()
 ApogeePartyHealthBars_S.configMode = true
 dispatch("PLAYER_REGEN_DISABLED")
 expect({
-    "fader-combat-start", "wheel-combat-start", "keys-combat-start", "buttons-combat-start",
+    "fader-combat-start", "raid-combat-start", "wheel-combat-start", "keys-combat-start", "buttons-combat-start",
     "print:config closed - combat started.", "config-mode:false", "force-refresh",
 }, "combat-entry order changed")
 
 reset()
 dispatch("PLAYER_REGEN_ENABLED")
 expect({
-    "fader-combat-end", "secure-flush", "shortcut-secure", "wheel-combat-end",
+    "fader-combat-end", "raid-combat-end", "secure-flush", "shortcut-secure", "wheel-combat-end",
     "keys-combat-end", "buttons-combat-end", "consumable-combat-end",
     "bindings-reconcile", "threat", "force-refresh",
 }, "combat-exit order changed")

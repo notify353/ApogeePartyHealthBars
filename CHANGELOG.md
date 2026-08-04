@@ -8,15 +8,26 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
+- Added a comprehensive Razorfen Downs Dungeon Book with the three-ring gong event, Belnistrasz and Plaguemaw defense, Bone Pile and spiral routing, all regular, rare, quest, and Scourge Invasion bosses, and automatic target marking.
+- Added a compact Target HUD beneath Target Effects on the current hostile target's visible nameplate, with player health, absorb shields, incoming-heal prediction, mana, and active resources; it remains visible when no effect reminder is due and follows the shared Target HUD setting.
+- Added a comprehensive Razorfen Kraul Dungeon Book with the Roogug detour, Willix escort and backtracking, high-ledge and bridge routing, priority totems and casters, all bosses and rares, Agathelos's ward, and automatic target marking.
+- Added a complete Stockades Dungeon Book with a west-first full-clear route, all five Defias trash families, six bosses, variable cell spawns, fleeing-enemy and fear safety, and automatic target marking.
 - Added a comprehensive Gnomeregan Dungeon Book with four route chapters, meaningful trash and boss guidance, alarm/mine/bomb priorities, mechanical-enemy CC cautions, front- and backdoor navigation, and automatic target marking.
 - Added a scalable read-only Dungeon Guide domain with a validated Scarlet Monastery strategy pack covering all four wings, their trash, bosses, Graveyard rares, CC guidance, exceptions, and encounter rules. Open its movable Dungeon Book with `/aphb guide` or Dungeon → Dungeon Guide.
-- Added default-on automatic Dungeon Guide marking: targeting a cataloged hostile applies Skull, Cross, Moon, or universal boss Circle out of combat and Skull or boss Circle during combat, while preserving any marker already on the target.
+- Added default-on automatic Dungeon Guide marking: targeting a cataloged hostile applies Skull, Cross, or universal boss Circle while preserving any marker already on the target.
 - Styled the Dungeon Book as a fully opaque, high-contrast reading window with distinct navigation, marker legend, and strategy sections plus larger structured mob guidance.
 - Reduced Dungeon Book repetition to a concise reusable entry standard: Why, Plan, combined Watch/CC, and conditional If; compact strategy summaries are not repeated in Book chapters.
 
 ### Changed
 
-- Removed the Dungeon Guide coaching text, recommendation glow, and Moon/Cross/Skull nameplate buttons in favor of stateless target-driven marking that does not require visible nameplates or track packs.
+- Kept Dungeon Guide crowd-control choices manual: former Moon entries now show No Auto Mark and explain optional control in strategy text instead of assigning a CC icon.
+- Made automatic raid markers fluid while changing targets out of combat and sticky during combat: observed Skull, Cross, and Circle owners retain their icons until death or observed manual removal.
+- Removed the Dungeon Guide coaching text, recommendation glow, and Moon/Cross/Skull nameplate buttons in favor of current-target-driven marking that does not require visible nameplates or scan packs.
+
+### Fixed
+
+- Kept the Target HUD's basic player health and power visible when Target Effects APIs are unavailable, while disabling only the effect-specific settings.
+- Raised the Target HUD slightly above hostile nameplates so its player health and power bars do not touch Blizzard's target-debuff icons.
 
 ## [0.47.0] - 2026-08-02
 

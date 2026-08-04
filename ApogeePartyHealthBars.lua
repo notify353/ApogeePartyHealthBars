@@ -28,6 +28,7 @@ local hotTracker = ApogeePartyHealthBars_HotTracker
 local unitTopology = ApogeePartyHealthBars_UnitTopology
 local unitAPI = ApogeePartyHealthBars_UnitAPI
 local unitBar = ApogeePartyHealthBars_UnitBar
+local playerStatusHud = ApogeePartyHealthBars_PlayerStatusHud
 local playerUtility = ApogeePartyHealthBars_PlayerUtility
 
 local panel, configUI, minimapController, dungeonBoardUI, dungeonGuideUI
@@ -228,6 +229,9 @@ incomingHeals.Initialize({
 })
 local UpdateIncomingHealBarVisual = incomingHeals.UpdateBarVisual
 local UpdateRowIncomingHealVisual = incomingHeals.UpdateRowVisual
+local IsIncomingHealEnabled = incomingHeals.IsEnabled
+local ShouldTrackIncomingUnit = incomingHeals.ShouldTrackUnit
+local GetIncomingHealAmount = incomingHeals.GetAmount
 
 local function IsUnitInPrimaryActionRange(unitId)
     if not IsEffectiveFeatureEnabled("rangeCheckEnabled") or S.configMode then return true end
@@ -267,6 +271,14 @@ unitBar.Initialize({
     UpdateHotVisuals = UpdateRowHotVisuals,
     RequestLayoutUpdate = S.RequestLayoutUpdate,
 })
+playerStatusHud.Initialize({
+    IsShieldEnabled = IsShieldEnabled,
+    ShouldTrackShieldUnit = ShouldTrackShieldUnit,
+    GetShieldRemaining = GetUnitShieldRemaining,
+    IsIncomingHealEnabled = IsIncomingHealEnabled,
+    ShouldTrackIncomingUnit = ShouldTrackIncomingUnit,
+    GetIncomingAmount = GetIncomingHealAmount,
+})
 
 -- =============================================================================
 
@@ -293,7 +305,10 @@ local function RunValuesOnlyUpdate()
         return true
     end
     A.BeginAuraCacheGeneration()
-    local ok, err = pcall(UpdateRowValues)
+    local ok, err = pcall(function()
+        playerStatusHud.Refresh()
+        UpdateRowValues()
+    end)
     if not ok then
         Print("values update error: " .. tostring(err))
         return false
@@ -688,6 +703,7 @@ UpdateUI = function()
     end
 
     A.BeginAuraCacheGeneration()
+    playerStatusHud.Refresh()
 
     local doLayout = S.layoutDirty
     local doValues = S.valuesDirty
@@ -943,6 +959,7 @@ configController.Initialize({
     ProfileStore = ApogeePartyHealthBars_ProfileStore,
     TargetEffectTracker = ApogeePartyHealthBars_TargetEffectTracker,
     TargetEffectHud = ApogeePartyHealthBars_TargetEffectHud,
+    PlayerStatusHud = playerStatusHud,
     DungeonBoardFeed = dungeonBoardFeed,
     CleanseWatch = cleanseWatch,
     BuffThanks = buffThanks,
@@ -983,6 +1000,7 @@ configUI = ApogeePartyHealthBars_SettingsUI.Build({
     ClientCapabilities       = ApogeePartyHealthBars_ClientCapabilities,
     TargetEffectTracker               = ApogeePartyHealthBars_TargetEffectTracker,
     TargetEffectHud                   = ApogeePartyHealthBars_TargetEffectHud,
+    PlayerStatusHud                   = playerStatusHud,
     DungeonBoardFeed         = dungeonBoardFeed,
     CleanseWatch             = cleanseWatch,
     BuffThanks               = buffThanks,

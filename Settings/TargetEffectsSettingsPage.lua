@@ -74,23 +74,36 @@ function DC.Refresh()
         targetEffectRemindersEnabled = true,
         targetEffectRefreshThreshold = 3,
     }
-    local supported = D.ClientCapabilities.IsFeatureAvailable("targetEffectReminders")
+    local hudSupported = D.ClientCapabilities.IsFeatureAvailable("targetHud")
+    local effectsSupported = D.ClientCapabilities.IsFeatureAvailable("targetEffectReminders")
     setChecked(enabledRow.check, saved.targetEffectRemindersEnabled == true)
-    local unavailableReason = not supported
+    local hudUnavailableReason = not hudSupported
+        and D.ClientCapabilities.GetFeatureReason("targetHud") or nil
+    local effectsUnavailableReason = not effectsSupported
         and D.ClientCapabilities.GetFeatureReason("targetEffectReminders") or nil
     if UIH.SetControlAvailability then
-        UIH.SetControlAvailability(enabledRow, enabledRow.check, supported, unavailableReason)
+        UIH.SetControlAvailability(enabledRow, enabledRow.check, hudSupported, hudUnavailableReason)
     else
-        if supported then enabledRow.check:Enable() else enabledRow.check:Disable() end
-        UIH.SetUnavailableTooltip(enabledRow, unavailableReason)
+        if hudSupported then enabledRow.check:Enable() else enabledRow.check:Disable() end
+        UIH.SetUnavailableTooltip(enabledRow, hudUnavailableReason)
     end
     defaultRow.value.label:SetText(tostring(saved.targetEffectRefreshThreshold) .. "s")
+    if effectsSupported then
+        defaultRow.decrease:Enable()
+        defaultRow.increase:Enable()
+    else
+        defaultRow.decrease:Disable()
+        defaultRow.increase:Disable()
+    end
+    local timerColor = effectsSupported and 0.90 or 0.55
+    defaultRow.label:SetTextColor(timerColor, timerColor, timerColor)
+    UIH.SetUnavailableTooltip(defaultRow, effectsUnavailableReason)
 
     local known = D.TargetEffectTracker.GetKnownFamilies()
     local entries = {
-        { frame = enabledRow, height = supported and 32 or 40 },
+        { frame = enabledRow, height = hudSupported and 32 or 40 },
         { frame = defaultRow, height = 32 },
-        { frame = previewRow, height = 50 },
+        { frame = previewRow, height = 78 },
         { frame = spellSection, height = 16, gap = 10 },
     }
     for index, entry in ipairs(known) do
@@ -98,9 +111,12 @@ function DC.Refresh()
         row.key = entry.definition.key
         row.label:SetText(entry.label)
         setChecked(row.check, D.TargetEffectTracker.IsEnabled(row.key))
-        if index > 1 then row.up:Enable() else row.up:Disable() end
-        if index < #known then row.down:Enable() else row.down:Disable() end
-        if supported and saved.targetEffectRemindersEnabled then row.check:Enable() else row.check:Disable() end
+        if effectsSupported and index > 1 then row.up:Enable() else row.up:Disable() end
+        if effectsSupported and index < #known then row.down:Enable() else row.down:Disable() end
+        if effectsSupported and saved.targetEffectRemindersEnabled then row.check:Enable() else row.check:Disable() end
+        local rowColor = effectsSupported and 0.90 or 0.55
+        row.label:SetTextColor(rowColor, rowColor, rowColor)
+        UIH.SetUnavailableTooltip(row, effectsUnavailableReason)
         entries[#entries + 1] = { frame = row, height = 42 }
     end
     for index = #known + 1, #rows do rows[index]:Hide() end
@@ -116,22 +132,26 @@ function DC.Create(parent, deps)
     page:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -C.BIND_PAD, C.BIND_PAD)
     page:Hide()
     form = UIH.CreateFormScaffold(page, "ApogeePartyHealthBarsTargetEffectsSettingsPageScroll",
-        "Show missing or expiring maintained effects above the visible target nameplate.", false)
-    enabledRow = checkboxRow(form.content, "Enable target-effect reminders")
+        "Show player health, healing overlays, power, and maintained effects above the visible target nameplate.", false)
+    enabledRow = checkboxRow(form.content, "Enable Target HUD")
     defaultRow = stepperRow(form.content, "Remind when this much time remains")
     defaultRow.decrease:SetScript("OnClick", function() D.TargetEffectTracker.AdjustThreshold(-1); DC.Refresh() end)
     defaultRow.increase:SetScript("OnClick", function() D.TargetEffectTracker.AdjustThreshold(1); DC.Refresh() end)
     enabledRow.check:SetScript("OnClick", function(self)
         if refreshing then return end
-        D.TargetEffectTracker.SetFeatureEnabled(self:GetChecked()); DC.Refresh()
+        D.TargetEffectTracker.SetFeatureEnabled(self:GetChecked())
+        D.PlayerStatusHud.Refresh()
+        DC.Refresh()
     end)
-    previewRow = UIH.CreateFormRow(form.content, form.rowWidth, 50)
+    previewRow = UIH.CreateFormRow(form.content, form.rowWidth, 78)
     local previewLabel = previewRow:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     previewLabel:SetPoint("TOP", previewRow, "TOP", 0, -4)
-    previewLabel:SetText("Nameplate reminder preview")
+    previewLabel:SetText("Target HUD preview")
     local preview = D.TargetEffectHud.CreateConfigurationPreview(previewRow)
-    preview:SetPoint("BOTTOM", previewRow, "BOTTOM", 0, 4)
-    previewRow.preview = preview
+    preview:SetPoint("TOP", previewRow, "TOP", 0, -20)
+    local statusPreview = D.PlayerStatusHud.CreateConfigurationPreview(previewRow)
+    statusPreview:SetPoint("TOP", preview, "BOTTOM", 0, -4)
+    previewRow.preview, previewRow.statusPreview = preview, statusPreview
     spellSection = UIH.CreateFormSection(form.content, form.rowWidth,
         "Learned target effects — enablement and priority")
     DC.Refresh()
@@ -141,3 +161,5 @@ end
 function DC.GetRows() return rows end
 function DC.GetForm() return form end
 function DC.GetPreviewRow() return previewRow end
+function DC.GetEnabledRow() return enabledRow end
+function DC.GetDefaultRow() return defaultRow end

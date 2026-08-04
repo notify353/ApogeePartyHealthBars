@@ -55,18 +55,6 @@ local function GetNameColor(identity)
     return 1, 0, 0
 end
 
-local function GetPowerColor(powerType, powerToken)
-    if powerType == C.MANA_POWER then return unpack(C.MANA_BAR_COLOR) end
-    local standard = PowerBarColor and (PowerBarColor[powerToken] or PowerBarColor[powerType])
-    if standard then
-        return standard.r or standard[1] or 0.7,
-            standard.g or standard[2] or 0.7,
-            standard.b or standard[3] or 0.7, 1
-    end
-    return unpack(C.POWER_BAR_FALLBACK_COLORS[powerToken]
-        or C.POWER_BAR_FALLBACK_COLORS.DEFAULT)
-end
-
 local function CreateSecureOverlay(namePrefix, frameLevel)
     S.castBtnSerial = S.castBtnSerial + 1
     local button = CreateFrame(
@@ -302,7 +290,7 @@ function methods:RefreshValues()
         if channel then
             bar:SetMinMaxValues(0, channel.maximum)
             bar:SetValue(channel.value)
-            bar:SetStatusBarColor(GetPowerColor(channel.powerType, channel.powerToken))
+            bar:SetStatusBarColor(API.GetPowerColor(channel.powerType, channel.powerToken))
         end
     end
 

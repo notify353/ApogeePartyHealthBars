@@ -2,7 +2,7 @@ ApogeePartyHealthBars_TargetNameplateHud = {}
 local H = ApogeePartyHealthBars_TargetNameplateHud
 local S = ApogeePartyHealthBars_S
 
-local NAMEPLATE_GAP = 2
+local NAMEPLATE_GAP = 6
 local FRAME_LEVEL_OFFSET = 20
 
 local surfaces = {}

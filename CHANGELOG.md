@@ -26,6 +26,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Fixed
 
+- Reworded Dungeon Board and LFG Alert whisper drafts as concise role offers, such as `Tank LF Gnomer`, with role-only `LFG` fallbacks when no dungeon is available.
+
 - Kept the Target HUD's basic player health and power visible when Target Effects APIs are unavailable, while disabling only the effect-specific settings.
 - Raised the Target HUD slightly above hostile nameplates so its player health and power bars do not touch Blizzard's target-debuff icons.
 

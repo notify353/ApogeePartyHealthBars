@@ -47,7 +47,7 @@ assert(Actions.OpenWhisper("Player-Realm", "healer", "WC"),
     "whisper rejected a supported realm-qualified player")
 assert(#whisperCalls == 1 and whisperCalls[1][1] == "Player-Realm"
         and whisperCalls[1][2]
-            == "heals for WC?",
+            == "Healer LF WC",
     "whisper did not prefill the native composer for the exact player and dungeon")
 
 ChatFrameUtil = nil
@@ -57,7 +57,7 @@ end
 assert(Actions.OpenWhisper("Legacy-Realm", "tank", "BRD")
         and whisperCalls[2][1] == "legacy:Legacy-Realm"
         and whisperCalls[2][2]
-            == "tank for BRD?",
+            == "Tank LF BRD",
     "whisper did not prefill the Classic legacy composer")
 ChatFrame_SendTellWithMessage = nil
 ChatFrameUtil = {
@@ -66,7 +66,7 @@ ChatFrameUtil = {
     end,
 }
 assert(Actions.OpenWhisper("Player-Realm", "healer", "")
-        and whisperCalls[3][2] == "heals?",
+        and whisperCalls[3][2] == "Healer LFG",
     "whisper without a dungeon did not use the terse role-only fallback")
 ChatFrameUtil = nil
 available, reason = Actions.CanWhisper("Player-Realm")

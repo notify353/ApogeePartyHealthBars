@@ -67,10 +67,12 @@ end
 function Actions.OpenWhisper(playerName, role, dungeonText)
     local available, reason = Actions.CanWhisper(playerName)
     if not available then return false, reason end
-    local roleText = role == "tank" and "tank" or "heals"
+    local roleText = role == "tank" and "Tank" or "Healer"
     local destination = type(dungeonText) == "string"
         and dungeonText:find("%S") and dungeonText or nil
-    local message = roleText .. (destination and (" for " .. destination) or "") .. "?"
+    local message = destination
+        and (roleText .. " LF " .. destination)
+        or (roleText .. " LFG")
     local ok, failure = pcall(getWhisperFunction(), playerName, message)
     if not ok then
         return false, "Could not open whisper: " .. tostring(failure)

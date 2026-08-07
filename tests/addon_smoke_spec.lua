@@ -60,6 +60,15 @@ local function widget()
             self.height = height
             self.mutations = self.mutations + 1
         end,
+        SetWidth = function(self, width) self.width = width end,
+        SetHeight = function(self, height) self.height = height end,
+        SetResizable = function(self, value) self.resizable = value == true end,
+        SetResizeBounds = function(self, minWidth, minHeight, maxWidth, maxHeight)
+            self.resizeBounds = { minWidth, minHeight, maxWidth, maxHeight }
+        end,
+        SetClipsChildren = function(self, value) self.clipsChildren = value == true end,
+        EnableMouseWheel = function(self, value) self.mouseWheelEnabled = value == true end,
+        StartSizing = function(self, anchor) self.sizingAnchor = anchor end,
         SetFrameLevel = function(self, level) self.frameLevel = level end,
         SetFrameStrata = function(self, strata) self.frameStrata = strata end,
         SetToplevel = function(self, value) self.topLevel = value == true end,
@@ -95,11 +104,11 @@ local function widget()
     local noopMethods = {
         "SetAllPoints",
         "SetTexCoord", "SetDrawLayer", "SetHorizTile", "SetVertTile",
-        "EnableMouseWheel", "SetMovable", "SetClampedToScreen",
+        "SetMovable", "SetClampedToScreen",
         "SetHighlightTexture", "SetBackdrop", "SetBackdropBorderColor",
         "SetStatusBarTexture", "SetStatusBarColor", "SetMinMaxValues", "SetValue",
         "SetFontObject", "SetFont", "SetTextColor",
-        "SetJustifyV", "SetWidth", "SetHeight", "SetWordWrap", "SetMaxLines",
+        "SetJustifyV", "SetWordWrap", "SetMaxLines",
         "SetVertexColor", "SetScrollChild",
         "SetMultiLine", "SetAutoFocus", "SetTextInsets",
         "SetFocus", "ClearFocus", "HighlightText",
@@ -471,6 +480,8 @@ assert(tocLoadOrder["DungeonGuide/DungeonGuideCatalog.lua"]
     and tocLoadOrder["DungeonGuide/RazorfenKraulGuide.lua"]
         < tocLoadOrder["DungeonGuide/RazorfenDownsGuide.lua"]
     and tocLoadOrder["DungeonGuide/RazorfenDownsGuide.lua"]
+        < tocLoadOrder["DungeonGuide/UldamanGuide.lua"]
+    and tocLoadOrder["DungeonGuide/UldamanGuide.lua"]
         < tocLoadOrder["DungeonGuide/DungeonGuidePolicy.lua"],
     "Dungeon Guide packs loaded outside their registered policy order")
 assert(type(ApogeePartyHealthBars_DungeonGuideUI.Toggle) == "function"
@@ -877,6 +888,26 @@ assert(ApogeePartyHealthBarsDungeonGuide.foundation.color[4] == 1
     "Dungeon Book did not create solid full-window and reading foundations")
 assert(ApogeePartyHealthBarsDungeonGuide.body.fontTemplate == "GameFontHighlight",
     "Dungeon Book retained undersized body typography")
+assert(ApogeePartyHealthBarsDungeonGuide.resizable
+        and ApogeePartyHealthBarsDungeonGuide.width == 1000
+        and ApogeePartyHealthBarsDungeonGuide.height == 720
+        and ApogeePartyHealthBarsDungeonGuide.resizeBounds[1] == 720
+        and ApogeePartyHealthBarsDungeonGuide.resizeBounds[2] == 520,
+    "Dungeon Book did not build a bounded resizable window")
+ApogeePartyHealthBarsDungeonGuide.resizeHandle.scripts.OnDragStart()
+assert(ApogeePartyHealthBarsDungeonGuide.sizingAnchor == "BOTTOMRIGHT",
+    "Dungeon Book resize grip did not begin bottom-right sizing")
+ApogeePartyHealthBarsDungeonGuide:SetSize(1180, 810)
+ApogeePartyHealthBarsDungeonGuide.resizeHandle.scripts.OnDragStop()
+assert(ApogeePartyHealthBars_S.sv.dungeonGuideWidth == 1180
+        and ApogeePartyHealthBars_S.sv.dungeonGuideHeight == 810,
+    "Dungeon Book resize grip did not persist profile-owned dimensions")
+ApogeePartyHealthBars_DungeonGuideUI.ResetWindow()
+assert(ApogeePartyHealthBarsDungeonGuide.width == 1000
+        and ApogeePartyHealthBarsDungeonGuide.height == 720
+        and ApogeePartyHealthBars_S.sv.dungeonGuideWidth == 1000
+        and ApogeePartyHealthBars_S.sv.dungeonGuideHeight == 720,
+    "Reset Book Window did not restore default position-owned geometry")
 assert(ApogeePartyHealthBarsDungeonGuide.chapterLabel:GetText() == "CHAPTER",
     "Dungeon Book navigation still described every dungeon section as a wing")
 assert(ApogeePartyHealthBarsDungeonGuide.legend:GetText():find("CIRCLE", 1, true)
@@ -893,6 +924,18 @@ SlashCmdList.APOGEEPARTYHEALTHBARS("guide")
 assert(ApogeePartyHealthBars_DungeonGuideUI.IsShown(), "Dungeon Guide slash command did not open the Book")
 local guideDungeonDropdown, guideSectionDropdown, guideScroll =
     ApogeePartyHealthBars_DungeonGuideUI.GetNavigationControls()
+local guideMapTexture, guideMapCaption, guideMapPanel =
+    ApogeePartyHealthBars_DungeonGuideUI.GetMapRegions()
+local guideMapButton, guideStrategyButton, guideMarkerLegend =
+    ApogeePartyHealthBars_DungeonGuideUI.GetViewControls()
+local guideFitButton, guideZoomOut, guideZoomLabel, guideZoomIn, guideMapCanvas =
+    ApogeePartyHealthBars_DungeonGuideUI.GetMapControls()
+assert(not guideMapTexture:IsShown() and not guideMapCaption:IsShown(),
+    "Dungeon Book showed Cathedral map regions on its initial unmapped chapter")
+assert(ApogeePartyHealthBars_DungeonGuideUI.GetActiveView() == "strategy"
+        and not guideMapButton:IsEnabled() and not guideStrategyButton:IsEnabled()
+        and guideMarkerLegend:IsShown() and guideScroll:IsShown(),
+    "unmapped chapter did not select the Strategy-only view")
 assert(guideDungeonDropdown.optionButtons[2]
         and guideDungeonDropdown.optionButtons[2].label:GetText() == "Gnomeregan"
         and guideDungeonDropdown.optionButtons[3]
@@ -900,14 +943,45 @@ assert(guideDungeonDropdown.optionButtons[2]
         and guideDungeonDropdown.optionButtons[4]
         and guideDungeonDropdown.optionButtons[4].label:GetText() == "Razorfen Kraul"
         and guideDungeonDropdown.optionButtons[5]
-        and guideDungeonDropdown.optionButtons[5].label:GetText() == "Razorfen Downs",
-    "Dungeon Book did not expose all five strategy packs in registered order")
+        and guideDungeonDropdown.optionButtons[5].label:GetText() == "Razorfen Downs"
+        and guideDungeonDropdown.optionButtons[6]
+        and guideDungeonDropdown.optionButtons[6].label:GetText() == "Uldaman",
+    "Dungeon Book did not expose all six strategy packs in registered order")
+guideScroll:SetVerticalScroll(240)
+local cathedralChoice = assert(guideSectionDropdown.optionButtons[4],
+    "Dungeon Book did not create its Cathedral chapter choice")
+cathedralChoice.scripts.OnClick(cathedralChoice)
+assert(guideMapTexture:IsShown() and guideMapCaption:IsShown()
+        and guideMapTexture.texture == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ScarletMonasteryCathedral.png"
+        and guideMapTexture.width == guideMapTexture.height
+        and guideMapCaption:GetText():find("zoom", 1, true)
+        and guideMapPanel:IsShown() and not guideScroll:IsShown()
+        and ApogeePartyHealthBars_DungeonGuideUI.GetActiveView() == "map"
+        and guideMapCanvas.clipsChildren and guideMapCanvas.mouseWheelEnabled
+        and guideFitButton:IsShown() and guideZoomLabel:GetText() == "100%",
+    "Cathedral did not open its fitted dedicated Map view")
+guideZoomIn.scripts.OnClick()
+assert(guideZoomLabel:GetText() == "125%"
+        and guideZoomOut:IsEnabled() and guideMapTexture.width > guideMapTexture.height - 1,
+    "Cathedral map zoom controls did not advance from Fit")
+guideStrategyButton.scripts.OnClick()
+assert(ApogeePartyHealthBars_DungeonGuideUI.GetActiveView() == "strategy"
+        and guideScroll:IsShown() and not guideMapPanel:IsShown()
+        and guideMarkerLegend:IsShown() and not guideFitButton:IsShown(),
+    "Map and Strategy views did not switch independently")
+guideMapButton.scripts.OnClick()
+assert(guideZoomLabel:GetText() == "125%",
+    "view toggling discarded the Cathedral map's session state")
 guideScroll:SetVerticalScroll(240)
 local armoryChoice = assert(guideSectionDropdown.optionButtons[3],
     "Dungeon Book did not create all four Scarlet Monastery chapter choices")
 armoryChoice.scripts.OnClick(armoryChoice)
-assert(guideScroll:GetVerticalScroll() == 0,
-    "changing Dungeon Book chapters retained the previous chapter's scroll offset")
+assert(guideScroll:GetVerticalScroll() == 0
+        and not guideMapTexture:IsShown() and not guideMapCaption:IsShown()
+        and not guideMapButton:IsEnabled()
+        and ApogeePartyHealthBars_DungeonGuideUI.GetActiveView() == "strategy"
+        and guideScroll:IsShown(),
+    "changing to Armory retained map state or failed to restore Strategy")
 guideDungeonDropdown:Open()
 assert(guideDungeonDropdown.popup:IsShown() and guideDungeonDropdown.dismiss:IsShown(),
     "Dungeon Book guide selector did not open for popup-dismissal regression setup")

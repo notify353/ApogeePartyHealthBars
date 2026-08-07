@@ -9,6 +9,8 @@ local ABILITY_TEXT_LIMIT = 60
 local EXCEPTION_TEXT_LIMIT = 140
 local RULE_TEXT_LIMIT = 180
 local ROUTE_TEXT_LIMIT = 180
+local MAP_CAPTION_TEXT_LIMIT = 120
+local MAP_DESCRIPTION_TEXT_LIMIT = 240
 local MARKERS = {
     skull = { key = "skull", label = "SKULL", index = 8 },
     cross = { key = "cross", label = "CROSS", index = 7 },
@@ -130,6 +132,21 @@ function C.ValidateGuide(guide)
         end
         validateStringList(section.route or {}, "guide section route: " .. section.key, false,
             ROUTE_TEXT_LIMIT)
+        if section.map ~= nil then
+            local map = section.map
+            assert(type(map) == "table", "guide section map must be a table: " .. section.key)
+            assert(nonblank(map.texture), "guide section map texture is required: " .. section.key)
+            assert(type(map.width) == "number" and map.width > 0
+                    and map.width == math.floor(map.width),
+                "guide section map width must be a positive integer: " .. section.key)
+            assert(type(map.height) == "number" and map.height > 0
+                    and map.height == math.floor(map.height),
+                "guide section map height must be a positive integer: " .. section.key)
+            assert(nonblank(map.caption) and #map.caption <= MAP_CAPTION_TEXT_LIMIT,
+                "guide section map caption is invalid: " .. section.key)
+            assert(nonblank(map.description) and #map.description <= MAP_DESCRIPTION_TEXT_LIMIT,
+                "guide section map description is invalid: " .. section.key)
+        end
     end
     for key in pairs(guide.mobs) do assert(referenced[key], "unreferenced guide mob: " .. key) end
     return true

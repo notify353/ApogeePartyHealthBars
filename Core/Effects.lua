@@ -66,6 +66,8 @@ local FEATURE_DEFAULTS = {
     dungeonGuideRelPoint = "CENTER",
     dungeonGuideX = 0,
     dungeonGuideY = 0,
+    dungeonGuideWidth = 1000,
+    dungeonGuideHeight = 720,
 }
 
 local function NormalizeDotThreshold(value, fallback)
@@ -85,6 +87,13 @@ end
 local function NormalizeDungeonBoardRole(value)
     if value == "tank" then return "tank" end
     return "healer"
+end
+
+local function NormalizeDungeonGuideDimension(value, fallback, minimum, maximum)
+    value = tonumber(value)
+    if not value or value ~= value then value = fallback end
+    value = math.max(minimum, math.min(maximum, value))
+    return math.floor(value + 0.5)
 end
 
 local function NormalizeThreatAwarenessMode(value)
@@ -161,6 +170,10 @@ function E.InitializeSavedVariables(saved, characterSaved)
     saved.dungeonBoardRole = NormalizeDungeonBoardRole(dungeonBoardRole)
     saved.dungeonBoardMode = nil
     saved.threatAwarenessMode = NormalizeThreatAwarenessMode(saved.threatAwarenessMode)
+    saved.dungeonGuideWidth = NormalizeDungeonGuideDimension(
+        saved.dungeonGuideWidth, FEATURE_DEFAULTS.dungeonGuideWidth, 720, 3840)
+    saved.dungeonGuideHeight = NormalizeDungeonGuideDimension(
+        saved.dungeonGuideHeight, FEATURE_DEFAULTS.dungeonGuideHeight, 520, 2160)
 
     for key, defaultValue in pairs(FEATURE_DEFAULTS) do
         if saved[key] == nil then

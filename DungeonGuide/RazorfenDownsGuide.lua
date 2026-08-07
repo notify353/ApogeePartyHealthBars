@@ -11,6 +11,12 @@ local function mob(key, id, name, marker, priority, live, rationale, abilities, 
 end
 
 -- Primary threats
+mob("frostSpectre", 8585, "Frost Spectre", "skull", 5,
+    "Amnennar summon; switch immediately",
+    "Amnennar summons spectres in waves, and leaving them active compounds party damage during the boss fight.",
+    {},
+    "Pick up each wave, focus the spectres, then return to Amnennar when the group is stable.",
+    "Undead", "Shackle Undead can hold one spectre while the group kills the others.")
 mob("deathsHeadGeomancer", 7335, "Death's Head Geomancer", "skull", 10,
     "dangerous area caster; interrupt and kill first",
     "Flame Spike and Fireball punish stacked groups, while Slow can keep players inside dangerous ground effects.",
@@ -64,9 +70,15 @@ mob("splinterboneCaptain", 7345, "Splinterbone Captain", "cross", 80,
 mob("tombReaver", 7351, "Tomb Reaver", "cross", 90,
     "elite gong wave; focus one at a time",
     "The second gong summons four elite Reavers, making uncontrolled split damage much harder to heal than the first wave.",
-    { "Elite gong-wave melee" },
+    {},
     "Let the tank gather both sides, control one when needed, and focus each Reaver before ringing the gong again.",
     "Undead", "Shackle Undead, Turn Undead, roots, and stuns work; ordinary humanoid control does not.")
+mob("battleBoarHorror", 7334, "Battle Boar Horror", "cross", 95,
+    "fast patrol or defense add; intercept it",
+    "Its fast movement can put it on Belnistrasz or the healer before the tank has secured the event wave.",
+    {},
+    "Intercept it in cleared space and keep it off Belnistrasz before returning to a caster target.",
+    "Undead", "Shackle Undead, Turn Undead, roots, and stuns work.")
 mob("deathsHeadNecromancer", 7337, "Death's Head Necromancer", "none", 100,
     "control one caster in mixed packs",
     "Controlling one Necromancer removes Shadow Bolt and Cripple pressure while the group stabilizes a mixed pack.",
@@ -79,13 +91,13 @@ mob("deathsHeadNecromancer", 7337, "Death's Head Necromancer", "none", 100,
 mob("tombFiend", 7349, "Tomb Fiend", "none", 110,
     "first gong wave; routine area-damage cleanup",
     "The first gong releases many non-elite spiders, but none should distract the party from keeping them grouped.",
-    { "Gong-wave melee" },
+    {},
     "Stack on one side, let the tank gather both entrances, and use controlled area damage without chasing stragglers.",
     "Undead", "Shackle or roots can stop a straggler, but these are normally area-damage cleanup.")
 mob("splinterboneSkeleton", 7343, "Splinterbone Skeleton", "none", 120,
     "fragile skeleton; group for area cleanup",
     "Large numbers surround Mordresh, but each skeleton is fragile and less important than controlling the boss pull.",
-    { "Skeleton melee" },
+    {},
     "Gather them before using area damage, protect the healer from loose bodies, and keep Mordresh interrupted.",
     "Undead", "Shackle Undead and Turn Undead work, though controlled area damage is usually faster.")
 mob("splinterboneWarrior", 7344, "Splinterbone Warrior", "none", 130,
@@ -94,6 +106,12 @@ mob("splinterboneWarrior", 7344, "Splinterbone Warrior", "none", 130,
     { "Sunder Armor" },
     "Keep it on the tank and clean it up after marked enemies, watching for nearby spiral patrols.",
     "Undead", "Shackle Undead, Turn Undead, roots, and stuns work; ordinary humanoid control does not.")
+mob("splinterboneCenturion", 7346, "Splinterbone Centurion", "none", 140,
+    "Amnennar guard; control or clean up late",
+    "The Centurions add bodies to the final guard pack but are less urgent than the Summoner and Captain.",
+    {},
+    "Control one when needed, kill the Summoner and Captain first, then clean up the Centurions.",
+    "Undead", "Shackle Undead, Turn Undead, roots, and stuns work.")
 
 -- Bosses
 mob("tutenkash", 7355, "Tuten'kash", "circle", 200,
@@ -107,7 +125,7 @@ mob("plaguemaw", 7356, "Plaguemaw the Rotting", "circle", 210,
     "Plaguemaw ends a five-minute defense with Putrid Stench and Withered Touch while Belnistrasz must remain alive.",
     { "Putrid Stench", "Withered Touch" },
     "Pick it up immediately, face it away from Belnistrasz, and finish remaining adds before focusing the boss.",
-    "Undead", "Boss control is unreliable; protect the escorted NPC and use mitigation.", {}, true)
+    "Humanoid", "Boss control is unreliable; protect the escorted NPC and use mitigation.", {}, true)
 mob("ladyFaltheress", 14686, "Lady Falther'ess", "circle", 220,
     "Scourge Invasion boss; prepare before opening her pen",
     "Her friendly disguise becomes a banshee with Dominate Mind, a severe miss curse, and area shadow damage.",
@@ -118,7 +136,7 @@ mob("ladyFaltheress", 14686, "Lady Falther'ess", "circle", 220,
 mob("mordreshFireEye", 7357, "Mordresh Fire Eye", "circle", 230,
     "bone-pile boss; control skeletons and interrupt fire",
     "Mordresh links with a crowd of fragile skeletons and casts Fireball and Fire Nova while they surround the group.",
-    { "Fireball", "Fire Nova", "Linked skeleton crowd" },
+    { "Fireball", "Fire Nova" },
     "Gather and area down the skeletons, keep healing threat protected, and maintain interrupts on Mordresh.",
     "Undead", "Boss control is unreliable; interrupt the boss and use undead control on loose adds.", {}, true)
 mob("glutton", 8567, "Glutton", "circle", 240,
@@ -171,8 +189,8 @@ Catalog.RegisterGuide({
                 "After the event, return to the Murder Pens; during a Scourge Invasion, check the nearby disguised prisoner for Lady Falther'ess before leaving.",
             },
             entries = {
-                "deathsHeadGeomancer", "witheredSpearhide", "deathsHeadNecromancer",
-                "plaguemaw", "ladyFaltheress",
+                "deathsHeadGeomancer", "witheredSpearhide", "battleBoarHorror",
+                "deathsHeadNecromancer", "plaguemaw", "ladyFaltheress",
             },
             rules = {
                 { title = "Belnistrasz defense", guidance = "Pre-clear first, let the escort set the pace, tank every wave away from Belnistrasz, and conserve enough mana and cooldowns for Plaguemaw." },
@@ -199,15 +217,16 @@ Catalog.RegisterGuide({
         {
             key = "spiralOfThorns", name = "Spiral of Thorns",
             route = {
-                "Climb the spiral slowly, fight every group where it stands, and wait for patrols; enemies from higher turns can path down into an unsafe pull.",
+                "Climb the spiral slowly, pull each group down into cleared space, and wait for patrols; enemies from higher turns can path into the pull.",
                 "Check the huts along the lower spiral for rare Ragglesnout, whose placeholder may be an ordinary Splinterbone Warrior.",
                 "Before the summit, stop and prepare for the Summoner, Captain, and Centurion guard pack; kill the Summoner before it creates more bodies.",
                 "Clear the platform, then tank Amnennar with the hut behind the tank to prevent a fatal knockback and manage each Frost Spectre wave without losing boss interrupts.",
             },
             entries = {
-                "skeletalSummoner", "frozenSoul", "witheredSpearhide",
+                "frostSpectre", "skeletalSummoner", "frozenSoul", "witheredSpearhide",
                 "skeletalFrostweaver", "freezingSpirit", "thornEaterGhoul",
-                "splinterboneCaptain", "splinterboneWarrior", "ragglesnout", "amnennar",
+                "splinterboneCaptain", "splinterboneWarrior", "splinterboneCenturion",
+                "ragglesnout", "amnennar",
             },
             rules = {
                 { title = "Spiral patrols", guidance = "Never skip a group above or below the party. Pulling across turns can send a large train down the spiral and remove safe retreat space." },

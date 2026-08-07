@@ -4,24 +4,34 @@ dofile("DungeonGuide/GnomereganGuide.lua")
 dofile("DungeonGuide/StockadesGuide.lua")
 dofile("DungeonGuide/RazorfenKraulGuide.lua")
 dofile("DungeonGuide/RazorfenDownsGuide.lua")
+dofile("DungeonGuide/UldamanGuide.lua")
 dofile("DungeonGuide/DungeonGuidePolicy.lua")
 dofile("DungeonGuide/DungeonGuideSettings.lua")
 dofile("DungeonGuide/DungeonGuideUI.lua")
 
 local Catalog = ApogeePartyHealthBars_DungeonGuideCatalog
+local function hasAbility(mob, expected)
+    for _, ability in ipairs(mob and mob.abilities or {}) do
+        if ability == expected then return true end
+    end
+    return false
+end
+
 local guides = Catalog.ListGuides("classicEra")
-assert(#guides == 5 and guides[1].key == "scarletMonastery"
+assert(#guides == 6 and guides[1].key == "scarletMonastery"
         and guides[2].key == "gnomeregan"
         and guides[3].key == "stockades"
         and guides[4].key == "razorfenKraul"
-        and guides[5].key == "razorfenDowns",
+        and guides[5].key == "razorfenDowns"
+        and guides[6].key == "uldaman",
     "Dungeon Guides were not enumerated in their registered order for Classic Era")
 local tbcGuides = Catalog.ListGuides("tbcAnniversary")
-assert(#tbcGuides == 5 and tbcGuides[1].key == "scarletMonastery"
+assert(#tbcGuides == 6 and tbcGuides[1].key == "scarletMonastery"
         and tbcGuides[2].key == "gnomeregan"
         and tbcGuides[3].key == "stockades"
         and tbcGuides[4].key == "razorfenKraul"
-        and tbcGuides[5].key == "razorfenDowns",
+        and tbcGuides[5].key == "razorfenDowns"
+        and tbcGuides[6].key == "uldaman",
     "Dungeon Guides were not enumerated in their registered order for TBC Anniversary")
 local guide = guides[1]
 assert(#guide.sections == 4
@@ -30,6 +40,40 @@ assert(#guide.sections == 4
         and guide.sections[3].key == "armory"
         and guide.sections[4].key == "cathedral",
     "Scarlet Monastery did not preserve its four-wing book order")
+local scarletRoutes = {}
+for _, section in ipairs(guide.sections) do
+    scarletRoutes[section.key] = table.concat(section.route or {}, " ")
+end
+assert(scarletRoutes.graveyard:find("far%-left portal")
+        and scarletRoutes.graveyard:find("isolated Unfettered Spirit", 1, true)
+        and scarletRoutes.library:find("far%-right portal")
+        and scarletRoutes.library:find("Scarlet Key", 1, true)
+        and scarletRoutes.armory:find("right locked door", 1, true)
+        and scarletRoutes.cathedral:find("left locked door", 1, true)
+        and scarletRoutes.cathedral:find("both aisles", 1, true)
+        and #guide.sections[4].route == 5,
+    "Scarlet Monastery routes omitted wing access, rare checks, key pickup, or chapel safety")
+local cathedralMap
+for _, section in ipairs(guide.sections) do
+    if section.key == "cathedral" then
+        cathedralMap = section.map
+    else
+        assert(section.map == nil, "a non-Cathedral Scarlet chapter unexpectedly gained a map")
+    end
+end
+assert(cathedralMap
+        and cathedralMap.texture == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ScarletMonasteryCathedral.png"
+        and cathedralMap.width == 2048 and cathedralMap.height == 2048
+        and cathedralMap.caption:find("zoom", 1, true)
+        and cathedralMap.description:find("resurrection area", 1, true),
+    "Cathedral map metadata was missing or incomplete")
+local mutatedMapGuide = Catalog.GetGuide("scarletMonastery", "classicEra")
+mutatedMapGuide.sections[4].map.caption = "mutated"
+mutatedMapGuide.sections[4].map.width = 1
+local freshMapGuide = Catalog.GetGuide("scarletMonastery", "classicEra")
+assert(freshMapGuide.sections[4].map.caption ~= "mutated"
+        and freshMapGuide.sections[4].map.width == 2048,
+    "catalog map metadata escaped deep-copy isolation")
 assert(Catalog.GetGuideForInstance("tbcAnniversary", 189).key == guide.key
         and Catalog.GetGuideForInstance("unsupported", 189) == nil,
     "guide client flavor and instance gating drifted")
@@ -47,6 +91,17 @@ for _, npcId in ipairs(requiredIds) do
         "missing or incomplete Scarlet Monastery NPC: " .. npcId)
 end
 assert(Catalog.FindMob("classicEra", 189, 999999) == nil, "unknown NPC returned guide advice")
+assert(hasAbility(guide.mobs.chaplain, "Heal")
+        and hasAbility(guide.mobs.chaplain, "Power Word: Shield")
+        and hasAbility(guide.mobs.diviner, "Fireball")
+        and hasAbility(guide.mobs.monk, "Kick")
+        and hasAbility(guide.mobs.doan, "Detonation")
+        and hasAbility(guide.mobs.whitemane, "Scarlet Resurrection")
+        and hasAbility(guide.mobs.mograine, "Hammer of Justice")
+        and hasAbility(guide.mobs.fairbanks, "Curse of Blood")
+        and guide.mobs.thalnos.creatureType == "Undead"
+        and guide.mobs.fairbanks.creatureType == "Undead",
+    "Scarlet Monastery lost a reviewed trash or boss mechanic")
 
 local gnomeregan = Catalog.GetGuide("gnomeregan", "classicEra")
 assert(gnomeregan and #gnomeregan.sections == 4
@@ -89,6 +144,12 @@ for npcId, expectedKey in pairs(gnomereganIds) do
 end
 assert(Catalog.FindMob("classicEra", 90, 999999) == nil,
     "unknown Gnomeregan NPC returned guide advice")
+assert(gnomeregan.mobs.chomper.marker == "none" and not gnomeregan.mobs.chomper.boss
+        and hasAbility(gnomeregan.mobs.electrocutioner, "Chain Bolt")
+        and hasAbility(gnomeregan.mobs.crowdPummeler, "Crowd Pummel")
+        and hasAbility(gnomeregan.mobs.darkIronAmbassador, "Fireball Volley")
+        and hasAbility(gnomeregan.mobs.thermaplugg, "Knock Away"),
+    "Gnomeregan boss, companion, or high-risk ability review drifted")
 local mutatedGnomeregan = Catalog.GetGuide("gnomeregan", "classicEra")
 mutatedGnomeregan.sections[1].route[1] = "mutated"
 assert(Catalog.GetGuide("gnomeregan", "classicEra").sections[1].route[1] ~= "mutated",
@@ -143,6 +204,12 @@ assert(Catalog.FindMob("classicEra", 34, 999999) == nil
         and Catalog.FindMob("classicEra", 189, 1706) == nil
         and Catalog.FindMob("unsupported", 34, 1706) == nil,
     "Stockades NPC advice escaped its catalog boundaries")
+assert(hasAbility(stockades.mobs.defiasPrisoner, "Disarm")
+        and hasAbility(stockades.mobs.dextrenWard, "Intimidating Shout")
+        and hasAbility(stockades.mobs.hamhock, "Chain Lightning")
+        and hasAbility(stockades.mobs.bazilThredd, "Smoke Bomb")
+        and not hasAbility(stockades.mobs.kamDeepfury, "Shield Wall"),
+    "Stockades reviewed trash or boss mechanics drifted")
 local mutatedStockades = Catalog.GetGuide("stockades", "classicEra")
 mutatedStockades.sections[1].route[1] = "mutated"
 mutatedStockades.mobs.defiasPrisoner.name = "mutated"
@@ -186,7 +253,8 @@ local razorfenKraulIds = {
     [4525] = "razorfenEarthbreaker", [4438] = "razorfenSpearhide",
     [4623] = "quilguardChampion", [4539] = "greaterKraulBat",
     [4531] = "razorfenBeastTrainer", [4442] = "razorfenDefender",
-    [4538] = "kraulBat", [6168] = "roogug", [4424] = "aggemThorncurse",
+    [4538] = "kraulBat", [4625] = "wardKeeper", [6168] = "roogug",
+    [4424] = "aggemThorncurse",
     [4428] = "deathSpeakerJargba", [4420] = "overlordRamtusk",
     [4422] = "agathelos", [4425] = "blindHunter",
     [4842] = "earthcallerHalmgar", [4421] = "charlgaRazorflank",
@@ -205,6 +273,14 @@ assert(Catalog.FindMob("classicEra", 47, 999999) == nil
         and Catalog.FindMob("classicEra", 34, 4440) == nil
         and Catalog.FindMob("unsupported", 47, 4440) == nil,
     "Razorfen Kraul NPC advice escaped its catalog boundaries")
+assert(hasAbility(razorfenKraul.mobs.razorfenTotemic, "Earthgrab Totem")
+        and hasAbility(razorfenKraul.mobs.razorfenDustweaver, "Enveloping Winds")
+        and hasAbility(razorfenKraul.mobs.deathSpeakerJargba, "Dominate Mind")
+        and hasAbility(razorfenKraul.mobs.agathelos, "Rushing Charge")
+        and not hasAbility(razorfenKraul.mobs.agathelos, "Rampage")
+        and hasAbility(razorfenKraul.mobs.charlgaRazorflank, "Purity")
+        and razorfenKraul.mobs.wardKeeper.marker == "none",
+    "Razorfen Kraul reviewed trash or boss mechanics drifted")
 local mutatedRazorfenKraul = Catalog.GetGuide("razorfenKraul", "classicEra")
 mutatedRazorfenKraul.sections[1].route[1] = "mutated"
 mutatedRazorfenKraul.mobs.razorfenTotemic.name = "mutated"
@@ -239,13 +315,15 @@ assert(Catalog.GetGuideForInstance("classicEra", 129).key == "razorfenDowns"
         and Catalog.GetGuideForInstance("classicEra", 130) == nil,
     "Razorfen Downs client or instance gating drifted")
 local razorfenDownsIds = {
-    [7335] = "deathsHeadGeomancer", [7342] = "skeletalSummoner",
+    [8585] = "frostSpectre", [7335] = "deathsHeadGeomancer",
+    [7342] = "skeletalSummoner",
     [7352] = "frozenSoul", [7332] = "witheredSpearhide",
     [7341] = "skeletalFrostweaver", [7353] = "freezingSpirit",
     [7348] = "thornEaterGhoul", [7345] = "splinterboneCaptain",
     [7351] = "tombReaver", [7337] = "deathsHeadNecromancer",
-    [7349] = "tombFiend", [7343] = "splinterboneSkeleton",
-    [7344] = "splinterboneWarrior", [7355] = "tutenkash",
+    [7349] = "tombFiend", [7334] = "battleBoarHorror",
+    [7343] = "splinterboneSkeleton", [7344] = "splinterboneWarrior",
+    [7346] = "splinterboneCenturion", [7355] = "tutenkash",
     [7356] = "plaguemaw", [14686] = "ladyFaltheress",
     [7357] = "mordreshFireEye", [8567] = "glutton",
     [7354] = "ragglesnout", [7358] = "amnennar",
@@ -264,6 +342,16 @@ assert(Catalog.FindMob("classicEra", 129, 999999) == nil
         and Catalog.FindMob("classicEra", 47, 7335) == nil
         and Catalog.FindMob("unsupported", 129, 7335) == nil,
     "Razorfen Downs NPC advice escaped its catalog boundaries")
+assert(hasAbility(razorfenDowns.mobs.freezingSpirit, "Frost Nova")
+        and hasAbility(razorfenDowns.mobs.tutenkash, "Web Spray")
+        and hasAbility(razorfenDowns.mobs.ragglesnout, "Dominate Mind")
+        and hasAbility(razorfenDowns.mobs.amnennar, "Summon Frost Spectres")
+        and razorfenDowns.mobs.frostSpectre.marker == "skull"
+        and razorfenDowns.mobs.battleBoarHorror.marker == "cross"
+        and razorfenDowns.mobs.plaguemaw.creatureType == "Humanoid"
+        and razorfenDowns.mobs.ladyFaltheress.exceptions[1]:find(
+            "Scourge Invasion", 1, true),
+    "Razorfen Downs reviewed trash, boss, or event-only guidance drifted")
 local mutatedRazorfenDowns = Catalog.GetGuide("razorfenDowns", "classicEra")
 mutatedRazorfenDowns.sections[1].route[1] = "mutated"
 mutatedRazorfenDowns.mobs.deathsHeadGeomancer.name = "mutated"
@@ -271,6 +359,89 @@ local freshRazorfenDowns = Catalog.GetGuide("razorfenDowns", "classicEra")
 assert(freshRazorfenDowns.sections[1].route[1] ~= "mutated"
         and freshRazorfenDowns.mobs.deathsHeadGeomancer.name == "Death's Head Geomancer",
     "catalog callers could mutate Razorfen Downs strategy data")
+
+local uldaman = Catalog.GetGuide("uldaman", "classicEra")
+assert(uldaman and #uldaman.sections == 4
+        and uldaman.sections[1].key == "hallOfKeepers"
+        and uldaman.sections[2].key == "mapChamberBackDoor"
+        and uldaman.sections[3].key == "templeStoneVault"
+        and uldaman.sections[4].key == "hallOfCrafters",
+    "Uldaman did not preserve its four-chapter full-clear order")
+local uldamanRoute = table.concat({
+    table.concat(uldaman.sections[1].route, " "),
+    table.concat(uldaman.sections[2].route, " "),
+    table.concat(uldaman.sections[3].route, " "),
+    table.concat(uldaman.sections[4].route, " "),
+}, " ")
+assert(uldamanRoute:find("Gni'kiv Medallion", 1, true)
+        and uldamanRoute:find("Shaft of Tsol", 1, true)
+        and uldamanRoute:find("Staff of Prehistoria", 1, true)
+        and uldamanRoute:find("Annora", 1, true)
+        and uldamanRoute:find("rear entrance", 1, true)
+        and uldamanRoute:find("four Stone Keepers", 1, true)
+        and uldamanRoute:find("Platinum Discs", 1, true),
+    "Uldaman route omitted Staff assembly, detours, back door, altar, or final vault")
+assert(Catalog.GetGuideForInstance("classicEra", 70).key == "uldaman"
+        and Catalog.GetGuideForInstance("tbcAnniversary", 70).key == "uldaman"
+        and Catalog.GetGuideForInstance("unsupported", 70) == nil
+        and Catalog.GetGuideForInstance("classicEra", 670) == nil,
+    "Uldaman client or instance gating drifted")
+local uldamanIds = {
+    [4848] = "shadowforgeDarkcaster", [4852] = "stonevaultOracle",
+    [7321] = "stonevaultFlameweaver", [7030] = "shadowforgeGeologist",
+    [7209] = "obsidianShard", [7077] = "earthenHallshaper",
+    [4861] = "shrikeBat", [4860] = "stoneSteward",
+    [7012] = "earthenSculptor", [4857] = "stoneKeeper",
+    [7076] = "earthenGuardian", [10120] = "vaultWarder",
+    [4863] = "jadespineBasilisk", [4855] = "stonevaultBrawler",
+    [6907] = "ericTheSwift", [6908] = "olaf", [6906] = "baelog",
+    [6910] = "revelosh", [7228] = "ironaya",
+    [7023] = "obsidianSentinel", [7206] = "ancientStoneKeeper",
+    [7291] = "galgann", [4854] = "grimlok", [2748] = "archaedas",
+}
+for npcId, expectedKey in pairs(uldamanIds) do
+    local uldamanMob, mobKey = Catalog.FindMob("classicEra", 70, npcId)
+    assert(mobKey == expectedKey and uldamanMob and uldamanMob.rationale:match("%S")
+            and uldamanMob.cc:match("%S")
+            and #uldamanMob.liveReason <= Catalog.GetLiveTextLimit(),
+        "missing, mismatched, or incomplete Uldaman NPC: " .. npcId)
+    local tbcUldamanMob, tbcMobKey = Catalog.FindMob("tbcAnniversary", 70, npcId)
+    assert(tbcMobKey == expectedKey and tbcUldamanMob,
+        "missing or mismatched TBC Anniversary Uldaman NPC: " .. npcId)
+end
+assert(Catalog.FindMob("classicEra", 70, 999999) == nil
+        and Catalog.FindMob("classicEra", 129, 4848) == nil
+        and Catalog.FindMob("unsupported", 70, 4848) == nil,
+    "Uldaman NPC advice escaped its catalog boundaries")
+local uldamanBossKeys = {
+    "ericTheSwift", "olaf", "baelog", "revelosh", "ironaya",
+    "obsidianSentinel", "ancientStoneKeeper", "galgann", "grimlok", "archaedas",
+}
+for _, bossKey in ipairs(uldamanBossKeys) do
+    local boss = uldaman.mobs[bossKey]
+    assert(boss and boss.boss and boss.marker == "circle",
+        "Uldaman boss coverage or Circle classification drifted: " .. bossKey)
+end
+assert(hasAbility(uldaman.mobs.shadowforgeDarkcaster, "Spell Bomb")
+        and hasAbility(uldaman.mobs.shadowforgeGeologist, "Flame Spike")
+        and hasAbility(uldaman.mobs.ancientStoneKeeper, "Sand Storms")
+        and hasAbility(uldaman.mobs.grimlok, "Shrink")
+        and hasAbility(uldaman.mobs.stoneSteward, "Ground Tremor")
+        and hasAbility(uldaman.mobs.archaedas, "Awaken Earthen Guardians")
+        and hasAbility(uldaman.mobs.archaedas, "Awaken Vault Warder")
+        and uldaman.mobs.shadowforgeDarkcaster.marker == "skull"
+        and uldaman.mobs.shrikeBat.marker == "cross"
+        and uldaman.mobs.jadespineBasilisk.marker == "none"
+        and uldaman.mobs.ericTheSwift.exceptions[1]:find("Alliance", 1, true)
+        and uldaman.mobs.ericTheSwift.exceptions[1]:find("Horde", 1, true),
+    "Uldaman high-risk mechanics, markers, or faction guidance drifted")
+local mutatedUldaman = Catalog.GetGuide("uldaman", "classicEra")
+mutatedUldaman.sections[1].route[1] = "mutated"
+mutatedUldaman.mobs.shadowforgeDarkcaster.name = "mutated"
+local freshUldaman = Catalog.GetGuide("uldaman", "classicEra")
+assert(freshUldaman.sections[1].route[1] ~= "mutated"
+        and freshUldaman.mobs.shadowforgeDarkcaster.name == "Shadowforge Darkcaster",
+    "catalog callers could mutate Uldaman strategy data")
 assert(Catalog.GetMarker("skull").index == 8 and Catalog.GetMarker("cross").index == 7
         and Catalog.GetMarker("moon") == nil and Catalog.GetMarker("circle").index == 2
         and Catalog.GetMarker("none").index == nil
@@ -345,7 +516,7 @@ local gnomereganRecommendations = {
     [6206] = { "none", nil },
     [6223] = { "none", nil },
     [6225] = { "none", nil },
-    [6215] = { "circle", 2 },
+    [6215] = { "none", nil },
     [7800] = { "circle", 2 },
 }
 for npcId, expected in pairs(gnomereganRecommendations) do
@@ -379,6 +550,7 @@ local razorfenKraulRecommendations = {
     [4522] = { "cross", 7 },
     [4531] = { "none", nil },
     [4442] = { "none", nil },
+    [4625] = { "none", nil },
     [4425] = { "circle", 2 },
     [4842] = { "circle", 2 },
     [4421] = { "circle", 2 },
@@ -392,10 +564,13 @@ for npcId, expected in pairs(razorfenKraulRecommendations) do
 end
 instanceId = 129
 local razorfenDownsRecommendations = {
+    [8585] = { "skull", 8 },
     [7335] = { "skull", 8 },
     [7332] = { "cross", 7 },
+    [7334] = { "cross", 7 },
     [7337] = { "none", nil },
     [7349] = { "none", nil },
+    [7346] = { "none", nil },
     [7355] = { "circle", 2 },
     [14686] = { "circle", 2 },
     [7358] = { "circle", 2 },
@@ -406,6 +581,26 @@ for npcId, expected in pairs(razorfenDownsRecommendations) do
     assert(resolved and resolved.markerKey == expected[1]
             and resolved.markerIndex == expected[2],
         "Razorfen Downs marker policy drifted for NPC " .. npcId)
+end
+instanceId = 70
+local uldamanRecommendations = {
+    [4848] = { "skull", 8 },
+    [4852] = { "skull", 8 },
+    [7209] = { "skull", 8 },
+    [4861] = { "cross", 7 },
+    [4860] = { "cross", 7 },
+    [4863] = { "none", nil },
+    [4855] = { "none", nil },
+    [7228] = { "circle", 2 },
+    [7023] = { "circle", 2 },
+    [2748] = { "circle", 2 },
+}
+for npcId, expected in pairs(uldamanRecommendations) do
+    local resolved = Policy.GetRecommendationForGuid(
+        "Creature-0-1-70-1-" .. npcId .. "-0000000001")
+    assert(resolved and resolved.markerKey == expected[1]
+            and resolved.markerIndex == expected[2],
+        "Uldaman marker policy drifted for NPC " .. npcId)
 end
 instanceId = 999
 assert(Policy.GetRecommendationForGuid(scryerGuid) == nil, "unsupported instance leaked advice")
@@ -433,9 +628,45 @@ Settings.ResetBookPosition()
 point, relativePoint, x, y = Settings.GetBookPosition()
 assert(point == "CENTER" and relativePoint == "CENTER" and x == 0 and y == 0,
     "Book position did not reset")
+local defaultWidth, defaultHeight = Settings.GetBookSize()
+assert(defaultWidth == 1000 and defaultHeight == 720,
+    "legacy profile did not receive the default Dungeon Book size")
+assert(Settings.SetBookSize(1180.4, 810.6))
+defaultWidth, defaultHeight = Settings.GetBookSize()
+assert(defaultWidth == 1180 and defaultHeight == 811
+        and not Settings.SetBookSize(1180, 811),
+    "Dungeon Book size did not normalize or persist")
+Settings.ResetBookWindow()
+point, relativePoint, x, y = Settings.GetBookPosition()
+defaultWidth, defaultHeight = Settings.GetBookSize()
+assert(point == "CENTER" and relativePoint == "CENTER" and x == 0 and y == 0
+        and defaultWidth == 1000 and defaultHeight == 720,
+    "Dungeon Book window reset did not restore position and size")
 
 local UI = ApogeePartyHealthBars_DungeonGuideUI
 local chapter = UI.BuildChapterText(fresh, "library", Catalog)
+assert(UI.GetMapFitScale(cathedralMap, 900, 500) == 500 / 2048,
+    "square Cathedral map did not fit against the limiting canvas dimension")
+local portrait = { width = 1000, height = 2000 }
+local landscape = { width = 2000, height = 1000 }
+assert(UI.GetMapFitScale(portrait, 800, 600) == 0.3
+        and UI.GetMapFitScale(landscape, 800, 600) == 0.4,
+    "portrait or landscape map fitting drifted")
+local fittedWidth, fittedHeight = UI.GetMapDisplaySize(cathedralMap, 900, 500, 1)
+assert(fittedWidth == 500 and fittedHeight == 500,
+    "Cathedral Fit size did not preserve its aspect ratio")
+local panX, panY = UI.ClampMapPan(cathedralMap, 900, 500, 2, 999, -999)
+assert(panX == 50 and panY == -250,
+    "zoomed Cathedral pan did not clamp blank space")
+panX, panY = UI.ZoomMapAtPoint(cathedralMap, 900, 500, 1, 2,
+    0, 0, 100, -50)
+assert(panX == -50 and panY == 50,
+    "pointer-centered map zoom did not preserve the inspected point")
+local bookWidth, bookHeight, maxWidth, maxHeight =
+    UI.ClampBookSize(1600, 900, 1280, 720)
+assert(bookWidth == 1256 and bookHeight == 696
+        and maxWidth == 1256 and maxHeight == 696,
+    "Dungeon Book size did not clamp to screen-aware bounds")
 assert(chapter:find("MARKER LEGEND", 1, true)
         and chapter:find("CIRCLE — automatic boss", 1, true)
         and chapter:find("NO AUTO MARK", 1, true)
@@ -497,6 +728,30 @@ assert(razorfenDownsSpiral:find("Ragglesnout", 1, true)
         and razorfenDownsSpiral:find("Skeletal Summoner", 1, true)
         and razorfenDownsSpiral:find("Amnennar's platform", 1, true),
     "Razorfen Downs final chapter omitted rare, guard pack, or Amnennar guidance")
+local uldamanKeepers = UI.BuildChapterText(freshUldaman, "hallOfKeepers", Catalog)
+assert(uldamanKeepers:find("ROUTE", 1, true)
+        and uldamanKeepers:find("Eric \"The Swift\"", 1, true)
+        and uldamanKeepers:find("Lost Dwarves", 1, true)
+        and uldamanKeepers:find("Pet pathing", 1, true),
+    "Uldaman opening chapter omitted faction, encounter, or pet-route guidance")
+local uldamanMapChamber = UI.BuildChapterText(freshUldaman, "mapChamberBackDoor", Catalog)
+assert(uldamanMapChamber:find("Staff ownership", 1, true)
+        and uldamanMapChamber:find("Ironaya recovery", 1, true)
+        and uldamanMapChamber:find("Annora detour", 1, true)
+        and uldamanMapChamber:find("Obsidian Sentinel", 1, true),
+    "Uldaman Map Chamber chapter omitted Staff, trainer, boss, or back-door guidance")
+local uldamanStoneVault = UI.BuildChapterText(freshUldaman, "templeStoneVault", Catalog)
+assert(uldamanStoneVault:find("Spell Bomb", 1, true)
+        and uldamanStoneVault:find("Keeper room", 1, true)
+        and uldamanStoneVault:find("Galgann Firehammer", 1, true)
+        and uldamanStoneVault:find("Grimlok's pack", 1, true),
+    "Uldaman Stone Vault chapter omitted caster, keeper, or boss guidance")
+local uldamanCrafters = UI.BuildChapterText(freshUldaman, "hallOfCrafters", Catalog)
+assert(uldamanCrafters:find("Altar sequence", 1, true)
+        and uldamanCrafters:find("Archaedas waves", 1, true)
+        and uldamanCrafters:find("Healer protection", 1, true)
+        and uldamanCrafters:find("Vault Warder", 1, true),
+    "Uldaman final chapter omitted altar, add-wave, or healer-protection guidance")
 assert(UI.BuildChapterText(gnomeregan, "missing", Catalog)
         == "Choose a chapter to read its guide.",
     "Dungeon Book empty-state terminology was not chapter-generic")
@@ -525,6 +780,23 @@ for _, registeredGuide in ipairs(Catalog.ListGuides("classicEra")) do
         for _, mobKey in ipairs(section.entries) do
             assert(text:find(registeredGuide.mobs[mobKey].name, 1, true),
                 "Book omitted " .. mobKey .. " from " .. registeredGuide.key .. "/" .. section.key)
+        end
+    end
+end
+local vagueAbilities = {
+    ["Melee attacks"] = true, ["Heavy melee attacks"] = true,
+    ["Ranged magic"] = true, ["Ranged fire magic"] = true,
+    ["Spirit attacks"] = true, ["Fire attacks"] = true,
+    ["Mechanical melee attacks"] = true, ["Heavy mechanical attacks"] = true,
+    ["Gong-wave melee"] = true, ["Elite gong-wave melee"] = true,
+    ["Skeleton melee"] = true, ["Linked skeleton crowd"] = true,
+}
+for _, registeredGuide in ipairs(Catalog.ListGuides("classicEra")) do
+    for mobKey, mobData in pairs(registeredGuide.mobs) do
+        for _, ability in ipairs(mobData.abilities) do
+            assert(not vagueAbilities[ability],
+                "guide retained a vague ability label: "
+                    .. registeredGuide.key .. "/" .. mobKey .. "/" .. ability)
         end
     end
 end
@@ -574,6 +846,28 @@ assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted malformed ro
 invalid.sections[1].route = { string.rep("x", Catalog.GetBookTextLimits().route + 1) }
 assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted oversized route guidance")
 invalid.sections[1].route = { "valid" }
+invalid.sections[1].map = "bad"
+assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted a non-table section map")
+invalid.sections[1].map = {
+    texture = " ", width = 1024, height = 512,
+    caption = "valid", description = "valid",
+}
+assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted a blank section map texture")
+invalid.sections[1].map.texture = "Interface\\Valid.png"
+invalid.sections[1].map.width = 0
+assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted a non-positive section map width")
+invalid.sections[1].map.width = 1024.5
+assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted a fractional section map width")
+invalid.sections[1].map.width = 1024
+invalid.sections[1].map.height = -1
+assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted a non-positive section map height")
+invalid.sections[1].map.height = 512
+invalid.sections[1].map.caption = ""
+assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted a blank section map caption")
+invalid.sections[1].map.caption = "valid"
+invalid.sections[1].map.description = " "
+assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted a blank section map description")
+invalid.sections[1].map = nil
 invalid.instanceIds = { 1, 1 }
 assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted a duplicate instance ID")
 

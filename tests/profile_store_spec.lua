@@ -53,6 +53,12 @@ ApogeePartyHealthBars_Effects = {
         if settings.dungeonGuideAutoMarkEnabled == nil then
             settings.dungeonGuideAutoMarkEnabled = true
         end
+        if settings.dungeonGuideWidth == nil then settings.dungeonGuideWidth = 1000 end
+        if settings.dungeonGuideHeight == nil then settings.dungeonGuideHeight = 720 end
+        settings.dungeonGuideWidth = math.max(720, math.min(3840,
+            math.floor(tonumber(settings.dungeonGuideWidth) or 1000)))
+        settings.dungeonGuideHeight = math.max(520, math.min(2160,
+            math.floor(tonumber(settings.dungeonGuideHeight) or 720)))
         if settings.cleanseWatchPoint == nil then
             settings.cleanseWatchPoint = "TOPRIGHT"
         end
@@ -170,6 +176,8 @@ assert(created.payload.settings.enabled
         and created.payload.settings.dungeonBoardRole == "healer"
         and created.payload.settings.dungeonBoardFeedEnabled == true
         and created.payload.settings.dungeonGuideAutoMarkEnabled == true
+        and created.payload.settings.dungeonGuideWidth == 1000
+        and created.payload.settings.dungeonGuideHeight == 720
         and created.payload.settings.cleanseWatchPoint == "TOPRIGHT"
         and created.payload.settings.cleanseWatchRelPoint == "TOPRIGHT"
         and created.payload.settings.cleanseWatchX == 0
@@ -323,6 +331,7 @@ local sanitized = store.NormalizePayload({ settings = {
     dungeonGuideAutoMarkInCombatEnabled = true,
     dungeonGuidePoint = "TOP", dungeonGuideRelPoint = "TOP",
     dungeonGuideX = 24, dungeonGuideY = -48,
+    dungeonGuideWidth = 1180, dungeonGuideHeight = 810,
     buffThanksEnabled = false, buffThanksPoint = "TOP", buffThanksRelPoint = "TOP",
     buffThanksX = 12, buffThanksY = -140,
 }, actions = {} })
@@ -358,7 +367,9 @@ assert(sanitized.settings.dungeonGuideAutoMarkEnabled == true
         and sanitized.settings.dungeonGuidePoint == "TOP"
         and sanitized.settings.dungeonGuideRelPoint == "TOP"
         and sanitized.settings.dungeonGuideX == 24
-        and sanitized.settings.dungeonGuideY == -48,
+        and sanitized.settings.dungeonGuideY == -48
+        and sanitized.settings.dungeonGuideWidth == 1180
+        and sanitized.settings.dungeonGuideHeight == 810,
     "Dungeon Guide profile preferences did not survive normalization")
 local retiredCombatMarking = store.NormalizePayload({
     settings = { dungeonGuideAutoMarkInCombatEnabled = true }, actions = {},

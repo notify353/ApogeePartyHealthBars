@@ -82,11 +82,35 @@ assert(Eligibility.IsBoardVisible(official, "tank", 17)
         and Eligibility.IsBoardVisible(official, "tank", 24)
         and not Eligibility.IsBoardVisible(official, "healer", 24)
         and Eligibility.IsBoardVisible(official, "tank", 25)
-        and not Eligibility.IsBoardVisible(
+        and Eligibility.IsBoardVisible(
             official, "tank", 25, Eligibility.GetLevelWindow(25, 0, 0))
-        and not Eligibility.IsBoardVisible(official, "tank", 35),
-    "official configured-window or role filtering changed")
+        and not Eligibility.IsBoardVisible(official, "tank", 36),
+    "official catalog-window or role filtering changed")
 assert(not Eligibility.IsFeedOpportunity(official, "tank", 20),
     "official listing entered real-time LFG Alerts")
+
+local allClassicKeys = {}
+for _, dungeon in ipairs(ApogeePartyHealthBars_DungeonBoardCatalog.GetDungeons(
+    "classicEra"))
+do
+    allClassicKeys[#allClassicKeys + 1] = dungeon.key
+end
+local level37Window = Eligibility.GetLevelWindow(37, 5, 5)
+local expectedLevel37Keys = "GNO,RFK,SMG,SML,SMA,SMC,RFD,ULD,MAR"
+for _, source in ipairs({ "channel", "blizzard" }) do
+    local entry = {
+        source = source,
+        dungeonKeys = allClassicKeys,
+        neededRoles = { "healer" },
+        heroic = false,
+        activityRanges = {
+            BFD = { minLevel = 1, maxLevel = 60 },
+            STK = { minLevel = 1, maxLevel = 60 },
+        },
+    }
+    assert(table.concat(Eligibility.GetEligibleDungeonKeys(
+            entry, 37, level37Window), ",") == expectedLevel37Keys,
+        source .. " listing did not use displayed catalog ranges for Lv 32-42")
+end
 
 print("PASS Dungeon Board eligibility")

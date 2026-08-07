@@ -61,33 +61,14 @@ function Eligibility.MatchesRole(entry, role)
     return needsHealer and not needsTank
 end
 
-local function officialKeyInRange(entry, key, playerLevel, levelWindow)
-    local ranges = entry.activityRanges or {}
-    local range = ranges[key]
-    if type(range) ~= "table" then return false end
-    if (entry.heroic == true or entry.difficulty == "heroic")
-        and playerLevel < (tonumber(range.minLevel) or math.huge)
-    then
-        return false
-    end
-    return levelWindow
-        and (tonumber(range.maxLevel) or -math.huge) >= levelWindow.minLevel
-        and (tonumber(range.minLevel) or math.huge) <= levelWindow.maxLevel
-end
-
 function Eligibility.GetEligibleDungeonKeys(entry, playerLevel, levelWindow)
     local result = {}
     if type(entry) ~= "table" then return result end
     levelWindow = levelWindow or Eligibility.GetLevelWindow(playerLevel)
     if not levelWindow then return result end
     for _, key in ipairs(entry.dungeonKeys or {}) do
-        local eligible
-        if entry.source == "blizzard" then
-            eligible = officialKeyInRange(entry, key, playerLevel, levelWindow)
-        else
-            eligible = Catalog.IsLevelAppropriate(
-                key, playerLevel, entry.heroic, levelWindow)
-        end
+        local eligible = Catalog.IsLevelAppropriate(
+            key, playerLevel, entry.heroic, levelWindow)
         if eligible then result[#result + 1] = key end
     end
     return result

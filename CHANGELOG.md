@@ -8,6 +8,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
+- Added the first full-size Dungeon Book map: Cathedral now covers the complete keyed entrance, fountain courtyards, patrol lanes, chapel rooms, Fairbanks detour, and Mograine/Whitemane altar encounter.
+- Added a comprehensive Uldaman Dungeon Book with full front-entrance routing, Staff of Prehistoria and back-door guidance, Annora and optional boss detours, dangerous trash priorities, the keeper altar sequence, Archaedas add waves, and automatic target marking.
 - Added a comprehensive Razorfen Downs Dungeon Book with the three-ring gong event, Belnistrasz and Plaguemaw defense, Bone Pile and spiral routing, all regular, rare, quest, and Scourge Invasion bosses, and automatic target marking.
 - Added a compact Target HUD beneath Target Effects on the current hostile target's visible nameplate, with player health, absorb shields, incoming-heal prediction, mana, and active resources; it remains visible when no effect reminder is due and follows the shared Target HUD setting.
 - Added a comprehensive Razorfen Kraul Dungeon Book with the Roogug detour, Willix escort and backtracking, high-ledge and bridge routing, priority totems and casters, all bosses and rares, Agathelos's ward, and automatic target marking.
@@ -20,12 +22,15 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Changed
 
+- Refactored the Dungeon Book into resizable Map and Strategy views with saved window dimensions plus fitted, zoomable, and pannable map navigation.
+- Audited and polished all six Dungeon Guides for safe pickup-group clears with complete routing, exact high-risk abilities, clearer pull and recovery advice, consistent kill markers, and corrected boss classification for Gnomeregan's Chomper companion.
 - Kept Dungeon Guide crowd-control choices manual: former Moon entries now show No Auto Mark and explain optional control in strategy text instead of assigning a CC icon.
 - Made automatic raid markers fluid while changing targets out of combat and sticky during combat: observed Skull, Cross, and Circle owners retain their icons until death or observed manual removal.
 - Removed the Dungeon Guide coaching text, recommendation glow, and Moon/Cross/Skull nameplate buttons in favor of current-target-driven marking that does not require visible nameplates or scan packs.
 
 ### Fixed
 
+- Corrected OFFICIAL Dungeon Board listings to use the same displayed dungeon ranges as chat listings, so configured Below and Above level windows no longer admit out-of-range dungeons.
 - Reworded Dungeon Board and LFG Alert whisper drafts as concise role offers, such as `Tank LF Gnomer`, with role-only `LFG` fallbacks when no dungeon is available.
 
 - Kept the Target HUD's basic player health and power visible when Target Effects APIs are unavailable, while disabling only the effect-specific settings.

@@ -2,6 +2,8 @@ ApogeePartyHealthBars_DungeonGuideSettings = {}
 local S = ApogeePartyHealthBars_DungeonGuideSettings
 local D
 local DEFAULT_POINT, DEFAULT_X, DEFAULT_Y = "CENTER", 0, 0
+local DEFAULT_WIDTH, DEFAULT_HEIGHT = 1000, 720
+local MIN_WIDTH, MIN_HEIGHT = 720, 520
 
 function S.Initialize(deps)
     assert(type(deps) == "table" and type(deps.GetSavedVariables) == "function",
@@ -32,3 +34,33 @@ function S.SetBookPosition(point, relativePoint, x, y)
     v.dungeonGuideX, v.dungeonGuideY = tonumber(x) or DEFAULT_X, tonumber(y) or DEFAULT_Y
 end
 function S.ResetBookPosition() S.SetBookPosition(DEFAULT_POINT, DEFAULT_POINT, DEFAULT_X, DEFAULT_Y) end
+
+local function normalizeDimension(value, fallback, minimum, maximum)
+    value = tonumber(value)
+    if not value or value ~= value then value = fallback end
+    return math.max(minimum, math.min(maximum, math.floor(value + 0.5)))
+end
+
+function S.GetBookSize()
+    local v = saved() or {}
+    return normalizeDimension(v.dungeonGuideWidth, DEFAULT_WIDTH, MIN_WIDTH, 3840),
+        normalizeDimension(v.dungeonGuideHeight, DEFAULT_HEIGHT, MIN_HEIGHT, 2160)
+end
+
+function S.SetBookSize(width, height)
+    local v = saved(); if not v then return false end
+    width = normalizeDimension(width, DEFAULT_WIDTH, MIN_WIDTH, 3840)
+    height = normalizeDimension(height, DEFAULT_HEIGHT, MIN_HEIGHT, 2160)
+    if v.dungeonGuideWidth == width and v.dungeonGuideHeight == height then
+        return false
+    end
+    v.dungeonGuideWidth, v.dungeonGuideHeight = width, height
+    return true
+end
+
+function S.ResetBookWindow()
+    S.ResetBookPosition()
+    return S.SetBookSize(DEFAULT_WIDTH, DEFAULT_HEIGHT)
+end
+
+function S.GetDefaultBookSize() return DEFAULT_WIDTH, DEFAULT_HEIGHT end

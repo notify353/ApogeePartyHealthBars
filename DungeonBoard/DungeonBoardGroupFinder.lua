@@ -30,16 +30,11 @@ local function cloneState()
     }
 end
 
-local function isLevelAppropriate(info, playerLevel, heroic)
-    if type(info) ~= "table" or type(playerLevel) ~= "number" then return false end
-    local minLevel = tonumber(info.minLevelSuggestion)
-    local maxLevel = tonumber(info.maxLevelSuggestion)
-    if not minLevel or not maxLevel then return false end
-    if heroic then return playerLevel >= minLevel end
+local function isLevelAppropriate(mapped, playerLevel)
+    if type(mapped) ~= "table" or type(playerLevel) ~= "number" then return false end
     local levelWindow = D.Settings.GetLevelWindow(playerLevel)
-    return levelWindow
-        and maxLevel >= levelWindow.minLevel
-        and minLevel <= levelWindow.maxLevel
+    return D.Catalog.IsLevelAppropriate(
+        mapped.key, playerLevel, mapped.heroic, levelWindow)
 end
 
 local function getMappedActivity(activityID, playerLevel)
@@ -48,7 +43,7 @@ local function getMappedActivity(activityID, playerLevel)
     local info = D.API.GetActivityInfoTable(activityID)
     if type(info) ~= "table"
         or info.maxNumPlayers ~= 5
-        or not isLevelAppropriate(info, playerLevel, mapped.heroic)
+        or not isLevelAppropriate(mapped, playerLevel)
     then
         return nil
     end
@@ -96,22 +91,17 @@ local function parseResult(resultID)
     local dungeonKeys = {}
     local seenKeys = {}
     local activityIDs = {}
-    local activityRanges = {}
     local anyHeroic = false
     local anyNormal = false
     local playerLevel = D.GetPlayerLevel()
     for _, activityID in ipairs(info.activityIDs or {}) do
-        local mapped, activityInfo = getMappedActivity(activityID, playerLevel)
+        local mapped = getMappedActivity(activityID, playerLevel)
         if mapped then
             activityIDs[#activityIDs + 1] = activityID
             if not seenKeys[mapped.key] then
                 seenKeys[mapped.key] = true
                 dungeonKeys[#dungeonKeys + 1] = mapped.key
             end
-            activityRanges[mapped.key] = {
-                minLevel = activityInfo.minLevelSuggestion,
-                maxLevel = activityInfo.maxLevelSuggestion,
-            }
             if mapped.heroic then anyHeroic = true else anyNormal = true end
         end
     end
@@ -144,7 +134,6 @@ local function parseResult(resultID)
         comment = info.comment,
         dungeonKeys = dungeonKeys,
         activityIDs = activityIDs,
-        activityRanges = activityRanges,
         -- Blizzard activity IDs are structured selections, not ambiguous chat text.
         -- A leader can select more than one dungeon, so preserve every mapped
         -- option while keeping the result definitively matched.

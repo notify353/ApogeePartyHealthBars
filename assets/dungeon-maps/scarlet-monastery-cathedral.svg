@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="2048" viewBox="0 0 2048 2048">
+  <defs>
+    <linearGradient id="parchment" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3a2c1c"/><stop offset=".55" stop-color="#251e16"/><stop offset="1" stop-color="#15130f"/>
+    </linearGradient>
+    <pattern id="grain" width="74" height="62" patternUnits="userSpaceOnUse">
+      <path d="M4 18c18-10 36-10 56 0M16 50c14-6 30-6 46 0" fill="none" stroke="#c6a66b" stroke-width="2" opacity=".08"/>
+    </pattern>
+    <pattern id="stone" width="64" height="48" patternUnits="userSpaceOnUse">
+      <path d="M0 24h64M32 0v24M14 24v24M50 24v24" fill="none" stroke="#9b8c70" stroke-width="2" opacity=".17"/>
+    </pattern>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0l10 5-10 5z" fill="#ffd34f"/>
+    </marker>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="7" stdDeviation="7" flood-color="#000" flood-opacity=".75"/>
+    </filter>
+    <style>
+      .wall{fill:#625744;stroke:#b39d74;stroke-width:16;stroke-linejoin:round}
+      .floor{fill:#29251e;stroke:#7d7059;stroke-width:8}
+      .stone{fill:url(#stone)}
+      .grass{fill:#354632;stroke:#788867;stroke-width:8}
+      .water{fill:#2e7180;stroke:#9bd3d1;stroke-width:12}
+      .route{fill:none;stroke:#ffd34f;stroke-width:26;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrow);filter:url(#shadow)}
+      .patrol{fill:none;stroke:#e78644;stroke-width:14;stroke-dasharray:30 22;marker-end:url(#arrow)}
+      .danger{fill:#9f3239;fill-opacity:.16;stroke:#eb6a70;stroke-width:9;stroke-dasharray:25 18}
+      .area{font-family:Arial,sans-serif;fill:#f7e9ca;font-size:58px;font-weight:700;text-anchor:middle}
+      .label{font-family:Arial,sans-serif;fill:#ddd0b5;font-size:38px;font-weight:700;text-anchor:middle}
+      .detail{font-family:Arial,sans-serif;fill:#c4b79e;font-size:30px;text-anchor:middle}
+      .step{fill:#a83139;stroke:#ffaaa0;stroke-width:10;filter:url(#shadow)}
+      .stepText{font-family:Arial,sans-serif;fill:#fff;font-size:58px;font-weight:700;text-anchor:middle;dominant-baseline:central}
+      .boss{fill:#dc7b2d;stroke:#ffd39a;stroke-width:10;filter:url(#shadow)}
+      .bossText{font-family:Arial,sans-serif;fill:#ffd9a6;font-size:38px;font-weight:700;text-anchor:middle}
+      .safe{fill:#3981b7;stroke:#a8d8ff;stroke-width:8}
+    </style>
+  </defs>
+
+  <rect width="2048" height="2048" rx="34" fill="url(#parchment)"/>
+  <rect x="24" y="24" width="2000" height="2000" rx="28" fill="url(#grain)" stroke="#806d4e" stroke-width="8"/>
+  <text x="64" y="92" font-family="Arial,sans-serif" font-size="62" font-weight="700" fill="#ffd34f">SCARLET MONASTERY: CATHEDRAL</text>
+  <text x="1980" y="88" font-family="Arial,sans-serif" font-size="34" font-weight="700" fill="#c1b393" text-anchor="end">COMPLETE SAFE-PUG ROUTE • NOT TO SCALE</text>
+
+  <!-- High altar and boss chamber -->
+  <path class="wall" d="M650 146h748v278H650z"/>
+  <path class="floor stone" d="M678 174h692v222H678z"/>
+  <path class="danger" d="M750 228h548v122H750z"/>
+  <text class="area" x="1024" y="225">HIGH ALTAR</text>
+  <path class="boss" d="M1024 255l54 54-54 54-54-54z"/>
+  <text class="bossText" x="1024" y="388">MOGRAINE + WHITEMANE</text>
+  <path d="M1370 246h28v112h-28" fill="#783b3e" stroke="#c89e79" stroke-width="9"/>
+  <text class="detail" x="1295" y="285">WHITEMANE</text>
+  <text class="detail" x="1295" y="322">ENTRANCE</text>
+  <ellipse cx="1165" cy="318" rx="92" ry="52" fill="none" stroke="#65aee3" stroke-width="11"/>
+  <text class="detail" x="1165" y="302">RESURRECTION</text>
+  <text class="detail" x="1165" y="338">AREA</text>
+
+  <!-- Full cathedral nave, aisles, and side rooms -->
+  <path class="wall" d="M430 424h1188v604H430z"/>
+  <path class="floor stone" d="M458 452h1132v548H458z"/>
+  <path d="M650 452v548M1398 452v548" stroke="#786c57" stroke-width="14"/>
+  <path d="M690 494h668M690 918h668" stroke="#aa9875" stroke-width="8" stroke-dasharray="30 22"/>
+  <text class="area" x="1024" y="548">CATHEDRAL NAVE</text>
+  <text class="label" x="552" y="724" transform="rotate(-90 552 724)">LEFT AISLE + ROOMS</text>
+  <text class="label" x="1496" y="724" transform="rotate(90 1496 724)">RIGHT AISLE + ROOMS</text>
+  <rect class="floor" x="686" y="600" width="264" height="128" rx="16"/>
+  <rect class="floor" x="1098" y="600" width="264" height="128" rx="16"/>
+  <rect class="floor" x="686" y="786" width="264" height="128" rx="16"/>
+  <rect class="floor" x="1098" y="786" width="264" height="128" rx="16"/>
+  <text class="detail" x="818" y="678">SIDE ROOM</text><text class="detail" x="1230" y="678">SIDE ROOM</text>
+  <text class="detail" x="818" y="864">SIDE ROOM</text><text class="detail" x="1230" y="864">SIDE ROOM</text>
+  <path class="danger" d="M472 466h1104v520H472z"/>
+  <text class="label" x="1024" y="968">CLEAR EVERY SCARLET BEFORE MOGRAINE</text>
+
+  <!-- Fairbanks hidden room and secret door -->
+  <path class="wall" d="M1618 622h350v260h-350z"/>
+  <path class="floor" d="M1646 650h294v204h-294z"/>
+  <path d="M1618 696v112" stroke="#ffd34f" stroke-width="16" stroke-dasharray="24 18"/>
+  <path class="boss" d="M1793 688l42 42-42 42-42-42z"/>
+  <text class="bossText" x="1793" y="817">FAIRBANKS</text>
+  <text class="detail" x="1793" y="850">SECRET ROOM</text>
+
+  <!-- Chapel threshold and LOS staging -->
+  <path class="wall" d="M820 1028h408v174H820z"/>
+  <path class="floor stone" d="M848 1056h352v118H848z"/>
+  <path d="M864 1074h70v84h-70M1184 1074h-70v84h70" fill="none" stroke="#d5c5a4" stroke-width="15"/>
+  <text class="label" x="1024" y="1125">CHAPEL DOOR</text>
+  <path class="safe" d="M1228 1100l38-14 38 14v31c0 30-20 51-38 63-18-12-38-33-38-63z"/>
+  <text class="detail" x="1365" y="1118">LOS CORNER</text>
+  <text class="detail" x="1365" y="1153">FIGHT OUTSIDE</text>
+
+  <!-- Upper courtyard with patrols and runner lanes -->
+  <path class="wall" d="M380 1202h1288v360H380z"/>
+  <path class="grass" d="M408 1230h1232v304H408z"/>
+  <path d="M420 1378h1208M675 1238v288M1373 1238v288" stroke="#82775b" stroke-width="44" opacity=".9"/>
+  <text class="area" x="1024" y="1300">UPPER COURTYARD</text>
+  <text class="detail" x="1024" y="1344">SWEEP BOTH SIDES • STOP RUNNERS</text>
+  <path class="patrol" d="M505 1452c170-78 340-78 500 0"/>
+  <path class="patrol" d="M1540 1452c-170-78-340-78-500 0"/>
+  <path class="danger" d="M430 1400h1188v112H430z"/>
+  <text class="detail" x="650" y="1502">PATROL</text><text class="detail" x="1398" y="1502">PATROL</text>
+
+  <!-- Lower courtyard and complete fountain perimeter -->
+  <path class="wall" d="M300 1562h1448v310H300z"/>
+  <path class="grass" d="M328 1590h1392v254H328z"/>
+  <path d="M340 1717h1368M598 1598v238M1450 1598v238" stroke="#82775b" stroke-width="46" opacity=".9"/>
+  <circle class="water" cx="1024" cy="1717" r="132"/>
+  <circle cx="1024" cy="1717" r="76" fill="#3c8990" opacity=".8"/>
+  <text class="area" x="1024" y="1628">LOWER COURTYARD</text>
+  <text class="label" x="1024" y="1732">FOUNTAIN</text>
+  <text class="detail" x="510" y="1808">CLEAR LEFT EDGE</text><text class="detail" x="1538" y="1808">CLEAR RIGHT EDGE</text>
+  <path class="danger" d="M350 1770h1348v54H350z"/>
+
+  <!-- Keyed entrance and safe reset staging -->
+  <path class="wall" d="M690 1872h668v128H690z"/>
+  <path class="floor stone" d="M718 1900h612v72H718z"/>
+  <path d="M760 1918h86M760 1942h86" stroke="#d7ab4a" stroke-width="18"/>
+  <text class="label" x="1024" y="1953">KEYED ENTRANCE + STAGING</text>
+  <path class="safe" d="M600 1908l38-14 38 14v31c0 30-20 51-38 63-18-12-38-33-38-63z"/>
+  <text class="detail" x="500" y="1997">SAFE RESET</text>
+
+  <!-- Five route stages -->
+  <path class="route" d="M1024 1930v-130"/>
+  <path class="route" d="M920 1730c-270 0-300-250-82-300"/>
+  <path class="route" d="M886 1380c68-58 98-105 116-168"/>
+  <path class="route" d="M1024 1080v-220c-220 0-285-210-70-290"/>
+  <path class="route" d="M1090 570c210 70 380 54 518 155"/>
+  <path class="route" d="M1595 774c-144 130-336 116-505 70"/>
+  <path class="route" d="M1024 810V360"/>
+  <circle class="step" cx="1024" cy="1928" r="62"/><text class="stepText" x="1024" y="1928">1</text>
+  <circle class="step" cx="920" cy="1730" r="62"/><text class="stepText" x="920" y="1730">2</text>
+  <circle class="step" cx="886" cy="1380" r="62"/><text class="stepText" x="886" y="1380">3</text>
+  <circle class="step" cx="1024" cy="1080" r="62"/><text class="stepText" x="1024" y="1080">4</text>
+  <circle class="step" cx="1024" cy="360" r="62"/><text class="stepText" x="1024" y="360">5</text>
+
+  <rect x="62" y="186" width="330" height="410" rx="24" fill="#17140f" fill-opacity=".92" stroke="#806d4e" stroke-width="7"/>
+  <text x="92" y="246" font-family="Arial,sans-serif" font-size="40" font-weight="700" fill="#ffd34f">ROUTE STAGES</text>
+  <text x="92" y="304" font-family="Arial,sans-serif" font-size="32" fill="#eadcc0">1  Unlock + stage</text>
+  <text x="92" y="360" font-family="Arial,sans-serif" font-size="32" fill="#eadcc0">2  Lower courtyard</text>
+  <text x="92" y="416" font-family="Arial,sans-serif" font-size="32" fill="#eadcc0">3  Upper courtyard</text>
+  <text x="92" y="472" font-family="Arial,sans-serif" font-size="32" fill="#eadcc0">4  Chapel + Fairbanks</text>
+  <text x="92" y="528" font-family="Arial,sans-serif" font-size="32" fill="#eadcc0">5  Mograine + Whitemane</text>
+</svg>

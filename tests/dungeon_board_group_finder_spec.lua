@@ -36,6 +36,18 @@ local activityInfo = {
         categoryID = 2, maxNumPlayers = 10, minLevelSuggestion = 58,
         maxLevelSuggestion = 70, isNormalActivity = true, isHeroicActivity = false,
     },
+    [301] = {
+        categoryID = 2, maxNumPlayers = 5, minLevelSuggestion = 1,
+        maxLevelSuggestion = 60, isNormalActivity = true, isHeroicActivity = false,
+    },
+    [302] = {
+        categoryID = 2, maxNumPlayers = 5, minLevelSuggestion = 1,
+        maxLevelSuggestion = 60, isNormalActivity = true, isHeroicActivity = false,
+    },
+    [303] = {
+        categoryID = 2, maxNumPlayers = 5, minLevelSuggestion = 1,
+        maxLevelSuggestion = 60, isNormalActivity = true, isHeroicActivity = false,
+    },
 }
 local mapped = {
     [101] = { id = 101, key = "WC", expansion = "classicEra", heroic = false },
@@ -43,8 +55,14 @@ local mapped = {
     [202] = { id = 202, key = "RAMPS", expansion = "tbcAnniversary", heroic = true },
     [203] = { id = 203, key = "BF", expansion = "tbcAnniversary", heroic = true },
     [999] = { id = 999, key = "UBRS", expansion = "classicEra", heroic = false },
+    [301] = { id = 301, key = "BFD", expansion = "classicEra", heroic = false },
+    [302] = { id = 302, key = "STK", expansion = "classicEra", heroic = false },
+    [303] = { id = 303, key = "RFK", expansion = "classicEra", heroic = false },
 }
-local activities = { mapped[101], mapped[201], mapped[202], mapped[203], mapped[999] }
+local activities = {
+    mapped[101], mapped[201], mapped[202], mapped[203], mapped[999],
+    mapped[301], mapped[302], mapped[303],
+}
 local hook
 
 local API = {
@@ -226,17 +244,24 @@ GroupFinder.HandleSearchResultsReceived()
 assert(GroupFinder.GetStatus().status == "ready",
     "native/add-on search results were not ingested")
 
+playerLevel, levelsBelow, levelsAbove = 37, 5, 5
+assert(GroupFinder.RequestRefresh(),
+    "level-37 official refresh did not start")
+assert(#searchCalls == 2 and #searchCalls[2][7] == 1
+        and searchCalls[2][7][1] == 303,
+    "official refresh used Blizzard suggestions instead of displayed catalog ranges")
+
 canUse, canUseReason = false, "restricted"
 assert(not GroupFinder.RequestRefresh()
         and GroupFinder.GetStatus().failureReason == "restricted"
-        and #searchCalls == 1,
+        and #searchCalls == 2,
     "Group Finder eligibility failure still invoked Search")
 
 canUse = true
 available = false
 assert(not GroupFinder.RequestRefresh()
         and GroupFinder.GetStatus().failureReason == "unsupported client"
-        and #searchCalls == 1,
+        and #searchCalls == 2,
     "capability fallback still invoked Search")
 
 print("PASS Dungeon Board manual Group Finder adapter")

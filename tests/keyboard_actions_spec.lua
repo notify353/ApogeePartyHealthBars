@@ -1,3 +1,8 @@
+dofile("Core/Namespace.lua")
+dofile("Actions/BoundActionEvaluator.lua")
+dofile("Actions/BoundActionView.lua")
+dofile("Actions/BoundActionSecureController.lua")
+
 ApogeePartyHealthBars_C = {
     SHORTCUT_ICON_SIZE = 24, SHORTCUT_ICON_GAP = 3, SHORTCUT_READY_PULSE = 0.65,
     SHORTCUT_SOUND_DEBOUNCE = 2, OUT_OF_RANGE_ALPHA = 0.35, ROW_CONTENT_W = 184,

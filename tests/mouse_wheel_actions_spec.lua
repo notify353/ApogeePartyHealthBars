@@ -1,3 +1,8 @@
+dofile("Core/Namespace.lua")
+dofile("Actions/BoundActionEvaluator.lua")
+dofile("Actions/BoundActionView.lua")
+dofile("Actions/BoundActionSecureController.lua")
+
 unpack = unpack or table.unpack
 
 ApogeePartyHealthBars_C = { SHORTCUT_ICON_SIZE = 24, SHORTCUT_ICON_GAP = 3,

@@ -1,3 +1,6 @@
+dofile("Core/Namespace.lua")
+dofile("Actions/ShortcutStore.lua")
+
 unpack = unpack or table.unpack
 function wipe(value) for key in pairs(value or {}) do value[key] = nil end return value end
 

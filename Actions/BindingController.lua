@@ -6,8 +6,10 @@ local K = ApogeePartyHealthBars_KeyboardActions
 local MB = ApogeePartyHealthBars_MouseButtonActions
 local Items = ApogeePartyHealthBars_ShortcutItems
 
-ApogeePartyHealthBars_BindingController = {}
-local B = ApogeePartyHealthBars_BindingController
+local B = {}
+ApogeePartyHealthBars.Define(
+    "Actions", "BindingController", B,
+    "ApogeePartyHealthBars_BindingController")
 local D
 
 local function GetBindingSlotLabel(slotKey)

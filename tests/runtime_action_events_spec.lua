@@ -1,3 +1,5 @@
+dofile("Core/Namespace.lua")
+
 local calls = {}
 local scheduledTimers = {}
 local function record(value) calls[#calls + 1] = value end
@@ -50,6 +52,9 @@ ApogeePartyHealthBars_ActionAssignmentSources = {
         return true
     end,
 }
+ApogeePartyHealthBars.Define(
+    "Actions", "ActionAssignmentSources",
+    ApogeePartyHealthBars_ActionAssignmentSources)
 ApogeePartyHealthBars_MouseWheelActions = {
     Refresh = function() record("wheel-refresh") end,
     RefreshSecureActions = function() record("wheel-secure") end,
@@ -143,13 +148,19 @@ local deps = {
     ReconcileBoundActionBindings = function() record("bindings-reconcile"); return true end,
 }
 
+dofile("Integrations/Baganator.lua")
+dofile("Runtime/ActionAssignmentEvents.lua")
 dofile("Runtime/ActionEvents.lua")
 local events = ApogeePartyHealthBars_ActionEvents
+local assignmentEvents = ApogeePartyHealthBars_ActionAssignmentEvents
 
 local valid, validationError = pcall(events.Register, router, {})
 assert(not valid and tostring(validationError):find("Print", 1, true),
     "action subscriber accepted incomplete dependencies")
 events.Register(router, deps)
+assignmentEvents.Register(router, {
+    RefreshAssignmentAffordances = function() record("assignment-refresh") end,
+})
 reset()
 
 for _, event in ipairs({

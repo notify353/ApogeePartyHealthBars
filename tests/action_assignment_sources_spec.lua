@@ -1,3 +1,5 @@
+dofile("Core/Namespace.lua")
+
 NUM_BAG_SLOTS = 4
 ApogeePartyHealthBars_S = { sv = { enabled = true } }
 

@@ -1,3 +1,5 @@
+dofile("Core/Namespace.lua")
+
 ApogeePartyHealthBars_C = {
     BINDING_SLOTS = {
         { key = "1", label = "Left Click" },

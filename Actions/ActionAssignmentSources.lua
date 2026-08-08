@@ -1,8 +1,10 @@
 local S = ApogeePartyHealthBars_S
 local ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities
 
-ApogeePartyHealthBars_ActionAssignmentSources = {}
-local A = ApogeePartyHealthBars_ActionAssignmentSources
+local A = {}
+ApogeePartyHealthBars.Define(
+    "Actions", "ActionAssignmentSources", A,
+    "ApogeePartyHealthBars_ActionAssignmentSources")
 
 local spellbookOpen = false
 local openPlayerBags = {}

@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Fixed Baganator live action assignment reconnecting unreliably when its callback registry became available after initial add-on composition or was replaced during startup.
+
 ### Added
 
 - Added out-of-combat drag-and-drop from an open Spellbook or carried bag, including Baganator's combined backpack, directly onto live Shortcut Bar, Keyboard, Mouse Wheel, and Mouse Buttons HUD positions while preserving their normal secure click behavior.

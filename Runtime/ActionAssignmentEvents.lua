@@ -52,6 +52,7 @@ function E.Register(eventRouter, deps)
         Refresh(Sources.SetPlayerBagOpen(bagId, false))
     end)
     eventRouter.RegisterOptional("CURSOR_CHANGED", "ActionAssignmentSources", function()
+        Baganator.EnsureRegistered()
         Refresh(true)
     end)
 
@@ -61,5 +62,9 @@ function E.Register(eventRouter, deps)
     eventRouter.Subscribe("ADDON_LOADED", "ActionAssignmentSources", function(_, addonName)
         Baganator.OnAddonLoaded(addonName)
     end)
+    for _, event in ipairs({ "PLAYER_LOGIN", "PLAYER_ENTERING_WORLD" }) do
+        eventRouter.RegisterOptional(event, "BaganatorIntegration", function()
+            Baganator.OnLifecycleEvent()
+        end)
+    end
 end
-

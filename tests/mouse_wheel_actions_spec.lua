@@ -55,6 +55,8 @@ end
 
 local inCombat = false
 function InCombatLockdown() return inCombat end
+local cursorType
+function GetCursorInfo() return cursorType end
 local actionButtonUseKeyDown = false
 function GetCVarBool(name)
     assert(name == "ActionButtonUseKeyDown")
@@ -196,6 +198,7 @@ dofile("Actions/MouseWheel/MouseWheelData.lua")
 dofile("Core/UIHelpers.lua")
 dofile("Core/Sounds.lua")
 dofile("Actions/ActionCooldowns.lua")
+dofile("Actions/ActionAssignmentSources.lua")
 dofile("Actions/ShortcutItems.lua")
 dofile("Actions/ActionData.lua")
 dofile("Actions/ActionMacros.lua")
@@ -735,9 +738,30 @@ for _, slot in ipairs(data.SLOTS) do
 end
 
 ApogeePartyHealthBars_S.configMode = false
+cursorType = "spell"
 wheel.GetHudCastButton("normalUp").scripts.OnReceiveDrag()
 assert(droppedFeature == nil and droppedSlot == nil and droppedLayout == nil,
     "Wheel HUD routed a cursor drop while configuration was closed")
+ApogeePartyHealthBars_ActionAssignmentSources.SetSpellbookOpen(true)
+wheel.GetHudCastButton("normalUp").scripts.OnReceiveDrag()
+assert(droppedFeature == "mouseWheel" and droppedSlot == "normalUp"
+        and droppedLayout == PRIMARY,
+    "open Spellbook did not route a live Wheel HUD drop to its active layout")
+assert(wheel.GetHudCastButton("normalUp").mouseEnabled
+        and not wheel.GetHudIcon("normalUp").mouseEnabled,
+    "assignment source replaced the secure Wheel mouse layer")
+ApogeePartyHealthBars_ActionAssignmentSources.SetSpellbookOpen(false)
+droppedFeature, droppedSlot, droppedLayout = nil, nil, nil
+ApogeePartyHealthBars_ActionAssignmentSources.SetPlayerBagOpen(0, true)
+wheel.GetHudCastButton("normalUp").scripts.OnReceiveDrag()
+assert(droppedFeature == nil and droppedSlot == nil and droppedLayout == nil,
+    "open player bag accepted a mismatched spell cursor")
+cursorType = "item"
+wheel.GetHudCastButton("normalUp").scripts.OnReceiveDrag()
+assert(droppedFeature == "mouseWheel" and droppedSlot == "normalUp"
+        and droppedLayout == PRIMARY,
+    "open player bag did not route a live Wheel HUD item drop")
+ApogeePartyHealthBars_ActionAssignmentSources.SetPlayerBagOpen(0, false)
 ApogeePartyHealthBars_S.configMode = true
 wheel.RefreshSecureActions()
 assert(wheel.GetHudIcon("normalUp").mouseEnabled

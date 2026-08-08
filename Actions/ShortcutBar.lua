@@ -7,6 +7,7 @@ local Actions = ApogeePartyHealthBars_ActionMacros
 local Items = ApogeePartyHealthBars_ShortcutItems
 local Cooldowns = ApogeePartyHealthBars_ActionCooldowns
 local CrowdControl = ApogeePartyHealthBars_CrowdControl
+local AssignmentSources = ApogeePartyHealthBars_ActionAssignmentSources
 
 ApogeePartyHealthBars_ShortcutBar = {}
 local T = ApogeePartyHealthBars_ShortcutBar
@@ -21,7 +22,6 @@ local previousStates = {}
 local lastSoundAt = {}
 local cooldownAlertArmed = {}
 local activeSpellKeys = {}
-local spellbookOpen = false
 local initialized = false
 local resolutionPending = false
 local visibleCount = 0
@@ -324,7 +324,9 @@ local function CreateIcon(parent)
 
     button:SetScript("OnReceiveDrag", function()
         local info = button.shortcutInfo
-        if S.configMode and info and info.slot and handleCursorDrop then
+        local cursorType = GetCursorInfo and GetCursorInfo()
+        if AssignmentSources.CanAcceptCursor(cursorType)
+            and info and info.slot and handleCursorDrop then
             handleCursorDrop("shortcuts", info.slot)
         end
     end)
@@ -349,7 +351,9 @@ local function CreateIcon(parent)
     castButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
     castButton:SetScript("OnReceiveDrag", function()
         local info = button.shortcutInfo
-        if S.configMode and info and info.slot and handleCursorDrop then
+        local cursorType = GetCursorInfo and GetCursorInfo()
+        if AssignmentSources.CanAcceptCursor(cursorType)
+            and info and info.slot and handleCursorDrop then
             handleCursorDrop("shortcuts", info.slot)
         end
     end)
@@ -366,7 +370,8 @@ local function CreateDropIcon(parent)
     button.border = Accessory.CreateBorder(button, 0)
     for _, edge in ipairs(button.border) do edge:SetColorTexture(0.45, 0.45, 0.48, 1) end
     button:SetScript("OnReceiveDrag", function()
-        if S.configMode and handleCursorDrop then
+        local cursorType = GetCursorInfo and GetCursorInfo()
+        if AssignmentSources.CanAcceptCursor(cursorType) and handleCursorDrop then
             handleCursorDrop("shortcuts", T.FindFirstEmptySlot())
         end
     end)
@@ -623,9 +628,8 @@ local function GetPlayerLaneMetrics()
 end
 
 local function ShouldShowDropTarget()
-    local inCombat = InCombatLockdown and InCombatLockdown()
-    return IsEnabled() and S.configMode
-        and not inCombat and T.FindFirstEmptySlot() ~= nil
+    return IsEnabled() and AssignmentSources.IsActive()
+        and T.FindFirstEmptySlot() ~= nil
 end
 
 local function ApplyLaneStyle(icon, lane)
@@ -774,10 +778,8 @@ function T.Tick()
     end
 end
 
-function T.SetSpellbookOpen(active)
-    active = active == true
-    if spellbookOpen == active then return false end
-    spellbookOpen = active
+function T.RefreshAssignmentAffordances()
+    if InCombatLockdown and InCombatLockdown() then return false end
     if requestLayout then requestLayout() end
     return true
 end

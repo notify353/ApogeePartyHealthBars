@@ -198,6 +198,10 @@ function B.AssignCursor(feature, slot, layoutKey)
             D.Print("could not read that item — try dragging it again.")
             return false
         end
+        if not Items.GetCount or Items.GetCount(itemId) <= 0 then
+            D.Print("that item is not in your carried bags.")
+            return false
+        end
         ok = AssignActionItem(feature, slot, layoutKey, itemId, itemName)
     else
         D.Print("drag a Spellbook spell or usable bag item onto that position.")

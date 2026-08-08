@@ -53,6 +53,7 @@ dofile("Actions/BoundActionLayouts.lua")
 dofile("Actions/Keyboard/KeyboardLayouts.lua")
 dofile("Actions/BoundActionBindings.lua")
 dofile("Actions/ActionCooldowns.lua")
+dofile("Actions/ActionAssignmentSources.lua")
 dofile("Actions/BoundActionRuntime.lua")
 dofile("Actions/Keyboard/KeyboardActions.lua")
 

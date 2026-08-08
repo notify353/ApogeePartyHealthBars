@@ -76,6 +76,8 @@ end
 
 local inCombat = false
 function InCombatLockdown() return inCombat end
+local cursorType
+function GetCursorInfo() return cursorType end
 function UnitClass() return "Mage", "MAGE" end
 local spellbook = {
     { name = "Fireball", id = 133, icon = 135812 },
@@ -164,6 +166,7 @@ dofile("Core/Sounds.lua")
 dofile("Core/UIHelpers.lua")
 dofile("PartyFrames/AccessoryLayout.lua")
 dofile("Actions/ActionCooldowns.lua")
+dofile("Actions/ActionAssignmentSources.lua")
 dofile("Actions/ShortcutItems.lua")
 dofile("Actions/ActionData.lua")
 dofile("Actions/ActionMacros.lua")
@@ -290,6 +293,7 @@ assert(castButton.attributes.macrotext1 == castButton.attributes.macrotext)
 assert(castButton.shown and castButton.mouseEnabled, "Shortcut cast button is not clickable")
 droppedFeature, droppedSlot = nil, nil
 ApogeePartyHealthBars_S.configMode = false
+cursorType = "spell"
 castButton.scripts.OnReceiveDrag()
 assert(droppedFeature == nil and droppedSlot == nil,
     "Shortcut HUD routed a cursor drop while configuration was closed")
@@ -469,12 +473,13 @@ local overflowAssigned, overflowMessage = shortcuts.AssignSpell(nil, 7000, "Over
 assert(not overflowAssigned and overflowMessage:find("Drop onto a row", 1, true),
     "full Shortcut Bar did not instruct the user to replace or clear an action")
 local dropButton = visualButtons[#visualButtons]
-assert(shortcuts.SetSpellbookOpen(true),
+local assignmentSources = ApogeePartyHealthBars_ActionAssignmentSources
+assert(assignmentSources.SetSpellbookOpen(true),
     "Spellbook visibility did not activate the Shortcut drop source")
 shortcuts.Layout()
 assert(dropButton and not dropButton.shown,
     "full Shortcut Bar showed an add target for a missing slot")
-shortcuts.SetSpellbookOpen(false)
+assignmentSources.SetSpellbookOpen(false)
 for slot = 12, 5, -1 do shortcuts.ClearSlot(slot) end
 assert(shortcuts.GetFooterHeight() == ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
         + ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE,
@@ -496,20 +501,35 @@ ApogeePartyHealthBars_S.configMode = false
 shortcuts.Layout()
 assert(not dropButton.shown, "Shortcut HUD add target remained visible without an assignment source")
 local layoutRequestsBeforeSource = layoutRequests
-assert(shortcuts.SetSpellbookOpen(true)
+assert(assignmentSources.SetSpellbookOpen(true)
+        and shortcuts.RefreshAssignmentAffordances()
         and layoutRequests == layoutRequestsBeforeSource + 1,
-    "opening the Spellbook did not request a Shortcut footer layout")
+    "opening the Spellbook did not refresh Shortcut assignment affordances")
 shortcuts.Layout()
-assert(not dropButton.shown,
-    "open Spellbook showed the Shortcut HUD add target while configuration was closed")
+assert(dropButton.shown,
+    "open Spellbook did not show the Shortcut HUD add target outside Settings")
+droppedFeature, droppedSlot = nil, nil
+cursorType = "spell"
+dropButton.scripts.OnReceiveDrag()
+assert(droppedFeature == "shortcuts" and droppedSlot == 5,
+    "Spellbook drop target did not route to the first empty Shortcut slot")
+assignmentSources.SetSpellbookOpen(false)
+shortcuts.RefreshAssignmentAffordances()
+shortcuts.Layout()
+assert(not dropButton.shown, "closing the Spellbook did not hide the add target")
+assignmentSources.SetPlayerBagOpen(0, true)
+shortcuts.RefreshAssignmentAffordances()
+shortcuts.Layout()
+assert(dropButton.shown, "open player bag did not show the Shortcut add target")
+cursorType = "spell"
 droppedFeature, droppedSlot = nil, nil
 dropButton.scripts.OnReceiveDrag()
 assert(droppedFeature == nil and droppedSlot == nil,
-    "hidden Shortcut add target routed a drop while configuration was closed")
-shortcuts.SetSpellbookOpen(false)
-shortcuts.Layout()
-assert(not dropButton.shown, "closing the Spellbook did not hide the add target")
-shortcuts.SetSpellbookOpen(true)
+    "player bag source accepted a mismatched spell cursor")
+cursorType = "item"
+dropButton.scripts.OnReceiveDrag()
+assert(droppedFeature == "shortcuts" and droppedSlot == 5,
+    "player bag item drop did not route to the first empty Shortcut slot")
 ApogeePartyHealthBars_S.configMode = true
 inCombat = true
 shortcuts.Layout()
@@ -518,7 +538,7 @@ inCombat = false
 shortcuts.Layout()
 assert(dropButton.shown, "Shortcut HUD add target did not return after combat")
 ApogeePartyHealthBars_S.configMode = false
-shortcuts.SetSpellbookOpen(false)
+assignmentSources.SetPlayerBagOpen(0, false)
 shortcuts.Layout()
 local expectedMacroLines = {
     "/use Fireball(Rank 1)", "/use Frostbolt(Rank 1)",

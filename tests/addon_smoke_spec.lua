@@ -355,6 +355,15 @@ assert(tocLoadOrder["Actions/ActionCooldowns.lua"]
     and tocLoadOrder["Actions/ActionCooldowns.lua"]
         < tocLoadOrder["Actions/ShortcutBar.lua"],
     "action cooldown consumers loaded before their shared classifier")
+assert(tocLoadOrder["Core/ClientCapabilities.lua"]
+        < tocLoadOrder["Actions/ActionAssignmentSources.lua"]
+    and tocLoadOrder["Actions/ActionAssignmentSources.lua"]
+        < tocLoadOrder["Actions/BoundActionRuntime.lua"]
+    and tocLoadOrder["Actions/ActionAssignmentSources.lua"]
+        < tocLoadOrder["Actions/ShortcutBar.lua"]
+    and tocLoadOrder["Actions/ActionAssignmentSources.lua"]
+        < tocLoadOrder["Runtime/ActionEvents.lua"],
+    "action assignment consumers loaded before their shared source policy")
 assert(tocLoadOrder["PartyFrames/AccessoryLayout.lua"]
         < tocLoadOrder["PartyFrames/PlayerUtility.lua"]
     and tocLoadOrder["PartyFrames/AccessoryLayout.lua"]

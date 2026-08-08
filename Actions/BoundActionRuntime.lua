@@ -5,6 +5,7 @@ local UIH = ApogeePartyHealthBars_UIHelpers
 local Actions = ApogeePartyHealthBars_ActionMacros
 local Items = ApogeePartyHealthBars_ShortcutItems
 local Cooldowns = ApogeePartyHealthBars_ActionCooldowns
+local AssignmentSources = ApogeePartyHealthBars_ActionAssignmentSources
 local BoundBindings = ApogeePartyHealthBars_BoundActionBindings
 local ActionHud = ApogeePartyHealthBars_ActionHud
 local ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities
@@ -519,7 +520,9 @@ function Factory.Create(options)
             if hasMacro(entry) then showActivationFeedback(slot) end
         end)
         castButton:SetScript("OnReceiveDrag", function()
-            if S.configMode and D and D.AssignCursorDrop then
+            local cursorType = GetCursorInfo and GetCursorInfo()
+            if AssignmentSources.CanAcceptCursor(cursorType)
+                and D and D.AssignCursorDrop then
                 D.AssignCursorDrop(options.featureId, slot.id, W.GetActiveLayoutKey())
             end
         end)
@@ -559,7 +562,9 @@ function Factory.Create(options)
             icon:SetScript("OnEnter", function(self) showActionTooltip(boundSlot, self) end)
             icon:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
             icon:SetScript("OnReceiveDrag", function()
-                if S.configMode and D and D.AssignCursorDrop then
+                local cursorType = GetCursorInfo and GetCursorInfo()
+                if AssignmentSources.CanAcceptCursor(cursorType)
+                    and D and D.AssignCursorDrop then
                     D.AssignCursorDrop(options.featureId, boundSlot.id, W.GetActiveLayoutKey())
                 end
             end)

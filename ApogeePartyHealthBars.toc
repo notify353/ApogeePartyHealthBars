@@ -48,6 +48,7 @@ DungeonBoard/DungeonBoardFeed.lua
 DungeonBoard/DungeonBoardUI.lua
 DungeonGuide/DungeonGuideUI.lua
 Actions/ActionCooldowns.lua
+Actions/ActionAssignmentSources.lua
 Actions/ShortcutItems.lua
 Actions/ActionData.lua
 Actions/EquipmentSets.lua

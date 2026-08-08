@@ -120,6 +120,7 @@ GameTooltip.AddLine = function(self, line) self.lines[#self.lines + 1] = line en
 dofile("Core/Sounds.lua")
 dofile("Core/UIHelpers.lua")
 dofile("Actions/ActionCooldowns.lua")
+dofile("Actions/ActionAssignmentSources.lua")
 dofile("Actions/ShortcutItems.lua")
 dofile("Actions/ActionData.lua")
 dofile("Actions/ActionMacros.lua")

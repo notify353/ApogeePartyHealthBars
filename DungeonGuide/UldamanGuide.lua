@@ -164,12 +164,21 @@ mob("archaedas", 2748, "Archaedas", "circle", 290,
     "Kill Hallshapers, gather the Guardian wave, secure both Warders late, and finish Archaedas once healer threat is safe.",
     "Giant", "Boss control is unreliable; control awakened adds and use mitigation on the boss.", {}, true)
 
+local function overviewMap()
+    return {
+        texture = "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\Uldaman.png",
+        width = 2048, height = 2048,
+        caption = "Gold route — dashed alternate — orange optional; numbers show boss order",
+        description = "Complete Uldaman overview from the front entrance through the keeper halls, Map Chamber and back door, Temple Hall, Stone Vault, Hall of the Crafters, and Archaedas vault.",
+    }
+end
+
 Catalog.RegisterGuide({
     key = "uldaman", name = "Uldaman", instanceIds = { 70 },
     clientFlavors = { classicEra = true, tbcAnniversary = true }, mobs = mobs,
     sections = {
         {
-            key = "hallOfKeepers", name = "Hall of the Keepers",
+            key = "hallOfKeepers", name = "Hall of the Keepers", map = overviewMap(),
             route = {
                 "Enter through the front portal, clear both keeper hallways, and pull into cleared tunnels; skipping a side can send runners or pet paths through untouched packs.",
                 "Wait for Stonevault Ambusher patrols, reveal Cave Lurkers carefully, and use corners to bring Oracles and ranged troggs onto the tank.",
@@ -186,7 +195,7 @@ Catalog.RegisterGuide({
             },
         },
         {
-            key = "mapChamberBackDoor", name = "Map Chamber & Back Door",
+            key = "mapChamberBackDoor", name = "Map Chamber & Back Door", map = overviewMap(),
             route = {
                 "Return from Revelosh with both Staff components, clear the Map Chamber from the stairs, and watch for fast Ambushers and stealthed Cave Lurkers.",
                 "Combine the Gni'kiv Medallion and Shaft of Tsol into the Staff of Prehistoria, then place it in the chamber model to release Ironaya.",
@@ -205,7 +214,7 @@ Catalog.RegisterGuide({
             },
         },
         {
-            key = "templeStoneVault", name = "Temple Hall & Stone Vault",
+            key = "templeStoneVault", name = "Temple Hall & Stone Vault", map = overviewMap(),
             route = {
                 "Backtrack from the rear entrance and pull Shadowforge packs into the bat ledge room; never fight Darkcasters and Archaeologists inside the crowded northern room.",
                 "Clear to Galgann along the wall, control one Geologist, and kill both fire casters before continuing through the linked Earthen halls.",
@@ -225,7 +234,7 @@ Catalog.RegisterGuide({
             },
         },
         {
-            key = "hallOfCrafters", name = "Hall of the Crafters",
+            key = "hallOfCrafters", name = "Hall of the Crafters", map = overviewMap(),
             route = {
                 "From Grimlok, clear Flameweavers and Maulers through the eastern tunnel, then use the small room to pull each linked Earthen group from the Hall of the Crafters.",
                 "Restore health, mana, and buffs before at least four players activate the central altar; fight the four Stone Keepers one at a time and recover during each travel gap.",

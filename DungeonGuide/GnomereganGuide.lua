@@ -189,12 +189,21 @@ mob("thermaplugg", 7800, "Mekgineer Thermaplugg", "circle", 110,
     "Fight near the outer wall, keep knockbacks away from uncleared mobs, and close active bomb chutes.",
     "Mechanical", "Boss control is unreliable; ordinary humanoid control does not work.", {}, true)
 
+local function overviewMap()
+    return {
+        texture = "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\Gnomeregan.png",
+        width = 2048, height = 2048,
+        caption = "Gold route — dashed alternate — orange optional; numbers show boss order",
+        description = "Complete front-entrance overview across the upper reaches and lower city, including the Trogg Caves, irradiated floor, Launch Bay, Engineering Labs, Workshop backdoor, and Tinkers' Court.",
+    }
+end
+
 Catalog.RegisterGuide({
     key = "gnomeregan", name = "Gnomeregan", instanceIds = { 90 },
     clientFlavors = { classicEra = true, tbcAnniversary = true }, mobs = mobs,
     sections = {
         {
-            key = "hallOfGears", name = "Hall of Gears & Trogg Caves",
+            key = "hallOfGears", name = "Hall of Gears & Trogg Caves", map = overviewMap(),
             route = {
                 "Use the front entrance, follow the upper path, and take the left detour to Blastmaster Emi Shortfuse before jumping to the irradiated floor.",
                 "During Emi's event, fight outside each side cave and leave when she warns of a blast; the collapse can kill or trap players and hide loot.",
@@ -211,7 +220,7 @@ Catalog.RegisterGuide({
             },
         },
         {
-            key = "dormitoryLaunchBay", name = "Dormitory & Launch Bay",
+            key = "dormitoryLaunchBay", name = "Dormitory & Launch Bay", map = overviewMap(),
             route = {
                 "Move through the Dormitory toward the Clean Zone. Alliance groups can pause at its friendly NPCs; Horde groups should expect those NPCs to be hostile.",
                 "Pull Launch Bay patrols into cleared space and watch both directions for Mobile Alert Systems before committing to each elite pack.",
@@ -227,7 +236,7 @@ Catalog.RegisterGuide({
             },
         },
         {
-            key = "engineeringLabs", name = "Engineering Labs",
+            key = "engineeringLabs", name = "Engineering Labs", map = overviewMap(),
             route = {
                 "From the Launch Bay junction, take the Engineering Labs branch; the Workshop backdoor enters near this chapter when opened with the key or sufficient Lockpicking.",
                 "Use the walls and cleared ramps to avoid linking patrols, and keep watching behind the group for Mobile Alert Systems.",
@@ -243,7 +252,7 @@ Catalog.RegisterGuide({
             },
         },
         {
-            key = "tinkersCourt", name = "Tinkers' Court",
+            key = "tinkersCourt", name = "Tinkers' Court", map = overviewMap(),
             route = {
                 "Return from the Engineering Labs to the main passage and descend toward the final tunnel; fight on the upper route instead of dropping into uncleared lower packs.",
                 "Clear Dark Iron Agents, mines, Nullifiers, guardians, and the optional Ambassador before opening the final hangar door.",

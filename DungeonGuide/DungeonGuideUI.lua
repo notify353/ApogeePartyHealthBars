@@ -9,6 +9,7 @@ local mapPanel, mapCanvas, mapTexture, mapCaption
 local fitButton, zoomOutButton, zoomLabel, zoomInButton
 local strategyScroll, strategyChild, body, resizeHandle
 local selectedGuideKey, selectedSectionKey, activeView = nil, nil, "strategy"
+local selectedSectionByGuide = {}
 local mapState = { zoomIndex = 1, panX = 0, panY = 0 }
 local dragState
 
@@ -313,6 +314,7 @@ end
 
 local function selectSection(key)
     selectedSectionKey = key
+    if selectedGuideKey and key then selectedSectionByGuide[selectedGuideKey] = key end
     sectionDropdown:SetSelectedKey(key)
     mapState.zoomIndex, mapState.panX, mapState.panY = 1, 0, 0
     renderStrategy()
@@ -326,11 +328,12 @@ local function selectGuide(key)
     local guide = currentGuide()
     local options = UI.BuildSectionOptions(guide)
     sectionDropdown:SetOptions(options)
+    local rememberedSectionKey = selectedSectionByGuide[key]
     local valid
     for _, option in ipairs(options) do
-        if option.key == selectedSectionKey then valid = true break end
+        if option.key == rememberedSectionKey then valid = true break end
     end
-    selectSection(valid and selectedSectionKey or (options[1] and options[1].key))
+    selectSection(valid and rememberedSectionKey or (options[1] and options[1].key))
 end
 
 local function applyWindowBounds()

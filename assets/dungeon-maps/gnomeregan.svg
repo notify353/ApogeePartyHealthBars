@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="2048" viewBox="0 0 2048 2048">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#34291c"/><stop offset="1" stop-color="#17140f"/></linearGradient>
+    <pattern id="grain" width="80" height="64" patternUnits="userSpaceOnUse"><path d="M4 20c20-10 42-10 64 0M18 52c14-6 30-6 48 0" fill="none" stroke="#c8aa70" stroke-width="2" opacity=".07"/></pattern>
+    <pattern id="metal" width="56" height="56" patternUnits="userSpaceOnUse"><path d="M0 28h56M28 0v56" fill="none" stroke="#adb0a2" stroke-width="2" opacity=".12"/><circle cx="8" cy="8" r="3" fill="#d0b677" opacity=".35"/></pattern>
+    <radialGradient id="toxic" cx="48%" cy="45%" r="62%"><stop stop-color="#3f9690"/><stop offset="1" stop-color="#205b59"/></radialGradient>
+    <marker id="mainArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0 0l10 5-10 5z" fill="#ffd34f"/></marker>
+    <marker id="optionalArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0 0l10 5-10 5z" fill="#ee934b"/></marker>
+    <marker id="alternateArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0 0l10 5-10 5z" fill="#68a6c1"/></marker>
+    <filter id="shadow" x="-35%" y="-35%" width="170%" height="170%"><feDropShadow dx="0" dy="7" stdDeviation="7" flood-color="#000" flood-opacity=".72"/></filter>
+    <style>.wall{fill:#706753;stroke:#bba77c;stroke-width:22;stroke-linejoin:round}.floor{fill:url(#metal);stroke:#85877d;stroke-width:8;stroke-linejoin:round}.rail{fill:none;stroke:#242b2d;stroke-width:13;opacity:.72}.machine{fill:#2d3739;stroke:#9a8d69;stroke-width:8}.route{fill:none;stroke:#ffd34f;stroke-width:18;stroke-linecap:round;stroke-linejoin:round;filter:url(#shadow)}.routeEnd{marker-end:url(#mainArrow)}.optional{fill:none;stroke:#ee934b;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:25 20;marker-end:url(#optionalArrow)}.alternate{fill:none;stroke:#68a6c1;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:25 20;marker-end:url(#alternateArrow)}.step{fill:#aa333b;stroke:#ffaaa0;stroke-width:8;filter:url(#shadow)}.optionalStep{fill:#c66b2b;stroke:#ffd39a;stroke-width:8;filter:url(#shadow)}.stepText{font-family:Arial,sans-serif;fill:#fff;font-size:42px;font-weight:700;text-anchor:middle;dominant-baseline:central}.transition{fill:#5f87a5;stroke:#a8d5ef;stroke-width:6;filter:url(#shadow)}</style>
+  </defs>
+  <rect width="2048" height="2048" rx="34" fill="url(#bg)"/><rect x="24" y="24" width="2000" height="2000" rx="28" fill="url(#grain)" stroke="#806d4e" stroke-width="8"/>
+
+  <!-- Clockwork Run and front entrance. -->
+  <path class="wall" d="M1590 70h210v170l-88 60v115l-94 96-130-126 82-88V190h20z"/>
+  <path class="floor" d="M1622 102h146v121l-88 60v119l-64 65-84-82 70-75V158h20z"/>
+  <path class="rail" d="M1660 105v128l-90 66v78"/>
+
+  <!-- Hall of Gears, its upper ring, irradiated lower floor, and Grubbis caves. -->
+  <path class="wall" d="M1220 355l120-92h260l123 102 29 165-76 145-143 78h-230l-146-103-31-174z"/>
+  <path class="floor" d="M1248 382l103-79h234l102 84 24 137-62 120-126 69h-207l-124-87-26-144z"/>
+  <path class="rail" d="M1320 372l91-38h137l93 63 28 102-42 103-105 65h-166l-105-74-16-109z"/>
+  <path d="M1335 423l93-54h110l90 60 10 104-72 94h-157l-94-76z" fill="url(#toxic)" stroke="#8bc6b6" stroke-width="9"/>
+  <circle class="machine" cx="1480" cy="500" r="58"/><circle cx="1480" cy="500" r="20" fill="#65b0a5" stroke="#b8e0cf" stroke-width="6"/>
+  <path class="wall" d="M1694 455h116l44-76 116 38-25 90 54 67-65 73 20 91-123 25-45-72h-92z"/>
+  <path class="floor" d="M1715 487h114l38-68 65 21-22 75 47 57-39 45 19 84-68 14-43-66h-111z"/>
+  <path class="machine" d="M1818 492l62 10 30 63-38 71-68-6-35-62z"/>
+
+  <!-- Dormitory and Clean Zone form the connector from the upper city to Launch Bay. -->
+  <path class="wall" d="M1310 704h342v126h170v218h-185v136h-247v-120h-218V865h138z"/>
+  <path class="floor" d="M1342 736h278v126h170v154h-185v136h-183v-120h-218V897h138z"/>
+  <path class="machine" d="M1435 787h105v72h-105zM1285 920h112v62h-112zM1460 1028h105v76h-105z"/>
+  <path class="wall" d="M1172 886h-196l-102 104 92 113h238V897z"/>
+  <path class="floor" d="M1172 918H990l-73 74 65 79h222V929z" fill="#536968"/>
+  <path d="M1012 946h116v92h-116z" fill="#315b59" stroke="#86b6aa" stroke-width="8"/>
+
+  <!-- Launch Bay: octagonal outer platform, central lift, and three radial bridges. -->
+  <path class="wall" d="M640 775l125-105h280l136 105 48 218-58 226-136 96H754l-135-102-49-217z"/>
+  <path class="floor" d="M671 799l106-89h253l115 89 43 195-49 201-116 80H768l-114-87-43-193z"/>
+  <path class="rail" d="M742 824l91-66h139l105 71 48 164-45 154-105 74H820l-106-73-42-157z"/>
+  <circle class="machine" cx="900" cy="995" r="112"/><circle cx="900" cy="995" r="42" fill="#435b62" stroke="#b7b082" stroke-width="8"/>
+  <path class="machine" d="M731 816l68-42 38 78-65 39zM1023 782l70 48-47 70-67-48zM1080 1110l-45 72-76-44 43-70zM758 1100l65 48-49 70-62-49z"/>
+
+  <!-- Engineering Labs branch and its lower Crowd Pummeler platform. -->
+  <path class="wall" d="M785 1254h224l84 120-42 128 73 68-53 291-287 76-218-139 52-277 95-63z"/>
+  <path class="floor" d="M809 1286h183l65 94-43 132 74 70-45 253-254 67-187-120 44-241 106-70z"/>
+  <path class="rail" d="M750 1508l109-81 122 60 37 151-77 139-151 35-121-87 17-142z"/>
+  <circle class="machine" cx="850" cy="1625" r="126"/><circle cx="850" cy="1625" r="44" fill="#435b62" stroke="#b7b082" stroke-width="8"/>
+  <path class="machine" d="M750 1530l57-36 31 66-57 31zM919 1515l58 43-45 58-54-40zM930 1700l-50 55-55-48 49-55z"/>
+  <!-- Workshop backdoor. -->
+  <path class="wall" d="M1070 1700h248v-142h330v155h-225v117h-353z"/>
+  <path class="floor" d="M1098 1732h252v-142h266v91h-225v117h-293z"/>
+  <path class="transition" d="M1578 1609l30 34-30 34 28 27 57-61-57-61z"/>
+
+  <!-- West transit tube, Ambassador checkpoint, and Tinkers' Court. -->
+  <path class="wall" d="M650 868H478v178H300v168h148v278H268v-235H134v-310h190V770h326z"/>
+  <path class="floor" d="M650 900H510v178H332v104h148v342H300v-235H166V979h190V802h294z"/>
+  <path class="rail" d="M626 950H557v178H390v104h144v236H354v-229H220v-204h187V852h219"/>
+  <path class="machine" d="M344 1087h108v92H344zM373 1302h107v107H373z"/>
+  <path class="wall" d="M105 470l85-146h306l101 127v267l-99 121H186L83 710z"/>
+  <path class="floor" d="M142 487l66-123h268l81 101v239l-78 95H205l-82-105z"/>
+  <circle class="machine" cx="340" cy="580" r="128"/><circle cx="340" cy="580" r="52" fill="#514550" stroke="#b99b7c" stroke-width="9"/>
+  <g fill="#30393a" stroke="#9a8d69" stroke-width="7"><rect x="208" y="428" width="64" height="78" rx="12"/><rect x="405" y="424" width="64" height="78" rx="12"/><rect x="198" y="655" width="66" height="78" rx="12"/><rect x="412" y="654" width="66" height="78" rx="12"/></g>
+
+  <!-- Main progression; local breaks show backtracking without turning the map into a knot. -->
+  <path class="route" d="M1660 110v185l-88 78 47 82h178l72 110"/>
+  <path class="route" d="M1850 630h-203l-73-75h-94"/>
+  <path class="route" d="M1480 555v260h145v165h-196v86h-272l-111-71H900"/>
+  <path class="route" d="M900 995H695v-143H510v246H332v136h107v248H300v-220H166v-250h191V803h-17"/>
+  <path class="route routeEnd" d="M340 803V650"/>
+  <!-- Engineering and Ambassador are worthwhile side checks; the backdoor is an alternate entry. -->
+  <path class="optional" d="M900 1107v228l-77 109 27 181"/>
+  <path class="optional" d="M439 1234v135"/>
+  <path class="alternate" d="M1578 1643h-212v113h-244l-52-99"/>
+
+  <!-- Boss order: Grubbis, Viscous Fallout, Electrocutioner, Pummeler, Ambassador, Thermaplugg. -->
+  <circle class="step" cx="1868" cy="565" r="46"/><text class="stepText" x="1868" y="565">1</text>
+  <circle class="step" cx="1480" cy="500" r="46"/><text class="stepText" x="1480" y="500">2</text>
+  <circle class="step" cx="900" cy="995" r="46"/><text class="stepText" x="900" y="995">3</text>
+  <circle class="optionalStep" cx="850" cy="1625" r="46"/><text class="stepText" x="850" y="1625">4</text>
+  <circle class="optionalStep" cx="439" cy="1369" r="46"/><text class="stepText" x="439" y="1369">5</text>
+  <circle class="step" cx="340" cy="580" r="46"/><text class="stepText" x="340" y="580">6</text>
+</svg>

@@ -187,12 +187,21 @@ mob("charlgaRazorflank", 4421, "Charlga Razorflank", "circle", 270,
     "Interrupt from range, pull Charlga onto the lower landing, spread out, and maintain an interrupt order.",
     "Humanoid", "Boss control is unreliable; interrupts are the dependable answer.", {}, true)
 
+local function overviewMap()
+    return {
+        texture = "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\RazorfenKraul.png",
+        width = 2048, height = 2048,
+        caption = "Gold route — dashed alternate — orange optional; numbers show boss order",
+        description = "Complete Razorfen Kraul overview from the first fork through Roogug, Willix's trenches, high ledges, Warlord rooms, long bridges, bat cavern, Agathelos, and Charlga.",
+    }
+end
+
 Catalog.RegisterGuide({
     key = "razorfenKraul", name = "Razorfen Kraul", instanceIds = { 47 },
     clientFlavors = { classicEra = true, tbcAnniversary = true }, mobs = mobs,
     sections = {
         {
-            key = "firstForkRoogug", name = "First Fork & Roogug Detour",
+            key = "firstForkRoogug", name = "First Fork & Roogug Detour", map = overviewMap(),
             route = {
                 "Enter Razorfen Kraul west of the Great Lift, clear the opening patrol away from the first fork, and keep fleeing quilboar inside cleared ground.",
                 "Take the first tunnel left for the optional Roogug full-clear detour, then follow the passage to the broad vine bridge that crosses the ravine.",
@@ -209,7 +218,7 @@ Catalog.RegisterGuide({
             },
         },
         {
-            key = "trenchesWillix", name = "Trenches & Willix Escort",
+            key = "trenchesWillix", name = "Trenches & Willix Escort", map = overviewMap(),
             route = {
                 "From the first fork, take the eastern path, separate the Defender patrol from nearby casters, then turn into the trenches.",
                 "Clear roaming boars and Blood of Agamaggan one at a time; remove long curses and use tunnel corners to pull ranged enemies into the tank.",
@@ -226,7 +235,7 @@ Catalog.RegisterGuide({
             },
         },
         {
-            key = "highLedgesWarlords", name = "High Ledges & Warlords",
+            key = "highLedgesWarlords", name = "High Ledges & Warlords", map = overviewMap(),
             route = {
                 "Take the northern route from the trenches, stay in the center beneath the first ledges, and pull enemies down before climbing the three-way ramp.",
                 "Clear the southern ledge and Beast Trainers before Aggem, then return to the ramp and clear the northern ledge for Jargba.",
@@ -247,7 +256,7 @@ Catalog.RegisterGuide({
             },
         },
         {
-            key = "bridgesBatCavern", name = "Long Bridges & Bat Cavern",
+            key = "bridgesBatCavern", name = "Long Bridges & Bat Cavern", map = overviewMap(),
             route = {
                 "Clear Halmgar's crowded platform after the first vine, then pull hidden Champions back onto the bridge before crossing the remaining spans.",
                 "Enter the Bat Cavern slowly, keep bats away from casters, and check the rare spawn point for Blind Hunter while clearing toward the southern ward.",

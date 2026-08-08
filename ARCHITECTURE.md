@@ -74,7 +74,7 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `CoreSettingsPages`: focused Frames, Health & Chat, Buffs & Cleansing, Threat Control, Dungeon Board, and Maintenance pages; feature toggles, HUD display preferences, alert preferences, HoT controls, compact position resets, and destructive reset confirmation
 - `PartyFrameClicksSettingsPage`: fixed-gesture Party Frame Click action rows, inline movement and clearing, display refresh, and right-click clearing compatibility
 - `SettingsUI`, `LoadoutsSettingsPage`: compact fixed-size settings-window shell, five task-group navigation, contextual page registry, multi-page selectors, single-page headings, native character loadout management, page-specific preview activation, and cross-page refresh routing
-- `SettingsController`, `MinimapController`: settings-mode, minimap lifecycle, and the Dungeon Board minimap access gesture
+- `SettingsController`, `MinimapController`: settings-mode, minimap lifecycle, Dungeon Board access, and modifier-safe current-instance Dungeon Book access
 - `ProfileStore`: character-owned named profiles, read-only account-profile migration, portable payload normalization, stable identity, CRUD/copy/import mutations, and cross-profile equipment-set reference maintenance
 - `ProfileCodec`: native CBOR, Deflate, and URL-safe Base64 profile sharing with versioned metadata and bounded decoding
 - `ProfilesSettingsPage`: compact profile selection, management, and copy sections plus export/import preview and confirmation workflows

@@ -1,3 +1,12 @@
+local monitor
+function CreateFrame()
+    monitor = { shown = false, scripts = {} }
+    function monitor:SetScript(name, callback) self.scripts[name] = callback end
+    function monitor:Show() self.shown = true end
+    function monitor:Hide() self.shown = false end
+    return monitor
+end
+
 dofile("Core/Namespace.lua")
 dofile("Integrations/Baganator.lua")
 
@@ -26,14 +35,14 @@ Baganator = { CallbackRegistry = first }
 assert(integration.OnAddonLoaded("Unrelated") == false
     and first.registrations == 0, "unrelated add-on load registered Baganator")
 assert(integration.OnAddonLoaded("Baganator") == true
-    and first.registrations == 2, "load-after registration failed")
+    and first.registrations == 4, "load-after registration failed")
 first:Trigger("BagShow")
 first:Trigger("BagHide")
-assert(visibility[1] == true and visibility[2] == false,
+assert(visibility[#visibility - 1] == true and visibility[#visibility] == false,
     "public visibility callbacks were not translated")
 
 local showOwner = first.callbacks.BagShow.owner
-assert(integration.OnLifecycleEvent() == true and first.registrations == 4,
+assert(integration.OnLifecycleEvent() == true and first.registrations == 8,
     "lifecycle retry did not restore callbacks on the same registry")
 assert(first.callbacks.BagShow.owner == showOwner,
     "lifecycle retry did not replace callbacks through stable ownership")
@@ -42,10 +51,23 @@ local replacement = registry()
 Baganator.CallbackRegistry = replacement
 assert(integration.IsRegistered() == false,
     "registry replacement retained stale registered state")
-assert(integration.OnLifecycleEvent() == true and replacement.registrations == 2,
+assert(integration.OnLifecycleEvent() == true and replacement.registrations == 4,
     "registry replacement was not reconnected")
 replacement:Trigger("BagShow")
-assert(visibility[3] == true, "replacement registry callback did not fire")
+assert(visibility[#visibility] == true, "replacement registry callback did not fire")
+
+local backpackShown = false
+Baganator_SingleViewBackpackViewFrameblizzard_black = {
+    IsShown = function() return backpackShown end,
+}
+backpackShown = true
+monitor.scripts.OnUpdate(monitor, 0.1)
+assert(visibility[#visibility] == true,
+    "visible Baganator backpack frame did not activate assignment")
+backpackShown = false
+monitor.scripts.OnUpdate(monitor, 0.1)
+assert(visibility[#visibility] == false,
+    "hidden Baganator backpack frame did not deactivate assignment")
 
 Baganator = nil
 assert(integration.IsRegistered() == false,

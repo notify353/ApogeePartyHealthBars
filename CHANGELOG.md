@@ -6,7 +6,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
-- Fixed Baganator live action assignment reconnecting unreliably when its callback registry became available after initial add-on composition or was replaced during startup.
+- Fixed Baganator live action assignment by combining its public lifecycle callbacks with read-only backpack-frame visibility monitoring, including late initialization and skin/frame-group changes.
 
 ### Added
 

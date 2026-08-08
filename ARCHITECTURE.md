@@ -28,7 +28,7 @@ The final entrypoint establishes Core policy and scheduling services, then invok
 
 Shortcut responsibilities are divided between `ShortcutStore` for persistence and mutations, the existing Spellbook/player-spell resolver boundary, and `ShortcutBar` for evaluation and secure HUD presentation. Bound actions retain their public factory while `BoundActionEvaluator` owns frame-free state evaluation, `BoundActionSecureController` owns named secure buttons and mouse behavior, and `BoundActionView` owns non-secure presentation. Existing secure frame names and facade signatures are compatibility contracts.
 
-`Runtime.ActionAssignmentEvents` owns Spellbook, Blizzard bag, cursor, combat-transition, and optional-add-on-load routing. `ActionAssignmentSources` is vendor-neutral session state and acceptance policy. Third-party bag support belongs under `Integrations`; `Integrations.Baganator` uses only Baganator's public `BagShow`/`BagHide` callbacks, tolerates either load order, and never hooks item buttons.
+`Runtime.ActionAssignmentEvents` owns Spellbook, Blizzard bag, cursor, combat-transition, and optional-add-on-load routing. `ActionAssignmentSources` is vendor-neutral session state and acceptance policy. Third-party bag support belongs under `Integrations`; `Integrations.Baganator` combines its public view callbacks with read-only visibility monitoring of Baganator's named backpack frames, tolerates either load order and frame-group replacement, and never hooks item buttons or replaces scripts.
 
 ## Secure Ownership
 

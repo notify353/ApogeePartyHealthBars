@@ -3,13 +3,15 @@ local H = ApogeePartyHealthBars_TargetNameplateHud
 local S = ApogeePartyHealthBars_S
 
 local NAMEPLATE_GAP = 6
-local FRAME_LEVEL_OFFSET = 20
+local FRAME_STRATA = "MEDIUM"
+local FRAME_LEVEL = 27
 
 local surfaces = {}
 local nameplateUnits = {}
 local container
 local boundUnit
 local boundGuid
+local boundPlate
 
 local function IsLivingHostile(unit)
     return UnitExists and UnitExists(unit)
@@ -21,16 +23,18 @@ local function EnsureContainer()
     if container then return container end
     container = CreateFrame("Frame", nil, UIParent)
     container:SetSize(1, 1)
+    container:SetFrameStrata(FRAME_STRATA)
+    container:SetFrameLevel(FRAME_LEVEL)
     container:Hide()
     return container
 end
 
 local function Detach()
-    boundUnit, boundGuid = nil, nil
+    local wasAttached = boundPlate ~= nil
+    boundUnit, boundGuid, boundPlate = nil, nil, nil
     if not container then return end
     container:Hide()
-    container:ClearAllPoints()
-    if UIParent and container.SetParent then container:SetParent(UIParent) end
+    if wasAttached then container:ClearAllPoints() end
 end
 
 local function ResolveTargetNameplate()
@@ -41,7 +45,7 @@ local function ResolveTargetNameplate()
         if UnitExists(unit) and UnitGUID(unit) == targetGuid then
             local plate
             if C_NamePlate and C_NamePlate.GetNamePlateForUnit then
-                local ok, result = pcall(C_NamePlate.GetNamePlateForUnit, unit)
+                local ok, result = pcall(C_NamePlate.GetNamePlateForUnit, unit, false)
                 if ok then plate = result end
             end
             if plate then return unit, targetGuid, plate end
@@ -62,17 +66,15 @@ local function OrderedEnabledSurfaces()
     return result
 end
 
-local function Layout(plate)
+local function LayoutSurfaces()
     local enabled = OrderedEnabledSurfaces()
-    if #enabled == 0 then
-        Detach()
-        return false
-    end
-
     local width, height = 1, 0
     for index, surface in ipairs(enabled) do
         local surfaceWidth = surface.frame:GetWidth() or 1
         local surfaceHeight = surface.frame:GetHeight() or 1
+        surface.layoutWidth = surfaceWidth
+        surface.layoutHeight = surfaceHeight
+        surface.layoutEnabled = true
         width = math.max(width, surfaceWidth)
         if index > 1 then height = height + surface.verticalGap end
         surface.frame:ClearAllPoints()
@@ -81,14 +83,54 @@ local function Layout(plate)
         surface.frame:Show()
     end
     for _, surface in pairs(surfaces) do
-        if not surface.enabled then surface.frame:Hide() end
+        if not surface.enabled then
+            surface.layoutWidth = surface.frame:GetWidth() or 1
+            surface.layoutHeight = surface.frame:GetHeight() or 1
+            surface.layoutEnabled = false
+            surface.frame:Hide()
+        end
     end
 
     container:SetSize(width, math.max(1, height))
-    container:SetParent(plate)
+    return #enabled > 0
+end
+
+local function SurfaceStateChanged(surface)
+    local shown = surface.frame.IsShown and surface.frame:IsShown() or false
+    return surface.layoutEnabled ~= surface.enabled
+        or surface.layoutWidth ~= (surface.frame:GetWidth() or 1)
+        or surface.layoutHeight ~= (surface.frame:GetHeight() or 1)
+        or shown ~= surface.enabled
+end
+
+local function AnySurfaceStateChanged()
+    for _, surface in pairs(surfaces) do
+        if SurfaceStateChanged(surface) then return true end
+    end
+    return false
+end
+
+local function HasEnabledSurface()
+    for _, surface in pairs(surfaces) do
+        if surface.enabled then return true end
+    end
+    return false
+end
+
+local function HideSurfaceFrames()
+    for _, surface in pairs(surfaces) do surface.frame:Hide() end
+end
+
+local function Attach(unit, guid, plate)
+    if boundUnit == unit and boundGuid == guid and boundPlate == plate then
+        container:Show()
+        return true
+    end
+
+    container:Hide()
     container:ClearAllPoints()
     container:SetPoint("BOTTOM", plate, "TOP", 0, NAMEPLATE_GAP)
-    container:SetFrameLevel((plate:GetFrameLevel() or 0) + FRAME_LEVEL_OFFSET)
+    boundUnit, boundGuid, boundPlate = unit, guid, plate
     container:Show()
     return true
 end
@@ -107,20 +149,32 @@ function H.RegisterSurface(key, frame, order, verticalGap)
         verticalGap = math.max(0, tonumber(verticalGap) or 0),
         enabled = false,
     }
+    LayoutSurfaces()
     H.Refresh()
 end
 
 function H.SetSurfaceEnabled(key, enabled)
     local surface = surfaces[key]
     if not surface then return false end
-    surface.enabled = enabled == true
+    local nextEnabled = enabled == true
+    if surface.enabled == nextEnabled and not AnySurfaceStateChanged() then
+        return true
+    end
+    surface.enabled = nextEnabled
+    LayoutSurfaces()
     H.Refresh()
     return true
 end
 
 function H.Refresh()
     EnsureContainer()
-    if not S.sv or S.sv.enabled ~= true then
+    if AnySurfaceStateChanged() then LayoutSurfaces() end
+    if S.configMode then
+        HideSurfaceFrames()
+        Detach()
+        return false
+    end
+    if not S.sv or S.sv.enabled ~= true or not HasEnabledSurface() then
         Detach()
         return false
     end
@@ -129,8 +183,7 @@ function H.Refresh()
         Detach()
         return false
     end
-    boundUnit, boundGuid = unit, guid
-    return Layout(plate)
+    return Attach(unit, guid, plate)
 end
 
 function H.OnTargetChanged()

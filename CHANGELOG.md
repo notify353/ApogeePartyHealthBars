@@ -31,6 +31,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Fixed
 
+- Prevented the Target HUD from entering or repeatedly mutating Blizzard's protected nameplate hierarchy, avoiding restricted-region `FrameMeasurement` taint errors while preserving its current-target nameplate attachment.
 - Corrected OFFICIAL Dungeon Board listings to use the same displayed dungeon ranges as chat listings, so configured Below and Above level windows no longer admit out-of-range dungeons.
 - Reworded Dungeon Board and LFG Alert whisper drafts as concise role offers, such as `Tank LF Gnomer`, with role-only `LFG` fallbacks when no dungeon is available.
 

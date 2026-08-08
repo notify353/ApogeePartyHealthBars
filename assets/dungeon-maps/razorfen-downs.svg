@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="2048" viewBox="0 0 2048 2048">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#34291c"/><stop offset="1" stop-color="#17140f"/></linearGradient>
+    <pattern id="grain" width="80" height="64" patternUnits="userSpaceOnUse"><path d="M4 20c20-10 42-10 64 0M18 52c14-6 30-6 48 0" fill="none" stroke="#c8aa70" stroke-width="2" opacity=".07"/></pattern>
+    <pattern id="bone" width="64" height="54" patternUnits="userSpaceOnUse"><path d="M8 18l22 16M42 8l12 24M12 44l22-10" fill="none" stroke="#d2c8a8" stroke-width="4" opacity=".16"/></pattern>
+    <pattern id="earth" width="62" height="48" patternUnits="userSpaceOnUse"><path d="M4 18l20-9 24 8M10 40l18-7 27 8" fill="none" stroke="#b4835e" stroke-width="3" opacity=".18"/></pattern>
+    <marker id="goldArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0 0l10 5-10 5z" fill="#ffd34f"/></marker>
+    <marker id="orangeArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0 0l10 5-10 5z" fill="#ee934b"/></marker>
+    <marker id="blueArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0 0l10 5-10 5z" fill="#68a6c1"/></marker>
+    <filter id="shadow" x="-35%" y="-35%" width="170%" height="170%"><feDropShadow dx="0" dy="7" stdDeviation="7" flood-color="#000" flood-opacity=".72"/></filter>
+    <style>.corridorWall{fill:none;stroke:#b49770;stroke-width:132;stroke-linecap:round;stroke-linejoin:round}.corridor{fill:none;stroke:#4e4035;stroke-width:90;stroke-linecap:round;stroke-linejoin:round}.floor{fill:url(#earth);stroke:#806a55;stroke-width:10;stroke-linejoin:round}.boneRoom{fill:url(#bone);stroke:#aaa083;stroke-width:11;stroke-linejoin:round}.pen{fill:#3d342e;stroke:#8c745b;stroke-width:10}.bars{stroke:#c3af84;stroke-width:9;stroke-linecap:round}.hut{fill:#3a3029;stroke:#aa8a65;stroke-width:12;stroke-linejoin:round}.bonePile{fill:none;stroke:#d1c5a3;stroke-width:11;stroke-linecap:round;opacity:.75}.bridgeBase{fill:none;stroke:#2a211c;stroke-width:102;stroke-linecap:round}.bridge{fill:none;stroke:#9f835e;stroke-width:80;stroke-linecap:round;stroke-dasharray:20 13}.route{fill:none;stroke:#ffd34f;stroke-width:18;stroke-linecap:round;stroke-linejoin:round;filter:url(#shadow)}.routeEnd{marker-end:url(#goldArrow)}.optional{fill:none;stroke:#ee934b;stroke-width:14;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:22 18;marker-end:url(#orangeArrow)}.alternate{fill:none;stroke:#68a6c1;stroke-width:14;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:22 18;marker-end:url(#blueArrow)}.step{fill:#aa333b;stroke:#ffaaa0;stroke-width:8;filter:url(#shadow)}.optionalStep{fill:#c66b2b;stroke:#ffd39a;stroke-width:8;filter:url(#shadow)}.stepText{font-family:Arial,sans-serif;fill:#fff;font-size:42px;font-weight:700;text-anchor:middle;dominant-baseline:central}.gong{fill:#98713c;stroke:#e0bd73;stroke-width:10}</style>
+  </defs>
+  <rect width="2048" height="2048" rx="34" fill="url(#bg)"/><rect x="24" y="24" width="2000" height="2000" rx="28" fill="url(#grain)" stroke="#806d4e" stroke-width="8"/>
+
+  <!-- Northwest skull gate and the Withered Halls approach. -->
+  <path class="corridorWall" d="M120 300h150l90 92 145-4 115 94 138-66 115 92"/>
+  <path class="corridor" d="M120 300h150l90 92 145-4 115 94 138-66 115 92"/>
+  <path class="floor" d="M58 226l84-80 104 52 88-61 72 89-76 74 76 75-74 91-91-61-99 52-84-80 52-75z"/>
+  <path class="bonePile" d="M116 226l37 45m80-56l-28 59m-81 73l42-25m86 58l-37-52"/>
+
+  <!-- Plaguemaw's idol branch sits above the approach to the Caller’s Chamber. -->
+  <path class="corridorWall" d="M600 482c20-126 125-209 238-172 78 25 119 97 164 166"/>
+  <path class="corridor" d="M600 482c20-126 125-209 238-172 78 25 119 97 164 166"/>
+  <path class="boneRoom" d="M744 199c69-57 178-50 237 17 61 70 47 179-29 232-78 54-190 28-233-57-32-64-23-139 25-192z"/>
+  <circle class="gong" cx="848" cy="315" r="38"/><circle cx="848" cy="315" r="13" fill="#372d27"/>
+
+  <!-- Caller’s Chamber: a three-wave gong room with spider alcoves. -->
+  <path class="corridorWall" d="M853 508l151 84"/><path class="corridor" d="M853 508l151 84"/>
+  <path class="boneRoom" d="M887 527c61-92 185-128 287-79 105 51 152 177 104 284-49 109-177 162-289 116-112-47-169-176-127-290 6-14 14-23 25-31z"/>
+  <path class="pen" d="M915 555l74-42 52 77-74 48zM1154 532l76 45-50 78-76-46zM1021 765l78 4-3 72-79-3z"/>
+  <circle class="gong" cx="1065" cy="657" r="49"/><circle cx="1065" cy="657" r="16" fill="#372d27"/>
+
+  <!-- The passage forks north into the Murder Pens and east toward the Bone Pile. -->
+  <path class="corridorWall" d="M1243 702c133 55 192-25 195-139 4-134 120-225 247-170"/>
+  <path class="corridor" d="M1243 702c133 55 192-25 195-139 4-134 120-225 247-170"/>
+  <path class="floor" d="M1516 232l182-74 206 82 54 178-77 176-201 78-184-83-62-177z"/>
+  <g class="pen"><path d="M1517 287l119-43 49 100-111 51z"/><path d="M1745 237l125 48-42 111-127-47z"/><path d="M1510 470l116-50 52 112-121 53z"/><path d="M1740 428l133-38 31 117-132 42z"/></g>
+  <path class="bars" d="M1584 352l26 60m134-72l-28 63m-118 67l32 65m117-73l18 67"/>
+  <path class="corridorWall" d="M1272 747c144 1 240 90 356 72"/><path class="corridor" d="M1272 747c144 1 240 90 356 72"/>
+  <path class="corridorWall" d="M1685 575c-79 87-60 184 16 250"/><path class="corridor" d="M1685 575c-79 87-60 184 16 250"/>
+
+  <!-- Mordresh's isolated Bone Pile. -->
+  <path class="boneRoom" d="M1573 756c65-92 195-119 292-60 99 61 128 193 67 293-63 102-200 130-301 63-96-64-118-196-51-290z"/>
+  <circle class="pen" cx="1745" cy="870" r="88"/>
+  <path class="bonePile" d="M1652 785l58 45m102-55l-37 61m-107 83l64-22m83 79l-43-71m-113 78l56-42"/>
+
+  <!-- A long bone bridge returns from the eastern rooms to the Spiral of Thorns. -->
+  <path class="bridgeBase" d="M1610 1015C1400 1060 1240 1135 1085 1195"/>
+  <path class="bridge" d="M1610 1015C1400 1060 1240 1135 1085 1195"/>
+
+  <!-- Southern Spiral of Thorns with huts on its lower turns. -->
+  <path class="floor" d="M180 1170c75-165 240-278 421-291 217-15 427 95 535 284 119 210 102 478-45 669-149 193-421 267-649 178-224-88-360-320-326-558 15-108 40-190 64-282z" opacity=".82"/>
+  <path class="corridorWall" d="M1085 1195c-160-160-419-207-618-103-205 107-298 354-211 569 88 219 346 329 563 234 206-90 298-340 196-539-90-176-313-246-486-149-157 88-211 290-116 441 85 135 278 170 402 72 109-86 119-252 27-347-75-78-209-73-274 14-50 67-28 163 40 199"/>
+  <path class="corridor" d="M1085 1195c-160-160-419-207-618-103-205 107-298 354-211 569 88 219 346 329 563 234 206-90 298-340 196-539-90-176-313-246-486-149-157 88-211 290-116 441 85 135 278 170 402 72 109-86 119-252 27-347-75-78-209-73-274 14-50 67-28 163 40 199"/>
+  <path class="boneRoom" d="M545 1460c48-85 159-116 244-66 86 50 112 163 57 246-57 86-175 105-254 41-67-54-88-146-47-221z"/>
+  <path class="hut" d="M277 1406l91-57 99 54-8 110-90 56-96-55zM770 1772l86-54 94 52-8 104-84 53-92-52zM936 1267l80-49 88 48-7 97-79 49-86-49z"/>
+  <path class="bonePile" d="M614 1500l51 37m85-46l-34 60m-79 82l55-27"/>
+
+  <!-- Main route: entrance, gong, pens, Bone Pile, then the complete spiral climb. -->
+  <path class="route" d="M120 300h150l90 92 145-4 115 94 138-66 95 92 151 84"/>
+  <path class="route" d="M1004 592l61 65 178 45c133 55 192-25 195-139 4-134 120-225 247-170"/>
+  <path class="route" d="M1685 393c82 102 49 244 16 432"/>
+  <path class="route" d="M1701 825l44 45-135 145C1400 1060 1240 1135 1085 1195"/>
+  <path class="route" d="M1085 1195c-160-160-419-207-618-103-205 107-298 354-211 569 88 219 346 329 563 234 206-90 298-340 196-539-90-176-313-246-486-149-157 88-211 290-116 441 85 135 278 170 402 72 109-86 119-252 27-347-75-78-209-73-274 14"/>
+  <path class="route routeEnd" d="M568 1387c-50 67-28 163 40 199"/>
+
+  <!-- Escort/event and rare checks. -->
+  <path class="alternate" d="M1685 393c-235-42-410-26-557 74L900 315"/>
+  <path class="optional" d="M900 315h-52"/>
+  <path class="optional" d="M1735 420l116-53"/>
+  <path class="optional" d="M445 1338l-76 65M834 1735l24 35M984 1320l34-54"/>
+
+  <!-- Boss order: Tuten'kash, Plaguemaw, event-only Falther'ess, Mordresh, Glutton, Ragglesnout, Amnennar. -->
+  <circle class="step" cx="1065" cy="657" r="46"/><text class="stepText" x="1065" y="657">1</text>
+  <circle class="optionalStep" cx="848" cy="315" r="44"/><text class="stepText" x="848" y="315">2</text>
+  <circle class="optionalStep" cx="1851" cy="367" r="44"/><text class="stepText" x="1851" y="367">3</text>
+  <circle class="step" cx="1745" cy="870" r="46"/><text class="stepText" x="1745" y="870">4</text>
+  <circle class="step" cx="300" cy="1580" r="46"/><text class="stepText" x="300" y="1580">5</text>
+  <circle class="optionalStep" cx="369" cy="1403" r="41"/><text class="stepText" x="369" y="1403">6</text>
+  <circle class="optionalStep" cx="858" cy="1770" r="41"/><text class="stepText" x="858" y="1770">6</text>
+  <circle class="optionalStep" cx="1018" cy="1266" r="41"/><text class="stepText" x="1018" y="1266">6</text>
+  <circle class="step" cx="680" cy="1545" r="48"/><text class="stepText" x="680" y="1545">7</text>
+</svg>

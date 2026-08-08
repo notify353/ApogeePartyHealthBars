@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="2048" viewBox="0 0 2048 2048">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#34291c"/><stop offset="1" stop-color="#17140f"/></linearGradient>
+    <pattern id="grain" width="80" height="64" patternUnits="userSpaceOnUse"><path d="M4 20c20-10 42-10 64 0M18 52c14-6 30-6 48 0" fill="none" stroke="#c8aa70" stroke-width="2" opacity=".07"/></pattern>
+    <pattern id="earth" width="60" height="50" patternUnits="userSpaceOnUse"><path d="M5 15l18-8 20 7 12-5M8 40l14-6 25 7" fill="none" stroke="#c08a5d" stroke-width="3" opacity=".2"/></pattern>
+    <pattern id="planks" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M0 17h34" stroke="#d0aa72" stroke-width="7" opacity=".75"/></pattern>
+    <marker id="goldArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0 0l10 5-10 5z" fill="#ffd34f"/></marker>
+    <marker id="orangeArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0 0l10 5-10 5z" fill="#ee934b"/></marker>
+    <marker id="blueArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0 0l10 5-10 5z" fill="#68a6c1"/></marker>
+    <filter id="shadow" x="-35%" y="-35%" width="170%" height="170%"><feDropShadow dx="0" dy="7" stdDeviation="7" flood-color="#000" flood-opacity=".72"/></filter>
+    <style>.corridorWall{fill:none;stroke:#b49770;stroke-width:134;stroke-linecap:round;stroke-linejoin:round}.corridor{fill:none;stroke:#574436;stroke-width:92;stroke-linecap:round;stroke-linejoin:round}.floor{fill:url(#earth);stroke:#85684e;stroke-width:9;stroke-linejoin:round}.ledge{fill:#384a32;stroke:#84906b;stroke-width:10}.cave{fill:#303b35;stroke:#75826a;stroke-width:10}.hut{fill:#3d3028;stroke:#b49770;stroke-width:14;stroke-linejoin:round}.thorn{fill:#4d392d;stroke:#947454;stroke-width:7}.bridgeBase{fill:none;stroke:#2a201a;stroke-width:94;stroke-linecap:round}.bridge{fill:none;stroke:url(#planks);stroke-width:76;stroke-linecap:butt}.route{fill:none;stroke:#ffd34f;stroke-width:18;stroke-linecap:round;stroke-linejoin:round;filter:url(#shadow)}.routeEnd{marker-end:url(#goldArrow)}.optional{fill:none;stroke:#ee934b;stroke-width:14;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:22 18;marker-end:url(#orangeArrow)}.alternate{fill:none;stroke:#68a6c1;stroke-width:14;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:22 18;marker-end:url(#blueArrow)}.step{fill:#aa333b;stroke:#ffaaa0;stroke-width:8;filter:url(#shadow)}.optionalStep{fill:#c66b2b;stroke:#ffd39a;stroke-width:8;filter:url(#shadow)}.stepText{font-family:Arial,sans-serif;fill:#fff;font-size:42px;font-weight:700;text-anchor:middle;dominant-baseline:central}.ward{fill:#597e98;stroke:#a8d5ef;stroke-width:8;filter:url(#shadow)}</style>
+  </defs>
+  <rect width="2048" height="2048" rx="34" fill="url(#bg)"/><rect x="24" y="24" width="2000" height="2000" rx="28" fill="url(#grain)" stroke="#806d4e" stroke-width="8"/>
+
+  <!-- Southeast entrance and trench approach. -->
+  <path class="corridorWall" d="M1650 1900v-160l-118-112 12-174 118-118-28-154"/>
+  <path class="corridor" d="M1650 1900v-160l-118-112 12-174 118-118-28-154"/>
+  <path class="floor" d="M1540 1875l110 90 110-90-45-115 36-107-120-122-6-93 97-84 3-190-100-64-109 68 15 164-108 103-15 216 128 132z" opacity=".65"/>
+
+  <!-- Eastern kraul: trenches, Aggem/Jargba rooms, and the high Ramtusk ledge. -->
+  <path class="corridorWall" d="M1634 1182c130 25 220-35 222-156 2-126-120-146-148-244-28-96 59-181-20-278-76-92-206-16-278-84-54-51-35-148-138-170"/>
+  <path class="corridor" d="M1634 1182c130 25 220-35 222-156 2-126-120-146-148-244-28-96 59-181-20-278-76-92-206-16-278-84-54-51-35-148-138-170"/>
+  <path class="corridorWall" d="M1545 1454c-160-76-183-218-83-315 86-83 63-182-24-237-99-63-145-166-87-254 55-84 153-73 201-154"/>
+  <path class="corridor" d="M1545 1454c-160-76-183-218-83-315 86-83 63-182-24-237-99-63-145-166-87-254 55-84 153-73 201-154"/>
+  <path class="floor" d="M1510 1020c35-89 137-133 222-88 82 43 93 149 35 217-60 71-181 77-245 10-35-37-45-89-12-139z"/>
+  <path class="ledge" d="M1648 650c45-68 143-85 207-35 63 49 56 150-6 199-64 50-163 19-195-55-14-33-15-77-6-109z"/>
+  <path class="ledge" d="M1138 173c58-59 160-70 226-20 62 48 73 148 18 207-58 62-166 68-232 14-60-49-67-145-12-201z"/>
+  <!-- Roogug is a first-fork detour on its own landing. -->
+  <path class="corridorWall" d="M1540 1510c-128-12-246-111-229-218 14-87 109-99 135-181"/>
+  <path class="corridor" d="M1540 1510c-128-12-246-111-229-218 14-87 109-99 135-181"/>
+  <path class="ledge" d="M1240 1123c46-69 143-89 210-42 69 49 77 153 21 216-58 66-167 68-232 11-57-51-53-130 1-185z"/>
+  <!-- Internal looped trenches make the eastern half read as layered paths, not a single tube. -->
+  <path class="corridorWall" d="M1515 1158c-102 15-181-62-174-153 7-88 117-107 130-198 13-92-85-152-54-234 30-78 121-89 205-59"/>
+  <path class="corridor" d="M1515 1158c-102 15-181-62-174-153 7-88 117-107 130-198 13-92-85-152-54-234 30-78 121-89 205-59"/>
+
+  <!-- Ravine crossings and Halmgar's isolated middle platform. -->
+  <path class="bridgeBase" d="M1250 420L1088 620"/><path class="bridge" d="M1250 420L1088 620"/>
+  <path class="ledge" d="M897 550c68-57 178-47 231 24 50 68 31 168-42 211-75 45-178 14-216-63-29-60-19-130 27-172z"/>
+  <path class="bridgeBase" d="M895 690L728 790"/><path class="bridge" d="M895 690L728 790"/>
+  <path class="bridgeBase" d="M865 760L690 918"/><path class="bridge" d="M865 760L690 918"/>
+
+  <!-- Western kraul: Bat Cavern, Agathelos ward, Willix ledge, and Charlga's hut. -->
+  <path class="corridorWall" d="M720 820c-106-82-220-80-299 2-71 74-36 169-100 232-61 61-166 48-212 139-44 86 18 182 122 192"/>
+  <path class="corridor" d="M720 820c-106-82-220-80-299 2-71 74-36 169-100 232-61 61-166 48-212 139-44 86 18 182 122 192"/>
+  <path class="cave" d="M175 677c52-106 168-172 286-157 125 16 207 114 199 230-8 119-109 211-232 219-128 8-244-77-275-199-8-31-3-65 22-93z"/>
+  <path class="corridorWall" d="M235 1385c-35 121 30 233 137 255 104 22 183-65 206-171"/>
+  <path class="corridor" d="M235 1385c-35 121 30 233 137 255 104 22 183-65 206-171"/>
+  <path class="floor" d="M141 1350c49-74 153-100 230-54 79 47 94 154 35 223-61 71-174 76-241 10-50-49-64-119-24-179z"/>
+  <!-- Ward pylons guard Agathelos's tunnel. -->
+  <path class="ward" d="M254 1275l34 42-34 42-34-42zM342 1254l34 42-34 42-34-42z"/>
+  <path class="corridorWall" d="M430 680c-28-105-4-212 76-269 73-52 169-29 235-93"/>
+  <path class="corridor" d="M430 680c-28-105-4-212 76-269 73-52 169-29 235-93"/>
+  <path class="ledge" d="M610 227c45-82 150-116 235-75 88 43 118 151 68 235-51 86-165 111-248 55-68-46-94-143-55-215z"/>
+  <path class="hut" d="M636 192l102-70 109 60-12 126-99 62-108-62z"/>
+  <path class="thorn" d="M641 190l-54-66 72 18 15-84 42 72 60-65-9 86 83-22-62 63z"/>
+  <!-- Willix's ledge and drop are shown as a side platform above the west transit. -->
+  <path class="corridorWall" d="M690 918c75 29 156 1 203-67"/><path class="corridor" d="M690 918c75 29 156 1 203-67"/>
+  <path class="floor" d="M745 840c48-53 133-61 190-18 60 45 65 135 16 190-51 57-143 59-198 7-48-46-51-128-8-179z"/>
+  <path class="ward" d="M748 884l37 32-37 32-37-32z"/>
+
+  <!-- Main full-clear progression follows the genuine southeast-to-west sweep. -->
+  <path class="route" d="M1650 1900v-160l-118-112 12-174 118-118-28-154"/>
+  <path class="route" d="M1634 1182c130 25 220-35 222-156 2-126-120-146-148-244"/>
+  <path class="route" d="M1708 782c-28-96 59-181-20-278-76-92-206-16-278-84-54-51-35-148-138-170"/>
+  <path class="route" d="M1272 250l-184 370"/>
+  <path class="route" d="M895 690L728 790c-106-82-220-80-299 2-71 74-36 169-100 232-61 61-166 48-212 139-44 86 18 182 122 192"/>
+  <path class="route routeEnd" d="M430 680c-28-105-4-212 76-269 73-52 169-29 230-93"/>
+  <!-- Orange branches are optional/rare bosses; blue is Willix's long return escort. -->
+  <path class="optional" d="M1540 1510c-128-12-246-111-229-218 14-87 84-95 112-142"/>
+  <path class="optional" d="M1088 620l-88 35"/>
+  <path class="optional" d="M429 792l-122-82"/>
+  <path class="alternate" d="M239 1385c-104-10-166-106-122-192 46-91 151-78 212-139 64-63 29-158 100-232 68-71 163-81 263-17"/>
+  <path class="alternate" d="M840 934c255 230 521 430 792 636l18 170"/>
+
+  <!-- Boss order: Roogug, Aggem, Jargba, Ramtusk, Halmgar, Blind Hunter, Agathelos, Charlga. -->
+  <circle class="optionalStep" cx="1423" cy="1150" r="44"/><text class="stepText" x="1423" y="1150">1</text>
+  <circle class="step" cx="1634" cy="1182" r="44"/><text class="stepText" x="1634" y="1182">2</text>
+  <circle class="step" cx="1708" cy="782" r="44"/><text class="stepText" x="1708" y="782">3</text>
+  <circle class="step" cx="1272" cy="250" r="44"/><text class="stepText" x="1272" y="250">4</text>
+  <circle class="optionalStep" cx="1000" cy="655" r="44"/><text class="stepText" x="1000" y="655">5</text>
+  <circle class="optionalStep" cx="307" cy="710" r="44"/><text class="stepText" x="307" y="710">6</text>
+  <circle class="step" cx="239" cy="1385" r="44"/><text class="stepText" x="239" y="1385">7</text>
+  <circle class="step" cx="736" cy="318" r="44"/><text class="stepText" x="736" y="318">8</text>
+</svg>

@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="2048" viewBox="0 0 2048 2048">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#30271c"/><stop offset="1" stop-color="#17140f"/></linearGradient>
+    <pattern id="grain" width="80" height="64" patternUnits="userSpaceOnUse"><path d="M4 20c20-10 42-10 64 0M18 52c14-6 30-6 48 0" fill="none" stroke="#c8aa70" stroke-width="2" opacity=".055"/></pattern>
+    <pattern id="stone" width="64" height="44" patternUnits="userSpaceOnUse"><path d="M0 22h64M32 0v22M16 22v22M48 22v22" fill="none" stroke="#c0b08e" stroke-width="2" opacity=".13"/></pattern>
+    <pattern id="grassPattern" width="58" height="58" patternUnits="userSpaceOnUse"><path d="M8 44l9-12m18 18 6-15M49 23l-7-10M20 18l-4-9" stroke="#9ba77f" stroke-width="2" opacity=".1"/></pattern>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity=".65"/></filter>
+    <marker id="mainArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="3.1" markerHeight="3.1" orient="auto"><path d="M0 0l10 5-10 5z" fill="#ffd34f"/></marker>
+    <marker id="optionalArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="3.1" markerHeight="3.1" orient="auto"><path d="M0 0l10 5-10 5z" fill="#ee934b"/></marker>
+    <style>
+      .wall{fill:#625947;stroke:#b9a47b;stroke-width:18;stroke-linejoin:round}.floor{fill:#443f37;stroke:#7f735f;stroke-width:7;stroke-linejoin:round}.grass{fill:#344634;stroke:#7f8c6d;stroke-width:7}.door{fill:none;stroke:#d6c59d;stroke-width:14;stroke-linecap:square}.shelf{stroke:#9f7b46;stroke-width:18;stroke-linecap:round}.route{fill:none;stroke:#ffd34f;stroke-width:17;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#mainArrow);filter:url(#shadow)}.optional{fill:none;stroke:#ee934b;stroke-width:14;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:18 16;marker-end:url(#optionalArrow);filter:url(#shadow)}.step{fill:#912f37;stroke:#ef9a91;stroke-width:6;filter:url(#shadow)}.optionalStep{fill:#b95f28;stroke:#ffd09a;stroke-width:6;filter:url(#shadow)}.stepText{font-family:Arial,sans-serif;fill:#fff;font-size:36px;font-weight:700;text-anchor:middle;dominant-baseline:central}
+    </style>
+  </defs>
+
+  <rect width="2048" height="2048" rx="34" fill="url(#bg)"/><rect x="24" y="24" width="2000" height="2000" rx="28" fill="url(#grain)" stroke="#806d4e" stroke-width="8"/>
+
+  <!-- Portal dogleg and the long western descent. -->
+  <path class="wall" d="M112 390h94v-80h82v-86h144v86h34v530h-48v54H278v-54h-44V482H112z"/>
+  <path class="floor" d="M142 420h94v-80h82v-86h84v86h34v470h-48v54h-80v-54h-44V452H142z" fill="url(#stone)"/>
+  <path d="M368 380v390" stroke="#91836b" stroke-width="8" stroke-dasharray="20 16" opacity=".55"/><path class="door" d="M142 420v62M308 864h80"/>
+
+  <!-- Huntsman's Cloister is a perimeter walk around the central lawn. -->
+  <rect class="wall" x="268" y="812" width="540" height="538"/><rect class="floor" x="298" y="842" width="480" height="478" fill="url(#stone)"/>
+  <rect class="grass" x="402" y="936" width="276" height="284"/><rect x="402" y="936" width="276" height="284" fill="url(#grassPattern)"/>
+  <path d="M298 914h104M678 914h100M368 842v94M706 842v94M368 1220v100M706 1220v100" stroke="#9a8d72" stroke-width="9"/>
+  <path class="door" d="M508 1320h64"/>
+
+  <!-- Loksey's kennel is a compact branch directly south of the cloister. -->
+  <path class="wall" d="M450 1350h184v76h48v250H402v-250h48z"/><path class="floor" d="M480 1380h124v76h48v190H432v-190h48z" fill="url(#stone)"/>
+  <path d="M460 1594h164" stroke="#8e5550" stroke-width="12"/><path d="M484 1518h140" stroke="#9f7b46" stroke-width="14" stroke-dasharray="22 14"/>
+
+  <!-- The east cloister exit hooks north toward the Gallery rather than forming a room. -->
+  <path class="wall" d="M778 902h102v-82h112v-82h126v374H992v-82H880v216H778z"/><path class="floor" d="M778 932h132v-82h52v-82h126v314H962v-82H808v246h-30z" fill="url(#stone)"/>
+  <path class="door" d="M808 902v94M1050 768h68"/>
+
+  <!-- Gallery of Treasures: a narrow stair spine with three skippable display alcoves. -->
+  <path class="wall" d="M1018 768h-68v-96h68v-70h-68v-96h68v-76h72v-72h188v568h-188v-72h-72z"/>
+  <path class="floor" d="M1048 738h-68v-36h68v-130h-68v-36h68v-76h72v-72h128v508h-128v-72h-72z" fill="url(#stone)"/>
+  <path d="M1014 488a48 48 0 0 0 0 96M1014 626a48 48 0 0 0 0 96M1120 388a48 48 0 0 0 96 0" fill="none" stroke="#9a8767" stroke-width="12"/>
+  <path class="shelf" d="M1070 494v68M1070 632v68M1160 420h62"/><path class="door" d="M1214 388h64M1214 896h64"/>
+
+  <!-- Two distinct northern reading halls joined by a narrow doorway. -->
+  <path class="wall" d="M1248 244h254v36h44v296h-44v36h-254v-36h-44V280h44z"/><path class="floor" d="M1278 274h194v36h44v236h-44v36h-194v-36h-44V310h44z" fill="url(#stone)"/>
+  <path class="wall" d="M1546 244h254v36h44v296h-44v36h-254v-36h-44V280h44z"/><path class="floor" d="M1576 274h194v36h44v236h-44v36h-194v-36h-44V310h44z" fill="url(#stone)"/>
+  <g fill="#8f7c5a" stroke="#c6ae7c" stroke-width="4"><rect x="1296" y="326" width="52" height="52"/><rect x="1390" y="326" width="52" height="52"/><rect x="1296" y="470" width="52" height="52"/><rect x="1390" y="470" width="52" height="52"/><rect x="1594" y="326" width="52" height="52"/><rect x="1688" y="326" width="52" height="52"/><rect x="1594" y="470" width="52" height="52"/><rect x="1688" y="470" width="52" height="52"/></g>
+  <path class="door" d="M1248 388h62M1502 388h44M1800 388h44"/>
+
+  <!-- Athenaeum descends through a stepped corridor with repeated reading bays. -->
+  <path class="wall" d="M1770 536h108v66h50v110h-50v66h50v110h-50v66h50v110h-50v74h-108z"/><path class="floor" d="M1800 566h48v66h50v50h-50v126h50v50h-50v126h50v50h-50v74h-48z" fill="url(#stone)"/>
+  <path d="M1848 632a46 46 0 0 1 0 92M1848 808a46 46 0 0 1 0 92M1848 984a46 46 0 0 1 0 92" fill="none" stroke="#9a8767" stroke-width="12"/>
+  <path class="shelf" d="M1814 646v64M1814 822v64M1814 998v64"/><path class="door" d="M1770 566h62M1770 1108h62"/>
+
+  <!-- Two bench rooms sit side by side immediately before Doan. -->
+  <path class="wall" d="M1512 1108h366v62h42v252h-168v54h-114v-54h-168v-252h42z"/><path class="floor" d="M1542 1138h306v62h42v192h-168v54h-54v-54h-168v-192h42z" fill="url(#stone)"/>
+  <path d="M1695 1140v252" stroke="#756b58" stroke-width="11"/><path class="shelf" d="M1558 1236h88M1744 1236h88"/>
+  <g fill="#8f7c5a" stroke="#c6ae7c" stroke-width="4"><rect x="1572" y="1162" width="46" height="46"/><rect x="1772" y="1162" width="46" height="46"/><rect x="1572" y="1320" width="46" height="46"/><rect x="1772" y="1320" width="46" height="46"/></g>
+  <path class="door" d="M1770 1108h62M1660 1446h70"/>
+
+  <!-- Doan's round study and the Scarlet Key chest. -->
+  <path class="wall" d="M1618 1476h154v60a214 214 0 1 1-154 0z"/><path class="floor" d="M1648 1506h94v54a184 184 0 1 1-94 0z" fill="url(#stone)"/>
+  <circle cx="1695" cy="1704" r="76" fill="#4b414a" stroke="#8f7b8f" stroke-width="9"/><circle cx="1695" cy="1704" r="28" fill="#29251f" stroke="#b09a72" stroke-width="7"/>
+  <path class="door" d="M1658 1506h74"/><rect x="1810" y="1762" width="54" height="42" rx="6" fill="#9a7540" stroke="#d8b86b" stroke-width="6"/>
+
+  <!-- Route follows the real perimeter walk and circuit; Loksey remains the only branch. -->
+  <path class="route" d="M166 452h82v390h76v56"/>
+  <path class="route" d="M324 898v350h426V968h116v-64h154V768h72V404h156"/>
+  <path class="route" d="M1248 404h522v146h54v560"/>
+  <path class="route" d="M1824 1110v282h-129v214"/>
+  <path class="optional" d="M540 1248v240"/>
+  <circle class="optionalStep" cx="540" cy="1540" r="40"/><text class="stepText" x="540" y="1540">1</text>
+  <circle class="step" cx="1695" cy="1704" r="40"/><text class="stepText" x="1695" y="1704">2</text>
+</svg>

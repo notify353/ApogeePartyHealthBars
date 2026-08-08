@@ -159,12 +159,21 @@ mob("amnennar", 7358, "Amnennar the Coldbringer", "circle", 260,
     "Tank with the hut behind the tank, interrupt Frostbolt, gather spectres, and burn the boss when healing is stable.",
     "Undead", "Boss control is unreliable; use interrupts, positioning, and mitigation.", {}, true)
 
+local function overviewMap()
+    return {
+        texture = "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\RazorfenDowns.png",
+        width = 2048, height = 2048,
+        caption = "Gold route — dashed alternate — orange optional; numbers show boss order",
+        description = "Complete Razorfen Downs overview through the gong chamber, Murder Pens and Idol event, Bone Pile, Glutton route, rare spawn sites, and Spiral of Thorns to Amnennar.",
+    }
+end
+
 Catalog.RegisterGuide({
     key = "razorfenDowns", name = "Razorfen Downs", instanceIds = { 129 },
     clientFlavors = { classicEra = true, tbcAnniversary = true }, mobs = mobs,
     sections = {
         {
-            key = "witheredHallsGong", name = "Withered Halls & Gong",
+            key = "witheredHallsGong", name = "Withered Halls & Gong", map = overviewMap(),
             route = {
                 "Enter Razorfen Downs northeast of the Great Lift, take the eastern passage first, and leave the harder southern undead route for later.",
                 "Pull ranged Spearhides and Geomancers around corners, watch the fast Battle Boar Horror patrol, and clear each altar-room group into the hall.",
@@ -181,7 +190,7 @@ Catalog.RegisterGuide({
             },
         },
         {
-            key = "murderPensIdol", name = "Murder Pens & Idol",
+            key = "murderPensIdol", name = "Murder Pens & Idol", map = overviewMap(),
             route = {
                 "From the gong, clear the main passage and both ambush ramps into the Murder Pens; isolate the wandering Battle Boar Horrors before opening any cage.",
                 "Find Belnistrasz in the north pen and pre-clear the complete route back to the idol before starting his optional escort and defense event.",
@@ -198,7 +207,7 @@ Catalog.RegisterGuide({
             },
         },
         {
-            key = "bonePile", name = "Bone Pile & Glutton",
+            key = "bonePile", name = "Bone Pile & Glutton", map = overviewMap(),
             route = {
                 "Return to the Murder Pens after the idol event and take the bridge toward the Bone Pile, clearing patrols away from the next group.",
                 "Approach Mordresh carefully and gather the fragile dancing skeletons for controlled area damage while maintaining interrupts on the boss.",
@@ -215,7 +224,7 @@ Catalog.RegisterGuide({
             },
         },
         {
-            key = "spiralOfThorns", name = "Spiral of Thorns",
+            key = "spiralOfThorns", name = "Spiral of Thorns", map = overviewMap(),
             route = {
                 "Climb the spiral slowly, pull each group down into cleared space, and wait for patrols; enemies from higher turns can path into the pull.",
                 "Check the huts along the lower spiral for rare Ragglesnout, whose placeholder may be an ordinary Splinterbone Warrior.",

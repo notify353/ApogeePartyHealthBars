@@ -100,7 +100,12 @@ Catalog.RegisterGuide({
     key = "scarletMonastery", name = "Scarlet Monastery", instanceIds = { 189 },
     clientFlavors = { classicEra = true, tbcAnniversary = true }, mobs = mobs,
     sections = {
-        { key = "graveyard", name = "Graveyard", route = {
+        { key = "graveyard", name = "Graveyard", map = {
+            texture = "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ScarletMonasteryGraveyard.png",
+            width = 2048, height = 2048,
+            caption = "Gold route — dashed alternate — orange optional; numbers show boss order",
+            description = "The original Classic Graveyard plan: torture chamber, outdoor crypt sweep, rare-spawn checks, two-level tomb, and Bloodmage Thalnos.",
+        }, route = {
             "Enter through the far-left portal, clear the torture room around Vishas, then continue into the graveyard without leaving runners behind.",
             "Check each isolated Unfettered Spirit spawn while crossing the graveyard; it can be replaced by Azshir, Fallen Champion, or Ironspine.",
             "Clear the crypt approach before Bloodmage Thalnos so fear or close-range magic cannot chain another undead pack.",
@@ -108,7 +113,12 @@ Catalog.RegisterGuide({
             { title = "Undead control", guidance = "Shackle or Turn one dangerous undead when the pull is larger than the group can safely stabilize." },
             { title = "Rare bosses", guidance = "Circle identifies each Graveyard rare; treat the encounter as a single-target mechanics check rather than a kill-order problem." },
         } },
-        { key = "library", name = "Library", route = {
+        { key = "library", name = "Library", map = {
+            texture = "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ScarletMonasteryLibrary.png",
+            width = 2048, height = 2048,
+            caption = "Gold route — dashed alternate — orange optional; numbers show boss order",
+            description = "The original Classic Library plan: entry hall, Huntsman's Cloister, optional Loksey room, Gallery of Treasures, Athenaeum, and Doan's study.",
+        }, route = {
             "Enter through the far-right portal and pull ranged Scarlet packs around corners; stop every low-health runner before it reaches the next room.",
             "Clear Loksey's side room for his optional encounter, then return to the main hall and continue through the Athenaeum.",
             "Spread around Doan, retreat before Detonation, then loot the Scarlet Key from the strongbox behind him for Armory and Cathedral.",
@@ -116,7 +126,12 @@ Catalog.RegisterGuide({
             { title = "Chaplain plus Diviner", guidance = "Skull and interrupt the Chaplain first, then make the Diviner the next focus. Control either caster only when reliable CC is safer than a fast kill." },
             { title = "Loksey's hounds", guidance = "Control one Tracking Hound when needed, establish threat on the others, kill the uncontrolled hounds, then finish Loksey. Skip control when the group can safely cleave." },
         } },
-        { key = "armory", name = "Armory", route = {
+        { key = "armory", name = "Armory", map = {
+            texture = "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ScarletMonasteryArmory.png",
+            width = 2048, height = 2048,
+            caption = "Gold route — dashed alternate — orange optional; numbers show boss order",
+            description = "The original Classic Armory plan: keyed entry, training ground, offset armory halls, final gallery, and Herod's circular Hall of Champions.",
+        }, route = {
             "Use the Scarlet Key on the right locked door, then pull the long corridor in small groups toward cleared ground.",
             "Line-of-sight Evokers and Conjurors around corners and stop runners before they reach the next formation or patrol.",
             "Clear Herod's complete hall, fight him away from the doorway, avoid Whirlwind, then gather the non-elite Trainees after he dies.",
@@ -128,14 +143,14 @@ Catalog.RegisterGuide({
             texture = "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ScarletMonasteryCathedral.png",
             width = 2048,
             height = 2048,
-            caption = "Complete Cathedral route — zoom for patrol, positioning, and room detail",
-            description = "The complete keyed entrance, lower and upper fountain courtyards, patrol lanes, chapel threshold, nave, side rooms, high altar, Whitemane entrance, resurrection area, and Fairbanks secret room.",
+            caption = "Gold main route — dashed alternate — orange optional Fairbanks; zoom for detail",
+            description = "The original Classic floor plan: long keyed-entry hallway, stepped gardens and T-shaped water feature, narrow nave and required interior clear, altar-side rooms, rear altar chamber, and optional Fairbanks.",
         }, route = {
             "Use the Scarlet Key on the left locked door, enter together, and keep the doorway behind the group as safe reset space.",
-            "Clear the lower courtyard edges around the fountain; pull every runner or caster back onto cleared stone.",
-            "Sweep both upper-courtyard sides and patrol lanes, then line-of-sight the chapel threshold outside the door.",
-            "Clear the full nave, both aisles, and every side room; use the right-side secret door for Fairbanks before the altar.",
-            "Engage Mograine only after every Scarlet is dead, then interrupt Whitemane's healing after she enters and resurrects him.",
+            "Clear straight to the lower fountain, then take one side toward the stairs: left by default or right when patrol timing is safer. Skip the unused half.",
+            "Repeat the one-side clear at the upper fountain, pulling every caster and runner back onto cleared ground and stopping runners before they reach another pack.",
+            "At the chapel threshold, line-of-sight packs to the outside hold point. Once stable, enter and clear the full nave, both aisles, and every side room.",
+            "Take the optional Fairbanks detour before the altar via the torch in the right-side room. Then kill Mograine and focus Whitemane's healing after she resurrects him.",
         }, entries = { "abbot", "wizard", "chaplain", "sorcerer", "myrmidon", "champion", "monk", "defender", "centurion", "whitemane", "mograine", "fairbanks" }, rules = {
             { title = "Extra healer or caster", guidance = "Assign crowd control to an additional Abbot, Chaplain, Wizard, or Sorcerer when the pull contains more priority casters than the group can interrupt." },
             { title = "Chapel safety", guidance = "Clear the chapel before engaging Mograine; the resurrection encounter can otherwise chain nearby Scarlet packs." },

@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="2048" viewBox="0 0 2048 2048">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#34291c"/><stop offset="1" stop-color="#17140f"/></linearGradient>
+    <pattern id="grain" width="80" height="64" patternUnits="userSpaceOnUse"><path d="M4 20c20-10 42-10 64 0M18 52c14-6 30-6 48 0" fill="none" stroke="#c8aa70" stroke-width="2" opacity=".07"/></pattern>
+    <pattern id="earth" width="64" height="50" patternUnits="userSpaceOnUse"><path d="M8 16l18-8 20 7M16 42l18-7 18 6" fill="none" stroke="#b9825b" stroke-width="3" opacity=".2"/></pattern>
+    <pattern id="titan" width="70" height="70" patternUnits="userSpaceOnUse"><path d="M0 35h70M35 0v70" fill="none" stroke="#b5c39a" stroke-width="3" opacity=".16"/><circle cx="10" cy="10" r="3" fill="#d4bd78" opacity=".3"/></pattern>
+    <marker id="goldArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0 0l10 5-10 5z" fill="#ffd34f"/></marker>
+    <marker id="orangeArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0 0l10 5-10 5z" fill="#ee934b"/></marker>
+    <marker id="blueArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0 0l10 5-10 5z" fill="#68a6c1"/></marker>
+    <filter id="shadow" x="-35%" y="-35%" width="170%" height="170%"><feDropShadow dx="0" dy="7" stdDeviation="7" flood-color="#000" flood-opacity=".72"/></filter>
+    <style>.caveWall{fill:none;stroke:#b49a70;stroke-width:138;stroke-linecap:round;stroke-linejoin:round}.cave{fill:none;stroke:#4c3d32;stroke-width:94;stroke-linecap:round;stroke-linejoin:round}.earthRoom{fill:url(#earth);stroke:#80654e;stroke-width:10;stroke-linejoin:round}.titanRoom{fill:url(#titan);stroke:#84906b;stroke-width:11;stroke-linejoin:round}.inner{fill:#29352d;stroke:#718066;stroke-width:8}.pillar{fill:#303c33;stroke:#a39772;stroke-width:8}.altar{fill:#53644d;stroke:#c0b57f;stroke-width:9}.route{fill:none;stroke:#ffd34f;stroke-width:18;stroke-linecap:round;stroke-linejoin:round;filter:url(#shadow)}.routeEnd{marker-end:url(#goldArrow)}.optional{fill:none;stroke:#ee934b;stroke-width:14;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:22 18;marker-end:url(#orangeArrow)}.alternate{fill:none;stroke:#68a6c1;stroke-width:14;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:22 18;marker-end:url(#blueArrow)}.step{fill:#aa333b;stroke:#ffaaa0;stroke-width:8;filter:url(#shadow)}.optionalStep{fill:#c66b2b;stroke:#ffd39a;stroke-width:8;filter:url(#shadow)}.stepText{font-family:Arial,sans-serif;fill:#fff;font-size:42px;font-weight:700;text-anchor:middle;dominant-baseline:central}.transition{fill:#5f87a5;stroke:#a8d5ef;stroke-width:7;filter:url(#shadow)}</style>
+  </defs>
+  <rect width="2048" height="2048" rx="34" fill="url(#bg)"/><rect x="24" y="24" width="2000" height="2000" rx="28" fill="url(#grain)" stroke="#806d4e" stroke-width="8"/>
+
+  <!-- Front entrance and the symmetric Hall of the Keepers. -->
+  <path class="titanRoom" d="M1965 1390h-270v-172h-210v88h-190v-88h-210v172H925v330h160v165h210v-94h190v94h210v-165h270z"/>
+  <path class="inner" d="M1933 1422h-270v-172h-146v88h-254v-88h-146v172H957v266h160v165h146v-94h254v94h146v-165h270z"/>
+  <path class="pillar" d="M1205 1403h88v88h-88zM1487 1403h88v88h-88zM1205 1581h88v88h-88zM1487 1581h88v88h-88z"/>
+  <!-- Dig Two / Lost Dwarves lies below the keeper-hall cross. -->
+  <path class="earthRoom" d="M1255 1818l95-77h182l96 78-18 151h-336z"/>
+  <path class="pillar" d="M1322 1828h68v72h-68zM1406 1828h68v72h-68zM1490 1828h68v72h-68z"/>
+
+  <!-- Revelosh's west exit leads to the Map Chamber and Ironaya. -->
+  <path class="caveWall" d="M1085 1518L910 1540 790 1652"/><path class="cave" d="M1085 1518L910 1540 790 1652"/>
+  <path class="titanRoom" d="M660 1490l102-92h196l108 94v230l-110 96H756l-103-101z"/>
+  <circle class="inner" cx="858" cy="1605" r="116"/><circle class="altar" cx="858" cy="1605" r="44"/>
+  <path class="pillar" d="M706 1505h66v66h-66zM946 1505h66v66h-66zM706 1680h66v66h-66zM946 1680h66v66h-66z"/>
+  <!-- Annora's scorpid cave is a trainer detour below the Map Chamber. -->
+  <path class="caveWall" d="M850 1745l-75 175"/><path class="cave" d="M850 1745l-75 175"/>
+  <path class="earthRoom" d="M641 1840c49-75 152-101 230-55 79 47 99 153 45 224H650c-37-48-41-117-9-169z"/>
+  <path class="transition" d="M738 1905l37 42-37 42-34-42z"/>
+
+  <!-- Rear entrance / Obsidian Sentinel dead-end. -->
+  <path class="caveWall" d="M720 1605L518 1670H310"/><path class="cave" d="M720 1605L518 1670H310"/>
+  <path class="earthRoom" d="M118 1535h252l104 132-104 134H118z"/>
+  <path class="pillar" d="M200 1607h105v124H200z"/>
+  <path class="transition" d="M76 1630l50 40-50 40 31 35 89-75-89-75z"/>
+
+  <!-- Excavation caverns: Galgann, the Temple Hall keeper, and Grimlok's Stone Vault. -->
+  <path class="caveWall" d="M790 1490c-80-125-95-241-12-333 70-77 24-162-80-185-114-25-196-94-177-191 20-102 139-114 171-211"/>
+  <path class="cave" d="M790 1490c-80-125-95-241-12-333 70-77 24-162-80-185-114-25-196-94-177-191 20-102 139-114 171-211"/>
+  <path class="earthRoom" d="M348 892c52-91 170-125 263-76 95 51 130 170 78 265-54 98-180 132-277 73-87-53-115-171-64-262z"/>
+  <path class="pillar" d="M402 905h76v76h-76zM552 905h76v76h-76z"/>
+  <path class="caveWall" d="M650 1010c102 3 181-45 222-127"/><path class="cave" d="M650 1010c102 3 181-45 222-127"/>
+  <path class="titanRoom" d="M763 735l102-77h166l102 80v221l-103 84H861l-101-83z"/>
+  <path class="inner" d="M817 787l70-49h121l68 51v119l-69 55H886l-69-54z"/>
+  <g class="pillar"><rect x="846" y="794" width="56" height="56"/><rect x="989" y="794" width="56" height="56"/><rect x="846" y="884" width="56" height="56"/><rect x="989" y="884" width="56" height="56"/></g>
+  <path class="caveWall" d="M548 790c-151 5-254-75-244-189 9-104 113-147 198-207"/><path class="cave" d="M548 790c-151 5-254-75-244-189 9-104 113-147 198-207"/>
+  <path class="earthRoom" d="M145 481c45-101 157-160 266-137 112 24 187 132 167 245-21 117-134 198-253 179-117-18-196-124-181-239 2-17 3-31 1-48z"/>
+  <path class="pillar" d="M220 458h83v87h-83zM414 453h83v87h-83z"/>
+
+  <!-- Hall of the Crafters and four awakening Stone Keepers. -->
+  <path class="caveWall" d="M500 394l190-153"/><path class="cave" d="M500 394l190-153"/>
+  <path class="titanRoom" d="M548 72h414l100 91v292l-99 93H550l-102-92V164z"/>
+  <path class="inner" d="M602 126h306l94 70v226l-92 72H604l-96-71V197z"/>
+  <circle class="altar" cx="755" cy="309" r="76"/><circle cx="755" cy="309" r="24" fill="#28332c"/>
+  <g class="pillar"><rect x="557" y="157" width="74" height="74"/><rect x="879" y="157" width="74" height="74"/><rect x="557" y="387" width="74" height="74"/><rect x="879" y="387" width="74" height="74"/></g>
+
+  <!-- Archaedas's separate final vault and the rear Discs chamber. -->
+  <path class="titanRoom" d="M1050 164h170V72h530v110h177v401h-177v117h-530V599h-170z"/>
+  <path class="inner" d="M1082 196h170v-92h466v110h177v337h-177v117h-466V567h-170z"/>
+  <path class="titanRoom" d="M1210 243l125-91h250l128 93v273l-127 95h-252l-124-94z"/>
+  <circle class="altar" cx="1460" cy="382" r="126"/><circle cx="1460" cy="382" r="45" fill="#2b3730"/>
+  <g class="pillar"><rect x="1250" y="270" width="68" height="68"/><rect x="1602" y="270" width="68" height="68"/><rect x="1250" y="470" width="68" height="68"/><rect x="1602" y="470" width="68" height="68"/></g>
+  <path class="altar" d="M1740 278h110v212h-110z"/>
+
+  <!-- Full front-door route, Galgann before Keeper, then Grimlok and the altar sequence. -->
+  <path class="route" d="M1950 1555h-335v-90h-230v350"/>
+  <path class="route" d="M1385 1815v-300h-300L910 1540 858 1605"/>
+  <path class="route" d="M858 1605c-145-72-151-282-80-448 70-77 24-162-80-185-114-25-196-94-177-191"/>
+  <path class="route" d="M521 781c20-102 139-114 171-211"/>
+  <path class="route" d="M650 1010c102 3 181-45 222-127"/>
+  <path class="route" d="M548 790c-151 5-254-75-244-189 9-104 113-147 198-207"/>
+  <path class="route" d="M500 394l190-153 65 68"/>
+  <path class="route routeEnd" d="M830 309h315v73h315"/>
+  <!-- Rear entrance, Sentinel, and trainer are true detours. Blue shows the required return. -->
+  <path class="optional" d="M790 1605L518 1670H250"/>
+  <path class="alternate" d="M250 1730H520l235-77"/>
+  <path class="alternate" d="M850 1745l-75 175"/>
+
+  <!-- Boss order: Lost Dwarves, Revelosh, Ironaya, Sentinel, Galgann, Keeper, Grimlok, Archaedas. -->
+  <circle class="step" cx="1385" cy="1845" r="44"/><text class="stepText" x="1385" y="1845">1</text>
+  <circle class="step" cx="1085" cy="1518" r="44"/><text class="stepText" x="1085" y="1518">2</text>
+  <circle class="step" cx="858" cy="1605" r="46"/><text class="stepText" x="858" y="1605">3</text>
+  <circle class="optionalStep" cx="250" cy="1670" r="44"/><text class="stepText" x="250" y="1670">4</text>
+  <circle class="step" cx="521" cy="1010" r="44"/><text class="stepText" x="521" y="1010">5</text>
+  <circle class="step" cx="947" cy="850" r="44"/><text class="stepText" x="947" y="850">6</text>
+  <circle class="step" cx="360" cy="555" r="44"/><text class="stepText" x="360" y="555">7</text>
+  <circle class="step" cx="1460" cy="382" r="48"/><text class="stepText" x="1460" y="382">8</text>
+</svg>

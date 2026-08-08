@@ -50,23 +50,107 @@ assert(scarletRoutes.graveyard:find("far%-left portal")
         and scarletRoutes.library:find("Scarlet Key", 1, true)
         and scarletRoutes.armory:find("right locked door", 1, true)
         and scarletRoutes.cathedral:find("left locked door", 1, true)
+        and scarletRoutes.cathedral:find("take one side", 1, true)
+        and scarletRoutes.cathedral:find("Skip the unused half", 1, true)
+        and scarletRoutes.cathedral:find("outside hold point", 1, true)
         and scarletRoutes.cathedral:find("both aisles", 1, true)
+        and scarletRoutes.cathedral:find("optional Fairbanks detour before the altar", 1, true)
         and #guide.sections[4].route == 5,
     "Scarlet Monastery routes omitted wing access, rare checks, key pickup, or chapel safety")
-local cathedralMap
-for _, section in ipairs(guide.sections) do
-    if section.key == "cathedral" then
-        cathedralMap = section.map
-    else
-        assert(section.map == nil, "a non-Cathedral Scarlet chapter unexpectedly gained a map")
+local expectedTextures = {
+    scarletMonastery = {
+        graveyard = "ScarletMonasteryGraveyard.png",
+        library = "ScarletMonasteryLibrary.png",
+        armory = "ScarletMonasteryArmory.png",
+        cathedral = "ScarletMonasteryCathedral.png",
+    },
+    gnomeregan = "Gnomeregan.png",
+    stockades = "Stockades.png",
+    razorfenKraul = "RazorfenKraul.png",
+    razorfenDowns = "RazorfenDowns.png",
+    uldaman = "Uldaman.png",
+}
+local mapPrefix = "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\"
+local mappedChapterCount, cathedralMap = 0
+for _, mappedGuide in ipairs(guides) do
+    local expected = expectedTextures[mappedGuide.key]
+    local sharedTexture
+    for _, section in ipairs(mappedGuide.sections) do
+        mappedChapterCount = mappedChapterCount + 1
+        assert(section.map and section.map.width == 2048 and section.map.height == 2048,
+            "guide chapter omitted 2048-square map metadata: " .. mappedGuide.key .. "/" .. section.key)
+        local filename = type(expected) == "table" and expected[section.key] or expected
+        assert(section.map.texture == mapPrefix .. filename,
+            "guide chapter registered the wrong map texture: " .. mappedGuide.key .. "/" .. section.key)
+        if mappedGuide.key == "scarletMonastery" then
+            assert(not sharedTexture or sharedTexture ~= section.map.texture,
+                "Scarlet Monastery wings unexpectedly reused one overview")
+            sharedTexture = section.map.texture
+        else
+            sharedTexture = sharedTexture or section.map.texture
+            assert(section.map.texture == sharedTexture,
+                "multi-chapter dungeon did not reuse one overview: " .. mappedGuide.key)
+        end
+        if section.key == "cathedral" then
+            cathedralMap = section.map
+        else
+            assert(section.map.caption:find("Gold route", 1, true)
+                    and section.map.caption:find("dashed alternate", 1, true)
+                    and section.map.caption:find("orange optional", 1, true)
+                    and section.map.caption:find("numbers show boss order", 1, true),
+                "new overview caption omitted route semantics: " .. mappedGuide.key .. "/" .. section.key)
+        end
     end
 end
+assert(mappedChapterCount == 23, "not every Dungeon Guide chapter received map metadata")
 assert(cathedralMap
         and cathedralMap.texture == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ScarletMonasteryCathedral.png"
         and cathedralMap.width == 2048 and cathedralMap.height == 2048
-        and cathedralMap.caption:find("zoom", 1, true)
-        and cathedralMap.description:find("resurrection area", 1, true),
+        and cathedralMap.caption:find("Gold main route", 1, true)
+        and cathedralMap.caption:find("dashed alternate", 1, true)
+        and cathedralMap.description:find("original Classic floor plan", 1, true)
+        and cathedralMap.description:find("long keyed-entry hallway", 1, true)
+        and cathedralMap.description:find("T-shaped water feature", 1, true)
+        and cathedralMap.description:find("required interior clear", 1, true)
+        and cathedralMap.description:find("rear altar chamber", 1, true),
     "Cathedral map metadata was missing or incomplete")
+
+local sourceFiles = {
+    "scarlet-monastery-graveyard", "scarlet-monastery-library",
+    "scarlet-monastery-armory", "scarlet-monastery-cathedral",
+    "gnomeregan", "stockades", "razorfen-kraul", "razorfen-downs", "uldaman",
+}
+local pngFiles = {
+    "ScarletMonasteryGraveyard", "ScarletMonasteryLibrary",
+    "ScarletMonasteryArmory", "ScarletMonasteryCathedral",
+    "Gnomeregan", "Stockades", "RazorfenKraul", "RazorfenDowns", "Uldaman",
+}
+for _, filename in ipairs(sourceFiles) do
+    local file = assert(io.open("assets/dungeon-maps/" .. filename .. ".svg", "rb"),
+        "missing editable dungeon map source: " .. filename)
+    local source = file:read("*a")
+    file:close()
+    local textCount = 0
+    for content in source:gmatch("<text[^>]*>(.-)</text>") do
+        textCount = textCount + 1
+        assert(content:match("^%d+$"), "dungeon map source contains non-numeric text: " .. filename)
+    end
+    assert(textCount > 0, "dungeon map source omitted numbered boss markers: " .. filename)
+end
+local function pngDimension(bytes, offset)
+    local a, b, c, d = bytes:byte(offset, offset + 3)
+    return a * 16777216 + b * 65536 + c * 256 + d
+end
+for _, filename in ipairs(pngFiles) do
+    local file = assert(io.open("Media/Textures/DungeonGuide/" .. filename .. ".png", "rb"),
+        "missing rendered dungeon map: " .. filename)
+    local header = file:read(26)
+    file:close()
+    assert(header and header:sub(2, 4) == "PNG"
+            and pngDimension(header, 17) == 2048 and pngDimension(header, 21) == 2048
+            and header:byte(26) == 6,
+        "dungeon map PNG is not 2048-square RGBA: " .. filename)
+end
 local mutatedMapGuide = Catalog.GetGuide("scarletMonastery", "classicEra")
 mutatedMapGuide.sections[4].map.caption = "mutated"
 mutatedMapGuide.sections[4].map.width = 1

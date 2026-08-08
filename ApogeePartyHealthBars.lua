@@ -865,6 +865,7 @@ minimapController.Initialize({
     SetAddonEnabled = function(enabled) SetAddonEnabled(enabled) end,
     SetConfigMode = function(active) SetConfigMode(active) end,
     ToggleDungeonBoard = dungeonBoardUI.Toggle,
+    ShowDungeonGuide = dungeonGuideUI.Show,
 })
 EnsureMinimapButton = minimapController.Ensure
 local UpdateMinimapButtonStyle = minimapController.UpdateStyle

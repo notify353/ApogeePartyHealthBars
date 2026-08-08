@@ -86,6 +86,9 @@ local function CreateMinimapButton()
     minimapBtn:RegisterForClicks("LeftButtonUp", "MiddleButtonUp")
     minimapBtn:RegisterForDrag("RightButton")
     minimapBtn:SetAttribute("useOnKeyDown", false)
+    -- Prevent the normal left-click Spellbook delegation from falling through
+    -- on Alt-click, including in combat when PreClick cannot rewrite attributes.
+    minimapBtn:SetAttribute("alt-type1", "")
 
     local border = minimapBtn:CreateTexture(nil, "OVERLAY")
     border:SetSize(53, 53)
@@ -112,6 +115,7 @@ local function CreateMinimapButton()
 
         self:SetAttribute("type1", nil)
         self:SetAttribute("clickbutton1", nil)
+        if IsModifierKeyDown("ALT") then return end
         local spellbookOpen = SpellBookFrame and SpellBookFrame.IsShown and SpellBookFrame:IsShown()
         if not S.configMode and not spellbookOpen and _G.SpellbookMicroButton then
             self:SetAttribute("type1", "click")
@@ -125,6 +129,10 @@ local function CreateMinimapButton()
             return
         end
         if mouseButton ~= "LeftButton" then return end
+        if IsModifierKeyDown("ALT") then
+            D.ShowDungeonGuide()
+            return
+        end
         if not D.IsEnabled() then
             D.SetAddonEnabled(true)
         end
@@ -142,6 +150,7 @@ local function CreateMinimapButton()
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
         GameTooltip:SetText("Apogee Party Health Bars")
         GameTooltip:AddLine("Left-click: settings.", 1, 1, 1)
+        GameTooltip:AddLine("Alt-left-click: Dungeon Book.", 1, 1, 1)
         GameTooltip:AddLine("Middle-click: Dungeon Board.", 1, 1, 1)
         GameTooltip:AddLine("Right-drag to move around minimap.", 0.8, 0.8, 0.8)
         GameTooltip:Show()

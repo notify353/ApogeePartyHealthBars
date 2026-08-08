@@ -8,7 +8,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Added
 
-- Added the first full-size Dungeon Book map: Cathedral now covers the complete keyed entrance, fountain courtyards, patrol lanes, chapel rooms, Fairbanks detour, and Mograine/Whitemane altar encounter.
+- Added Alt-left-click Dungeon Book access to the minimap button, with automatic supported-instance map selection and session-only per-dungeon chapter memory for shared instances such as Scarlet Monastery.
+- Added complete full-size Dungeon Book map coverage: all 23 chapters now use one of nine text-free Classic floor-plan traces, with separate Scarlet Monastery wing maps and shared whole-dungeon overviews for Gnomeregan, The Stockade, Razorfen Kraul, Razorfen Downs, and Uldaman. Gold routes, dashed alternatives, orange optional branches, and numbered boss progression keep each run readable without labels covering the map.
 - Added a comprehensive Uldaman Dungeon Book with full front-entrance routing, Staff of Prehistoria and back-door guidance, Annora and optional boss detours, dangerous trash priorities, the keeper altar sequence, Archaedas add waves, and automatic target marking.
 - Added a comprehensive Razorfen Downs Dungeon Book with the three-ring gong event, Belnistrasz and Plaguemaw defense, Bone Pile and spiral routing, all regular, rare, quest, and Scourge Invasion bosses, and automatic target marking.
 - Added a compact Target HUD beneath Target Effects on the current hostile target's visible nameplate, with player health, absorb shields, incoming-heal prediction, mana, and active resources; it remains visible when no effect reminder is due and follows the shared Target HUD setting.

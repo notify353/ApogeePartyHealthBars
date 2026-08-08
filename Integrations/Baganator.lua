@@ -21,7 +21,8 @@ end
 local function TrackFrame(frame)
     local frameType = type(frame)
     if (frameType ~= "table" and frameType ~= "userdata")
-        or type(frame.IsShown) ~= "function" then
+        or (type(frame.IsVisible) ~= "function"
+            and type(frame.IsShown) ~= "function") then
         return false
     end
     trackedFrames[frame] = true
@@ -45,8 +46,10 @@ local function ReadFrameVisibility()
     local hasFrame = false
     for frame in pairs(trackedFrames) do
         hasFrame = true
-        local ok, shown = pcall(frame.IsShown, frame)
-        if ok and shown then return true, true end
+        local visibility = type(frame.IsVisible) == "function"
+            and frame.IsVisible or frame.IsShown
+        local ok, visible = pcall(visibility, frame)
+        if ok and visible then return true, true end
     end
     return false, hasFrame
 end

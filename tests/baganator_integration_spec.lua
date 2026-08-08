@@ -56,15 +56,20 @@ assert(integration.OnLifecycleEvent() == true and replacement.registrations == 4
 replacement:Trigger("BagShow")
 assert(visibility[#visibility] == true, "replacement registry callback did not fire")
 
-local backpackShown = false
+local backpackShown = true
+local backpackVisible = false
 Baganator_SingleViewBackpackViewFrameblizzard_black = {
     IsShown = function() return backpackShown end,
+    IsVisible = function() return backpackVisible end,
 }
-backpackShown = true
+monitor.scripts.OnUpdate(monitor, 0.1)
+assert(visibility[#visibility] == false,
+    "internally shown but effectively hidden backpack kept assignment active")
+backpackVisible = true
 monitor.scripts.OnUpdate(monitor, 0.1)
 assert(visibility[#visibility] == true,
     "visible Baganator backpack frame did not activate assignment")
-backpackShown = false
+backpackVisible = false
 monitor.scripts.OnUpdate(monitor, 0.1)
 assert(visibility[#visibility] == false,
     "hidden Baganator backpack frame did not deactivate assignment")

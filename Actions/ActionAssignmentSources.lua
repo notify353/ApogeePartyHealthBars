@@ -70,6 +70,15 @@ function A.SetPlayerBagOpen(bagId, active)
     return true
 end
 
+function A.ClearPlayerBags()
+    local changed = false
+    for bagId in pairs(openPlayerBags) do
+        openPlayerBags[bagId] = nil
+        changed = true
+    end
+    return changed
+end
+
 function A.SetExternalPlayerBagsOpen(active)
     active = active == true
     if externalPlayerBagsOpen == active then return false end

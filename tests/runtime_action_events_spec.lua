@@ -47,6 +47,12 @@ ApogeePartyHealthBars_ActionAssignmentSources = {
         record("bag-open:" .. tostring(bagId) .. ":" .. tostring(active))
         return true
     end,
+    ClearPlayerBags = function()
+        local changed = next(openBags) ~= nil
+        for bagId in pairs(openBags) do openBags[bagId] = nil end
+        if changed then record("bags-clear") end
+        return changed
+    end,
     SetExternalPlayerBagsOpen = function(active)
         record("external-bags-open:" .. tostring(active == true))
         return true
@@ -240,9 +246,11 @@ baganatorCallbacks.BagShow()
 expect({ "external-bags-open:true", "assignment-refresh" },
     "Baganator bag show did not activate assignment affordances")
 reset()
+dispatch("BAG_OPEN", 0)
+reset()
 baganatorCallbacks.BagHide()
-expect({ "external-bags-open:false", "assignment-refresh" },
-    "Baganator bag hide did not deactivate assignment affordances")
+expect({ "external-bags-open:false", "bags-clear", "assignment-refresh" },
+    "Baganator bag hide did not clear stale native assignment state")
 
 reset()
 dispatch("SPELL_UPDATE_COOLDOWN")

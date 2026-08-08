@@ -6,7 +6,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
-- Fixed Baganator live action assignment by combining its public lifecycle callbacks with read-only backpack-frame visibility monitoring, including late initialization and skin/frame-group changes.
+- Fixed Baganator live action assignment by combining its public lifecycle callbacks with effective backpack-frame visibility monitoring, clearing unmatched native bag-open state when the replacement backpack closes, and handling late initialization and skin/frame-group changes.
 
 ### Added
 

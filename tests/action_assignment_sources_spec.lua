@@ -69,6 +69,16 @@ assert(sources.SetExternalPlayerBagsOpen(false),
 assert(not sources.CanAcceptCursor("item"),
     "replacement bag close left item assignment active")
 
+assert(sources.SetPlayerBagOpen(0, true)
+        and sources.SetExternalPlayerBagsOpen(true),
+    "replacement bag stale-event setup failed")
+assert(sources.ClearPlayerBags(),
+    "replacement bag close did not clear unmatched native BAG_OPEN state")
+assert(not sources.ClearPlayerBags(),
+    "cleared native bag state reported another transition")
+assert(sources.SetExternalPlayerBagsOpen(false) and not sources.IsActive(),
+    "replacement bag close left stale native assignment state active")
+
 cursorType = "item"
 assert(sources.IsActive() and sources.CanAcceptCursor("item"),
     "actual item cursor did not activate replacement-bag assignment fallback")

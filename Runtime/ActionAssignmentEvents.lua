@@ -57,7 +57,14 @@ function E.Register(eventRouter, deps)
     end)
 
     Baganator.Register(function(active)
-        Refresh(Sources.SetExternalPlayerBagsOpen(active))
+        local changed = Sources.SetExternalPlayerBagsOpen(active)
+        if not active then
+            -- Replacement bag UIs can cause BAG_OPEN without a matching
+            -- BAG_CLOSED. Their authoritative close must discard that stale
+            -- native-event state or the Shortcut drop target remains visible.
+            changed = Sources.ClearPlayerBags() or changed
+        end
+        Refresh(changed)
     end)
     eventRouter.Subscribe("ADDON_LOADED", "ActionAssignmentSources", function(_, addonName)
         Baganator.OnAddonLoaded(addonName)

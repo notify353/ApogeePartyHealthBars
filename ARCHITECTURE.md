@@ -1,6 +1,42 @@
 # Architecture
 
-WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `ApogeePartyHealthBars_S` holds session state, feature modules expose narrow APIs, and `ApogeePartyHealthBars.lua` wires them together.
+WoW loads Lua files in TOC order. `Core/Namespace.lua` establishes the single `ApogeePartyHealthBars` root, feature modules expose narrow APIs, and `ApogeePartyHealthBars.lua` invokes explicit bootstrap composition stages in dependency order.
+
+## Namespace and Dependencies
+
+New and migrated modules register exactly once through `ApogeePartyHealthBars.Define(domain, name, module)` and resolve migrated dependencies through `ApogeePartyHealthBars.Require(domain, name)`. The supported domains are `Core`, `Actions`, `Runtime`, `Integrations`, and `Bootstrap`. Duplicate definitions, unknown domains, and missing requirements fail immediately during TOC loading.
+
+Dependency direction is `Core` → domain modules → `Runtime`/`Integrations` → `Bootstrap` → the final entrypoint. Domain modules must not require bootstrap code or reach back into the entrypoint. Factories receive explicit dependency tables and assert every required key. A callback may remain late-bound only when the consumer is constructed before the provider is ready; the Settings UI/controller handshake and final UI update handlers are the current intentional cases.
+
+Some untouched consumers still read historical `ApogeePartyHealthBars_*` globals. A migrated module may expose one centralized compatibility alias through the optional fourth argument to `Define`; that alias must be identical to the registered module. Direct definitions of new legacy module globals are forbidden by validation. Remove an alias once repository search finds no consumers and the corresponding direct-load tests use the namespace.
+
+## Composition Order
+
+The final entrypoint establishes Core policy and scheduling services, then invokes these bootstrap stages in TOC order:
+
+1. `ActionComposition` initializes `ActionCoordinator` and its live-action families.
+2. `AuxiliaryComposition` initializes non-party runtime services that must exist before frames are built.
+3. `PartyFrameComposition` connects click bindings, layout, and the secure reconciler.
+4. `SettingsComposition` initializes the controller before constructing Settings with the controller facade.
+5. `EventRegistration` installs slash commands, runtime subscribers, and health alerts after all callbacks are ready.
+
+`Core.UpdateScheduler` alone owns dirty-request coalescing and its update frames; registered handlers retain UI-domain work. `Core.FeaturePolicy` alone combines saved preference with client capability without modifying portable intent.
+
+## Action Architecture
+
+`ActionCoordinator` owns shared Shortcut, Keyboard, Mouse Wheel, Mouse Button, consumable, cursor-assignment, and binding lifecycle wiring. `BindingController.AssignCursor` remains the only cursor-assignment mutation boundary.
+
+Shortcut responsibilities are divided between `ShortcutStore` for persistence and mutations, the existing Spellbook/player-spell resolver boundary, and `ShortcutBar` for evaluation and secure HUD presentation. Bound actions retain their public factory while `BoundActionEvaluator` owns frame-free state evaluation, `BoundActionSecureController` owns named secure buttons and mouse behavior, and `BoundActionView` owns non-secure presentation. Existing secure frame names and facade signatures are compatibility contracts.
+
+`Runtime.ActionAssignmentEvents` owns Spellbook, Blizzard bag, cursor, combat-transition, and optional-add-on-load routing. `ActionAssignmentSources` is vendor-neutral session state and acceptance policy. Third-party bag support belongs under `Integrations`; `Integrations.Baganator` uses only Baganator's public `BagShow`/`BagHide` callbacks, tolerates either load order, and never hooks item buttons.
+
+## Secure Ownership
+
+Secure frames are created and mutated only by their owning action/party-frame controllers and the shared `SecureFrames` deferral boundary. Opening an assignment source may change assignment affordances but must not place a non-secure visual layer over a secure cast button. Combat lockdown permits no protected attribute, position, visibility, mouse, layout, binding, or assignment mutation; post-combat reconciliation restores the intended state.
+
+## Deferred Structural Work
+
+Settings page construction, `ProfileStore`/profile migration internals, and Dungeon Board/Dungeon Guide UI composition remain intentionally unchanged beyond their bootstrap calls. Split those domains in focused follow-up work after their public contracts and persistence behavior have dedicated characterization tests; do not mix that work into the Actions/bootstrap reorganization.
 
 ## Ownership
 
@@ -29,6 +65,8 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `CleanseEvents`: party-aura, roster, spellbook, pet, and post-combat Cleanse Watch refresh policy
 - `BuffThanksEvents`: combat-log buff/cleanse capture, player-aura verification triggers, and session reset routing for Thank You prompts
 - `RuntimeEvents`: thin subscriber registration coordinator
+- `ActionAssignmentEvents`: Spellbook, Blizzard bag, cursor, combat-transition, and optional-integration lifecycle routing
+- `Baganator`: optional public-callback adapter translating replacement-bag visibility into vendor-neutral assignment-source changes
 - `Sounds`: shared sound catalog, saved-key normalization, and SFX playback
 - `ActionAssignmentSources`: session-only Spellbook and carried-bag visibility, cursor/source matching, capability gating, and combat-safe live-HUD assignment policy
 - `CrowdControl`: class-owned active-control catalog, control categories, activation modes, automatic-display policy, and per-class allocation bounds
@@ -41,7 +79,11 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `SettingsSurfaces`: opt-in opaque-black configuration chrome, native top-level interaction stacking, shared configuration strata, and combat-safe runtime-strata restoration
 - `BoundActionLayouts`: shared per-spec class-state catalog and typed-action layout engine for native forms, secure stealth fallbacks, and composite Cat/Prowl state
 - `BoundActionBindings`: permanent binding-set-specific transactional claiming, reconciliation, conflict detection, restoration, and cross-feature rollback
-- `BoundActionRuntime`: per-instance Keyboard/Mouse Wheel/Mouse Buttons action evaluation, secure execution, HUD state, and feedback
+- `BoundActionEvaluator`, `BoundActionSecureController`, `BoundActionView`, `BoundActionRuntime`: frame-free action state evaluation, named secure-button management, HUD presentation, and the stable per-instance Keyboard/Mouse Wheel/Mouse Buttons facade
+- `ActionCoordinator`: shared live-action configuration, consumable assignment checks, cursor mutation routing, and transactional binding lifecycle fan-in
+- `ShortcutStore`, `ShortcutBar`: Shortcut persistence/mutations and the stable evaluation/secure-rendering facade
+- `FeaturePolicy`, `UpdateScheduler`: saved-intent capability policy and coalesced UI update scheduling
+- `ActionComposition`, `AuxiliaryComposition`, `PartyFrameComposition`, `SettingsComposition`, `EventRegistration`: explicit startup stages and their dependency contracts
 - `ActionHud`: the single activation-feedback line shared by Keyboard, Mouse Wheel, and Mouse Buttons
 - `HealthAlerts`: configurable party low-health threshold state, recovery hysteresis, and sound throttling
 - `SecureFrames`: combat-safe visibility, position, and mouse mutations

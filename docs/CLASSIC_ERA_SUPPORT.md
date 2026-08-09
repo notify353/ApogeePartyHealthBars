@@ -71,6 +71,12 @@ worktrees only when different branches are being tested intentionally.
 
 ## Acceptance Record
 
+Owner-confirmed release acceptance completed on 2026-08-09 for `v0.48.0`:
+
+- Classic Era 1.15.9.69109 — full checklist passed.
+- TBC Anniversary 2.5.6.69110 — full checklist passed.
+- The pass included the release checklist and detailed dual-client matrix below.
+
 Owner-confirmed release acceptance completed on 2026-08-02 for `v0.47.0`:
 
 - Classic Era 1.15.9.68940 — Merritt, Priest — full checklist passed.

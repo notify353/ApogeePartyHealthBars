@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.48.0] - 2026-08-09
+
 - Added polished Keyboard, Mouse Wheel, Mouse Buttons, Consumables, and Shortcuts headers to the live action HUD while add-on settings are open.
 - Added configuration-only key legends to the Keyboard HUD so each fixed number and letter assignment is immediately identifiable while editing.
 - Added a configuration-only Party Frames label directly above the add-on's health bars.

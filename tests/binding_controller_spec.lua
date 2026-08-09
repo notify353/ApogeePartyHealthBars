@@ -1,3 +1,5 @@
+dofile("Core/Namespace.lua")
+
 ApogeePartyHealthBars_C = {
     BINDING_SLOTS = {
         { key = "1", label = "Left Click" },
@@ -48,6 +50,7 @@ ApogeePartyHealthBars_KeyboardActions = {
 }
 ApogeePartyHealthBars_ShortcutItems = {
     GetInfo = function(itemId) if itemId == 1251 then return "Linen Bandage" end end,
+    GetCount = function(itemId) return itemId == 1251 and 1 or 0 end,
 }
 
 local inCombat = false
@@ -166,6 +169,14 @@ assert(controller.ClearBinding("2") and bindings["2"] == nil and refreshes == 8,
     "Healing clearing did not refresh settings and secure frames")
 
 local beforeRejectedDrop = clearedCursorCount
+local getCount = ApogeePartyHealthBars_ShortcutItems.GetCount
+ApogeePartyHealthBars_ShortcutItems.GetCount = function() return 0 end
+cursorInfo = { "item", 1251 }
+assert(not controller.AssignCursor("shortcuts", 1)
+    and clearedCursorCount == beforeRejectedDrop and cursorInfo ~= nil,
+    "bank-only item cursor was assigned or consumed")
+ApogeePartyHealthBars_ShortcutItems.GetCount = getCount
+
 cursorInfo = { "macro", 3 }
 assert(not controller.AssignCursor("shortcuts", 1)
     and clearedCursorCount == beforeRejectedDrop and cursorInfo ~= nil,

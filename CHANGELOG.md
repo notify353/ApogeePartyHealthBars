@@ -6,8 +6,12 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Added out-of-combat Shift-left-drag movement across configured Keyboard, Mouse Wheel, and Mouse Buttons HUD actions: holding Shift over an assigned action shows WoW's move cursor, occupied destinations swap complete actions, empty destinations receive the moved action, and unmodified clicks retain normal casting.
+- Fixed Baganator live action assignment by combining its public lifecycle callbacks with effective backpack-frame visibility monitoring, clearing unmatched native bag-open state when the replacement backpack closes, and handling late initialization and skin/frame-group changes.
+
 ### Added
 
+- Added out-of-combat drag-and-drop from an open Spellbook or carried bag, including Baganator's combined backpack, directly onto live Shortcut Bar, Keyboard, Mouse Wheel, and Mouse Buttons HUD positions while preserving their normal secure click behavior.
 - Added Alt-left-click Dungeon Book access to the minimap button, with automatic supported-instance map selection and session-only per-dungeon chapter memory for shared instances such as Scarlet Monastery.
 - Added complete full-size Dungeon Book map coverage: all 23 chapters now use one of nine text-free Classic floor-plan traces, with separate Scarlet Monastery wing maps and shared whole-dungeon overviews for Gnomeregan, The Stockade, Razorfen Kraul, Razorfen Downs, and Uldaman. Gold routes, dashed alternatives, orange optional branches, and numbered boss progression keep each run readable without labels covering the map.
 - Added a comprehensive Uldaman Dungeon Book with full front-entrance routing, Staff of Prehistoria and back-door guidance, Annora and optional boss detours, dangerous trash priorities, the keeper altar sequence, Archaedas add waves, and automatic target marking.
@@ -31,6 +35,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ### Fixed
 
+- Preserved Blizzard's protected Group Finder text tokens in OFFICIAL Dungeon Board names and notes so the client resolves them instead of displaying raw `|K...|k` markers.
 - Prevented the Target HUD from entering or repeatedly mutating Blizzard's protected nameplate hierarchy, avoiding restricted-region `FrameMeasurement` taint errors while preserving its current-target nameplate attachment.
 - Corrected OFFICIAL Dungeon Board listings to use the same displayed dungeon ranges as chat listings, so configured Below and Above level windows no longer admit out-of-range dungeons.
 - Reworded Dungeon Board and LFG Alert whisper drafts as concise role offers, such as `Tank LF Gnomer`, with role-only `LFG` fallbacks when no dungeon is available.

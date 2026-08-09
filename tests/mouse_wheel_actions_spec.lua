@@ -1,3 +1,9 @@
+dofile("Core/Namespace.lua")
+dofile("Actions/BoundActionEvaluator.lua")
+dofile("Actions/BoundActionView.lua")
+dofile("Actions/BoundActionDragController.lua")
+dofile("Actions/BoundActionSecureController.lua")
+
 unpack = unpack or table.unpack
 
 ApogeePartyHealthBars_C = { SHORTCUT_ICON_SIZE = 24, SHORTCUT_ICON_GAP = 3,
@@ -25,6 +31,8 @@ local function widget()
     function value:CreateTexture() return widget() end
     function value:CreateFontString() return widget() end
     function value:RegisterForClicks(...) self.registeredClicks = { ... } end
+    function value:RegisterForDrag(...) self.registeredDrag = { ... } end
+    function value:RegisterEvent(...) self.registeredEvents = { ... } end
     function value:SetAttribute(key, item) self.attributes[key] = item; self.mutations = self.mutations + 1 end
     function value:GetAttribute(key) return self.attributes[key] end
     function value:HookScript(name, callback) self.scripts[name] = callback end
@@ -32,6 +40,7 @@ local function widget()
     function value:Show() self.shown = true; self.mutations = self.mutations + 1 end
     function value:Hide() self.shown = false; self.mutations = self.mutations + 1 end
     function value:IsShown() return self.shown end
+    function value:IsMouseOver() return self.mouseOver == true end
     return value
 end
 
@@ -55,6 +64,8 @@ end
 
 local inCombat = false
 function InCombatLockdown() return inCombat end
+local cursorType
+function GetCursorInfo() return cursorType end
 local actionButtonUseKeyDown = false
 function GetCVarBool(name)
     assert(name == "ActionButtonUseKeyDown")
@@ -196,6 +207,7 @@ dofile("Actions/MouseWheel/MouseWheelData.lua")
 dofile("Core/UIHelpers.lua")
 dofile("Core/Sounds.lua")
 dofile("Actions/ActionCooldowns.lua")
+dofile("Actions/ActionAssignmentSources.lua")
 dofile("Actions/ShortcutItems.lua")
 dofile("Actions/ActionData.lua")
 dofile("Actions/ActionMacros.lua")
@@ -217,6 +229,12 @@ assert(data.PRESETS == nil and data.GetPreset == nil and data.BuildMacro == nil,
 
 local layouts = 0
 local droppedFeature, droppedSlot, droppedLayout
+local movedSource, movedDestination
+ApogeePartyHealthBars.Require("Actions", "BoundActionDragController").Configure(
+    function(source, destination)
+        movedSource, movedDestination = source, destination
+        return true
+    end)
 wheel.Configure({
     Print = function() end,
     RequestLayout = function() layouts = layouts + 1 end,
@@ -698,9 +716,14 @@ for _, slot in ipairs(data.SLOTS) do
     local castButton = assert(wheel.GetHudCastButton(slot.id), "wheel HUD icon has no secure cast overlay")
     assert(namedFrames[slot.buttonName .. "Hud"] == castButton,
         "wheel HUD cast overlay was not created")
-    assert(#castButton.registeredClicks == 1
-            and castButton.registeredClicks[1] == "LeftButtonUp",
-        "clickable Wheel HUD overlay was not restricted to mouse release")
+    assert(#castButton.registeredClicks == 2
+            and castButton.registeredClicks[1] == "AnyUp"
+            and castButton.registeredClicks[2] == "LeftButtonDown"
+            and #castButton.registeredDrag == 1
+            and castButton.registeredDrag[1] == "LeftButton"
+            and castButton.attributes.useOnKeyDown == false
+            and castButton.attributes["shift-type1"] == "",
+        "clickable Wheel HUD overlay did not preserve casting and locked-bar movement")
     assert(castButton.template == "SecureActionButtonTemplate,SecureHandlerStateTemplate"
         and castButton.parent == UIParent,
         "wheel HUD secure cast overlay is not isolated from the player-row layout")
@@ -735,9 +758,30 @@ for _, slot in ipairs(data.SLOTS) do
 end
 
 ApogeePartyHealthBars_S.configMode = false
+cursorType = "spell"
 wheel.GetHudCastButton("normalUp").scripts.OnReceiveDrag()
 assert(droppedFeature == nil and droppedSlot == nil and droppedLayout == nil,
     "Wheel HUD routed a cursor drop while configuration was closed")
+ApogeePartyHealthBars_ActionAssignmentSources.SetSpellbookOpen(true)
+wheel.GetHudCastButton("normalUp").scripts.OnReceiveDrag()
+assert(droppedFeature == "mouseWheel" and droppedSlot == "normalUp"
+        and droppedLayout == PRIMARY,
+    "open Spellbook did not route a live Wheel HUD drop to its active layout")
+assert(wheel.GetHudCastButton("normalUp").mouseEnabled
+        and not wheel.GetHudIcon("normalUp").mouseEnabled,
+    "assignment source replaced the secure Wheel mouse layer")
+ApogeePartyHealthBars_ActionAssignmentSources.SetSpellbookOpen(false)
+droppedFeature, droppedSlot, droppedLayout = nil, nil, nil
+ApogeePartyHealthBars_ActionAssignmentSources.SetPlayerBagOpen(0, true)
+wheel.GetHudCastButton("normalUp").scripts.OnReceiveDrag()
+assert(droppedFeature == nil and droppedSlot == nil and droppedLayout == nil,
+    "open player bag accepted a mismatched spell cursor")
+cursorType = "item"
+wheel.GetHudCastButton("normalUp").scripts.OnReceiveDrag()
+assert(droppedFeature == "mouseWheel" and droppedSlot == "normalUp"
+        and droppedLayout == PRIMARY,
+    "open player bag did not route a live Wheel HUD item drop")
+ApogeePartyHealthBars_ActionAssignmentSources.SetPlayerBagOpen(0, false)
 ApogeePartyHealthBars_S.configMode = true
 wheel.RefreshSecureActions()
 assert(wheel.GetHudIcon("normalUp").mouseEnabled
@@ -751,6 +795,28 @@ wheel.RefreshSecureActions()
 assert(not wheel.GetHudIcon("normalUp").mouseEnabled
         and wheel.GetHudCastButton("normalUp").mouseEnabled,
     "Wheel runtime did not restore mouse handling to its secure cast overlay")
+
+local shiftDown = true
+function IsShiftKeyDown() return shiftDown end
+cursorType = nil
+local dragSource = wheel.GetHudCastButton("normalUp")
+local dragDestination = wheel.GetHudCastButton("normalDown")
+dragDestination.mouseOver = true
+local layoutsBeforeDrag = layouts
+dragSource.scripts.OnDragStart(dragSource, "LeftButton")
+assert(ApogeePartyHealthBars.Require(
+        "Actions", "BoundActionDragController").IsActive()
+        and layouts == layoutsBeforeDrag,
+    "Shift-left-drag did not start without mutating protected HUD layout")
+dragSource.scripts.OnDragStop(dragSource)
+assert(movedSource and movedSource.feature == "mouseWheel"
+        and movedSource.layoutKey == PRIMARY and movedSource.slotId == "normalUp"
+        and movedDestination and movedDestination.feature == "mouseWheel"
+        and movedDestination.layoutKey == PRIMARY
+        and movedDestination.slotId == "normalDown",
+    "Wheel HUD scripts did not resolve the live Shift-drag destination")
+dragDestination.mouseOver = false
+shiftDown = false
 
 normalUpIcon.castButton.scripts.OnMouseDown(normalUpIcon.castButton)
 local clickedSlot, clickedFeedbackEnd = wheel.GetLastActivation()

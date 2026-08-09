@@ -1,3 +1,6 @@
+dofile("Core/Namespace.lua")
+dofile("Actions/ShortcutStore.lua")
+
 unpack = unpack or table.unpack
 function wipe(value) for key in pairs(value or {}) do value[key] = nil end return value end
 
@@ -120,6 +123,7 @@ GameTooltip.AddLine = function(self, line) self.lines[#self.lines + 1] = line en
 dofile("Core/Sounds.lua")
 dofile("Core/UIHelpers.lua")
 dofile("Actions/ActionCooldowns.lua")
+dofile("Actions/ActionAssignmentSources.lua")
 dofile("Actions/ShortcutItems.lua")
 dofile("Actions/ActionData.lua")
 dofile("Actions/ActionMacros.lua")

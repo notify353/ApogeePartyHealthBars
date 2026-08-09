@@ -1,3 +1,5 @@
+dofile("Core/Namespace.lua")
+
 local calls = {}
 local scheduledTimers = {}
 local function record(value) calls[#calls + 1] = value end
@@ -26,10 +28,39 @@ ApogeePartyHealthBars_ShortcutBar = {
     RefreshSecureActions = function() record("shortcut-secure") end,
     ResolveAndRefresh = function() record("shortcut-resolve") end,
     RefreshItemInfo = function() record("shortcut-item-info") end,
+    RefreshAssignmentAffordances = function() record("assignment-refresh") end,
+}
+local spellbookOpen = false
+local openBags = {}
+ApogeePartyHealthBars_ActionAssignmentSources = {
     SetSpellbookOpen = function(active)
+        active = active == true
+        if spellbookOpen == active then return false end
+        spellbookOpen = active
         record("spellbook-open:" .. tostring(active))
+        return true
+    end,
+    SetPlayerBagOpen = function(bagId, active)
+        active = active == true
+        if not not openBags[bagId] == active then return false end
+        openBags[bagId] = active and true or nil
+        record("bag-open:" .. tostring(bagId) .. ":" .. tostring(active))
+        return true
+    end,
+    ClearPlayerBags = function()
+        local changed = next(openBags) ~= nil
+        for bagId in pairs(openBags) do openBags[bagId] = nil end
+        if changed then record("bags-clear") end
+        return changed
+    end,
+    SetExternalPlayerBagsOpen = function(active)
+        record("external-bags-open:" .. tostring(active == true))
+        return true
     end,
 }
+ApogeePartyHealthBars.Define(
+    "Actions", "ActionAssignmentSources",
+    ApogeePartyHealthBars_ActionAssignmentSources)
 ApogeePartyHealthBars_MouseWheelActions = {
     Refresh = function() record("wheel-refresh") end,
     RefreshSecureActions = function() record("wheel-secure") end,
@@ -85,6 +116,19 @@ local ui = {
 }
 
 local optional = {}
+NUM_CONTAINER_FRAMES = 2
+local function containerFrame(id)
+    return {
+        id = id,
+        shown = false,
+        scripts = {},
+        HookScript = function(self, script, callback) self.scripts[script] = callback end,
+        GetID = function(self) return self.id end,
+        IsShown = function(self) return self.shown end,
+    }
+end
+ContainerFrame1 = containerFrame(0)
+ContainerFrame2 = containerFrame(1)
 SpellBookFrame = {
     shown = false,
     scripts = {},
@@ -94,6 +138,9 @@ SpellBookFrame = {
 local router = {}
 function router.RegisterOptional(event, owner, callback)
     optional[event] = { owner = owner, callback = callback }
+end
+function router.Subscribe(event, owner, callback)
+    optional[event] = { owner = owner, callback = callback, required = true }
 end
 local function dispatch(event, ...)
     local subscription = assert(optional[event], "missing subscription: " .. event)
@@ -107,13 +154,19 @@ local deps = {
     ReconcileBoundActionBindings = function() record("bindings-reconcile"); return true end,
 }
 
+dofile("Integrations/Baganator.lua")
+dofile("Runtime/ActionAssignmentEvents.lua")
 dofile("Runtime/ActionEvents.lua")
 local events = ApogeePartyHealthBars_ActionEvents
+local assignmentEvents = ApogeePartyHealthBars_ActionAssignmentEvents
 
 local valid, validationError = pcall(events.Register, router, {})
 assert(not valid and tostring(validationError):find("Print", 1, true),
     "action subscriber accepted incomplete dependencies")
 events.Register(router, deps)
+assignmentEvents.Register(router, {
+    RefreshAssignmentAffordances = function() record("assignment-refresh") end,
+})
 reset()
 
 for _, event in ipairs({
@@ -133,18 +186,71 @@ assert(optional.SPELL_UPDATE_COOLDOWN.owner == "ShortcutBar"
         and optional.UNIT_PET.owner == "PlayerPetActions"
         and optional.PET_BAR_UPDATE.owner == "PlayerPetActions"
         and optional.PET_BAR_UPDATE_COOLDOWN.owner == "PlayerPetActionState"
-        and optional.PET_BAR_UPDATE_USABLE.owner == "PlayerPetActionState",
+        and optional.PET_BAR_UPDATE_USABLE.owner == "PlayerPetActionState"
+        and optional.BAG_OPEN.owner == "ActionAssignmentSources" and optional.BAG_OPEN.required
+        and optional.BAG_CLOSED.owner == "ActionAssignmentSources" and optional.BAG_CLOSED.required
+        and optional.CURSOR_CHANGED.owner == "ActionAssignmentSources"
+        and optional.ADDON_LOADED.owner == "ActionAssignmentSources"
+        and optional.ADDON_LOADED.required,
     "action refresh owner labels changed")
 assert(SpellBookFrame.scripts.OnShow and SpellBookFrame.scripts.OnHide,
     "Spellbook visibility hooks were not installed")
+assert(ContainerFrame1.scripts.OnShow and ContainerFrame1.scripts.OnHide
+        and ContainerFrame2.scripts.OnShow and ContainerFrame2.scripts.OnHide,
+    "native container visibility hooks were not installed")
 
 SpellBookFrame.scripts.OnShow()
-expect({ "spellbook-open:true" },
+expect({ "spellbook-open:true", "assignment-refresh" },
     "opening the Spellbook did not activate the Shortcut drop target")
 reset()
 SpellBookFrame.scripts.OnHide()
-expect({ "spellbook-open:false" },
+expect({ "spellbook-open:false", "assignment-refresh" },
     "closing the Spellbook did not deactivate its Shortcut drop source")
+
+reset()
+dispatch("BAG_OPEN", 0)
+expect({ "bag-open:0:true", "assignment-refresh" },
+    "opening a player bag did not activate assignment affordances")
+reset()
+dispatch("BAG_CLOSED", 0)
+expect({ "bag-open:0:false", "assignment-refresh" },
+    "closing a player bag did not deactivate assignment affordances")
+
+reset()
+ContainerFrame1.scripts.OnShow(ContainerFrame1)
+expect({ "bag-open:0:true", "assignment-refresh" },
+    "showing the native backpack frame did not activate assignment affordances")
+reset()
+ContainerFrame1.scripts.OnHide(ContainerFrame1)
+expect({ "bag-open:0:false", "assignment-refresh" },
+    "hiding the native backpack frame did not deactivate assignment affordances")
+
+reset()
+dispatch("CURSOR_CHANGED")
+expect({ "assignment-refresh" },
+    "cursor changes did not re-evaluate replacement-bag assignment affordances")
+
+local baganatorCallbacks = {}
+Baganator = {
+    CallbackRegistry = {
+        RegisterCallback = function(_, event, callback)
+            baganatorCallbacks[event] = callback
+        end,
+    },
+}
+reset()
+dispatch("ADDON_LOADED", "Baganator")
+assert(baganatorCallbacks.BagShow and baganatorCallbacks.BagHide,
+    "Baganator public visibility callbacks were not registered")
+baganatorCallbacks.BagShow()
+expect({ "external-bags-open:true", "assignment-refresh" },
+    "Baganator bag show did not activate assignment affordances")
+reset()
+dispatch("BAG_OPEN", 0)
+reset()
+baganatorCallbacks.BagHide()
+expect({ "external-bags-open:false", "bags-clear", "assignment-refresh" },
+    "Baganator bag hide did not clear stale native assignment state")
 
 reset()
 dispatch("SPELL_UPDATE_COOLDOWN")

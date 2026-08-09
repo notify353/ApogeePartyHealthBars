@@ -7,7 +7,7 @@ local overlaySources = {
     "PartyFrames/UnitBar.lua",
     "Actions/ShortcutBar.lua",
     "Actions/ConsumableBar.lua",
-    "Actions/BoundActionRuntime.lua",
+    "Actions/BoundActionSecureController.lua",
     "PartyFrames/PlayerUtility.lua",
 }
 

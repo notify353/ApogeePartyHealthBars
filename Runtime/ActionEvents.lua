@@ -39,17 +39,6 @@ function A.Register(eventRouter, deps)
         end
     end
 
-    local spellbook = _G.SpellBookFrame
-    if spellbook and spellbook.HookScript then
-        spellbook:HookScript("OnShow", function()
-            T.SetSpellbookOpen(true)
-        end)
-        spellbook:HookScript("OnHide", function()
-            T.SetSpellbookOpen(false)
-        end)
-        T.SetSpellbookOpen(spellbook:IsShown())
-    end
-
     local function HandleEvent(event, ...)
         local firstArgument = ...
         local ok, err = pcall(function()

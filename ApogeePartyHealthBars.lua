@@ -34,48 +34,6 @@ local playerUtility = ApogeePartyHealthBars_PlayerUtility
 local panel, configUI, minimapController, dungeonBoardUI, dungeonGuideUI
 local rows = {}
 
-local throttleFrame = CreateFrame("Frame")
-throttleFrame:Hide()
-
-local valuesFlushFrame = CreateFrame("Frame")
-valuesFlushFrame:Hide()
-
-local function CancelValuesFlush()
-    valuesFlushFrame:Hide()
-end
-
-function S.RequestUpdate()
-    CancelValuesFlush()
-    S.layoutDirty = true
-    S.valuesDirty = true
-    S.valuesDirtyUnits = nil
-    throttleFrame:Show()
-end
-
-function S.RequestLayoutUpdate()
-    CancelValuesFlush()
-    S.layoutDirty = true
-    S.valuesDirty = true
-    S.valuesDirtyUnits = nil
-    throttleFrame:Show()
-end
-
-function S.RequestValuesUpdate(unitId)
-    S.valuesDirty = true
-    if unitId then
-        S.valuesDirtyUnits = S.valuesDirtyUnits or {}
-        S.valuesDirtyUnits[unitId] = true
-    else
-        S.valuesDirtyUnits = nil
-    end
-    if S.layoutDirty then
-        CancelValuesFlush()
-        throttleFrame:Show()
-    else
-        valuesFlushFrame:Show()
-    end
-end
-
 local UpdateUI
 local UpdateHeader
 local UpdateRowValues
@@ -98,6 +56,17 @@ local ApplyAllSecureBindings
 local ReconcileBoundActionBindings
 local EnsureMinimapButton
 local InitHotSpells
+local Print
+
+local updateScheduler = ApogeePartyHealthBars.Require(
+    "Core", "UpdateScheduler").Create({
+        State = S,
+        Constants = C,
+        Print = function(message) Print(message) end,
+    })
+S.RequestUpdate = updateScheduler.RequestUpdate
+S.RequestLayoutUpdate = updateScheduler.RequestLayoutUpdate
+S.RequestValuesUpdate = updateScheduler.RequestValuesUpdate
 
 local function SyncVisualTicker()
     visualTicker.Sync()
@@ -110,29 +79,10 @@ local ShowSecureFrame = secureFrames.Show
 local SetSecureMouseEnabled = secureFrames.SetMouseEnabled
 local PositionSecureOverlay = secureFrames.PositionOverlay
 
-local function IsSavedFeatureEnabled(svKey)
-    return S.sv and S.sv[svKey] ~= false
-end
-
-local SUPPORT_FEATURE_BY_SETTING = {
-    partyBuffEnabled = "auraReminders",
-    selfBuffEnabled = "auraReminders",
-    clickableBuffIcons = "auraReminders",
-    shieldEnabled = "shieldOverlay",
-    incomingHealEnabled = "incomingHeals",
-    rangeCheckEnabled = "rangeFade",
-    threatEnabled = "threat",
-    threatPercentEnabled = "threat",
-    threatAwarenessEnabled = "threat",
-    hotEnabled = "hotTracking",
-}
-
-local function IsEffectiveFeatureEnabled(svKey)
-    if not IsSavedFeatureEnabled(svKey) then return false end
-    local featureKey = SUPPORT_FEATURE_BY_SETTING[svKey]
-    return not featureKey
-        or ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable(featureKey)
-end
+local featurePolicy = ApogeePartyHealthBars.Require("Core", "FeaturePolicy").Create(
+    S, ApogeePartyHealthBars_ClientCapabilities)
+local IsSavedFeatureEnabled = featurePolicy.IsSavedFeatureEnabled
+local IsEffectiveFeatureEnabled = featurePolicy.IsEffectiveFeatureEnabled
 
 local function IsUnitTargetsEnabled()
     return IsSavedFeatureEnabled("showUnitTargets")
@@ -282,7 +232,7 @@ playerStatusHud.Initialize({
 
 -- =============================================================================
 
-local function Print(msg)
+Print = function(msg)
     print(C.ADDON_PREFIX .. " " .. msg)
 end
 
@@ -290,50 +240,8 @@ local function IsEnabled()
     return IsSavedFeatureEnabled("enabled")
 end
 
-local function RunUpdate()
-    local ok, err = pcall(UpdateUI)
-    if not ok then
-        Print("update error: " .. tostring(err))
-    end
-    return ok
-end
-
-local function RunValuesOnlyUpdate()
-    if not IsEnabled() then
-        S.valuesDirty = false
-        S.valuesDirtyUnits = nil
-        return true
-    end
-    A.BeginAuraCacheGeneration()
-    local ok, err = pcall(function()
-        playerStatusHud.Refresh()
-        UpdateRowValues()
-    end)
-    if not ok then
-        Print("values update error: " .. tostring(err))
-        return false
-    end
-    S.valuesDirty = false
-    S.valuesDirtyUnits = nil
-    return true
-end
-
-local function ClearDirtyFlags()
-    S.layoutDirty = false
-    S.valuesDirty = false
-    S.valuesDirtyUnits = nil
-end
-
-local function ForceRefresh()
-    CancelValuesFlush()
-    S.layoutDirty = true
-    S.valuesDirty = true
-    S.valuesDirtyUnits = nil
-    if RunUpdate() then
-        ClearDirtyFlags()
-        throttleFrame:Hide()
-    end
-end
+local ClearDirtyFlags = updateScheduler.Clear
+local ForceRefresh = updateScheduler.ForceRefresh
 
 visualTicker.Initialize({
     IsAddonEnabled = IsEnabled,
@@ -411,85 +319,61 @@ local KeyToActionAttrs = bindingStore.KeyToActionAttrs
 local GetBindingAction = bindingStore.GetAction
 local GetBindingDisplay = bindingStore.GetDisplay
 local GetBindingsTable = bindingStore.GetPagele
+local bindingController = ApogeePartyHealthBars_BindingController
+local playerSpells = ApogeePartyHealthBars_PlayerSpells
+local actionCoordinator = ApogeePartyHealthBars.Require("Actions", "ActionCoordinator")
+local AssignCursorDrop = actionCoordinator.AssignCursorDrop
 
-local function AssignCursorDrop(feature, slot, layoutKey)
-    local controller = ApogeePartyHealthBars_BindingController
-    return controller and controller.AssignCursor
-        and controller.AssignCursor(feature, slot, layoutKey) or false
-end
-
-W.Configure({
+ApogeePartyHealthBars.Require("Bootstrap", "ActionComposition").Initialize({
+    Coordinator = actionCoordinator,
+    Dependencies = {
+        ShortcutBar = T,
+    KeyboardActions = K,
+    MouseWheelActions = W,
+    MouseButtonActions = B,
+    ConsumableBar = CB,
+    BindingController = bindingController,
+    BindingStore = bindingStore,
+    BoundActionBindings = ApogeePartyHealthBars_BoundActionBindings,
+    ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities,
     Print = Print,
     RequestLayout = S.RequestLayoutUpdate,
     SyncTicker = SyncVisualTicker,
-    PositionSecureOverlay = PositionSecureOverlay,
-    ShowSecureFrame = ShowSecureFrame,
-    HideSecureFrame = HideSecureFrame,
-    SetSecureMouseEnabled = SetSecureMouseEnabled,
-    AssignCursorDrop = AssignCursorDrop,
-})
-K.Configure({
-    Print = Print,
-    RequestLayout = S.RequestLayoutUpdate,
-    SyncTicker = SyncVisualTicker,
-    PositionSecureOverlay = PositionSecureOverlay,
-    ShowSecureFrame = ShowSecureFrame,
-    HideSecureFrame = HideSecureFrame,
-    SetSecureMouseEnabled = SetSecureMouseEnabled,
-    AssignCursorDrop = AssignCursorDrop,
-})
-B.Configure({
-    Print = Print,
-    RequestLayout = S.RequestLayoutUpdate,
-    SyncTicker = SyncVisualTicker,
-    PositionSecureOverlay = PositionSecureOverlay,
-    ShowSecureFrame = ShowSecureFrame,
-    HideSecureFrame = HideSecureFrame,
-    SetSecureMouseEnabled = SetSecureMouseEnabled,
-    AssignCursorDrop = AssignCursorDrop,
-})
-CB.Configure({
-    RequestLayout = S.RequestLayoutUpdate,
-    SyncTicker = SyncVisualTicker,
-    GetLeftOffset = function()
-        return math.max(C.ROW_CONTENT_W, B.GetWidth("player"))
-            + C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP
-    end,
-    IsAddonEnabled = IsEnabled,
-    IsItemAssigned = function(itemId)
-        for _, entry in pairs(T.GetSlots() or {}) do
-            if type(entry) == "table" and entry.kind == "item"
-                and entry.itemId == itemId then return true end
-        end
-        for _, feature in ipairs({ W, K, B }) do
-            local layoutKey = feature.GetActiveLayoutKey()
-            for _, entry in pairs(feature.GetSlots(layoutKey) or {}) do
-                if type(entry) == "table" and entry.kind == "item"
-                    and entry.itemId == itemId then return true end
-            end
-        end
-        return false
-    end,
     PositionSecureOverlay = PositionSecureOverlay,
     ShowSecureFrame = ShowSecureFrame,
     HideSecureFrame = HideSecureFrame,
     SetSecureMouseEnabled = SetSecureMouseEnabled,
     DeferSecureUpdate = DeferSecureUpdate,
+    ForceRefresh = ForceRefresh,
+    GetSpellFromCursor = playerSpells.GetSpellFromCursor,
+    GetSettingsUI = function() return configUI end,
+    RefreshPartyFrameClicksPage = function() RefreshPartyFrameClicksPage() end,
+    IsAddonEnabled = IsEnabled,
+    GetConsumableLeftOffset = function()
+        return math.max(C.ROW_CONTENT_W, B.GetWidth("player"))
+            + C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP
+        end,
+    },
 })
 
 
 local configSurfaces = ApogeePartyHealthBars_SettingsSurfaces
-threatObserver.Initialize({ Now = function() return GetTime and GetTime() or 0 end })
-threatAwareness.Initialize({
-    Observer = threatObserver,
-    Sounds = ApogeePartyHealthBars_Sounds,
-    SettingsSurfaces = configSurfaces,
-    Now = function() return GetTime and GetTime() or 0 end,
-    IsSupported = function()
-        return ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable("threat")
-    end,
+ApogeePartyHealthBars.Require("Bootstrap", "AuxiliaryComposition").Initialize({
+    ThreatObserver = threatObserver,
+    ThreatObserverDependencies = {
+        Now = function() return GetTime and GetTime() or 0 end,
+    },
+    ThreatAwareness = threatAwareness,
+    ThreatAwarenessDependencies = {
+        Observer = threatObserver,
+        Sounds = ApogeePartyHealthBars_Sounds,
+        SettingsSurfaces = configSurfaces,
+        Now = function() return GetTime and GetTime() or 0 end,
+        IsSupported = function()
+            return ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable("threat")
+        end,
+    },
 })
-threatAwareness.Build()
 local unitFrames = ApogeePartyHealthBars_UnitFrames.Build({
     rows = rows,
     StyleReadableText = StyleReadableText,
@@ -732,80 +616,72 @@ end
 -- Throttle
 -- =============================================================================
 
-valuesFlushFrame:SetScript("OnUpdate", function(self)
-    self:Hide()
-    if not S.valuesDirty or S.layoutDirty then return end
-    RunValuesOnlyUpdate()
-end)
-
-throttleFrame:SetScript("OnUpdate", function(_, elapsed)
-    if not S.layoutDirty and not S.valuesDirty then return end
-    S.uiTimer = S.uiTimer - elapsed
-    if S.uiTimer <= 0 then
-        S.uiTimer = C.UPDATE_RATE
-        if RunUpdate() then
-            ClearDirtyFlags()
-            if not S.layoutDirty and not S.valuesDirty then
-                throttleFrame:Hide()
-            end
-        end
-    end
-end)
+updateScheduler.RegisterHandlers({
+    FullUpdate = UpdateUI,
+    ValuesUpdate = function()
+        A.BeginAuraCacheGeneration()
+        playerStatusHud.Refresh()
+        UpdateRowValues()
+    end,
+    IsEnabled = IsEnabled,
+})
 
 -- =============================================================================
 -- Click-cast bindings
 -- =============================================================================
 
 local clickBindings = ApogeePartyHealthBars_PartyFrameClickBindings
-clickBindings.Initialize({
-    rows = rows,
-    KeyToActionAttrs = KeyToActionAttrs,
-    GetBindingsTable = GetBindingsTable,
-    GetBindingAction = GetBindingAction,
-})
-ApplyAllBindings = clickBindings.ApplyAll
-
-
 local L = ApogeePartyHealthBars_Layout
-L.Register({
-    rows = rows,
-    panel = panel,
-    titleFS = titleFS,
-    sepTex = sepTex,
-    rowAnchor = rowAnchor,
-    shortcutFooterAnchor = shortcutFooterAnchor,
-    DeferSecureUpdate = DeferSecureUpdate,
-    HideSecureFrame = HideSecureFrame,
-    ShowSecureFrame = ShowSecureFrame,
-    SetSecureMouseEnabled = SetSecureMouseEnabled,
-    PositionSecureOverlay = PositionSecureOverlay,
-    ApplyPanelChrome = ApplyPanelChrome,
-    ShouldShowRow = ShouldShowRow,
-    GetRowBtnWidth = GetRowBtnWidth,
-    GetActionAreaHeight = GetActionAreaHeight,
-    GetActionHudGeometry = rowGeometry.GetActionHudGeometry,
-    GetPlayerActionWidth = function()
-        return math.max(C.ROW_CONTENT_W, B.GetWidth("player"), CB.GetWidth("player"))
-    end,
-    LayoutPlayerActions = function(actionGeometry)
-        W.Layout(actionGeometry.offsets.mouseWheel)
-        K.Layout(actionGeometry.offsets.keyboard)
-        B.Layout(actionGeometry.offsets.mouseButtons)
-        CB.Layout(actionGeometry.offsets.consumables)
-        AH.Layout(actionGeometry.iconHeight)
-    end,
-    GetShortcutFooterHeight = T.GetFooterHeight,
-    LayoutShortcutFooter = T.Layout,
-    GetThreatGutterWidth = H.GetGutterWidth,
-    RefreshThreat = H.Refresh,
-    IsUnitTargetsEnabled = IsUnitTargetsEnabled,
-    GetPartyBuffCastSpellName = buffReminders.GetPartyCastSpellName,
-    IsSavedFeatureEnabled = IsEffectiveFeatureEnabled,
-    ApplyAllBindings = ApplyAllBindings,
-    IsEnabled = IsEnabled,
-    RebuildUnitToRow = RebuildUnitToRow,
-    PlayerUtility = playerUtility,
+local partyFrameRuntime = ApogeePartyHealthBars.Require(
+    "Bootstrap", "PartyFrameComposition").Initialize({
+        ClickBindings = clickBindings,
+        ClickBindingDependencies = {
+            rows = rows,
+            KeyToActionAttrs = KeyToActionAttrs,
+            GetBindingsTable = GetBindingsTable,
+            GetBindingAction = GetBindingAction,
+        },
+        Layout = L,
+        LayoutDependencies = {
+            rows = rows,
+            panel = panel,
+            titleFS = titleFS,
+            sepTex = sepTex,
+            rowAnchor = rowAnchor,
+            shortcutFooterAnchor = shortcutFooterAnchor,
+            DeferSecureUpdate = DeferSecureUpdate,
+            HideSecureFrame = HideSecureFrame,
+            ShowSecureFrame = ShowSecureFrame,
+            SetSecureMouseEnabled = SetSecureMouseEnabled,
+            PositionSecureOverlay = PositionSecureOverlay,
+            ApplyPanelChrome = ApplyPanelChrome,
+            ShouldShowRow = ShouldShowRow,
+            GetRowBtnWidth = GetRowBtnWidth,
+            GetActionAreaHeight = GetActionAreaHeight,
+            GetActionHudGeometry = rowGeometry.GetActionHudGeometry,
+            GetPlayerActionWidth = function()
+                return math.max(C.ROW_CONTENT_W, B.GetWidth("player"), CB.GetWidth("player"))
+            end,
+            LayoutPlayerActions = function(actionGeometry)
+                W.Layout(actionGeometry.offsets.mouseWheel)
+                K.Layout(actionGeometry.offsets.keyboard)
+                B.Layout(actionGeometry.offsets.mouseButtons)
+                CB.Layout(actionGeometry.offsets.consumables)
+                AH.Layout(actionGeometry.iconHeight)
+            end,
+            GetShortcutFooterHeight = T.GetFooterHeight,
+            LayoutShortcutFooter = T.Layout,
+            GetThreatGutterWidth = H.GetGutterWidth,
+            RefreshThreat = H.Refresh,
+            IsUnitTargetsEnabled = IsUnitTargetsEnabled,
+            GetPartyBuffCastSpellName = buffReminders.GetPartyCastSpellName,
+            IsSavedFeatureEnabled = IsEffectiveFeatureEnabled,
+            IsEnabled = IsEnabled,
+            RebuildUnitToRow = RebuildUnitToRow,
+            PlayerUtility = playerUtility,
+        },
 })
+ApplyAllBindings = partyFrameRuntime.ApplyAllBindings
 
 UpdateHeader = L.UpdateHeader
 LayoutRows = L.LayoutRows
@@ -835,26 +711,9 @@ local function ReconcileAllSecureOverlays()
     ReconcileBoundActionBindings()
 end
 
-secureFrames.InitializeReconciler(ReconcileAllSecureOverlays)
+ApogeePartyHealthBars.Require("Bootstrap", "PartyFrameComposition")
+    .RegisterSecureReconciler(secureFrames, ReconcileAllSecureOverlays)
 
-local playerSpells = ApogeePartyHealthBars_PlayerSpells
-local GetSpellFromCursor = playerSpells.GetSpellFromCursor
-
-
-local bindingController = ApogeePartyHealthBars_BindingController
-bindingController.Initialize({
-    AssignBindingSpell = bindingStore.AssignSpell,
-    AssignBindingItem = bindingStore.AssignItem,
-    ClearBindingAction = bindingStore.Clear,
-    MoveBindingAction = bindingStore.Move,
-    RefreshPartyFrameClicksPage = function() RefreshPartyFrameClicksPage() end,
-    ForceRefresh = ForceRefresh,
-    Print = Print,
-    SyncVisualTicker = SyncVisualTicker,
-    GetSpellFromCursor = GetSpellFromCursor,
-    GetSettingsUI = function() return configUI end,
-    ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities,
-})
 local ClearBinding = bindingController.ClearBinding
 local MoveBinding = bindingController.MoveBinding
 
@@ -871,20 +730,12 @@ EnsureMinimapButton = minimapController.Ensure
 local UpdateMinimapButtonStyle = minimapController.UpdateStyle
 local ApplyDefaultMinimapPosition = minimapController.ResetPosition
 
-SLASH_APOGEEPARTYHEALTHBARS1 = "/aphb"
-SlashCmdList = SlashCmdList or {}
-SlashCmdList.APOGEEPARTYHEALTHBARS = function(message)
-    local command = tostring(message or ""):match("^%s*(.-)%s*$"):lower()
-    if command == "board" then
-        dungeonBoardUI.Toggle()
-        return
-    end
-    if command == "guide" then
-        dungeonGuideUI.Toggle()
-        return
-    end
-    Print("use /aphb board for Dungeon Board or /aphb guide for Dungeon Guide.")
-end
+ApogeePartyHealthBars.Require("Bootstrap", "EventRegistration")
+    .RegisterSlashCommands({
+        DungeonBoardUI = dungeonBoardUI,
+        DungeonGuideUI = dungeonGuideUI,
+        Print = Print,
+    })
 
 
 
@@ -909,46 +760,20 @@ SetHotTrackEnabled = function(key, enabled)
     ForceRefresh()
 end
 
-local function GetBoundActionManagers()
-    local managers = {}
-    for _, feature in ipairs({ W, K, B }) do
-        local manager = feature.GetBindingManager and feature.GetBindingManager()
-        if manager then managers[#managers + 1] = manager end
-    end
-    return managers
-end
-
-local function ClaimBoundActionBindings()
-    if not ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable("boundActions") then
-        return true, "unsupported",
-            ApogeePartyHealthBars_ClientCapabilities.GetFeatureReason("boundActions")
-    end
-    return ApogeePartyHealthBars_BoundActionBindings.ClaimAll(GetBoundActionManagers())
-end
-
-local function ReleaseBoundActionBindings()
-    if not ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable("boundActions") then
-        return true, "unsupported",
-            ApogeePartyHealthBars_ClientCapabilities.GetFeatureReason("boundActions")
-    end
-    return ApogeePartyHealthBars_BoundActionBindings.ReleaseAll(GetBoundActionManagers())
-end
-
-ReconcileBoundActionBindings = function()
-    if not S.sv or S.sv.enabled ~= true then return true, "disabled" end
-    if not ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable("boundActions") then
-        return true, "unsupported"
-    end
-    return ApogeePartyHealthBars_BoundActionBindings.ReconcileAll(GetBoundActionManagers())
-end
+local ClaimBoundActionBindings = actionCoordinator.ClaimBoundActionBindings
+local ReleaseBoundActionBindings = actionCoordinator.ReleaseBoundActionBindings
+ReconcileBoundActionBindings = actionCoordinator.ReconcileBoundActionBindings
 
 local configController = ApogeePartyHealthBars_SettingsController
-configController.Initialize({
-    panel = panel,
+local settingsRuntime = ApogeePartyHealthBars.Require(
+    "Bootstrap", "SettingsComposition").Initialize({
+    Controller = configController,
+    ControllerDependencies = {
+        panel = panel,
     GetSettingsUI = function() return configUI end,
     ForceRefresh = ForceRefresh,
     ClearDirtyFlags = ClearDirtyFlags,
-    StopUpdateFrames = function() throttleFrame:Hide(); visualTicker.Stop() end,
+    StopUpdateFrames = function() updateScheduler.Stop(); visualTicker.Stop() end,
     HideAllSecureOverlays = function() HideAllSecureOverlays() end,
     SavePosition = SavePosition,
     UpdateHeader = function() UpdateHeader() end,
@@ -966,17 +791,17 @@ configController.Initialize({
     BuffThanks = buffThanks,
     ThreatAwareness = threatAwareness,
     SettingsSurfaces = configSurfaces,
-    Print = Print,
-})
-ExitConfigMode = configController.Exit
-SetAddonEnabled = configController.SetAddonEnabled
-SetConfigMode = configController.SetMode
-FactoryReset = configController.FactoryReset
-local ActivateProfile = configController.ActivateProfile
-local MutateActiveProfile = configController.MutateActiveProfile
-local CreateAndActivateProfile = configController.CreateAndActivateProfile
-
-configUI = ApogeePartyHealthBars_SettingsUI.Build({
+        Print = Print,
+    },
+    BuildUI = function(settings)
+        ExitConfigMode = settings.ExitConfigMode
+        SetAddonEnabled = settings.SetAddonEnabled
+        SetConfigMode = settings.SetConfigMode
+        FactoryReset = settings.FactoryReset
+        local ActivateProfile = settings.ActivateProfile
+        local MutateActiveProfile = settings.MutateActiveProfile
+        local CreateAndActivateProfile = settings.CreateAndActivateProfile
+        return ApogeePartyHealthBars_SettingsUI.Build({
     ApplyBackdrop               = ApplyBackdrop,
     SettingsSurfaces             = configSurfaces,
     SetConfigMode              = SetConfigMode,
@@ -1047,8 +872,11 @@ configUI = ApogeePartyHealthBars_SettingsUI.Build({
         UIErrorSuppressor           = ApogeePartyHealthBars_UIErrorSuppressor,
         SyncVisualTicker            = SyncVisualTicker,
         ClientCapabilities          = ApogeePartyHealthBars_ClientCapabilities,
-    },
+        },
+        })
+    end,
 })
+configUI = settingsRuntime.UI
 
 RefreshConfigPanel = configUI.RefreshConfigPanel
 RefreshPartyFrameClicksPage = configUI.RefreshPartyFrameClicksPage
@@ -1058,8 +886,12 @@ RefreshPartyFrameClicksPage = configUI.RefreshPartyFrameClicksPage
 -- Events
 -- =============================================================================
 
-ApogeePartyHealthBars_RuntimeEvents.Register(ApogeePartyHealthBars_EventRouter, {
-    Print = Print,
+ApogeePartyHealthBars.Require("Bootstrap", "EventRegistration").Register({
+    EventRouter = ApogeePartyHealthBars_EventRouter,
+    RuntimeEvents = ApogeePartyHealthBars_RuntimeEvents,
+    RuntimeDependencies = {
+        Print = Print,
+    RefreshAssignmentAffordances = T.RefreshAssignmentAffordances,
     InitPlayerSpells = InitPlayerSpells,
     RestorePosition = RestorePosition,
     UpdateHeader = UpdateHeader,
@@ -1076,6 +908,7 @@ ApogeePartyHealthBars_RuntimeEvents.Register(ApogeePartyHealthBars_EventRouter, 
     ResolvePanelUnit = ResolvePanelUnit,
     ShieldTrackerSyncUnit = ShieldTrackerSyncUnit,
     AuraEventNeedsLayout = AuraEventNeedsLayout,
-    GetSettingsUI = function() return configUI end,
+        GetSettingsUI = function() return configUI end,
+    },
+    HealthAlerts = ApogeePartyHealthBars_HealthAlerts,
 })
-ApogeePartyHealthBars_HealthAlerts.Register(ApogeePartyHealthBars_EventRouter)

@@ -1,3 +1,9 @@
+dofile("Core/Namespace.lua")
+dofile("Actions/BoundActionEvaluator.lua")
+dofile("Actions/BoundActionView.lua")
+dofile("Actions/BoundActionDragController.lua")
+dofile("Actions/BoundActionSecureController.lua")
+
 ApogeePartyHealthBars_C = {
     ROW_CONTENT_W = 188,
     SHORTCUT_ICON_SIZE = 26,
@@ -131,6 +137,7 @@ local function makeCompositeLayouts(slotId)
 end
 
 dofile("Actions/ActionCooldowns.lua")
+dofile("Actions/ActionAssignmentSources.lua")
 dofile("Actions/BoundActionRuntime.lua")
 local Factory = ApogeePartyHealthBars_BoundActionRuntime
 

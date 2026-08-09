@@ -7,9 +7,12 @@ local Actions = ApogeePartyHealthBars_ActionMacros
 local Items = ApogeePartyHealthBars_ShortcutItems
 local Cooldowns = ApogeePartyHealthBars_ActionCooldowns
 local CrowdControl = ApogeePartyHealthBars_CrowdControl
+local AssignmentSources = ApogeePartyHealthBars_ActionAssignmentSources
 
-ApogeePartyHealthBars_ShortcutBar = {}
-local T = ApogeePartyHealthBars_ShortcutBar
+local T = {}
+ApogeePartyHealthBars.Define(
+    "Actions", "ShortcutBar", T,
+    "ApogeePartyHealthBars_ShortcutBar")
 
 local anchors, requestLayout, syncTicker, handleCursorDrop
 local positionSecureOverlay, showSecureFrame, hideSecureFrame, setSecureMouseEnabled, deferSecureUpdate
@@ -21,7 +24,6 @@ local previousStates = {}
 local lastSoundAt = {}
 local cooldownAlertArmed = {}
 local activeSpellKeys = {}
-local spellbookOpen = false
 local initialized = false
 local resolutionPending = false
 local visibleCount = 0
@@ -76,46 +78,11 @@ local STATE_LABELS = {
     unavailable = "Not in bags",
 }
 
-local SHORTCUTS_SCHEMA_VERSION = 1
 local ResolveKnownSpellName
+local store
 
 local function GetEntries()
-    if not S.charSv then return nil end
-    if type(S.charSv.shortcuts) ~= "table" then S.charSv.shortcuts = {} end
-    return S.charSv.shortcuts
-end
-
-local function NormalizeEntries()
-    local entries = GetEntries()
-    if not entries then return end
-    local compact = {}
-    for i = 1, C.SHORTCUT_MAX_SLOTS do
-        local entry = Actions.Normalize(entries[i])
-        if entry then compact[#compact + 1] = entry end
-    end
-    wipe(entries)
-    for i, entry in ipairs(compact) do entries[i] = entry end
-    S.charSv.shortcutSchemaVersion = SHORTCUTS_SCHEMA_VERSION
-end
-
-local function SeedClassDefaults()
-    if not S.charSv then return end
-    local seededVersion = tonumber(S.charSv.shortcutDefaultsVersion) or 0
-    if seededVersion >= C.SHORTCUT_DEFAULTS_VERSION then return end
-
-    local entries = GetEntries()
-    local _, classToken = UnitClass("player")
-    local defaults = C.SHORTCUT_CLASS_DEFAULTS[classToken]
-    if entries and next(entries) == nil and defaults then
-        for slot, spellName in ipairs(defaults) do
-            if slot > C.SHORTCUT_MAX_SLOTS then break end
-            local castName = ResolveKnownSpellName and ResolveKnownSpellName(nil, spellName)
-                or spellName
-            entries[slot] = Actions.CreateSpell(nil, castName, "none")
-        end
-    end
-
-    S.charSv.shortcutDefaultsVersion = C.SHORTCUT_DEFAULTS_VERSION
+    return store and store.GetEntries() or nil
 end
 
 local function IsEnabled()
@@ -156,6 +123,17 @@ ResolveKnownSpellName = function(spellId, spellName)
     local known = (spellId and byId[spellId]) or (spellName and byName[spellName])
     return known and known.name or spellName
 end
+
+store = ApogeePartyHealthBars.Require("Actions", "ShortcutStore").Create({
+    State = S,
+    Constants = C,
+    Actions = Actions,
+    Items = Items,
+    Sounds = Sounds,
+    ResolveSpellName = ResolveKnownSpellName,
+    Refresh = function() T.ResolveAndRefresh() end,
+    NotifyAssignmentsChanged = NotifyConsumableAssignmentsChanged,
+})
 
 local function BuildResolvedInfo(known, entry, slot)
     local identifier = known.id or (entry and entry.spellId) or known.name
@@ -324,7 +302,9 @@ local function CreateIcon(parent)
 
     button:SetScript("OnReceiveDrag", function()
         local info = button.shortcutInfo
-        if S.configMode and info and info.slot and handleCursorDrop then
+        local cursorType = GetCursorInfo and GetCursorInfo()
+        if AssignmentSources.CanAcceptCursor(cursorType)
+            and info and info.slot and handleCursorDrop then
             handleCursorDrop("shortcuts", info.slot)
         end
     end)
@@ -349,7 +329,9 @@ local function CreateIcon(parent)
     castButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
     castButton:SetScript("OnReceiveDrag", function()
         local info = button.shortcutInfo
-        if S.configMode and info and info.slot and handleCursorDrop then
+        local cursorType = GetCursorInfo and GetCursorInfo()
+        if AssignmentSources.CanAcceptCursor(cursorType)
+            and info and info.slot and handleCursorDrop then
             handleCursorDrop("shortcuts", info.slot)
         end
     end)
@@ -366,7 +348,8 @@ local function CreateDropIcon(parent)
     button.border = Accessory.CreateBorder(button, 0)
     for _, edge in ipairs(button.border) do edge:SetColorTexture(0.45, 0.45, 0.48, 1) end
     button:SetScript("OnReceiveDrag", function()
-        if S.configMode and handleCursorDrop then
+        local cursorType = GetCursorInfo and GetCursorInfo()
+        if AssignmentSources.CanAcceptCursor(cursorType) and handleCursorDrop then
             handleCursorDrop("shortcuts", T.FindFirstEmptySlot())
         end
     end)
@@ -623,9 +606,8 @@ local function GetPlayerLaneMetrics()
 end
 
 local function ShouldShowDropTarget()
-    local inCombat = InCombatLockdown and InCombatLockdown()
-    return IsEnabled() and S.configMode
-        and not inCombat and T.FindFirstEmptySlot() ~= nil
+    return IsEnabled() and AssignmentSources.IsActive()
+        and T.FindFirstEmptySlot() ~= nil
 end
 
 local function ApplyLaneStyle(icon, lane)
@@ -774,10 +756,8 @@ function T.Tick()
     end
 end
 
-function T.SetSpellbookOpen(active)
-    active = active == true
-    if spellbookOpen == active then return false end
-    spellbookOpen = active
+function T.RefreshAssignmentAffordances()
+    if InCombatLockdown and InCombatLockdown() then return false end
     if requestLayout then requestLayout() end
     return true
 end
@@ -840,8 +820,7 @@ function T.Attach(playerAnchors, callbacks)
 end
 
 function T.Initialize()
-    NormalizeEntries()
-    SeedClassDefaults()
+    store.Initialize()
     ResolveEntries()
     T.Layout()
     T.Rebaseline()
@@ -873,175 +852,67 @@ function T.GetDisplayCount() return #resolved end
 function T.GetDisplayLane(index) return resolved[index] and resolved[index].lane or nil end
 
 function T.AssignSpell(slot, spellID, spellName)
-    if InCombatLockdown and InCombatLockdown() then return false, "cannot edit Shortcuts in combat." end
-    local entries = GetEntries()
-    if not entries then return false, "Shortcuts are not initialized." end
-    slot = slot or T.FindFirstEmptySlot()
-    if not slot then
-        return false, "All Shortcut positions are assigned. Drop onto a row to replace it or clear one."
-    end
-    if type(slot) ~= "number" or slot ~= math.floor(slot)
-        or slot < 1 or slot > C.SHORTCUT_MAX_SLOTS or slot > #entries + 1 then
-        return false, "that Shortcut position is unavailable."
-    end
-    if type(spellID) ~= "number" then spellID = nil end
-    for i = 1, C.SHORTCUT_MAX_SLOTS do
-        local entry = entries[i]
-        if i ~= slot and entry and entry.kind == "spell"
-            and ((spellID and entry.spellId == spellID) or (spellName and entry.spellName == spellName)) then
-            return false, "that spell is already assigned."
-        end
-    end
-    local previous = entries[slot]
-    local castName = ResolveKnownSpellName(spellID, spellName)
-    local entry = Actions.CreateSpell(spellID, castName, previous and previous.soundKey)
-    if not entry then return false, "could not store that spell." end
-    entries[slot] = entry
-    T.ResolveAndRefresh()
-    NotifyConsumableAssignmentsChanged()
-    return true, "assigned |cff00ff00" .. (spellName or "spell") .. "|r to Shortcuts.", slot
+    return store.AssignSpell(slot, spellID, spellName)
 end
 
 function T.AssignItem(slot, itemID, itemName)
-    if InCombatLockdown and InCombatLockdown() then return false, "cannot edit Shortcuts in combat." end
-    local entries = GetEntries()
-    if not entries then return false, "Shortcuts are not initialized." end
-    slot = slot or T.FindFirstEmptySlot()
-    if not slot then
-        return false, "All Shortcut positions are assigned. Drop onto a row to replace it or clear one."
-    end
-    if type(slot) ~= "number" or slot ~= math.floor(slot)
-        or slot < 1 or slot > C.SHORTCUT_MAX_SLOTS or slot > #entries + 1 then
-        return false, "that Shortcut position is unavailable."
-    end
-    if type(itemID) ~= "number" or itemID <= 0 then return false, "could not identify that item." end
-    if not Items.HasUseEffect(itemID) then return false, "that item has no usable effect." end
-    for i = 1, C.SHORTCUT_MAX_SLOTS do
-        local entry = entries[i]
-        if i ~= slot and entry and entry.kind == "item" and entry.itemId == itemID then
-            return false, "that item is already assigned."
-        end
-    end
-    local previous = entries[slot]
-    local entry = Actions.CreateItem(itemID, itemName, previous and previous.soundKey)
-    if not entry then return false, "could not store that item." end
-    entries[slot] = entry
-    T.ResolveAndRefresh()
-    NotifyConsumableAssignmentsChanged()
-    return true, "assigned |cff00ff00" .. (itemName or "item") .. "|r to Shortcuts.", slot
+    return store.AssignItem(slot, itemID, itemName)
 end
 
 function T.ClearSlot(slot)
-    if InCombatLockdown and InCombatLockdown() then
-        return false, "Leave combat before clearing a Shortcut."
-    end
-    local entries = GetEntries()
-    if not entries or not entries[slot] then return false, "Unknown Shortcut slot." end
-    table.remove(entries, slot)
-    T.ResolveAndRefresh()
-    NotifyConsumableAssignmentsChanged()
-    return true, "Shortcut cleared."
+    return store.ClearSlot(slot)
 end
 
 function T.ResetDefaults()
-    if InCombatLockdown and InCombatLockdown() then return false end
-    local entries = GetEntries()
-    if not entries then return false end
-    wipe(entries)
-
-    local _, classToken = UnitClass("player")
-    local defaults = C.SHORTCUT_CLASS_DEFAULTS[classToken]
-    for slot, spellName in ipairs(defaults or {}) do
-        if slot > C.SHORTCUT_MAX_SLOTS then break end
-        entries[slot] = Actions.CreateSpell(nil, ResolveKnownSpellName(nil, spellName), "none")
-    end
-    S.charSv.shortcutDefaultsVersion = C.SHORTCUT_DEFAULTS_VERSION
-    T.ResolveAndRefresh()
-    NotifyConsumableAssignmentsChanged()
-    return true
+    return store.ResetDefaults()
 end
 
 function T.MoveSlot(slot, direction)
-    if InCombatLockdown and InCombatLockdown() then
-        return false, "Leave combat before moving a Shortcut."
-    end
-    if type(slot) ~= "number" or slot ~= math.floor(slot)
-        or (direction ~= -1 and direction ~= 1) then return false end
-    local other = slot + direction
-    local entries = GetEntries()
-    if not entries or not entries[slot] or other < 1 or other > #entries then return false end
-    entries[slot], entries[other] = entries[other], entries[slot]
-    T.ResolveAndRefresh()
-    return true, other
+    return store.MoveSlot(slot, direction)
 end
 
 function T.FindFirstEmptySlot()
-    local entries = GetEntries()
-    if not entries or #entries >= C.SHORTCUT_MAX_SLOTS then return nil end
-    return #entries + 1
+    return store.FindFirstEmptySlot()
 end
 
 function T.ValidateMacro(slot, body)
-    return Actions.ValidateMacro(GetEntries() and GetEntries()[slot], body)
+    return store.ValidateMacro(slot, body)
 end
 
 function T.GetMacro(slot)
-    local entry = GetEntries() and GetEntries()[slot]
-    return entry and entry.macroText or nil
+    return store.GetMacro(slot)
 end
 
 function T.ApplyMacro(slot, body)
-    if InCombatLockdown and InCombatLockdown() then return false, "Leave combat before applying a Shortcut macro." end
-    local ok, err = T.ValidateMacro(slot, body)
-    if not ok then return false, err end
-    GetEntries()[slot].macroText = body
-    T.ResolveAndRefresh()
-    return true, "Applied " .. (Actions.GetName(GetEntries()[slot]) or "Shortcut") .. "."
+    return store.ApplyMacro(slot, body)
 end
 
 function T.SetSlotEquipmentSet(slot, name)
-    if InCombatLockdown and InCombatLockdown() then
-        return false, "Leave combat before changing an action loadout."
-    end
-    local entry = GetEntries() and GetEntries()[slot]
-    local ok, message = Actions.SetEquipmentSet(entry, name)
-    if not ok then return false, message end
-    T.ResolveAndRefresh()
-    return true, message
+    return store.SetEquipmentSet(slot, name)
 end
 
 function T.GetSlotEquipmentSet(slot)
-    return Actions.GetEquipmentSetName(GetEntries() and GetEntries()[slot])
+    return store.GetEquipmentSet(slot)
 end
 
 function T.ResetMacro(slot)
-    return Actions.ResetMacro(GetEntries() and GetEntries()[slot])
+    return store.ResetMacro(slot)
 end
 
 function T.IsMacroCustomized(slot)
-    return Actions.IsCustomized(GetEntries() and GetEntries()[slot])
+    return store.IsMacroCustomized(slot)
 end
 
 function T.SetSlotSound(slot, key)
-    local entry = GetEntries() and GetEntries()[slot]
-    if not entry then return nil end
-    entry.soundKey = Sounds.NormalizeKey(key, "none", true)
-    return entry.soundKey
+    return store.SetSound(slot, key)
 end
 
 function T.GetSlotSoundKey(slot)
-    local entry = GetEntries() and GetEntries()[slot]
-    if not entry then return nil end
-    local normalized = Sounds.NormalizeKey(entry.soundKey, "none", true)
-    if entry.soundKey ~= normalized then entry.soundKey = normalized end
-    return normalized
+    return store.GetSound(slot)
 end
 
 function T.CycleSlotSound(slot, direction)
-    local entry = GetEntries() and GetEntries()[slot]
-    if not entry then return nil end
-    return T.SetSlotSound(slot,
-        Sounds.CycleKey(entry.soundKey or "none", direction, true, "none"))
+    return store.CycleSound(slot, direction)
 end
 
 function T.GetSoundLabel(key)

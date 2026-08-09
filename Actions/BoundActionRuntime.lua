@@ -5,12 +5,22 @@ local UIH = ApogeePartyHealthBars_UIHelpers
 local Actions = ApogeePartyHealthBars_ActionMacros
 local Items = ApogeePartyHealthBars_ShortcutItems
 local Cooldowns = ApogeePartyHealthBars_ActionCooldowns
+local AssignmentSources = ApogeePartyHealthBars_ActionAssignmentSources
+local BoundActionView = ApogeePartyHealthBars.Require("Actions", "BoundActionView")
+local BoundActionEvaluator = ApogeePartyHealthBars.Require(
+    "Actions", "BoundActionEvaluator")
+local SecureController = ApogeePartyHealthBars.Require(
+    "Actions", "BoundActionSecureController")
+local BoundActionDrag = ApogeePartyHealthBars.Require(
+    "Actions", "BoundActionDragController")
 local BoundBindings = ApogeePartyHealthBars_BoundActionBindings
 local ActionHud = ApogeePartyHealthBars_ActionHud
 local ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities
 
-ApogeePartyHealthBars_BoundActionRuntime = {}
-local Factory = ApogeePartyHealthBars_BoundActionRuntime
+local Factory = {}
+ApogeePartyHealthBars.Define(
+    "Actions", "BoundActionRuntime", Factory,
+    "ApogeePartyHealthBars_BoundActionRuntime")
 
 function Factory.Create(options)
     assert(type(options) == "table", "bound action runtime requires options")
@@ -47,6 +57,11 @@ function Factory.Create(options)
     local WD = options.data
     local WL = options.layouts
     local W = {}
+    local evaluator = BoundActionEvaluator.Create({
+        Actions = Actions,
+        Items = Items,
+        Cooldowns = Cooldowns,
+    })
 
     local D, row, container
     local secureButtons, hudIcons, slotById = {}, {}, {}
@@ -300,142 +315,13 @@ function Factory.Create(options)
         end
     end
 
-    local function knownSpellNames()
-        local known = {}
-        local spells = ApogeePartyHealthBars_PlayerSpells
-        if not spells or not spells.BuildKnownSpellMap then return known end
-        local _, byName = spells.BuildKnownSpellMap()
-        for name in pairs(byName) do
-            known[name] = true
-        end
-        return known
-    end
-
-    local function isKnownSpell(entry, resolvedName, resolvedId, known)
-        if known[resolvedName] == true then return true end
-        local spells = ApogeePartyHealthBars_PlayerSpells
-        return spells and spells.IsKnownSpell
-            and spells.IsKnownSpell(resolvedId or entry.spellId,
-                resolvedName or entry.spellName) == true
-    end
+    local knownSpellNames = evaluator.KnownSpellNames
+    local evaluate = evaluator.Evaluate
 
     local function spellInfo(entry)
         if not entry then return nil, nil, nil end
         if Actions.ResolveRuntimeSpell then return Actions.ResolveRuntimeSpell(entry) end
         return Actions.ResolveDisplay(entry)
-    end
-
-    local function getCharges(identifier)
-        if C_Spell and C_Spell.GetSpellCharges then
-            local info = C_Spell.GetSpellCharges(identifier)
-            if info then return info.currentCharges, info.maxCharges end
-        end
-        if GetSpellCharges then return GetSpellCharges(identifier) end
-    end
-
-    local function hasRange(identifier)
-        if C_Spell and C_Spell.SpellHasRange then return C_Spell.SpellHasRange(identifier) == true end
-        if SpellHasRange then
-            local value = SpellHasRange(identifier)
-            return value == true or value == 1
-        end
-        return false
-    end
-
-    local function isCurrent(identifier)
-        if C_Spell and C_Spell.IsCurrentSpell then return C_Spell.IsCurrentSpell(identifier) end
-        return IsCurrentSpell and IsCurrentSpell(identifier)
-    end
-
-    local function getRange(identifier)
-        if C_Spell and C_Spell.IsSpellInRange then return C_Spell.IsSpellInRange(identifier, "target") end
-        if IsSpellInRange then return IsSpellInRange(identifier, "target") end
-        return nil
-    end
-
-    local function isHarmful(identifier)
-        if C_Spell and C_Spell.IsSpellHarmful then return C_Spell.IsSpellHarmful(identifier) end
-        return IsHarmfulSpell and IsHarmfulSpell(identifier)
-    end
-
-    local function isHelpful(identifier)
-        if C_Spell and C_Spell.IsSpellHelpful then return C_Spell.IsSpellHelpful(identifier) end
-        return IsHelpfulSpell and IsHelpfulSpell(identifier)
-    end
-
-    local function hasValidTarget(identifier)
-        if not UnitExists or not UnitExists("target") then return false end
-        if UnitIsDeadOrGhost and UnitIsDeadOrGhost("target") then return false end
-        if isHarmful(identifier) and UnitCanAttack and not UnitCanAttack("player", "target") then return false end
-        if isHelpful(identifier) and UnitCanAssist and not UnitCanAssist("player", "target") then return false end
-        return true
-    end
-
-    local function targetReason(identifier)
-        if not UnitExists or not UnitExists("target") then return "Select a valid target" end
-        if UnitIsDeadOrGhost and UnitIsDeadOrGhost("target") then return "Target is dead" end
-        if isHarmful(identifier) and UnitCanAttack and not UnitCanAttack("player", "target") then return "Target must be hostile and attackable" end
-        if isHelpful(identifier) and UnitCanAssist and not UnitCanAssist("player", "target") then return "Target must be friendly" end
-    end
-
-    local function evaluate(entry, known, transition)
-        if entry and entry.kind == "item" then
-            local state, icon, start, duration, count, available, reason, gcdOnly = Items.Evaluate(entry)
-            return state, icon, start, duration, count, available, reason, gcdOnly,
-                state == "cooldown" and Cooldowns.IsAlertable(duration, gcdOnly, false)
-        end
-        local name, icon, spellId = spellInfo(entry)
-        if not name then return "invalid", nil, 0, 0, nil, false end
-        local available = isKnownSpell(entry, name, spellId, known)
-        if not available then return "unavailable", icon, 0, 0, nil, false end
-        local identifier = spellId or entry.spellId or name
-        if isCurrent(identifier) then return "current", icon, 0, 0, nil, true end
-        local start, duration, enabled, reportedGCD = Cooldowns.GetSpellCooldown(identifier)
-        local charges, maxCharges = getCharges(identifier)
-        local noCharges = maxCharges and maxCharges > 0 and (charges or 0) <= 0
-        local gcdOnly = Cooldowns.IsGlobalCooldown(start, duration, reportedGCD)
-        local rechargingWithCharge = maxCharges and maxCharges > 0 and (charges or 0) > 0
-        local alertableCooldown = Cooldowns.IsAlertable(duration, gcdOnly, noCharges)
-        local usable, noResource = true, false
-        if C_Spell and C_Spell.IsSpellUsable then
-            usable, noResource = C_Spell.IsSpellUsable(identifier)
-        elseif IsUsableSpell then
-            usable, noResource = IsUsableSpell(identifier)
-        end
-        if enabled and ((duration > 0 and not gcdOnly and not rechargingWithCharge) or noCharges) then
-            return "cooldown", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil,
-                true, nil, gcdOnly, alertableCooldown
-        end
-        if transition then
-            local transitionIdentifier = transition.spellId or transition.label
-            local transitionUsable, transitionNoResource = true, false
-            if C_Spell and C_Spell.IsSpellUsable then
-                transitionUsable, transitionNoResource = C_Spell.IsSpellUsable(transitionIdentifier)
-            elseif IsUsableSpell then
-                transitionUsable, transitionNoResource = IsUsableSpell(transitionIdentifier)
-            end
-            if transitionNoResource then
-                return "resource", icon, start, duration,
-                    maxCharges and maxCharges > 1 and tostring(charges or 0) or nil,
-                    true, nil, gcdOnly
-            end
-            if not transitionUsable then
-                return "unusable", icon, start, duration,
-                    maxCharges and maxCharges > 1 and tostring(charges or 0) or nil,
-                    true, nil, gcdOnly
-            end
-            return "ready", icon, start, duration,
-                maxCharges and maxCharges > 1 and tostring(charges or 0) or nil,
-                true, nil, gcdOnly
-        end
-        if noResource then return "resource", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil, true, nil, gcdOnly end
-        local inRange = getRange(identifier)
-        if inRange ~= nil or hasRange(identifier) then
-            if not hasValidTarget(identifier) then return "invalid", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil, true, targetReason(identifier), gcdOnly end
-            if inRange == false or inRange == 0 then return "range", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil, true, nil, gcdOnly end
-        end
-        if not usable then return "unusable", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil, true, nil, gcdOnly end
-        return "ready", icon, start, duration, maxCharges and maxCharges > 1 and tostring(charges or 0) or nil, true, nil, gcdOnly
     end
 
     local function showActionTooltip(slot, icon)
@@ -453,79 +339,61 @@ function Factory.Create(options)
     end
 
     local function createHudIcon(parent)
-        local icon = CreateFrame("Button", nil, parent)
-        icon:SetSize(C.SHORTCUT_ICON_SIZE, C.SHORTCUT_ICON_SIZE)
-        icon:EnableMouse(false)
-        local texture = icon:CreateTexture(nil, "ARTWORK")
-        texture:SetPoint("TOPLEFT", 2, -2)
-        texture:SetPoint("BOTTOMRIGHT", -2, 2)
-        texture:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-        local emptyFill = icon:CreateTexture(nil, "ARTWORK")
-        emptyFill:SetPoint("TOPLEFT", 2, -2)
-        emptyFill:SetPoint("BOTTOMRIGHT", -2, 2)
-        emptyFill:SetColorTexture(0.16, 0.16, 0.18, 1)
-        emptyFill:Hide()
-        local cooldown = CreateFrame("Cooldown", nil, icon, "CooldownFrameTemplate")
-        cooldown:SetAllPoints(texture)
-        if cooldown.SetDrawEdge then cooldown:SetDrawEdge(false) end
-        local count = icon:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
-        count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", -2, 2)
-        local borders = {}
-        -- Keep activation feedback above the cooldown child frame. A texture owned
-        -- by the icon can be hidden by the cooldown swipe as soon as the cast fires.
-        local feedbackOverlay = CreateFrame("Frame", nil, parent)
-        feedbackOverlay:SetAllPoints(icon)
-        if feedbackOverlay.SetFrameLevel and icon.GetFrameLevel then
-            feedbackOverlay:SetFrameLevel(icon:GetFrameLevel() + 10)
-        end
-        local flash = feedbackOverlay:CreateTexture(nil, "OVERLAY")
-        flash:SetPoint("TOPLEFT", 1, -1); flash:SetPoint("BOTTOMRIGHT", -1, 1)
-        flash:SetColorTexture(1, 0.82, 0.15, 1); flash:SetAlpha(0)
-        local top = icon:CreateTexture(nil, "OVERLAY")
-        top:SetPoint("TOPLEFT"); top:SetPoint("TOPRIGHT"); top:SetHeight(1); borders[#borders + 1] = top
-        local bottom = icon:CreateTexture(nil, "OVERLAY")
-        bottom:SetPoint("BOTTOMLEFT"); bottom:SetPoint("BOTTOMRIGHT"); bottom:SetHeight(1); borders[#borders + 1] = bottom
-        local left = icon:CreateTexture(nil, "OVERLAY")
-        left:SetPoint("TOPLEFT"); left:SetPoint("BOTTOMLEFT"); left:SetWidth(1); borders[#borders + 1] = left
-        local right = icon:CreateTexture(nil, "OVERLAY")
-        right:SetPoint("TOPRIGHT"); right:SetPoint("BOTTOMRIGHT"); right:SetWidth(1); borders[#borders + 1] = right
-        local pulseBorder = {}
-        for _, edge in ipairs(borders) do
-            local pulse = icon:CreateTexture(nil, "OVERLAY")
-            if edge == borders[1] then pulse:SetPoint("TOPLEFT", -1, 1); pulse:SetPoint("TOPRIGHT", 1, 1); pulse:SetHeight(1)
-            elseif edge == borders[2] then pulse:SetPoint("BOTTOMLEFT", -1, -1); pulse:SetPoint("BOTTOMRIGHT", 1, -1); pulse:SetHeight(1)
-            elseif edge == borders[3] then pulse:SetPoint("TOPLEFT", -1, 1); pulse:SetPoint("BOTTOMLEFT", -1, -1); pulse:SetWidth(1)
-            else pulse:SetPoint("TOPRIGHT", 1, 1); pulse:SetPoint("BOTTOMRIGHT", 1, -1); pulse:SetWidth(1) end
-            pulse:SetColorTexture(1, 0.82, 0, 1); pulse:SetAlpha(0); pulseBorder[#pulseBorder + 1] = pulse
-        end
-        icon.texture, icon.emptyFill, icon.cooldown, icon.count = texture, emptyFill, cooldown, count
-        icon.borders, icon.pulseBorder = borders, pulseBorder
-        icon.feedbackOverlay, icon.flash = feedbackOverlay, flash
-        return icon
+        return BoundActionView.CreateIcon(parent)
     end
 
     local function createHudCastButton(icon, slot)
-        local castButton = CreateFrame("Button", slot.buttonName .. "Hud", UIParent,
-            "SecureActionButtonTemplate,SecureHandlerStateTemplate")
-        castButton:SetFrameStrata(C.SECURE_OVERLAY_STRATA)
-        castButton:SetFrameLevel(103)
-        -- Physical bindings use the off-screen button. This overlay is mouse-only
-        -- and executes exactly once on release on every supported client.
-        castButton:RegisterForClicks("LeftButtonUp")
-        castButton:SetScript("OnEnter", function(self) showActionTooltip(slot, self) end)
-        castButton:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
-        castButton:SetScript("OnMouseDown", function()
-            local entry = W.GetSlot(W.GetActiveLayoutKey(), slot.id)
-            if hasMacro(entry) then showActivationFeedback(slot) end
+        local function descriptor()
+            return {
+                feature = options.featureId,
+                layoutKey = W.GetActiveLayoutKey(),
+                slotId = slot.id,
+            }
+        end
+        local button = SecureController.CreateHudButton(icon, slot, {
+            ShowTooltip = function(self)
+                showActionTooltip(slot, self)
+                BoundActionDrag.RefreshHoverCursor()
+            end,
+            OnLeave = function()
+                if GameTooltip then GameTooltip:Hide() end
+                BoundActionDrag.RefreshHoverCursor()
+            end,
+            OnMouseDown = function(_, mouseButton)
+                if mouseButton == "LeftButton" and IsShiftKeyDown
+                        and IsShiftKeyDown() then return end
+                local entry = W.GetSlot(W.GetActiveLayoutKey(), slot.id)
+                if hasMacro(entry) then showActivationFeedback(slot) end
+            end,
+            OnMouseUp = function()
+                if BoundActionDrag.IsActive() then BoundActionDrag.Finish() end
+            end,
+            OnDragStart = function()
+                if not IsShiftKeyDown or not IsShiftKeyDown() then return end
+                local entry = W.GetSlot(W.GetActiveLayoutKey(), slot.id)
+                if entry then BoundActionDrag.Begin(descriptor()) end
+            end,
+            OnDragStop = function()
+                if BoundActionDrag.IsActive() then BoundActionDrag.Finish() end
+            end,
+            OnReceiveDrag = function()
+                if BoundActionDrag.IsActive() then
+                    BoundActionDrag.DropOn(descriptor())
+                    return
+                end
+                local cursorType = GetCursorInfo and GetCursorInfo()
+                if AssignmentSources.CanAcceptCursor(cursorType)
+                    and D and D.AssignCursorDrop then
+                    D.AssignCursorDrop(options.featureId, slot.id, W.GetActiveLayoutKey())
+                end
+            end,
+        })
+        BoundActionDrag.RegisterDestination(button, descriptor, function()
+            local layoutKey = W.GetActiveLayoutKey()
+            return W.CanMoveSlot(layoutKey, slot.id)
+                and W.GetSlot(layoutKey, slot.id) ~= nil
         end)
-        castButton:SetScript("OnReceiveDrag", function()
-            if S.configMode and D and D.AssignCursorDrop then
-                D.AssignCursorDrop(options.featureId, slot.id, W.GetActiveLayoutKey())
-            end
-        end)
-        castButton:Hide()
-        icon.castButton = castButton
-        return castButton
+        return button
     end
 
     function W.Configure(deps)
@@ -559,7 +427,9 @@ function Factory.Create(options)
             icon:SetScript("OnEnter", function(self) showActionTooltip(boundSlot, self) end)
             icon:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
             icon:SetScript("OnReceiveDrag", function()
-                if S.configMode and D and D.AssignCursorDrop then
+                local cursorType = GetCursorInfo and GetCursorInfo()
+                if AssignmentSources.CanAcceptCursor(cursorType)
+                    and D and D.AssignCursorDrop then
                     D.AssignCursorDrop(options.featureId, boundSlot.id, W.GetActiveLayoutKey())
                 end
             end)
@@ -790,6 +660,25 @@ function Factory.Create(options)
         return true, otherId
     end
 
+    function W.CanMoveSlot(layoutKey, slotId)
+        return isSupported() and W.CanEditLayout(layoutKey)
+            and WL.IsKnownLayout(layoutKey) and slotById[slotId] ~= nil
+    end
+
+    function W.SetSlotForMove(layoutKey, slotId, entry)
+        if not W.CanMoveSlot(layoutKey, slotId) then return false end
+        if not WL.SetSlot(layoutKey, slotId, entry) then return false end
+        clearSlotFeedback(slotId)
+        return true
+    end
+
+    function W.RefreshAfterMove()
+        W.RefreshSecureActions()
+        W.Refresh()
+        requestLayout()
+        notifyConsumableAssignmentsChanged()
+    end
+
     function W.GetConflicts()
         return bindingManager and bindingManager.GetConflicts() or {}
     end
@@ -899,6 +788,7 @@ function Factory.Create(options)
     end
 
     function W.OnCombatStarted()
+        BoundActionDrag.Cancel()
         if GameTooltip then GameTooltip:Hide() end
     end
 

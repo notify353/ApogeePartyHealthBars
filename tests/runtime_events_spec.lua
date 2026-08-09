@@ -17,6 +17,13 @@ ApogeePartyHealthBars_ActionEvents = {
         assert(router.name == "router" and deps.name == "deps")
     end,
 }
+ApogeePartyHealthBars_ActionAssignmentEvents = {
+    Register = function(router, deps)
+        calls[#calls + 1] = "assignment"
+        assert(router.name == "router"
+            and type(deps.RefreshAssignmentAffordances) == "function")
+    end,
+}
 ApogeePartyHealthBars_DungeonBoardEvents = {
     Register = function(router, deps)
         calls[#calls + 1] = "dungeon"
@@ -41,9 +48,13 @@ local router = {
         assert(callback == printer, "coordinator changed the router printer")
     end,
 }
-events.Register(router, { name = "deps", Print = printer })
+events.Register(router, {
+    name = "deps",
+    Print = printer,
+    RefreshAssignmentAffordances = function() end,
+})
 
-assert(table.concat(calls, ",") == "initialize,lifecycle,unit,action,dungeon",
+assert(table.concat(calls, ",") == "initialize,lifecycle,unit,assignment,action,dungeon",
     "runtime subscriber registration order changed: " .. table.concat(calls, ","))
 
 print("PASS runtime event coordinator")

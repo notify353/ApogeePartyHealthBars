@@ -1,6 +1,42 @@
 # Architecture
 
-WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `ApogeePartyHealthBars_S` holds session state, feature modules expose narrow APIs, and `ApogeePartyHealthBars.lua` wires them together.
+WoW loads Lua files in TOC order. `Core/Namespace.lua` establishes the single `ApogeePartyHealthBars` root, feature modules expose narrow APIs, and `ApogeePartyHealthBars.lua` invokes explicit bootstrap composition stages in dependency order.
+
+## Namespace and Dependencies
+
+New and migrated modules register exactly once through `ApogeePartyHealthBars.Define(domain, name, module)` and resolve migrated dependencies through `ApogeePartyHealthBars.Require(domain, name)`. The supported domains are `Core`, `Actions`, `Runtime`, `Integrations`, and `Bootstrap`. Duplicate definitions, unknown domains, and missing requirements fail immediately during TOC loading.
+
+Dependency direction is `Core` → domain modules → `Runtime`/`Integrations` → `Bootstrap` → the final entrypoint. Domain modules must not require bootstrap code or reach back into the entrypoint. Factories receive explicit dependency tables and assert every required key. A callback may remain late-bound only when the consumer is constructed before the provider is ready; the Settings UI/controller handshake and final UI update handlers are the current intentional cases.
+
+Some untouched consumers still read historical `ApogeePartyHealthBars_*` globals. A migrated module may expose one centralized compatibility alias through the optional fourth argument to `Define`; that alias must be identical to the registered module. Direct definitions of new legacy module globals are forbidden by validation. Remove an alias once repository search finds no consumers and the corresponding direct-load tests use the namespace.
+
+## Composition Order
+
+The final entrypoint establishes Core policy and scheduling services, then invokes these bootstrap stages in TOC order:
+
+1. `ActionComposition` initializes `ActionCoordinator` and its live-action families.
+2. `AuxiliaryComposition` initializes non-party runtime services that must exist before frames are built.
+3. `PartyFrameComposition` connects click bindings, layout, and the secure reconciler.
+4. `SettingsComposition` initializes the controller before constructing Settings with the controller facade.
+5. `EventRegistration` installs slash commands, runtime subscribers, and health alerts after all callbacks are ready.
+
+`Core.UpdateScheduler` alone owns dirty-request coalescing and its update frames; registered handlers retain UI-domain work. `Core.FeaturePolicy` alone combines saved preference with client capability without modifying portable intent.
+
+## Action Architecture
+
+`ActionCoordinator` owns shared Shortcut, Keyboard, Mouse Wheel, Mouse Button, consumable, cursor-assignment, and binding lifecycle wiring. `BindingController.AssignCursor` remains the only cursor-assignment mutation boundary.
+
+Shortcut responsibilities are divided between `ShortcutStore` for persistence and mutations, the existing Spellbook/player-spell resolver boundary, and `ShortcutBar` for evaluation and secure HUD presentation. Bound actions retain their public factory while `BoundActionEvaluator` owns frame-free state evaluation, `BoundActionSecureController` owns named secure buttons and mouse behavior, `BoundActionDragController` owns session-only Shift-drag state and live destination resolution, and `BoundActionView` owns non-secure presentation. `ActionCoordinator` is the mutation boundary for swaps among the active Keyboard, Mouse Wheel, and Mouse Buttons layouts. Existing secure frame names and facade signatures are compatibility contracts.
+
+`Runtime.ActionAssignmentEvents` owns Spellbook, Blizzard bag, cursor, combat-transition, and optional-add-on-load routing. `ActionAssignmentSources` is vendor-neutral session state and acceptance policy. Third-party bag support belongs under `Integrations`; `Integrations.Baganator` combines its public view callbacks with read-only visibility monitoring of Baganator's named backpack frames, tolerates either load order and frame-group replacement, and never hooks item buttons or replaces scripts.
+
+## Secure Ownership
+
+Secure frames are created and mutated only by their owning action/party-frame controllers and the shared `SecureFrames` deferral boundary. Opening an assignment source may change assignment affordances but must not place a non-secure visual layer over a secure cast button. Combat lockdown permits no protected attribute, position, visibility, mouse, layout, binding, or assignment mutation; post-combat reconciliation restores the intended state.
+
+## Deferred Structural Work
+
+Settings page construction, `ProfileStore`/profile migration internals, and Dungeon Board/Dungeon Guide UI composition remain intentionally unchanged beyond their bootstrap calls. Split those domains in focused follow-up work after their public contracts and persistence behavior have dedicated characterization tests; do not mix that work into the Actions/bootstrap reorganization.
 
 ## Ownership
 
@@ -29,7 +65,10 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `CleanseEvents`: party-aura, roster, spellbook, pet, and post-combat Cleanse Watch refresh policy
 - `BuffThanksEvents`: combat-log buff/cleanse capture, player-aura verification triggers, and session reset routing for Thank You prompts
 - `RuntimeEvents`: thin subscriber registration coordinator
+- `ActionAssignmentEvents`: Spellbook, Blizzard bag, cursor, combat-transition, and optional-integration lifecycle routing
+- `Baganator`: optional public-callback adapter translating replacement-bag visibility into vendor-neutral assignment-source changes
 - `Sounds`: shared sound catalog, saved-key normalization, and SFX playback
+- `ActionAssignmentSources`: session-only Spellbook and carried-bag visibility, cursor/source matching, capability gating, and combat-safe live-HUD assignment policy
 - `CrowdControl`: class-owned active-control catalog, control categories, activation modes, automatic-display policy, and per-class allocation bounds
 - `ShortcutItems`: shared item-information, carried-count, usability, cooldown, depletion evaluation, and ID-based player-ground explosive policy
 - `ActionData`: macro-independent spell/item identity, legacy normalization, cloning, and display resolution shared by every configurable action feature
@@ -40,7 +79,11 @@ WoW loads Lua files in TOC order. `ApogeePartyHealthBars_C` holds constants, `Ap
 - `SettingsSurfaces`: opt-in opaque-black configuration chrome, native top-level interaction stacking, shared configuration strata, and combat-safe runtime-strata restoration
 - `BoundActionLayouts`: shared per-spec class-state catalog and typed-action layout engine for native forms, secure stealth fallbacks, and composite Cat/Prowl state
 - `BoundActionBindings`: permanent binding-set-specific transactional claiming, reconciliation, conflict detection, restoration, and cross-feature rollback
-- `BoundActionRuntime`: per-instance Keyboard/Mouse Wheel/Mouse Buttons action evaluation, secure execution, HUD state, and feedback
+- `BoundActionEvaluator`, `BoundActionSecureController`, `BoundActionDragController`, `BoundActionView`, `BoundActionRuntime`: frame-free action state evaluation, named secure-button management, session-only live-slot movement, HUD presentation, and the stable per-instance Keyboard/Mouse Wheel/Mouse Buttons facade
+- `ActionCoordinator`: shared live-action configuration, consumable assignment checks, cursor mutation routing, and transactional binding lifecycle fan-in
+- `ShortcutStore`, `ShortcutBar`: Shortcut persistence/mutations and the stable evaluation/secure-rendering facade
+- `FeaturePolicy`, `UpdateScheduler`: saved-intent capability policy and coalesced UI update scheduling
+- `ActionComposition`, `AuxiliaryComposition`, `PartyFrameComposition`, `SettingsComposition`, `EventRegistration`: explicit startup stages and their dependency contracts
 - `ActionHud`: the single activation-feedback line shared by Keyboard, Mouse Wheel, and Mouse Buttons
 - `HealthAlerts`: configurable party low-health threshold state, recovery hysteresis, and sound throttling
 - `SecureFrames`: combat-safe visibility, position, and mouse mutations
@@ -107,6 +150,7 @@ The reviewed data chain loads as `DungeonGuideCatalog` → strategy packs such a
 - Persist only the Dungeon Board watched role, sound choice, level-window offsets, and feed position in the active character-owned profile; requests, official results, and notification history remain session-only.
 - Treat basic unit health and frame construction as the required baseline while aura, range, prediction, threat, markers, assignment, bindings, state layouts, and profile sharing degrade independently.
 - Never mutate secure attributes, position, visibility, or mouse state during combat.
+- Keep live action drag-and-drop source detection inside `ActionAssignmentSources`. Use `SpellBookFrame` visibility plus the union of documented `BAG_OPEN`/`BAG_CLOSED` state and Blizzard's exported `IsBagOpen` stock-frame visibility for carried bags; use optional public view-lifecycle callbacks for supported replacement bag UIs (currently Baganator), with `CURSOR_CHANGED` plus an actual item cursor as the final narrow fallback. `BindingController` remains authoritative for carried-item validation. Never replace Spellbook or bag-item handlers, and keep secure cast overlays as the normal-play mouse layer.
 - Keep party-frame units inside `UnitTopology`; event routing, trackers, and layout must not grow independent player/party token-pattern rules. Dynamic hostile nameplate and target-chain discovery belongs exclusively to `ThreatObserver` and must not alter fixed party-frame topology.
 - Keep current-target nameplate discovery and attachment inside `TargetNameplateHud`; its root must remain owned by `UIParent`, use accessible nameplates only as one-way anchor targets, and never reparent into, inspect layout details from, or mutate Blizzard's nameplate hierarchy. Reconcile that anchor only when target/nameplate identity or aggregate visibility changes; ordinary surface value and geometry refreshes remain confined to Apogee-owned frames. `PlayerStatusHud` owns the combined player health/power surface, Target Effects owns its reminder row, and absent content collapses without reserving a gap. Gate basic player status only on nameplate attachment so missing harmful-aura, Spellbook, or action-state APIs disable Target Effects without hiding health and power.
 - Treat Dungeon Guide content as a single validated specification for both the Book and automatic marker controller. Resolve mobs only from creature GUID NPC IDs within an explicitly supported client flavor and instance; never use localized unit names. Support only Skull, Cross, boss Circle, and No Auto Mark; keep CC recommendations in prose without assigning a raid marker. Require Circle for every boss plus rationale and bounded strategy and route text for every recommendation, return catalog copies to callers, and reject invalid markers, IDs, ordering, and references at registration.
@@ -142,7 +186,7 @@ The reviewed data chain loads as `DungeonGuideCatalog` → strategy packs such a
 - Infer generated attack behavior only from Blizzard's auto-attack predicates or the reviewed canonical spell-family policy; class, harmfulness, range, resource type, and cast time are not sufficient.
 - Keep generated-template documentation sourced from `ActionMacros` so the Macros glossary cannot drift from runtime output.
 - Keep Party Frame Click actions macro-independent; native secure spell/item actions must retain the clicked health-bar unit.
-- Never call Blizzard Spellbook toggles, replace Spellbook or bag-item scripts, or hook their click handlers; use the minimap action template and destination-based cursor drops.
+- Never call Blizzard Spellbook toggles, replace Spellbook or bag-item scripts, or hook their click handlers; use the minimap action template, source visibility, and destination-based cursor drops.
 - Do not rename saved variables or named secure frames without migration.
 - Add settings through the page registry.
 - Keep page-specific controls and mutable refresh state in their settings-page modules; `SettingsUI` owns only the shared window, group navigation, and page lifecycle.

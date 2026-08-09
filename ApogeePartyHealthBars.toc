@@ -6,8 +6,11 @@
 ## SavedVariables: ApogeePartyHealthSV
 ## SavedVariablesPerCharacter: ApogeePartyHealthCharSV
 
+Core/Namespace.lua
 Core/Data.lua
 Core/ClientCapabilities.lua
+Core/FeaturePolicy.lua
+Core/UpdateScheduler.lua
 Reminders/CleanseData.lua
 DungeonBoard/DungeonBoardCatalog.lua
 DungeonGuide/DungeonGuideCatalog.lua
@@ -48,8 +51,11 @@ DungeonBoard/DungeonBoardFeed.lua
 DungeonBoard/DungeonBoardUI.lua
 DungeonGuide/DungeonGuideUI.lua
 Actions/ActionCooldowns.lua
+Actions/ActionAssignmentSources.lua
+Integrations/Baganator.lua
 Actions/ShortcutItems.lua
 Actions/ActionData.lua
+Actions/ShortcutStore.lua
 Actions/EquipmentSets.lua
 PartyFrames/UnitBar.lua
 PartyFrames/PlayerStatusHud.lua
@@ -58,6 +64,10 @@ Actions/ActionSettingsComponents.lua
 Actions/BoundActionLayouts.lua
 Actions/BoundActionBindings.lua
 Actions/ActionHud.lua
+Actions/BoundActionEvaluator.lua
+Actions/BoundActionView.lua
+Actions/BoundActionDragController.lua
+Actions/BoundActionSecureController.lua
 Actions/BoundActionRuntime.lua
 Actions/MouseWheel/MouseWheelLayouts.lua
 Actions/Keyboard/KeyboardLayouts.lua
@@ -93,6 +103,7 @@ Settings/SettingsController.lua
 Actions/BindingStore.lua
 Actions/BindingController.lua
 Actions/PartyFrameClickBindings.lua
+Actions/ActionCoordinator.lua
 PartyFrames/UnitFrames.lua
 PartyFrames/Layout.lua
 Settings/CoreSettingsPages.lua
@@ -109,9 +120,15 @@ Settings/SettingsUI.lua
 Runtime/LifecycleEvents.lua
 Runtime/UnitEvents.lua
 Runtime/ActionEvents.lua
+Runtime/ActionAssignmentEvents.lua
 Runtime/TargetEffectEvents.lua
 Runtime/DungeonBoardEvents.lua
 Runtime/CleanseEvents.lua
 Runtime/BuffThanksEvents.lua
 Runtime/RuntimeEvents.lua
+Bootstrap/ActionComposition.lua
+Bootstrap/PartyFrameComposition.lua
+Bootstrap/AuxiliaryComposition.lua
+Bootstrap/SettingsComposition.lua
+Bootstrap/EventRegistration.lua
 ApogeePartyHealthBars.lua

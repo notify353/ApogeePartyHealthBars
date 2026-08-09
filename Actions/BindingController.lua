@@ -6,8 +6,10 @@ local K = ApogeePartyHealthBars_KeyboardActions
 local MB = ApogeePartyHealthBars_MouseButtonActions
 local Items = ApogeePartyHealthBars_ShortcutItems
 
-ApogeePartyHealthBars_BindingController = {}
-local B = ApogeePartyHealthBars_BindingController
+local B = {}
+ApogeePartyHealthBars.Define(
+    "Actions", "BindingController", B,
+    "ApogeePartyHealthBars_BindingController")
 local D
 
 local function GetBindingSlotLabel(slotKey)
@@ -196,6 +198,10 @@ function B.AssignCursor(feature, slot, layoutKey)
         local itemName = itemId and Items and Items.GetInfo and Items.GetInfo(itemId)
         if not itemId or not itemName then
             D.Print("could not read that item — try dragging it again.")
+            return false
+        end
+        if not Items.GetCount or Items.GetCount(itemId) <= 0 then
+            D.Print("that item is not in your carried bags.")
             return false
         end
         ok = AssignActionItem(feature, slot, layoutKey, itemId, itemName)

@@ -1,7 +1,7 @@
 local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local UIH = ApogeePartyHealthBars_UIHelpers
-local NameplateHud = ApogeePartyHealthBars_TargetNameplateHud
+local TargetHud = ApogeePartyHealthBars_TargetNameplateHud
 
 ApogeePartyHealthBars_TargetEffectHud = {}
 local H = ApogeePartyHealthBars_TargetEffectHud
@@ -98,7 +98,7 @@ end
 
 local function RefreshVisibility()
     if not row then return end
-    NameplateHud.SetSurfaceEnabled(SURFACE_KEY,
+    TargetHud.SetSurfaceEnabled(SURFACE_KEY,
         S.sv and S.sv.enabled == true and #suggestions > 0 and not S.configMode)
 end
 
@@ -155,7 +155,7 @@ function H.RefreshVisibility()
 end
 
 function H.Hide()
-    if row then NameplateHud.SetSurfaceEnabled(SURFACE_KEY, false) end
+    if row then TargetHud.SetSurfaceEnabled(SURFACE_KEY, false) end
 end
 
 function H.Initialize()
@@ -164,7 +164,7 @@ function H.Initialize()
     row:SetSize(1, ICON_SIZE)
     row:EnableMouse(false)
     row:SetScript("OnUpdate", function() H.Tick() end)
-    NameplateHud.RegisterSurface(SURFACE_KEY, row, 2, TARGET_EFFECT_GAP)
+    TargetHud.RegisterSurface(SURFACE_KEY, row, 2, TARGET_EFFECT_GAP)
 end
 
 function H.GetAnchor() return row end

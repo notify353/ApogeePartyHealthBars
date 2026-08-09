@@ -14,9 +14,35 @@ function L.UpdateHeader()
     D.ApplyPanelChrome()
     D.titleFS:Hide()
     D.sepTex:Hide()
+    if D.ActionHud and D.partyFramesLabel then
+        D.ActionHud.SetSectionLabelVisible(D.partyFramesLabel, false)
+    end
     D.rowAnchor:ClearAllPoints()
     D.rowAnchor:SetPoint(
         "TOPLEFT", D.panel, "TOPLEFT", C.PAD_H + D.GetThreatGutterWidth(), 0)
+end
+
+local function GetPartyFramesLabelHeight(row)
+    if not S.configMode or not row or row.unitId ~= "player"
+            or not D.ActionHud or not D.partyFramesLabel then
+        return 0
+    end
+    return D.ActionHud.GetSectionLabelHeight()
+end
+
+local function LayoutPartyFramesLabel(row, actionHeight)
+    if not D.ActionHud or not D.partyFramesLabel then return 0 end
+    if not row or row.unitId ~= "player" then return 0 end
+    local labelHeight = GetPartyFramesLabelHeight(row)
+    D.partyFramesLabel:ClearAllPoints()
+    if labelHeight > 0 then
+        D.partyFramesLabel:SetPoint(
+            "TOPLEFT", row.btn, "TOPLEFT", 0, -actionHeight)
+        D.ActionHud.SetSectionLabelVisible(D.partyFramesLabel, true)
+    else
+        D.ActionHud.SetSectionLabelVisible(D.partyFramesLabel, false)
+    end
+    return labelHeight
 end
 
 local function ClearSimpleSpellAttributes(button)
@@ -113,7 +139,8 @@ end
 
 local function PositionRow(row, yOffset)
     local actionGeometry = D.GetActionHudGeometry(row)
-    local actionHeight = D.GetActionAreaHeight(row, actionGeometry)
+    local actionHudHeight = D.GetActionAreaHeight(row, actionGeometry)
+    local actionHeight = actionHudHeight + GetPartyFramesLabelHeight(row)
     local surfaceHeight = row.primary:GetHeight()
     for _, surface in ipairs({ row.target, row.targetOfTarget }) do
         if surface.visible then surfaceHeight = math.max(surfaceHeight, surface:GetHeight()) end
@@ -124,6 +151,7 @@ local function PositionRow(row, yOffset)
     row.primary.containerWidth = rowWidth
     row.btn:ClearAllPoints()
     row.btn:SetPoint("TOPLEFT", D.rowAnchor, "BOTTOMLEFT", 0, -yOffset)
+    LayoutPartyFramesLabel(row, actionHudHeight)
     row.primary:RefreshLayout(actionHeight, totalHeight)
     row.btn:Show()
 
@@ -197,7 +225,8 @@ function L.UpdateRowContent()
     for index, row in ipairs(D.rows) do
         if row.btn:IsShown() then
             RefreshRowSurfaces(row, index)
-            local actionHeight = D.GetActionAreaHeight(row)
+            local actionHudHeight = D.GetActionAreaHeight(row)
+            local actionHeight = actionHudHeight + LayoutPartyFramesLabel(row, actionHudHeight)
             row.primary:RefreshLayout(actionHeight, row.btn:GetHeight())
             row.target:RefreshLayout(0)
             row.targetOfTarget:RefreshLayout(0)

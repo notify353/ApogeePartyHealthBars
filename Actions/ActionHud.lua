@@ -17,6 +17,33 @@ local FEEDBACK_LEFT = BUTTON_GRID_LEFT + BUTTON_GRID_WIDTH + C.SHORTCUT_ICON_GAP
 local FEEDBACK_WIDTH = C.ROW_CONTENT_W + C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP * 2
 local FEEDBACK_HEIGHT = 18
 local FEEDBACK_INSET = 4
+local SECTION_LABEL_HEIGHT = 16
+local SECTION_LABEL_INSET = 4
+
+function H.CreateSectionLabel(parent, text, width, justify)
+    local frame = CreateFrame("Frame", nil, parent)
+    frame:SetSize(math.max(1, tonumber(width) or 1), SECTION_LABEL_HEIGHT)
+
+    local label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    label:SetPoint("LEFT", frame, "LEFT", SECTION_LABEL_INSET, 0)
+    label:SetPoint("RIGHT", frame, "RIGHT", -SECTION_LABEL_INSET, 0)
+    label:SetJustifyH(justify == "RIGHT" and "RIGHT" or "LEFT")
+    label:SetTextColor(1, 0.82, 0)
+    label:SetText(tostring(text or ""))
+
+    frame.label = label
+    frame:Hide()
+    return frame
+end
+
+function H.SetSectionLabelVisible(frame, visible)
+    if not frame then return end
+    if visible then frame:Show() else frame:Hide() end
+end
+
+function H.GetSectionLabelHeight()
+    return SECTION_LABEL_HEIGHT
+end
 
 local function updateFeedback()
     local now = GetTime and GetTime() or 0

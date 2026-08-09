@@ -40,6 +40,11 @@ ApogeePartyHealthBars_ActionHud = {
         feedback[#feedback + 1] = { source, trigger, action, duration }
     end,
     Clear = function() return true end,
+    CreateSectionLabel = function()
+        return { SetPoint = function() end, Show = function() end, Hide = function() end }
+    end,
+    SetSectionLabelVisible = function() end,
+    GetSectionLabelHeight = function() return 16 end,
 }
 
 local bindingOptions = {}
@@ -160,6 +165,8 @@ local function createRuntime(featureId, stateKey, slotId, actionName, prefix, fe
         hud = {
             panelHeight = 100,
             totalHeight = 110,
+            labelWidth = 80,
+            positionLabel = function() end,
             positionIcon = function() end,
         },
         bindings = { marker = featureId },

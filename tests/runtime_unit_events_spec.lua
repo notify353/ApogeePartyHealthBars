@@ -19,10 +19,6 @@ ApogeePartyHealthBars_Auras = {
 ApogeePartyHealthBars_ShortcutBar = {
     Refresh = function(full) record("shortcut:" .. tostring(full)) end,
 }
-ApogeePartyHealthBars_TargetNameplateHud = {
-    OnNamePlateAdded = function(unit) record("hud-plate+:" .. unit) end,
-    OnNamePlateRemoved = function(unit) record("hud-plate-:" .. unit) end,
-}
 ApogeePartyHealthBars_PlayerStatusHud = { Refresh = function() record("status") end }
 ApogeePartyHealthBars_RaidMarkers = {
     OnRaidTargetUpdate = function() record("raid-update") end,
@@ -100,9 +96,7 @@ assert(optionalHasOwner("RAID_TARGET_UPDATE", "RaidMarkers")
         and optionalHasOwner("UNIT_DIED", "RaidMarkers")
         and optionalHasOwner("UNIT_THREAT_SITUATION_UPDATE", "Threat")
         and optionalHasOwner("UNIT_THREAT_LIST_UPDATE", "Threat")
-        and optionalHasOwner("NAME_PLATE_UNIT_ADDED", "TargetNameplateHud")
         and optionalHasOwner("NAME_PLATE_UNIT_ADDED", "ThreatAwareness")
-        and optionalHasOwner("NAME_PLATE_UNIT_REMOVED", "TargetNameplateHud")
         and optionalHasOwner("NAME_PLATE_UNIT_REMOVED", "ThreatAwareness"),
     "visual event owners changed")
 
@@ -170,9 +164,9 @@ reset()
 dispatch("NAME_PLATE_UNIT_ADDED", "nameplate7")
 dispatch("NAME_PLATE_UNIT_REMOVED", "nameplate7")
 expect({
-    "hud-plate+:nameplate7", "plate+:nameplate7", "awareness:nil",
-    "hud-plate-:nameplate7", "plate-:nameplate7", "awareness:nil",
-}, "nameplate lifecycle did not update the HUD and Threat Awareness")
+    "plate+:nameplate7", "awareness:nil",
+    "plate-:nameplate7", "awareness:nil",
+}, "nameplate lifecycle did not remain exclusive to Threat Awareness")
 
 reset()
 deps.ResolvePanelUnit = function() error("expected unit failure") end

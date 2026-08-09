@@ -12,7 +12,16 @@ ApogeePartyHealthBars_S = { charSv = {} }
 ApogeePartyHealthBars_Sounds = { NormalizeKey = function(key) return key or "none" end }
 ApogeePartyHealthBars_ShortcutItems = {}
 ApogeePartyHealthBars_UIHelpers = {}
-ApogeePartyHealthBars_ActionHud = { Clear = function() end, Show = function() end, Attach = function() end }
+ApogeePartyHealthBars_ActionHud = {
+    Clear = function() end,
+    Show = function() end,
+    Attach = function() end,
+    CreateSectionLabel = function()
+        return { SetPoint = function() end, Show = function() end, Hide = function() end }
+    end,
+    SetSectionLabelVisible = function() end,
+    GetSectionLabelHeight = function() return 16 end,
+}
 
 function GetNumShapeshiftForms() return 0 end
 function GetShapeshiftForm() return 0 end

@@ -48,6 +48,29 @@ local function escape(value)
     return Helpers.EscapeText(value)
 end
 
+-- Blizzard returns Group Finder names and comments as kstringLfgListSearch
+-- values. Their |K...|k tokens must reach FontString/GameTooltip intact so
+-- the client can resolve the protected text, while every ordinary segment
+-- still receives the same markup escaping as chat and other external text.
+local function escapeOfficialText(value)
+    local text = tostring(value or "")
+    local parts = {}
+    local cursor = 1
+    while cursor <= #text do
+        local first, last = text:find("|K[^|]*|k", cursor)
+        if not first then
+            parts[#parts + 1] = escape(text:sub(cursor))
+            break
+        end
+        if first > cursor then
+            parts[#parts + 1] = escape(text:sub(cursor, first - 1))
+        end
+        parts[#parts + 1] = text:sub(first, last)
+        cursor = last + 1
+    end
+    return table.concat(parts)
+end
+
 local function formatAge(seconds)
     seconds = math.max(0, math.floor(tonumber(seconds) or 0))
     if seconds < 60 then return tostring(seconds) .. "s" end
@@ -305,7 +328,9 @@ local function ensureEntryFrame(index)
     entry:SetScript("OnEnter", function(self)
         if not GameTooltip or not self.tooltip or self.tooltip == "" then return end
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText(escape(self.tooltip), 1, 1, 1, 1, true)
+        local tooltip = self.officialText
+            and escapeOfficialText(self.tooltip) or escape(self.tooltip)
+        GameTooltip:SetText(tooltip, 1, 1, 1, 1, true)
         GameTooltip:Show()
     end)
     entry:SetScript("OnLeave", function()
@@ -394,6 +419,7 @@ local function renderEntry(entryFrame, entry)
     if entry.kind == "section" then
         entryFrame:SetHeight(SECTION_HEIGHT)
         entryFrame.tooltip = nil
+        entryFrame.officialText = nil
         if entry.isGuild then
             entryFrame.background:SetColorTexture(0.06, 0.18, 0.08, 1)
         else
@@ -437,10 +463,12 @@ local function renderEntry(entryFrame, entry)
     entryFrame.message:SetText("")
     if type(entry.message) == "string" and entry.message ~= "" then
         placeLine(entryFrame.message, entryFrame, -21)
-        entryFrame.message:SetText(escape(entry.message))
+        entryFrame.message:SetText(entry.isBlizzard
+            and escapeOfficialText(entry.message) or escape(entry.message))
         entryFrame.message:SetTextColor(0.70, 0.72, 0.76)
     end
     entryFrame.tooltip = entry.tooltip
+    entryFrame.officialText = entry.isBlizzard
     renderEntryActions(entryFrame, entry)
     local height = entry.message ~= "" and REQUEST_PREVIEW_HEIGHT or REQUEST_HEIGHT
     entryFrame:SetHeight(height)

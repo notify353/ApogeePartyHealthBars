@@ -6,7 +6,7 @@ local DC = ApogeePartyHealthBars_TargetEffectsSettingsPage
 
 local D, page, form
 local rows = {}
-local enabledRow, defaultRow, previewRow, spellSection
+local enabledRow, defaultRow, previewRow, resetRow, spellSection
 local refreshing = false
 
 local function setChecked(check, value)
@@ -104,6 +104,7 @@ function DC.Refresh()
         { frame = enabledRow, height = hudSupported and 32 or 40 },
         { frame = defaultRow, height = 32 },
         { frame = previewRow, height = 78 },
+        { frame = resetRow, height = 32 },
         { frame = spellSection, height = 16, gap = 10 },
     }
     for index, entry in ipairs(known) do
@@ -132,7 +133,7 @@ function DC.Create(parent, deps)
     page:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -C.BIND_PAD, C.BIND_PAD)
     page:Hide()
     form = UIH.CreateFormScaffold(page, "ApogeePartyHealthBarsTargetEffectsSettingsPageScroll",
-        "Show player health, healing overlays, power, and maintained effects above the visible target nameplate.", false)
+        "Show player health, healing overlays, power, and maintained effects for your hostile target.", false)
     enabledRow = checkboxRow(form.content, "Enable Target HUD")
     defaultRow = stepperRow(form.content, "Remind when this much time remains")
     defaultRow.decrease:SetScript("OnClick", function() D.TargetEffectTracker.AdjustThreshold(-1); DC.Refresh() end)
@@ -152,6 +153,14 @@ function DC.Create(parent, deps)
     local statusPreview = D.PlayerStatusHud.CreateConfigurationPreview(previewRow)
     statusPreview:SetPoint("TOP", preview, "BOTTOM", 0, -4)
     previewRow.preview, previewRow.statusPreview = preview, statusPreview
+    resetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
+    local reset = UIH.CreateButton(resetRow, "Reset Target HUD Position", 178, 22)
+    reset:SetPoint("LEFT", resetRow, "LEFT", 8, 0)
+    reset:SetScript("OnClick", function() D.TargetNameplateHud.ResetPosition() end)
+    local resetHint = resetRow:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    resetHint:SetPoint("LEFT", reset, "RIGHT", 8, 0)
+    resetHint:SetText("Drag the live HUD while this page is open")
+    resetRow.reset, resetRow.hint = reset, resetHint
     spellSection = UIH.CreateFormSection(form.content, form.rowWidth,
         "Learned target effects — enablement and priority")
     DC.Refresh()
@@ -163,3 +172,4 @@ function DC.GetForm() return form end
 function DC.GetPreviewRow() return previewRow end
 function DC.GetEnabledRow() return enabledRow end
 function DC.GetDefaultRow() return defaultRow end
+function DC.GetResetRow() return resetRow end

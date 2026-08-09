@@ -15,6 +15,7 @@ local function region()
     function value:ClearAllPoints() self.point = nil end
     function value:SetSize(width, height) self.width, self.height = width, height end
     function value:SetColorTexture(...) self.color = { ... } end
+    function value:SetAllPoints() self.allPoints = true end
     function value:SetWidth(width) self.width = width end
     function value:SetJustifyH(justify) self.justify = justify end
     function value:SetTextColor(...) self.textColor = { ... } end
@@ -23,6 +24,8 @@ local function region()
     function value:Show() self.shown = true end
     function value:Hide() self.shown = false end
     function value:IsShown() return self.shown end
+    function value:CreateTexture() return region() end
+    function value:CreateFontString() return region() end
     return value
 end
 
@@ -43,6 +46,16 @@ end
 
 dofile("Actions/ActionHud.lua")
 local Hud = ApogeePartyHealthBars_ActionHud
+local section = Hud.CreateSectionLabel(button, "Keyboard", 105, "LEFT")
+assert(section.width == 105 and section.height == 16
+        and section.label.text == "Keyboard"
+        and section.label.textColor[1] == 1 and section.label.textColor[2] == 0.82
+        and section.background == nil and not section:IsShown(),
+    "action section label did not use the shared background-free gold treatment")
+Hud.SetSectionLabelVisible(section, true)
+assert(section:IsShown() and Hud.GetSectionLabelHeight() == 16,
+    "action section label did not expose its shared configuration height")
+Hud.SetSectionLabelVisible(section, false)
 Hud.Attach({ btn = button })
 
 assert(text.point[1] == "LEFT" and text.point[4] == 302 and text.point[5] == -117,

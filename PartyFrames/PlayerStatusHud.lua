@@ -2,7 +2,7 @@ local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
 local API = ApogeePartyHealthBars_UnitAPI
 local Capabilities = ApogeePartyHealthBars_ClientCapabilities
-local NameplateHud = ApogeePartyHealthBars_TargetNameplateHud
+local TargetHud = ApogeePartyHealthBars_TargetNameplateHud
 
 ApogeePartyHealthBars_PlayerStatusHud = {}
 local H = ApogeePartyHealthBars_PlayerStatusHud
@@ -224,7 +224,7 @@ function H.Refresh()
     local snapshot = GetLiveSnapshot()
     local hasContent = Render(live, snapshot)
     for _, preview in ipairs(previews) do Render(preview, GetPreviewSnapshot()) end
-    NameplateHud.SetSurfaceEnabled(SURFACE_KEY, IsEnabled() and hasContent)
+    TargetHud.SetSurfaceEnabled(SURFACE_KEY, IsEnabled() and hasContent)
     return snapshot
 end
 
@@ -233,7 +233,7 @@ function H.RefreshVisibility()
 end
 
 function H.Hide()
-    if live then NameplateHud.SetSurfaceEnabled(SURFACE_KEY, false) end
+    if live then TargetHud.SetSurfaceEnabled(SURFACE_KEY, false) end
 end
 
 function H.CreateConfigurationPreview(parent)
@@ -254,7 +254,7 @@ function H.Initialize(deps)
     end
     D = deps
     live = CreateDisplay(UIParent)
-    NameplateHud.RegisterSurface(SURFACE_KEY, live.frame, SURFACE_ORDER, SURFACE_GAP)
+    TargetHud.RegisterSurface(SURFACE_KEY, live.frame, SURFACE_ORDER, SURFACE_GAP)
 end
 
 function H.GetAnchor() return live and live.frame or nil end

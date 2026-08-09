@@ -17,6 +17,7 @@ function C.Exit()
     if D.CleanseWatch then D.CleanseWatch.SetUnlocked(false) end
     if D.BuffThanks then D.BuffThanks.SetUnlocked(false) end
     if D.ThreatAwareness then D.ThreatAwareness.SetUnlocked(false) end
+    if D.TargetNameplateHud then D.TargetNameplateHud.SetUnlocked(false) end
     D.SettingsSurfaces.SetConfigurationActive(false)
     D.panel:EnableMouse(false)
     D.panel:RegisterForDrag()

@@ -155,6 +155,9 @@ local function SetContextualPreviews(pageKey)
     if D.ThreatAwareness then
         D.ThreatAwareness.SetUnlocked(active and pageKey == "threatControl")
     end
+    if D.TargetNameplateHud then
+        D.TargetNameplateHud.SetUnlocked(active and pageKey == "targetEffects")
+    end
 end
 
 local function ActivatePage(pageKey)
@@ -348,7 +351,7 @@ function UI.Build(deps)
         key = "targetEffects", group = "reminders", label = "Target HUD",
         frame = targetEffectsPage, refresh = DC.Refresh, hint = DC.GetForm().hint, layout = DC.GetForm(),
         featureKey = "targetHud",
-        summary = "Show player health, power, and maintained-effect reminders above your target.",
+        summary = "Show player health, power, and maintained-effect reminders for your target.",
     })
     RegisterPage({
         key = "threatControl", group = "reminders", label = "Threat Control",

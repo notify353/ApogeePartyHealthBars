@@ -5,6 +5,7 @@ local Layouts = ApogeePartyHealthBars_MouseButtonLayouts
 
 local GRID_HEIGHT = C.SHORTCUT_ICON_SIZE * 3 + C.SHORTCUT_ICON_GAP * 2
 local GRID_X = C.ROW_CONTENT_W + C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP * 2
+local LABEL_WIDTH = 96
 
 ApogeePartyHealthBars_MouseButtonActions = Factory.Create({
     data = Data,
@@ -22,6 +23,10 @@ ApogeePartyHealthBars_MouseButtonActions = Factory.Create({
         totalHeight = GRID_HEIGHT,
         iconHeight = GRID_HEIGHT,
         panelWidth = GRID_X + C.SHORTCUT_ICON_SIZE * 3 + C.SHORTCUT_ICON_GAP * 2,
+        labelWidth = LABEL_WIDTH,
+        positionLabel = function(label, container)
+            label:SetPoint("BOTTOMLEFT", container, "TOPLEFT", GRID_X, 0)
+        end,
         positionIcon = function(icon, container, slot)
             local stride = C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP
             icon:SetPoint("TOPLEFT", container, "TOPLEFT",

@@ -107,14 +107,15 @@ SetRaidTarget = noop
 GetRaidTargetIndex = noop
 assert(capabilities.IsFeatureAvailable("raidMarkers")
         and not capabilities.Has("nameplates")
-        and not capabilities.IsFeatureAvailable("targetHud"),
-    "automatic raid marking still required nameplates")
+        and capabilities.IsFeatureAvailable("targetHud")
+        and not capabilities.IsFeatureAvailable("targetEffectReminders"),
+    "Target HUD or automatic raid marking still required nameplates")
 C_NamePlate = { GetNamePlateForUnit = noop }
 assert(capabilities.Has("nameplates")
         and capabilities.IsFeatureAvailable("targetHud")
         and capabilities.IsFeatureAvailable("raidMarkers")
         and not capabilities.IsFeatureAvailable("targetEffectReminders"),
-    "basic Target HUD, Target Effects, and raid-marker capabilities were not independent")
+    "nameplate availability incorrectly changed Target HUD feature policy")
 
 assert(not capabilities.IsFeatureAvailable("profileSharing"),
     "missing profile codec APIs were accepted")

@@ -8,6 +8,7 @@ local CB = ApogeePartyHealthBars_ConsumableBar
 local H = ApogeePartyHealthBars_Threat
 local UnitBar = ApogeePartyHealthBars_UnitBar
 local Topology = ApogeePartyHealthBars_UnitTopology
+local ActionHud = ApogeePartyHealthBars_ActionHud
 
 ApogeePartyHealthBars_UnitFrames = {}
 local F = ApogeePartyHealthBars_UnitFrames
@@ -95,6 +96,10 @@ function F.Build(D)
     shortcutFooterAnchor:SetSize(C.ROW_CONTENT_W, 1)
     shortcutFooterAnchor:SetPoint("TOPLEFT", panel, "BOTTOMLEFT", C.PAD_H, 0)
     shortcutFooterAnchor:Show()
+
+    local partyFramesLabel = ActionHud.CreateSectionLabel(
+        panel, "Party Frames", 96, "LEFT")
+    panel.partyFramesLabel = partyFramesLabel
     
     local function CreateHealthRow(parent, descriptor)
         local primary = UnitBar.Create(parent)
@@ -148,6 +153,7 @@ function F.Build(D)
     return {
         panel = panel, rows = rows, titleFS = titleFS, sepTex = sepTex,
         rowAnchor = rowAnchor, shortcutFooterAnchor = shortcutFooterAnchor,
+        partyFramesLabel = partyFramesLabel,
         SavePosition = SavePosition, ApplyDefaultPosition = ApplyDefaultPosition,
         RestorePosition = RestorePosition, ApplyPanelChrome = ApplyPanelChrome,
     }

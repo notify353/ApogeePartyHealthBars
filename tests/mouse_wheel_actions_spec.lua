@@ -66,6 +66,8 @@ local inCombat = false
 function InCombatLockdown() return inCombat end
 local cursorType
 function GetCursorInfo() return cursorType end
+local altDown = false
+function IsAltKeyDown() return altDown end
 local actionButtonUseKeyDown = false
 function GetCVarBool(name)
     assert(name == "ActionButtonUseKeyDown")
@@ -722,7 +724,12 @@ for _, slot in ipairs(data.SLOTS) do
             and #castButton.registeredDrag == 1
             and castButton.registeredDrag[1] == "LeftButton"
             and castButton.attributes.useOnKeyDown == false
-            and castButton.attributes["shift-type1"] == "",
+            and castButton.attributes["shift-type1"] == ""
+            and castButton.attributes["ctrl-shift-type1"] == ""
+            and castButton.attributes["alt-type1"] == ""
+            and castButton.attributes["alt-shift-type1"] == ""
+            and castButton.attributes["alt-ctrl-type1"] == ""
+            and castButton.attributes["alt-ctrl-shift-type1"] == "",
         "clickable Wheel HUD overlay did not preserve casting and locked-bar movement")
     assert(castButton.template == "SecureActionButtonTemplate,SecureHandlerStateTemplate"
         and castButton.parent == UIParent,
@@ -863,6 +870,16 @@ assert(bindings["SHIFT-MOUSEWHEELUP"]:find("CLICK ApogeePartyHealthBarsWheelShif
     "manually configuring a cleared slot unexpectedly changed its existing binding")
 assert(wheel.AssignSpell(PRIMARY, "normalUp", nil, warriorSpells[1]),
     "wheel slot could not be configured again")
+altDown = true
+normalUpIcon.castButton.scripts.OnMouseDown(
+    normalUpIcon.castButton, "LeftButton")
+normalUpIcon.castButton.scripts.OnMouseUp(
+    normalUpIcon.castButton, "LeftButton")
+assert(wheel.GetSlot(PRIMARY, "normalUp") == nil,
+    "Alt-left-click did not clear the active Wheel HUD action")
+altDown = false
+assert(wheel.AssignSpell(PRIMARY, "normalUp", nil, warriorSpells[1]),
+    "Alt-cleared wheel slot could not be configured again")
 
 for _, slot in ipairs(data.SLOTS) do
     bindings[slot.key] = (slot.id == "normalUp" and "CAMERAZOOMIN")
@@ -881,6 +898,13 @@ local secure = wheel.GetSecureButton("normalUp")
 local beforeCombat = secure.mutations
 inCombat = true
 assert(not wheel.ApplyMacro(PRIMARY, "normalUp", "#showtooltip Charge\n/cast Charge"), "combat macro edit was accepted")
+local combatEntry = wheel.GetSlot(PRIMARY, "normalUp")
+altDown = true
+normalUpIcon.castButton.scripts.OnMouseUp(
+    normalUpIcon.castButton, "LeftButton")
+altDown = false
+assert(wheel.GetSlot(PRIMARY, "normalUp") == combatEntry,
+    "Alt-left-click cleared a Wheel HUD action during combat")
 assert(not wheel.RefreshSecureActions(), "combat secure refresh was not deferred")
 assert(secure.mutations == beforeCombat, "secure attributes changed in combat")
 activeSpecGroup = 2

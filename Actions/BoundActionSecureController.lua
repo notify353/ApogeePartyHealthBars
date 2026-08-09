@@ -15,10 +15,15 @@ function S.CreateHudButton(icon, slot, callbacks)
         "SecureActionButtonTemplate,SecureHandlerStateTemplate")
     button:SetFrameStrata(C.SECURE_OVERLAY_STRATA)
     button:SetFrameLevel(103)
-    -- Match Blizzard's locked action-button gesture: Shift-left-drag edits,
-    -- while the ordinary secure action remains release-triggered.
+    -- Match Blizzard's locked action-button gesture: modifiers reserved for
+    -- editing are secure no-ops, while an ordinary click casts on release.
     button:SetAttribute("useOnKeyDown", false)
     button:SetAttribute("shift-type1", "")
+    button:SetAttribute("ctrl-shift-type1", "")
+    button:SetAttribute("alt-type1", "")
+    button:SetAttribute("alt-shift-type1", "")
+    button:SetAttribute("alt-ctrl-type1", "")
+    button:SetAttribute("alt-ctrl-shift-type1", "")
     button:RegisterForClicks("AnyUp", "LeftButtonDown")
     button:RegisterForDrag("LeftButton")
     button:SetScript("OnEnter", function(self) callbacks.ShowTooltip(self) end)

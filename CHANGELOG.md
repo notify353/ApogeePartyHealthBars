@@ -6,6 +6,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Added out-of-combat Alt-left-click clearing for configured Keyboard, Mouse Wheel, and Mouse Buttons HUD actions; the modified secure click is a no-op in combat and never casts the action being removed.
 - Added out-of-combat Shift-left-drag movement across configured Keyboard, Mouse Wheel, and Mouse Buttons HUD actions: holding Shift over an assigned action shows WoW's move cursor, occupied destinations swap complete actions, empty destinations receive the moved action, and unmodified clicks retain normal casting.
 - Fixed Baganator live action assignment by combining its public lifecycle callbacks with effective backpack-frame visibility monitoring, clearing unmatched native bag-open state when the replacement backpack closes, and handling late initialization and skin/frame-group changes.
 

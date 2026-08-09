@@ -342,6 +342,19 @@ function Factory.Create(options)
         return BoundActionView.CreateIcon(parent)
     end
 
+    local function clearOnAltClick(slot, mouseButton)
+        if mouseButton ~= "LeftButton" or not IsAltKeyDown
+                or not IsAltKeyDown() or BoundActionDrag.IsActive()
+                or GetCursorInfo and GetCursorInfo() then
+            return false
+        end
+        local layoutKey = W.GetActiveLayoutKey()
+        if not W.GetSlot(layoutKey, slot.id) then return true end
+        local ok, message = W.ClearSlot(layoutKey, slot.id)
+        if message then printMessage(message) end
+        return ok
+    end
+
     local function createHudCastButton(icon, slot)
         local function descriptor()
             return {
@@ -360,13 +373,20 @@ function Factory.Create(options)
                 BoundActionDrag.RefreshHoverCursor()
             end,
             OnMouseDown = function(_, mouseButton)
-                if mouseButton == "LeftButton" and IsShiftKeyDown
-                        and IsShiftKeyDown() then return end
+                if mouseButton == "LeftButton"
+                        and (IsShiftKeyDown and IsShiftKeyDown()
+                            or IsAltKeyDown and IsAltKeyDown()) then
+                    return
+                end
                 local entry = W.GetSlot(W.GetActiveLayoutKey(), slot.id)
                 if hasMacro(entry) then showActivationFeedback(slot) end
             end,
-            OnMouseUp = function()
-                if BoundActionDrag.IsActive() then BoundActionDrag.Finish() end
+            OnMouseUp = function(_, mouseButton)
+                if BoundActionDrag.IsActive() then
+                    BoundActionDrag.Finish()
+                    return
+                end
+                clearOnAltClick(slot, mouseButton)
             end,
             OnDragStart = function()
                 if not IsShiftKeyDown or not IsShiftKeyDown() then return end
@@ -426,6 +446,9 @@ function Factory.Create(options)
             options.hud.positionIcon(icon, container, slot, hudPosition[slot.id])
             icon:SetScript("OnEnter", function(self) showActionTooltip(boundSlot, self) end)
             icon:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
+            icon:SetScript("OnMouseUp", function(_, mouseButton)
+                clearOnAltClick(boundSlot, mouseButton)
+            end)
             icon:SetScript("OnReceiveDrag", function()
                 local cursorType = GetCursorInfo and GetCursorInfo()
                 if AssignmentSources.CanAcceptCursor(cursorType)

@@ -6,6 +6,9 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Added polished Keyboard, Mouse Wheel, Mouse Buttons, Consumables, and Shortcuts headers to the live action HUD while add-on settings are open.
+- Added configuration-only key legends to the Keyboard HUD so each fixed number and letter assignment is immediately identifiable while editing.
+- Added a configuration-only Party Frames label directly above the add-on's health bars.
 - Added out-of-combat Alt-left-click clearing for configured Keyboard, Mouse Wheel, and Mouse Buttons HUD actions; the modified secure click is a no-op in combat and never casts the action being removed.
 - Added out-of-combat Shift-left-drag movement across configured Keyboard, Mouse Wheel, and Mouse Buttons HUD actions: holding Shift over an assigned action shows WoW's move cursor, occupied destinations swap complete actions, empty destinations receive the moved action, and unmodified clicks retain normal casting.
 - Fixed Baganator live action assignment by combining its public lifecycle callbacks with effective backpack-frame visibility monitoring, clearing unmatched native bag-open state when the replacement backpack closes, and handling late initialization and skin/frame-group changes.
@@ -17,7 +20,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 - Added complete full-size Dungeon Book map coverage: all 23 chapters now use one of nine text-free Classic floor-plan traces, with separate Scarlet Monastery wing maps and shared whole-dungeon overviews for Gnomeregan, The Stockade, Razorfen Kraul, Razorfen Downs, and Uldaman. Gold routes, dashed alternatives, orange optional branches, and numbered boss progression keep each run readable without labels covering the map.
 - Added a comprehensive Uldaman Dungeon Book with full front-entrance routing, Staff of Prehistoria and back-door guidance, Annora and optional boss detours, dangerous trash priorities, the keeper altar sequence, Archaedas add waves, and automatic target marking.
 - Added a comprehensive Razorfen Downs Dungeon Book with the three-ring gong event, Belnistrasz and Plaguemaw defense, Bone Pile and spiral routing, all regular, rare, quest, and Scourge Invasion bosses, and automatic target marking.
-- Added a compact Target HUD beneath Target Effects on the current hostile target's visible nameplate, with player health, absorb shields, incoming-heal prediction, mana, and active resources; it remains visible when no effect reminder is due and follows the shared Target HUD setting.
+- Added a compact movable Target HUD beneath Target Effects for the current hostile target, with player health, absorb shields, incoming-heal prediction, mana, and active resources; it remains visible when no effect reminder is due and follows the shared Target HUD setting.
 - Added a comprehensive Razorfen Kraul Dungeon Book with the Roogug detour, Willix escort and backtracking, high-ledge and bridge routing, priority totems and casters, all bosses and rares, Agathelos's ward, and automatic target marking.
 - Added a complete Stockades Dungeon Book with a west-first full-clear route, all five Defias trash families, six bosses, variable cell spawns, fleeing-enemy and fear safety, and automatic target marking.
 - Added a comprehensive Gnomeregan Dungeon Book with four route chapters, meaningful trash and boss guidance, alarm/mine/bomb priorities, mechanical-enemy CC cautions, front- and backdoor navigation, and automatic target marking.
@@ -37,12 +40,11 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 ### Fixed
 
 - Preserved Blizzard's protected Group Finder text tokens in OFFICIAL Dungeon Board names and notes so the client resolves them instead of displaying raw `|K...|k` markers.
-- Prevented the Target HUD from entering or repeatedly mutating Blizzard's protected nameplate hierarchy, avoiding restricted-region `FrameMeasurement` taint errors while preserving its current-target nameplate attachment.
+- Moved the Target HUD to a profile-positioned `UIParent` screen surface and removed every Blizzard nameplate lookup, event dependency, frame reference, and anchor, preventing restricted-region `FrameMeasurement` taint while keeping the HUD available for living hostile targets even when enemy nameplates are disabled.
 - Corrected OFFICIAL Dungeon Board listings to use the same displayed dungeon ranges as chat listings, so configured Below and Above level windows no longer admit out-of-range dungeons.
 - Reworded Dungeon Board and LFG Alert whisper drafts as concise role offers, such as `Tank LF Gnomer`, with role-only `LFG` fallbacks when no dungeon is available.
 
 - Kept the Target HUD's basic player health and power visible when Target Effects APIs are unavailable, while disabling only the effect-specific settings.
-- Raised the Target HUD slightly above hostile nameplates so its player health and power bars do not touch Blizzard's target-debuff icons.
 
 ## [0.47.0] - 2026-08-02
 

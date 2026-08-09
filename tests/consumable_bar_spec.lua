@@ -47,6 +47,19 @@ local function widget()
     return value
 end
 
+ApogeePartyHealthBars_ActionHud = {
+    CreateSectionLabel = function(_, text, width, justify)
+        local label = widget()
+        label.text, label.width, label.justify = text, width, justify
+        label:Hide()
+        return label
+    end,
+    SetSectionLabelVisible = function(label, visible)
+        if visible then label:Show() else label:Hide() end
+    end,
+    GetSectionLabelHeight = function() return 16 end,
+}
+
 UIParent = widget()
 GameTooltip = widget()
 local createdFrames = {}
@@ -145,6 +158,18 @@ assert(nativeTooltip and nativeTooltip[1] == icons[1].castButton
 local shown, total, omitted = bar.GetStatus()
 assert(shown == 8 and total == 8 and omitted == 0,
     "consumable status counts were incorrect")
+
+ApogeePartyHealthBars_S.configMode = true
+bar.Layout(27)
+assert(bar.GetHeight("player") == 67 and bar.GetSectionLabel():IsShown()
+        and bar.GetSectionLabel().text == "Consumables"
+        and icons[1].points[1][5] == -16,
+    "settings-open consumables did not reserve and show the shared label band")
+ApogeePartyHealthBars_S.configMode = false
+bar.Layout(27)
+assert(bar.GetHeight("player") == 51 and not bar.GetSectionLabel():IsShown()
+        and icons[1].points[1][5] == 0,
+    "closing settings did not restore consumable gameplay geometry")
 
 assignedIds[102] = true
 bar.OnAssignmentsChanged()

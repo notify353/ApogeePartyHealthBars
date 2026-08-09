@@ -591,13 +591,22 @@ local key1Icon = assert(keysRuntime.GetHudIcon("key1"), "Keys HUD was not attach
 local keyFIcon = assert(keysRuntime.GetHudIcon("keyF"), "Keys F HUD tile was not attached")
 local keyGIcon = assert(keysRuntime.GetHudIcon("keyG"), "Keys G HUD tile was not attached")
 local keyVIcon = assert(keysRuntime.GetHudIcon("keyV"), "Keys V HUD tile was not attached")
+local partyFramesLabel = assert(ApogeePartyHealthBarsPanel.partyFramesLabel,
+    "Party Frames configuration label was not attached")
 assert(key1Icon.point[4] == 0 and key1Icon.point[5] == 0
     and keyFIcon.point[4] == 54 and keyFIcon.point[5] == -54
     and keyGIcon.point[4] == 81 and keyGIcon.point[5] == -54
     and keyVIcon.point[4] == 81 and keyVIcon.point[5] == -81,
     "Keys HUD did not use the fixed four-row keyboard cluster")
-assert(keyFIcon.keyLabel == nil and keyGIcon.keyLabel == nil,
-    "Keys HUD retained physical-key labels that belong only in configuration")
+assert(key1Icon.keyLabel and key1Icon.keyLabel.text == "1"
+        and keyFIcon.keyLabel and keyFIcon.keyLabel.text == "F"
+        and keyGIcon.keyLabel and keyGIcon.keyLabel.text == "G"
+        and keyVIcon.keyLabel and keyVIcon.keyLabel.text == "V"
+        and not key1Icon.keyLabel:IsShown() and not keyFIcon.keyLabel:IsShown()
+        and not keyGIcon.keyLabel:IsShown() and not keyVIcon.keyLabel:IsShown(),
+    "Keys HUD did not prepare hidden configuration-only physical-key legends")
+assert(partyFramesLabel.label.text == "Party Frames" and not partyFramesLabel:IsShown(),
+    "Party Frames label did not start hidden during gameplay")
 local wheelTopIcon = assert(wheelRuntime.GetHudIcon("ctrlUp"), "Wheel HUD was not attached")
 assert(wheelTopIcon.point[4] == 160 and wheelTopIcon.point[5] == 0,
     "Wheel HUD was not a right-aligned vertical rail")
@@ -1087,6 +1096,11 @@ end
 
 ClickMinimapButton()
 assert(ApogeePartyHealthBars_S.configMode, "minimap click did not open settings")
+assert(key1Icon.keyLabel:IsShown() and keyFIcon.keyLabel:IsShown()
+        and keyGIcon.keyLabel:IsShown() and keyVIcon.keyLabel:IsShown(),
+    "opening settings did not show Keyboard physical-key legends")
+assert(partyFramesLabel:IsShown() and partyFramesLabel.label.text == "Party Frames",
+    "opening settings did not place Party Frames above the first health row")
 local configSurfaces = ApogeePartyHealthBars_SettingsSurfaces
 local expectedConfigSurfaceKeys = { "settings", "party", "feed", "cleanse" }
 for _, key in ipairs(expectedConfigSurfaceKeys) do
@@ -1126,10 +1140,11 @@ assert(table.concat(ApogeePartyHealthBars_SettingsUI.pageOrder, ",")
 assert(ApogeePartyHealthBars_SettingsUI.pages.targetEffects.label == "Target HUD"
         and ApogeePartyHealthBars_SettingsUI.pages.targetEffects.featureKey == "targetHud"
         and ApogeePartyHealthBars_SettingsUI.pages.targetEffects.summary
-            == "Show player health, power, and maintained-effect reminders above your target.",
+            == "Show player health, power, and maintained-effect reminders for your target.",
     "Target HUD settings page retained Target Effects-only navigation copy")
 local targetHudEnabledRow = ApogeePartyHealthBars_TargetEffectsSettingsPage.GetEnabledRow()
 local targetHudDefaultRow = ApogeePartyHealthBars_TargetEffectsSettingsPage.GetDefaultRow()
+local targetHudResetRow = ApogeePartyHealthBars_TargetEffectsSettingsPage.GetResetRow()
 local targetEffectRows = ApogeePartyHealthBars_TargetEffectsSettingsPage.GetRows()
 local originalFeatureAvailable = ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable
 local originalFeatureReason = ApogeePartyHealthBars_ClientCapabilities.GetFeatureReason
@@ -1145,7 +1160,8 @@ end
 ApogeePartyHealthBars_TargetEffectsSettingsPage.Refresh()
 assert(targetHudEnabledRow.check:IsEnabled()
         and not targetHudDefaultRow.decrease:IsEnabled()
-        and not targetHudDefaultRow.increase:IsEnabled(),
+        and not targetHudDefaultRow.increase:IsEnabled()
+        and targetHudResetRow.reset,
     "Target HUD master control did not remain usable when effect-only APIs were unavailable")
 for _, row in ipairs(targetEffectRows) do
     assert(not row.check:IsEnabled() and not row.up:IsEnabled() and not row.down:IsEnabled(),
@@ -1235,6 +1251,11 @@ router.Dispatch("PLAYER_REGEN_DISABLED")
 assert(not ApogeePartyHealthBars_S.configMode, "combat did not close add-on settings")
 assert(SpellBookFrame:IsShown(), "combat settings cleanup hid the protected spellbook")
 RunFrameUpdates()
+assert(not key1Icon.keyLabel:IsShown() and not keyFIcon.keyLabel:IsShown()
+        and not keyGIcon.keyLabel:IsShown() and not keyVIcon.keyLabel:IsShown(),
+    "combat-forced settings close retained Keyboard physical-key legends")
+assert(not partyFramesLabel:IsShown(),
+    "combat-forced settings close retained the Party Frames label")
 assert(existingShortcutButton.mutations + addedShortcutButton.mutations == combatShortcutMutations,
     "combat settings close mutated protected Shortcut overlays")
 assert(ApogeePartyHealthBars_S.secureUpdatePending,
@@ -1277,7 +1298,9 @@ for _, key in ipairs({
             and ApogeePartyHealthBars_BuffThanks.IsUnlocked()
                 == (key == "buffsCleanse")
             and ApogeePartyHealthBars_DungeonBoardFeed.IsUnlocked()
-                == (key == "dungeon"),
+                == (key == "dungeon")
+            and ApogeePartyHealthBars_TargetNameplateHud.IsUnlocked()
+                == (key == "targetEffects"),
         "settings page exposed an unrelated configuration preview: " .. key)
     local buffThanksSurface = ApogeePartyHealthBars_SettingsSurfaces.Get("buffThanks")
     assert(buffThanksSurface.previewDock == nil and buffThanksSurface.automaticChrome == false,
@@ -1293,8 +1316,11 @@ for _, key in ipairs({
                     "Cleansed: Crippling Poison", 1, true),
             "Thank You settings demo did not show multiple helpers and a cleanse")
     end
-    assert(not ApogeePartyHealthBars_TargetEffectHud.GetAnchor():IsShown()
+    assert((key == "targetEffects"
+                or not ApogeePartyHealthBars_TargetEffectHud.GetAnchor():IsShown())
             and not ApogeePartyHealthBars_TargetNameplateHud.GetSurface("playerStatus").enabled
+            and ApogeePartyHealthBars_TargetNameplateHud.GetContainer():IsShown()
+                == (key == "targetEffects")
             and ApogeePartyHealthBars_BuffThanks.GetFrame():IsShown()
                 == (key == "buffsCleanse")
             and (key == "buffsCleanse"
@@ -1466,6 +1492,7 @@ ApogeePartyHealthBars_Effects.InitializeSavedVariables(renamedSettings, renamedA
 assert(renamedSettings.targetEffectRemindersEnabled == false
         and renamedSettings.targetEffectRefreshThreshold == 8
         and renamedSettings.targetEffectPriority[1] == "shadowWordPain"
+        and renamedSettings.targetHudX == 42
         and renamedSettings.targetEffectHudX == nil
         and renamedSettings.dotHudX == nil
         and renamedSettings.dotRemindersEnabled == nil

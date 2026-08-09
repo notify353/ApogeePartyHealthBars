@@ -46,6 +46,10 @@ local FEATURE_DEFAULTS = {
     threatAwarenessRelPoint = "CENTER",
     threatAwarenessX = 0,
     threatAwarenessY = 40,
+    targetHudPoint = "CENTER",
+    targetHudRelPoint = "CENTER",
+    targetHudX = 0,
+    targetHudY = 120,
     targetEffectRemindersEnabled = true,
     targetEffectRefreshThreshold = 3,
     dungeonBoardRole = "healer",
@@ -128,6 +132,18 @@ function E.InitializeSavedVariables(saved, characterSaved)
     local version = tonumber(saved.schemaVersion) or 0
     MigrateRenamedFields(saved, RENAMED_SETTINGS_FIELDS)
     MigrateRenamedFields(characterSaved, RENAMED_ACTION_FIELDS)
+    if saved.targetHudPoint == nil then
+        saved.targetHudPoint = saved.targetEffectHudPoint or saved.dotHudPoint
+    end
+    if saved.targetHudRelPoint == nil then
+        saved.targetHudRelPoint = saved.targetEffectHudRelPoint or saved.dotHudRelPoint
+    end
+    if saved.targetHudX == nil then
+        saved.targetHudX = saved.targetEffectHudX or saved.dotHudX
+    end
+    if saved.targetHudY == nil then
+        saved.targetHudY = saved.targetEffectHudY or saved.dotHudY
+    end
     for _, key in ipairs({
         "targetEffectHudPoint", "targetEffectHudRelPoint", "targetEffectHudX", "targetEffectHudY",
         "dotHudPoint", "dotHudRelPoint", "dotHudX", "dotHudY",

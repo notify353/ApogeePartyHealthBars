@@ -4,6 +4,7 @@ local Items = ApogeePartyHealthBars_ShortcutItems
 local Actions = ApogeePartyHealthBars_ActionMacros
 local UIH = ApogeePartyHealthBars_UIHelpers
 local Accessory = ApogeePartyHealthBars_AccessoryLayout
+local ActionHud = ApogeePartyHealthBars_ActionHud
 
 ApogeePartyHealthBars_ConsumableBar = {}
 local B = ApogeePartyHealthBars_ConsumableBar
@@ -34,7 +35,7 @@ local READY_TRANSITION_STATES = {
     invalid = true,
 }
 
-local row, container
+local row, container, sectionLabel
 local icons = {}
 local resolved = {}
 local previousStates = {}
@@ -182,6 +183,8 @@ function B.Attach(playerRow)
     if container or not row then return end
     container = CreateFrame("Frame", nil, row.btn)
     container:SetSize(GRID_WIDTH, GRID_HEIGHT)
+    sectionLabel = ActionHud.CreateSectionLabel(container, "Consumables", GRID_WIDTH, "LEFT")
+    sectionLabel:SetPoint("TOPLEFT", container, "TOPLEFT", 0, 0)
     for index = 1, C.CONSUMABLE_MAX_SLOTS do icons[index] = CreateIcon(container) end
     container:Hide()
 end
@@ -286,6 +289,7 @@ function B.Layout(topOffset)
     if not container or not row then return end
     if topOffset ~= nil then layoutOffset = math.max(0, tonumber(topOffset) or 0) end
     if not IsShown() then
+        ActionHud.SetSectionLabelVisible(sectionLabel, false)
         container:Hide()
         for index = 1, C.CONSUMABLE_MAX_SLOTS do
             icons[index]:Hide()
@@ -297,6 +301,10 @@ function B.Layout(topOffset)
     container:ClearAllPoints()
     container:SetPoint("TOPLEFT", row.btn, "TOPLEFT", getLeftOffset(),
         -layoutOffset)
+    local labelVisible = S.configMode == true
+    local labelHeight = labelVisible and ActionHud.GetSectionLabelHeight() or 0
+    container:SetSize(GRID_WIDTH, GRID_HEIGHT + labelHeight)
+    ActionHud.SetSectionLabelVisible(sectionLabel, labelVisible)
     container:Show()
     local stride = C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP
     for index = 1, C.CONSUMABLE_MAX_SLOTS do
@@ -306,7 +314,8 @@ function B.Layout(topOffset)
             local zeroIndex = index - 1
             local column = zeroIndex % C.CONSUMABLE_COLUMNS
             local gridRow = math.floor(zeroIndex / C.CONSUMABLE_COLUMNS)
-            icon:SetPoint("TOPLEFT", container, "TOPLEFT", column * stride, -gridRow * stride)
+            icon:SetPoint("TOPLEFT", container, "TOPLEFT", column * stride,
+                -(labelHeight + gridRow * stride))
             icon:Show()
         else
             icon:Hide()
@@ -373,7 +382,8 @@ function B.Tick()
 end
 
 function B.GetHeight(unitId)
-    return IsShown() and unitId == "player" and GRID_HEIGHT or 0
+    if not IsShown() or unitId ~= "player" then return 0 end
+    return GRID_HEIGHT + (S.configMode and ActionHud.GetSectionLabelHeight() or 0)
 end
 
 function B.GetIconHeight(unitId)
@@ -388,3 +398,4 @@ end
 function B.GetIcons() return icons end
 function B.GetEntries() return resolved end
 function B.IsEnabled() return IsShown() end
+function B.GetSectionLabel() return sectionLabel end

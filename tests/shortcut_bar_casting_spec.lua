@@ -66,6 +66,16 @@ local function widget(shown)
     return value
 end
 
+ApogeePartyHealthBars_ActionHud = {
+    CreateSectionLabel = function(_, text, width, justify)
+        local label = widget(false)
+        label.text, label.width, label.justify = text, width, justify
+        return label
+    end,
+    SetSectionLabelVisible = function(label, visible) label:SetShown(visible) end,
+    GetSectionLabelHeight = function() return 16 end,
+}
+
 UIParent = widget()
 local visualButtons = {}
 function CreateFrame(frameType, _, _, template)
@@ -489,20 +499,28 @@ assert(shortcuts.GetFooterHeight() == ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
     "Shortcut Bar did not collapse to one row after removing slots 5 through 12")
 ApogeePartyHealthBars_S.configMode = true
 shortcuts.Layout(0)
+local sectionLabelHeight = ApogeePartyHealthBars_ActionHud.GetSectionLabelHeight()
 assert(dropButton and dropButton.shown
         and dropButton.points[1][4] == shortcutStride * 4
-        and dropButton.points[1][5] == -ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP,
+        and dropButton.points[1][5] == -sectionLabelHeight
+            - ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
+        and shortcuts.GetSectionLabel().shown
+        and shortcuts.GetSectionLabel().text == "Shortcuts",
     "Shortcut HUD add target did not occupy the first empty grid position")
 droppedFeature, droppedSlot = nil, nil
 dropButton.scripts.OnReceiveDrag()
 assert(droppedFeature == "shortcuts" and droppedSlot == 5,
     "Shortcut HUD add target did not route to the first empty slot")
-assert(shortcuts.GetFooterHeight() == ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
+assert(shortcuts.GetFooterHeight() == sectionLabelHeight
+        + ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
         + ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE,
-    "Shortcut HUD add target unnecessarily expanded a partially filled row")
+    "Shortcut HUD label did not reserve exactly one header band")
 ApogeePartyHealthBars_S.configMode = false
 shortcuts.Layout()
-assert(not dropButton.shown, "Shortcut HUD add target remained visible without an assignment source")
+assert(not dropButton.shown and not shortcuts.GetSectionLabel().shown
+        and shortcuts.GetFooterHeight() == ApogeePartyHealthBars_C.SHORTCUT_TOP_GAP
+            + ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE,
+    "closing settings did not restore Shortcut gameplay geometry")
 local layoutRequestsBeforeSource = layoutRequests
 assert(assignmentSources.SetSpellbookOpen(true)
         and shortcuts.RefreshAssignmentAffordances()

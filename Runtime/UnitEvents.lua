@@ -1,7 +1,6 @@
 local S = ApogeePartyHealthBars_S
 local A = ApogeePartyHealthBars_Auras
 local T = ApogeePartyHealthBars_ShortcutBar
-local N = ApogeePartyHealthBars_TargetNameplateHud
 local P = ApogeePartyHealthBars_PlayerStatusHud
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
@@ -111,17 +110,11 @@ function U.Register(eventRouter, deps)
     eventRouter.RegisterOptional("UNIT_DIED", "RaidMarkers", function(_, guid)
         M.OnUnitDied(guid)
     end)
-    eventRouter.RegisterOptional("NAME_PLATE_UNIT_ADDED", "TargetNameplateHud", function(_, unit)
-        N.OnNamePlateAdded(unit)
-    end)
     eventRouter.RegisterOptional("NAME_PLATE_UNIT_ADDED", "ThreatAwareness", function(_, unit)
         O.OnNamePlateAdded(unit)
         -- Initial observations never produce a lost transition, so do not
         -- suppress a real transition from another continuously observed mob.
         TA.Refresh()
-    end)
-    eventRouter.RegisterOptional("NAME_PLATE_UNIT_REMOVED", "TargetNameplateHud", function(_, unit)
-        N.OnNamePlateRemoved(unit)
     end)
     eventRouter.RegisterOptional("NAME_PLATE_UNIT_REMOVED", "ThreatAwareness", function(_, unit)
         O.OnNamePlateRemoved(unit)

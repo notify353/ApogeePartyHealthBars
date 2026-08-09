@@ -8,6 +8,7 @@ local Items = ApogeePartyHealthBars_ShortcutItems
 local Cooldowns = ApogeePartyHealthBars_ActionCooldowns
 local CrowdControl = ApogeePartyHealthBars_CrowdControl
 local AssignmentSources = ApogeePartyHealthBars_ActionAssignmentSources
+local ActionHud = ApogeePartyHealthBars_ActionHud
 
 local T = {}
 ApogeePartyHealthBars.Define(
@@ -18,6 +19,7 @@ local anchors, requestLayout, syncTicker, handleCursorDrop
 local positionSecureOverlay, showSecureFrame, hideSecureFrame, setSecureMouseEnabled, deferSecureUpdate
 local icons = {}
 local dropIcon
+local sectionLabel
 local resolved = {}
 local resolvedSlots = {}
 local previousStates = {}
@@ -631,7 +633,8 @@ function T.GetLaneHeight(lane)
     if lane == "target" then return Accessory.GetHeight(count, C.SHORTCUT_COLUMNS) end
     local iconSize, iconGap, topGap = GetPlayerLaneMetrics()
     local rowCount = math.ceil(count / C.SHORTCUT_COLUMNS)
-    return rowCount * iconSize
+    local labelHeight = S.configMode and ActionHud.GetSectionLabelHeight() or 0
+    return labelHeight + rowCount * iconSize
         + math.max(0, rowCount - 1) * iconGap
         + topGap
 end
@@ -643,6 +646,10 @@ end
 function T.Layout()
     if not anchors then return end
     local lanePositions = { player = 0, target = 0 }
+    local showPlayerLabel = S.configMode == true
+        and ((visibleLaneCounts.player or 0) > 0 or ShouldShowDropTarget())
+    local playerLabelHeight = showPlayerLabel and ActionHud.GetSectionLabelHeight() or 0
+    ActionHud.SetSectionLabelVisible(sectionLabel, showPlayerLabel)
     for i = 1, MAX_DISPLAY_ICONS do
         local icon = icons[i]
         local info = resolved[i]
@@ -659,7 +666,7 @@ function T.Layout()
                 local column = lanePosition % C.SHORTCUT_COLUMNS
                 local gridRow = math.floor(lanePosition / C.SHORTCUT_COLUMNS)
                 icon:SetPoint("TOPLEFT", anchor, "TOPLEFT", column * stride,
-                    -C.SHORTCUT_TOP_GAP - gridRow * stride)
+                    -playerLabelHeight - C.SHORTCUT_TOP_GAP - gridRow * stride)
             end
             icon:Show()
             lanePositions[lane] = lanePosition + 1
@@ -675,7 +682,7 @@ function T.Layout()
             local gridRow = math.floor(lanePosition / C.SHORTCUT_COLUMNS)
             dropIcon:ClearAllPoints()
             dropIcon:SetPoint("TOPLEFT", anchors.player, "TOPLEFT", column * stride,
-                -C.SHORTCUT_TOP_GAP - gridRow * stride)
+                -playerLabelHeight - C.SHORTCUT_TOP_GAP - gridRow * stride)
             dropIcon:Show()
         else
             dropIcon:Hide()
@@ -817,6 +824,10 @@ function T.Attach(playerAnchors, callbacks)
     handleCursorDrop = callbacks and callbacks.AssignCursorDrop
     for i = 1, MAX_DISPLAY_ICONS do icons[i] = CreateIcon(anchors.player) end
     dropIcon = CreateDropIcon(anchors.player)
+    local labelWidth = C.SHORTCUT_ICON_SIZE * C.SHORTCUT_COLUMNS
+        + C.SHORTCUT_ICON_GAP * (C.SHORTCUT_COLUMNS - 1)
+    sectionLabel = ActionHud.CreateSectionLabel(anchors.player, "Shortcuts", labelWidth, "LEFT")
+    sectionLabel:SetPoint("TOPLEFT", anchors.player, "TOPLEFT", 0, 0)
 end
 
 function T.Initialize()
@@ -828,6 +839,7 @@ function T.Initialize()
 end
 
 function T.GetSlots() return GetEntries() end
+function T.GetSectionLabel() return sectionLabel end
 function T.GetSlotDisplay(slot)
     local entry = GetEntries() and GetEntries()[slot]
     if not entry then return nil, nil, false end

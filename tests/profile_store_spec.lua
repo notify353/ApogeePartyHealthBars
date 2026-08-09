@@ -20,6 +20,14 @@ ApogeePartyHealthBars_Effects = {
             if settings[canonicalKey] == nil then settings[canonicalKey] = settings[legacyKey] end
             settings[legacyKey] = nil
         end
+        if settings.targetHudPoint == nil then settings.targetHudPoint = settings.targetEffectHudPoint or settings.dotHudPoint end
+        if settings.targetHudRelPoint == nil then settings.targetHudRelPoint = settings.targetEffectHudRelPoint or settings.dotHudRelPoint end
+        if settings.targetHudX == nil then settings.targetHudX = settings.targetEffectHudX or settings.dotHudX end
+        if settings.targetHudY == nil then settings.targetHudY = settings.targetEffectHudY or settings.dotHudY end
+        for _, key in ipairs({
+            "targetEffectHudPoint", "targetEffectHudRelPoint", "targetEffectHudX", "targetEffectHudY",
+            "dotHudPoint", "dotHudRelPoint", "dotHudX", "dotHudY",
+        }) do settings[key] = nil end
         for legacyKey, canonicalKey in pairs(renamedActions) do
             if actions[canonicalKey] == nil then actions[canonicalKey] = actions[legacyKey] end
             actions[legacyKey] = nil
@@ -341,11 +349,15 @@ assert(sanitized.settings.x == nil and sanitized.settings.y == 24,
     "profile numeric normalization did not reject only non-finite values")
 assert(sanitized.settings.targetEffectRemindersEnabled == false
         and sanitized.settings.targetEffectPriority[2] == "immolate"
+        and sanitized.settings.targetHudPoint == "CENTER"
+        and sanitized.settings.targetHudRelPoint == "CENTER"
+        and sanitized.settings.targetHudX == 12
+        and sanitized.settings.targetHudY == 144
         and sanitized.settings.targetEffectHudPoint == nil
         and sanitized.settings.targetEffectHudRelPoint == nil
         and sanitized.settings.targetEffectHudX == nil
         and sanitized.settings.targetEffectHudY == nil,
-    "Target Effects policy changed or obsolete HUD coordinates survived normalization")
+    "Target HUD placement migration or Target Effects policy changed")
 assert(sanitized.settings.dungeonBoardRole == "healer"
         and sanitized.settings.dungeonBoardMode == nil
         and sanitized.settings.dungeonBoardFeedEnabled == false

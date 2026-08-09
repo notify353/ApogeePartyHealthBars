@@ -234,11 +234,11 @@ local FEATURES = {
     },
     targetHud = {
         label = "Target HUD",
-        requires = { "nameplates" },
+        requires = {},
     },
     targetEffectReminders = {
         label = "Target Effects reminders",
-        requires = { "nameplates", "harmfulAuras", "spellbook", "dotActionState" },
+        requires = { "harmfulAuras", "spellbook", "dotActionState" },
     },
 }
 

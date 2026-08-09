@@ -41,6 +41,10 @@ function Factory.Create(options)
     assert(type(options.hud.panelHeight) == "number", "bound action runtime requires a HUD panel height")
     assert(type(options.hud.totalHeight) == "number", "bound action runtime requires a HUD total height")
     assert(type(options.hud.positionIcon) == "function", "bound action runtime requires HUD positioning")
+    assert(type(options.hud.labelWidth) == "number", "bound action runtime requires a HUD label width")
+    assert(type(options.hud.positionLabel) == "function", "bound action runtime requires HUD label positioning")
+    assert(options.hud.slotLabel == nil or type(options.hud.slotLabel) == "function",
+        "bound action runtime HUD slot label must be a function")
     assert(type(options.bindings) == "table", "bound action runtime requires binding options")
     assert(type(options.allSlotsMessage) == "string", "bound action runtime requires a full-slots message")
 
@@ -63,7 +67,7 @@ function Factory.Create(options)
         Cooldowns = Cooldowns,
     })
 
-    local D, row, container
+    local D, row, container, sectionLabel
     local secureButtons, hudIcons, slotById = {}, {}, {}
     local bindingManager, pendingSecure = nil, false
     local feedbackTicker
@@ -437,6 +441,9 @@ function Factory.Create(options)
         container = CreateFrame("Frame", nil, row.btn)
         container:SetSize(HUD_PANEL_W, HUD_PANEL_H)
         container:SetPoint("TOPLEFT", row.btn, "TOPLEFT", 0, 0)
+        sectionLabel = ActionHud.CreateSectionLabel(container, options.featureLabel,
+            options.hud.labelWidth, options.hud.labelAlign)
+        options.hud.positionLabel(sectionLabel, container)
         feedbackTicker = CreateFrame("Frame")
         feedbackTicker:Hide()
         feedbackTicker:SetScript("OnUpdate", updateActivationFeedback)
@@ -444,6 +451,14 @@ function Factory.Create(options)
             local boundSlot = slot
             local icon = createHudIcon(container)
             options.hud.positionIcon(icon, container, slot, hudPosition[slot.id])
+            if options.hud.slotLabel then
+                local keyLabel = icon:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
+                keyLabel:SetPoint("TOPLEFT", icon, "TOPLEFT", 3, -2)
+                keyLabel:SetTextColor(1, 0.82, 0)
+                keyLabel:SetText(tostring(options.hud.slotLabel(slot) or ""))
+                keyLabel:Hide()
+                icon.keyLabel = keyLabel
+            end
             icon:SetScript("OnEnter", function(self) showActionTooltip(boundSlot, self) end)
             icon:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
             icon:SetScript("OnMouseUp", function(_, mouseButton)
@@ -920,19 +935,27 @@ function Factory.Create(options)
         end
         if not container or not row then return end
         topOffset = math.max(0, tonumber(topOffset) or 0)
+        local labelVisible = S.configMode == true
+        local labelHeight = labelVisible and ActionHud.GetSectionLabelHeight() or 0
         container:ClearAllPoints()
-        container:SetPoint("TOPLEFT", row.btn, "TOPLEFT", 0, -topOffset)
+        container:SetPoint("TOPLEFT", row.btn, "TOPLEFT", 0, -(topOffset + labelHeight))
+        ActionHud.SetSectionLabelVisible(sectionLabel, labelVisible)
+        for _, icon in pairs(hudIcons) do
+            if icon.keyLabel then icon.keyLabel:SetShown(labelVisible) end
+        end
         container:Show()
         W.Refresh()
         W.RefreshSecureActions()
     end
 
     function W.GetHeight(unitId)
-        return isSupported() and unitId == "player" and HUD_HEIGHT or 0
+        if not isSupported() or unitId ~= "player" then return 0 end
+        return HUD_HEIGHT + (S.configMode and ActionHud.GetSectionLabelHeight() or 0)
     end
 
     function W.GetIconHeight(unitId)
-        return isSupported() and unitId == "player" and HUD_ICON_HEIGHT or 0
+        if not isSupported() or unitId ~= "player" then return 0 end
+        return HUD_ICON_HEIGHT + (S.configMode and ActionHud.GetSectionLabelHeight() or 0)
     end
 
     function W.GetWidth(unitId)
@@ -953,6 +976,7 @@ function Factory.Create(options)
     W.GetSecureButton = function(slotId) return secureButtons[slotId] end
     W.GetHudIcon = function(slotId) return hudIcons[slotId] end
     W.GetHudContainer = function() return container end
+    W.GetSectionLabel = function() return sectionLabel end
     W.GetHudCastButton = function(slotId) return hudIcons[slotId] and hudIcons[slotId].castButton end
     W.GetBindingManager = function() return bindingManager end
     W.GetLastActivation = function() return feedbackSlotId, feedbackUntil end

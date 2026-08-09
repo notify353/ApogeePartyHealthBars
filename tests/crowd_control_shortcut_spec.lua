@@ -63,6 +63,16 @@ local function widget(shown)
     return value
 end
 
+ApogeePartyHealthBars_ActionHud = {
+    CreateSectionLabel = function(_, text, width, justify)
+        local label = widget(false)
+        label.text, label.width, label.justify = text, width, justify
+        return label
+    end,
+    SetSectionLabelVisible = function(label, visible) label:SetShown(visible) end,
+    GetSectionLabelHeight = function() return 16 end,
+}
+
 UIParent = widget()
 function CreateFrame(frameType, _, parent, template)
     local frame = widget()

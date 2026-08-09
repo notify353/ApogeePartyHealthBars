@@ -26,6 +26,7 @@ local function widget()
     function value:SetColorTexture(r, g, b, a) self.color = { r, g, b, a } end
     function value:SetCooldown(start, duration) self.cooldown = { start, duration } end
     function value:SetText(text) self.text = text end
+    function value:SetJustifyH(justify) self.justify = justify end
     function value:SetAlpha(alpha) self.alpha = alpha end
     function value:EnableMouse(enabled) self.mouseEnabled = enabled end
     function value:CreateTexture() return widget() end
@@ -263,6 +264,20 @@ wheel.Layout()
 assert(saveCount == 1, "first-run claim did not persist bindings")
 assert(wheel.GetHeight("player") == 169,
     "wheel HUD did not reserve a gap before the Shortcut Bar icons")
+ApogeePartyHealthBars_S.configMode = true
+wheel.Layout()
+local wheelLabel = wheel.GetSectionLabel()
+assert(wheel.GetHeight("player") == 185 and wheel.GetIconHeight("player") == 175
+        and wheelLabel:IsShown() and wheelLabel.label.text == "Mouse Wheel"
+        and wheelLabel.label.justify == "RIGHT"
+        and wheelLabel.point[1] == "BOTTOMRIGHT" and wheelLabel.point[4] == 184
+        and wheel.GetHudContainer().point[5] == -16,
+    "settings-open Wheel did not show and reserve its right-aligned label band")
+ApogeePartyHealthBars_S.configMode = false
+wheel.Layout()
+assert(wheel.GetHeight("player") == 169 and not wheelLabel:IsShown()
+        and wheel.GetHudContainer().point[5] == 0,
+    "closing settings did not restore Wheel gameplay geometry")
 for _, slot in ipairs(data.SLOTS) do
     assert(bindings[slot.key] == "CLICK " .. slot.buttonName .. ":LeftButton",
         "first-run startup did not claim " .. slot.key)

@@ -542,6 +542,15 @@ assert(guildWho.enabled and guildWhisper.enabled
             == "Open a prefilled, editable whisper to OfficialLeader-Realm.",
     "official request did not retain Who and Whisper actions")
 
+snapshot[1].name = "|Kk5|k"
+snapshot[1].comment = "|Kq9|k"
+UI.Refresh()
+assert(guildRequestFrame.children[5].text == "|Kk5|k — |Kq9|k",
+    "official Group Finder kstrings were escaped into visible privacy tokens")
+guildRequestFrame.scripts.OnEnter(guildRequestFrame)
+assert(tooltipArguments[1] == "Group note:\n|Kk5|k — |Kq9|k",
+    "official Group Finder tooltip escaped protected kstrings")
+
 snapshot[1].name = nil
 snapshot[1].comment = nil
 UI.Refresh()

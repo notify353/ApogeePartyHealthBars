@@ -1,22 +1,44 @@
 dofile("Core/Namespace.lua")
+dofile("Actions/BoundActionDragController.lua")
 dofile("Actions/ActionCoordinator.lua")
 
 local configured, initialized = {}, nil
 local manager1, manager2 = {}, {}
-local function feature(manager, slots)
+local function feature(manager, slots, slotIds)
+    local values = slots or {}
+    local known, refreshes = {}, 0
+    for _, slotId in ipairs(slotIds or {}) do known[slotId] = true end
     return {
         Configure = function(deps) configured[#configured + 1] = deps end,
         GetBindingManager = function() return manager end,
         GetActiveLayoutKey = function() return "default" end,
-        GetSlots = function() return slots or {} end,
+        GetSlots = function() return values end,
+        GetSlot = function(layout, slotId)
+            if layout == "default" then return values[slotId] end
+        end,
+        CanMoveSlot = function(layout, slotId)
+            return layout == "default" and known[slotId] == true
+        end,
+        SetSlotForMove = function(layout, slotId, entry)
+            if layout ~= "default" or not known[slotId] then return false end
+            values[slotId] = entry
+            return true
+        end,
+        RefreshAfterMove = function() refreshes = refreshes + 1 end,
+        GetRefreshCount = function() return refreshes end,
     }
 end
 
-local wheel = feature(manager1, { one = { kind = "item", itemId = 20 } })
-local keyboard = feature(nil)
-local buttons = feature(manager2)
+local wheel = feature(manager1,
+    { one = { kind = "item", itemId = 20 } }, { "one", "empty" })
+local keyboard = feature(nil,
+    { key = { kind = "spell", spellId = 100 } }, { "key" })
+local buttons = feature(manager2,
+    { button = { kind = "item", itemId = 30 } }, { "button" })
 local consumableDeps
 local bindingCalls = {}
+local inCombat = false
+function InCombatLockdown() return inCombat end
 local deps = {
     ShortcutBar = { GetSlots = function() return { { kind = "item", itemId = 10 } } end },
     KeyboardActions = keyboard,
@@ -68,5 +90,35 @@ assert(select(2, coordinator.ClaimBoundActionBindings()) == "claimed")
 assert(select(2, coordinator.ReleaseBoundActionBindings()) == "released")
 assert(select(2, coordinator.ReconcileBoundActionBindings()) == "reconciled")
 
-print("PASS action coordinator")
+local wheelEntry, keyboardEntry = wheel.GetSlot("default", "one"),
+    keyboard.GetSlot("default", "key")
+assert(coordinator.MoveBoundAction(
+    { feature = "mouseWheel", layoutKey = "default", slotId = "one" },
+    { feature = "keyboard", layoutKey = "default", slotId = "key" }))
+assert(wheel.GetSlot("default", "one") == keyboardEntry
+        and keyboard.GetSlot("default", "key") == wheelEntry,
+    "coordinator did not swap complete actions across live bound-action HUDs")
+assert(wheel.GetRefreshCount() == 1 and keyboard.GetRefreshCount() == 1,
+    "cross-feature movement did not refresh each affected family exactly once")
 
+assert(coordinator.MoveBoundAction(
+    { feature = "keyboard", layoutKey = "default", slotId = "key" },
+    { feature = "mouseWheel", layoutKey = "default", slotId = "empty" }))
+assert(keyboard.GetSlot("default", "key") == nil
+        and wheel.GetSlot("default", "empty") == wheelEntry,
+    "coordinator did not move an action into an empty bound-action slot")
+
+local beforeCombat = buttons.GetSlot("default", "button")
+inCombat = true
+assert(not coordinator.MoveBoundAction(
+    { feature = "mouseButtons", layoutKey = "default", slotId = "button" },
+    { feature = "mouseWheel", layoutKey = "default", slotId = "one" })
+        and buttons.GetSlot("default", "button") == beforeCombat,
+    "combat movement changed a configured bound action")
+inCombat = false
+assert(not coordinator.MoveBoundAction(
+    { feature = "shortcut", layoutKey = "default", slotId = "one" },
+    { feature = "keyboard", layoutKey = "default", slotId = "key" }),
+    "coordinator accepted a non-bound action family")
+
+print("PASS action coordinator")

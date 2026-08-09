@@ -1,6 +1,7 @@
 dofile("Core/Namespace.lua")
 dofile("Actions/BoundActionEvaluator.lua")
 dofile("Actions/BoundActionView.lua")
+dofile("Actions/BoundActionDragController.lua")
 dofile("Actions/BoundActionSecureController.lua")
 
 ApogeePartyHealthBars_C = {

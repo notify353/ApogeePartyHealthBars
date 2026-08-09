@@ -66,6 +66,7 @@ Actions/BoundActionBindings.lua
 Actions/ActionHud.lua
 Actions/BoundActionEvaluator.lua
 Actions/BoundActionView.lua
+Actions/BoundActionDragController.lua
 Actions/BoundActionSecureController.lua
 Actions/BoundActionRuntime.lua
 Actions/MouseWheel/MouseWheelLayouts.lua

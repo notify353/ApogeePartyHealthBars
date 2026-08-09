@@ -4,7 +4,10 @@ ApogeePartyHealthBars.Define("Actions", "BoundActionSecureController", S)
 function S.CreateHudButton(icon, slot, callbacks)
     local C = assert(ApogeePartyHealthBars_C,
         "BoundActionSecureController requires constants")
-    for _, key in ipairs({ "ShowTooltip", "OnMouseDown", "OnReceiveDrag" }) do
+    for _, key in ipairs({
+        "ShowTooltip", "OnLeave", "OnMouseDown", "OnMouseUp", "OnDragStart",
+        "OnDragStop", "OnReceiveDrag",
+    }) do
         assert(type(callbacks[key]) == "function",
             "BoundActionSecureController missing callback: " .. key)
     end
@@ -12,10 +15,18 @@ function S.CreateHudButton(icon, slot, callbacks)
         "SecureActionButtonTemplate,SecureHandlerStateTemplate")
     button:SetFrameStrata(C.SECURE_OVERLAY_STRATA)
     button:SetFrameLevel(103)
-    button:RegisterForClicks("LeftButtonUp")
+    -- Match Blizzard's locked action-button gesture: Shift-left-drag edits,
+    -- while the ordinary secure action remains release-triggered.
+    button:SetAttribute("useOnKeyDown", false)
+    button:SetAttribute("shift-type1", "")
+    button:RegisterForClicks("AnyUp", "LeftButtonDown")
+    button:RegisterForDrag("LeftButton")
     button:SetScript("OnEnter", function(self) callbacks.ShowTooltip(self) end)
-    button:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
+    button:SetScript("OnLeave", callbacks.OnLeave)
     button:SetScript("OnMouseDown", callbacks.OnMouseDown)
+    button:SetScript("OnMouseUp", callbacks.OnMouseUp)
+    button:SetScript("OnDragStart", callbacks.OnDragStart)
+    button:SetScript("OnDragStop", callbacks.OnDragStop)
     button:SetScript("OnReceiveDrag", callbacks.OnReceiveDrag)
     button:Hide()
     icon.castButton = button

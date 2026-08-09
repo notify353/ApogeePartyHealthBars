@@ -11,6 +11,8 @@ local BoundActionEvaluator = ApogeePartyHealthBars.Require(
     "Actions", "BoundActionEvaluator")
 local SecureController = ApogeePartyHealthBars.Require(
     "Actions", "BoundActionSecureController")
+local BoundActionDrag = ApogeePartyHealthBars.Require(
+    "Actions", "BoundActionDragController")
 local BoundBindings = ApogeePartyHealthBars_BoundActionBindings
 local ActionHud = ApogeePartyHealthBars_ActionHud
 local ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities
@@ -341,13 +343,44 @@ function Factory.Create(options)
     end
 
     local function createHudCastButton(icon, slot)
-        return SecureController.CreateHudButton(icon, slot, {
-            ShowTooltip = function(self) showActionTooltip(slot, self) end,
-            OnMouseDown = function()
+        local function descriptor()
+            return {
+                feature = options.featureId,
+                layoutKey = W.GetActiveLayoutKey(),
+                slotId = slot.id,
+            }
+        end
+        local button = SecureController.CreateHudButton(icon, slot, {
+            ShowTooltip = function(self)
+                showActionTooltip(slot, self)
+                BoundActionDrag.RefreshHoverCursor()
+            end,
+            OnLeave = function()
+                if GameTooltip then GameTooltip:Hide() end
+                BoundActionDrag.RefreshHoverCursor()
+            end,
+            OnMouseDown = function(_, mouseButton)
+                if mouseButton == "LeftButton" and IsShiftKeyDown
+                        and IsShiftKeyDown() then return end
                 local entry = W.GetSlot(W.GetActiveLayoutKey(), slot.id)
                 if hasMacro(entry) then showActivationFeedback(slot) end
             end,
+            OnMouseUp = function()
+                if BoundActionDrag.IsActive() then BoundActionDrag.Finish() end
+            end,
+            OnDragStart = function()
+                if not IsShiftKeyDown or not IsShiftKeyDown() then return end
+                local entry = W.GetSlot(W.GetActiveLayoutKey(), slot.id)
+                if entry then BoundActionDrag.Begin(descriptor()) end
+            end,
+            OnDragStop = function()
+                if BoundActionDrag.IsActive() then BoundActionDrag.Finish() end
+            end,
             OnReceiveDrag = function()
+                if BoundActionDrag.IsActive() then
+                    BoundActionDrag.DropOn(descriptor())
+                    return
+                end
                 local cursorType = GetCursorInfo and GetCursorInfo()
                 if AssignmentSources.CanAcceptCursor(cursorType)
                     and D and D.AssignCursorDrop then
@@ -355,6 +388,12 @@ function Factory.Create(options)
                 end
             end,
         })
+        BoundActionDrag.RegisterDestination(button, descriptor, function()
+            local layoutKey = W.GetActiveLayoutKey()
+            return W.CanMoveSlot(layoutKey, slot.id)
+                and W.GetSlot(layoutKey, slot.id) ~= nil
+        end)
+        return button
     end
 
     function W.Configure(deps)
@@ -621,6 +660,25 @@ function Factory.Create(options)
         return true, otherId
     end
 
+    function W.CanMoveSlot(layoutKey, slotId)
+        return isSupported() and W.CanEditLayout(layoutKey)
+            and WL.IsKnownLayout(layoutKey) and slotById[slotId] ~= nil
+    end
+
+    function W.SetSlotForMove(layoutKey, slotId, entry)
+        if not W.CanMoveSlot(layoutKey, slotId) then return false end
+        if not WL.SetSlot(layoutKey, slotId, entry) then return false end
+        clearSlotFeedback(slotId)
+        return true
+    end
+
+    function W.RefreshAfterMove()
+        W.RefreshSecureActions()
+        W.Refresh()
+        requestLayout()
+        notifyConsumableAssignmentsChanged()
+    end
+
     function W.GetConflicts()
         return bindingManager and bindingManager.GetConflicts() or {}
     end
@@ -730,6 +788,7 @@ function Factory.Create(options)
     end
 
     function W.OnCombatStarted()
+        BoundActionDrag.Cancel()
         if GameTooltip then GameTooltip:Hide() end
     end
 

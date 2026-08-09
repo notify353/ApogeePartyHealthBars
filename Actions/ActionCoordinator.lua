@@ -3,6 +3,8 @@
 -- existing facades; this module owns only shared wiring and fan-in policy.
 local C = {}
 ApogeePartyHealthBars.Define("Actions", "ActionCoordinator", C)
+local BoundActionDrag = ApogeePartyHealthBars.Require(
+    "Actions", "BoundActionDragController")
 
 local D
 
@@ -54,6 +56,57 @@ local function boundActionsAvailable()
     return D.ClientCapabilities.IsFeatureAvailable("boundActions")
 end
 
+local function boundFeature(feature)
+    if feature == "keyboard" then return D.KeyboardActions end
+    if feature == "mouseWheel" then return D.MouseWheelActions end
+    if feature == "mouseButtons" then return D.MouseButtonActions end
+end
+
+function C.MoveBoundAction(source, destination)
+    if not D then return false, "Actions are not initialized." end
+    if InCombatLockdown and InCombatLockdown() then
+        return false, "Leave combat before moving this action."
+    end
+    if not boundActionsAvailable() then
+        return false, D.ClientCapabilities.GetFeatureReason("boundActions")
+            or "Bound actions are unavailable."
+    end
+    local sourceFeature = type(source) == "table" and boundFeature(source.feature)
+    local destinationFeature = type(destination) == "table"
+        and boundFeature(destination.feature)
+    if not sourceFeature or not destinationFeature
+            or not sourceFeature.CanMoveSlot
+            or not destinationFeature.CanMoveSlot
+            or not sourceFeature.CanMoveSlot(source.layoutKey, source.slotId)
+            or not destinationFeature.CanMoveSlot(
+                destination.layoutKey, destination.slotId) then
+        return false, "Unknown action destination."
+    end
+    local sourceEntry = sourceFeature.GetSlot(source.layoutKey, source.slotId)
+    if not sourceEntry then return false, "That action is empty." end
+    if source.feature == destination.feature
+            and source.layoutKey == destination.layoutKey
+            and source.slotId == destination.slotId then
+        return true, destination.slotId
+    end
+    local destinationEntry = destinationFeature.GetSlot(
+        destination.layoutKey, destination.slotId)
+    if not sourceFeature.SetSlotForMove(
+            source.layoutKey, source.slotId, destinationEntry) then
+        return false, "Unable to move that action."
+    end
+    if not destinationFeature.SetSlotForMove(
+            destination.layoutKey, destination.slotId, sourceEntry) then
+        sourceFeature.SetSlotForMove(source.layoutKey, source.slotId, sourceEntry)
+        return false, "Unable to move that action."
+    end
+    sourceFeature.RefreshAfterMove()
+    if destinationFeature ~= sourceFeature then
+        destinationFeature.RefreshAfterMove()
+    end
+    return true, destination.slotId
+end
+
 function C.ClaimBoundActionBindings()
     if not boundActionsAvailable() then
         return true, "unsupported",
@@ -83,6 +136,7 @@ function C.Initialize(deps)
             "ActionCoordinator missing dependency: " .. key)
     end
     D = deps
+    BoundActionDrag.Configure(C.MoveBoundAction)
 
     local common = {
         Print = D.Print,

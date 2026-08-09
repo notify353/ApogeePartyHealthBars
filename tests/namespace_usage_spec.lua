@@ -3,6 +3,7 @@ local files = {
     "Actions/ActionCoordinator.lua",
     "Actions/BindingController.lua",
     "Actions/BoundActionEvaluator.lua",
+    "Actions/BoundActionDragController.lua",
     "Actions/BoundActionRuntime.lua",
     "Actions/BoundActionSecureController.lua",
     "Actions/BoundActionView.lua",
@@ -30,4 +31,3 @@ for _, path in ipairs(files) do
 end
 
 print("PASS namespace usage guard")
-

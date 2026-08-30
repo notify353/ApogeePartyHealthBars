@@ -1,17 +1,5 @@
 ApogeePartyHealthBars_C = { SHORTCUT_ICON_SIZE = 24, SHORTCUT_ICON_GAP = 3 }
 ApogeePartyHealthBars_S = { configMode = false, sv = { enabled = true } }
-ApogeePartyHealthBars_UIHelpers = { ShowSpellTooltip = function() end }
-
-local registered
-local enabledCalls = {}
-ApogeePartyHealthBars_TargetNameplateHud = {
-    RegisterSurface = function(key, frame, order, gap, layoutRole)
-        registered = { key = key, frame = frame, order = order, gap = gap, layoutRole = layoutRole }
-    end,
-    SetSurfaceEnabled = function(key, enabled)
-        enabledCalls[#enabledCalls + 1] = { key, enabled }
-    end,
-}
 
 local function widget(parent, frameType, template)
     local value = {
@@ -24,10 +12,16 @@ local function widget(parent, frameType, template)
     function value:SetScript(name, callback) self.scripts[name] = callback end
     function value:EnableMouse(enabled) self.mouseEnabled = enabled end
     function value:CreateTexture() return widget(self) end
-    function value:CreateFontString() return widget(self) end
+    function value:CreateFontString(_, _, template)
+        local font = widget(self)
+        font.fontTemplate = template
+        return font
+    end
     function value:SetAllPoints() end
     function value:SetTexture(texture) self.texture = texture end
+    function value:SetTexCoord(...) self.texCoord = { ... } end
     function value:SetText(text) self.text = text end
+    function value:SetJustifyH(justify) self.justifyH = justify end
     function value:SetShadowOffset() end
     function value:SetCooldown(start, duration) self.cooldownStart, self.cooldownDuration = start, duration end
     function value:SetDrawEdge() end
@@ -40,6 +34,11 @@ local function widget(parent, frameType, template)
 end
 
 UIParent = widget()
+local threatFrame, playerStatusAnchor = widget(UIParent), widget(UIParent)
+ApogeePartyHealthBars_ThreatAwareness = {
+    GetFrame = function() return threatFrame end,
+    GetPlayerStatusAnchor = function() return playerStatusAnchor end,
+}
 function CreateFrame(frameType, _, parent, template) return widget(parent, frameType, template) end
 local now = 100
 function GetTime() return now end
@@ -48,11 +47,11 @@ dofile("Reminders/TargetEffects/TargetEffectHud.lua")
 local hud = ApogeePartyHealthBars_TargetEffectHud
 hud.Initialize()
 local row = hud.GetAnchor()
-assert(registered and registered.key == "targetEffects" and registered.frame == row
-        and registered.order == 2 and registered.gap == 4
-        and registered.layoutRole == "leftAccessory"
-        and row.width == 1 and row.height == 24 and row.mouseEnabled == false,
-    "Target Effects did not register a passive upper nameplate row")
+assert(row.parent == threatFrame and row.width == 1 and row.height == 18
+        and row.mouseEnabled == false and row.points[1][1] == "RIGHT"
+        and row.points[1][2] == playerStatusAnchor and row.points[1][3] == "LEFT"
+        and row.points[1][4] == -4,
+    "Target Effects did not attach beside the Threat Control player bars")
 
 hud.SetSuggestions({
     { key = "first", spellId = 10, icon = 1000 },
@@ -60,14 +59,16 @@ hud.SetSuggestions({
         aura = { duration = 12, expirationTime = 105 } },
 })
 local icons = hud.GetIcons()
-assert(row.width == 51 and #icons == 2
+assert(row.width == 38 and #icons == 2
         and icons[1].points[1][1] == "RIGHT" and icons[1].points[1][4] == 0
-        and icons[2].points[1][1] == "RIGHT" and icons[2].points[1][4] == -27
+        and icons[2].points[1][1] == "RIGHT" and icons[2].points[1][4] == -20
         and icons[1].mouseEnabled == false and icons[2].mouseEnabled == false
+        and icons[1].texture.texCoord[1] == 0.07
+        and icons[2].count.fontTemplate == "GameFontHighlight"
+        and icons[2].count.points[1][1] == "CENTER"
         and icons[2].cooldown.cooldownStart == 93
         and icons[2].cooldown.cooldownDuration == 12
-        and icons[2].count.text == "5"
-        and enabledCalls[#enabledCalls][2] == true,
+        and icons[2].count.text == "5" and row.shown,
     "live reminders lost ordering, cooldown, countdown, or click-through behavior")
 
 now = 104.2
@@ -75,45 +76,48 @@ hud.Tick()
 assert(icons[2].count.text == "1", "live countdown did not advance")
 ApogeePartyHealthBars_S.configMode = true
 hud.RefreshVisibility()
-assert(enabledCalls[#enabledCalls][2] == false,
-    "opening Settings did not suppress the live nameplate row")
+assert(not row.shown,
+    "opening Settings showed an empty reminder preview")
 ApogeePartyHealthBars_S.configMode = false
 hud.RefreshVisibility()
-assert(enabledCalls[#enabledCalls][2] == true,
+assert(row.shown,
     "closing Settings did not restore due reminders")
 ApogeePartyHealthBars_S.sv.enabled = false
 hud.RefreshVisibility()
-assert(enabledCalls[#enabledCalls][2] == false,
+assert(not row.shown,
     "globally disabled addon re-enabled a retained Target Effects row")
 ApogeePartyHealthBars_S.sv.enabled = true
 hud.RefreshVisibility()
-assert(enabledCalls[#enabledCalls][2] == true,
+assert(row.shown,
     "re-enabled addon did not restore retained due reminders")
 
-local preview = hud.CreateConfigurationPreview(UIParent)
 hud.SetConfigurationPreview({
     { key = "one", label = "One", spellId = 1, icon = 11, preview = true },
     { key = "two", label = "Two", spellId = 2, icon = 22, preview = true },
     { key = "three", label = "Three", spellId = 3, icon = 33, preview = true },
 })
-assert(preview.width == 78 and preview.height == 24 and preview.shown
-        and #preview.icons == 3 and preview.icons[1].mouseEnabled == true
-        and preview.icons[1].scripts.OnDragStart == nil,
-    "inline preview was not compact, interactive for tooltips, and non-draggable")
+ApogeePartyHealthBars_S.configMode = true
+hud.RefreshVisibility()
+assert(row.width == 58 and row.height == 18 and row.shown
+        and #icons == 3 and icons[1].mouseEnabled == false
+        and icons[1].scripts.OnDragStart == nil,
+    "live configuration preview was not compact and click-through")
+ApogeePartyHealthBars_S.configMode = false
+hud.RefreshVisibility()
 
 local maximum = {}
 for index = 1, 6 do
     maximum[index] = { key = tostring(index), spellId = index, icon = index }
 end
 hud.SetSuggestions(maximum)
-assert(row.width == 159 and #hud.GetIcons() == 6,
-    "six-effect maximum did not remain aligned with the 156px marker row")
+assert(row.width == 118 and #hud.GetIcons() == 6,
+    "six-effect maximum did not retain the enemy debuff-lane geometry")
 
 hud.SetSuggestions({})
 assert(row.width == 1 and not icons[1].shown and not icons[2].shown
-        and enabledCalls[#enabledCalls][2] == false,
-    "clearing reminders did not collapse and disable the nameplate row")
+        and not row.shown,
+    "clearing reminders did not collapse and hide the Threat Control reminder row")
 assert(hud.ResetPosition == nil and hud.RestorePosition == nil and hud.SetUnlocked == nil,
     "retired movable-HUD APIs remained exposed")
 
-print("PASS target-effect nameplate row")
+print("PASS Threat Control maintained-effect reminder row")

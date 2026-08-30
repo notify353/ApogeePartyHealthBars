@@ -12,6 +12,11 @@ local MARKER_WIDTH, MARKER_GAP, CENTER_GAP = 14, 5, 96
 local WIDTH = ROW_INSET * 2 + NAME_LEFT + NAME_WIDTH + CENTER_GAP
     + MARKER_WIDTH + MARKER_GAP + CONTROL_BAR_WIDTH + CONTROL_RIGHT
 local ROW_HEIGHT, FOOTER_HEIGHT = 24, 18
+local FIXED_ANCHOR_Y = 55
+local PLAYER_HEALTH_HEIGHT, PLAYER_POWER_HEIGHT = 12, 5
+local PLAYER_BAR_GAP, PLAYER_SECTION_GAP = 2, 5
+local PLAYER_STATUS_HEIGHT = PLAYER_HEALTH_HEIGHT + PLAYER_BAR_GAP + PLAYER_POWER_HEIGHT
+local PLAYER_SECTION_HEIGHT = PLAYER_STATUS_HEIGHT + PLAYER_SECTION_GAP
 local QUEUE_LIMIT = 5
 local DEBUFF_ICON_SIZE, DEBUFF_ICON_GAP, DEBUFF_LANE_GAP = 18, 2, 6
 local DEBUFF_LIMIT = 6
@@ -22,10 +27,10 @@ local COLORS = {
 }
 local TARGET_COLOR = { 0.38, 0.72, 0.92 }
 local TARGET_INDICATOR_WIDTH = 3
-local HEALTH_COLOR = { 0.18, 0.82, 0.30 }
 local CAST_COLOR = { 1.00, 0.68, 0.12 }
 local PROTECTED_CAST_COLOR = { 0.58, 0.58, 0.62 }
-local D, frame, coverage
+local D, frame, overflowLabel, playerStatusAnchor, playerHealthFill, playerPowerFill
+local playerHealthBar, playerPowerBar
 local rows = {}
 local queueSlots = {}
 local previewing = false
@@ -33,6 +38,10 @@ local observing = false
 local previewCastEpoch
 
 local function Saved() return S.sv or {} end
+local function SetHealthyHealthColor(texture)
+    texture:SetColorTexture(D.UnitBar.GetHealthColor(1))
+end
+
 local function IsEnabled()
     local saved = Saved()
     return saved.enabled ~= false
@@ -56,9 +65,9 @@ end
 local function CreateRow(index)
     local row = CreateFrame("Frame", nil, frame)
     row:SetPoint("TOPLEFT", frame, "TOPLEFT", ROW_INSET,
-        -((index - 1) * (ROW_HEIGHT + ROW_GAP)))
+        -(PLAYER_SECTION_HEIGHT + (index - 1) * (ROW_HEIGHT + ROW_GAP)))
     row:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -ROW_INSET,
-        -((index - 1) * (ROW_HEIGHT + ROW_GAP)))
+        -(PLAYER_SECTION_HEIGHT + (index - 1) * (ROW_HEIGHT + ROW_GAP)))
     row:SetHeight(ROW_HEIGHT)
 
     local rail = row:CreateTexture(nil, "ARTWORK")
@@ -84,7 +93,7 @@ local function CreateRow(index)
     statusFill:SetPoint("TOPLEFT", statusBar, "TOPLEFT", 0, 0)
     statusFill:SetPoint("BOTTOMLEFT", statusBar, "BOTTOMLEFT", 0, 0)
     statusFill:SetWidth(0)
-    statusFill:SetColorTexture(HEALTH_COLOR[1], HEALTH_COLOR[2], HEALTH_COLOR[3], 1)
+    SetHealthyHealthColor(statusFill)
 
     local controlBar = CreateFrame("Frame", nil, row)
     controlBar:SetPoint("TOPRIGHT", row, "TOPRIGHT", -CONTROL_RIGHT, -1)
@@ -137,6 +146,46 @@ local function CreateRow(index)
     row.debuffIcons, row.debuffOverflow = debuffIcons, debuffOverflow
     rows[index] = row
     return row
+end
+
+function A.GetPlayerStatusDisplay(health, healthMaximum, healthValid, channels)
+    local healthProgress
+    healthMaximum = tonumber(healthMaximum)
+    if healthValid == true and healthMaximum and healthMaximum > 0 then
+        healthProgress = Clamp((tonumber(health) or 0) / healthMaximum, 0, 1)
+    end
+    channels = channels or {}
+    local channel = channels[#channels]
+    local powerMaximum = tonumber(channel and channel.maximum)
+    local powerProgress
+    if powerMaximum and powerMaximum > 0 then
+        powerProgress = Clamp((tonumber(channel.value) or 0) / powerMaximum, 0, 1)
+    end
+    return healthProgress, powerProgress, channel
+end
+
+local function RenderPlayerStatus()
+    if not playerHealthBar then return end
+    local health, healthMaximum, healthValid
+    local channels
+    if previewing then
+        health, healthMaximum, healthValid = 72, 100, true
+        channels = { { powerType = 0, powerToken = "MANA", value = 58, maximum = 100 } }
+    else
+        health, healthMaximum, healthValid = D.UnitAPI.GetHealth("player")
+        channels = D.UnitAPI.GetPowerChannels("player")
+    end
+    local healthProgress, powerProgress, channel = A.GetPlayerStatusDisplay(
+        health, healthMaximum, healthValid, channels)
+    playerHealthFill:SetWidth(CONTROL_BAR_WIDTH * (healthProgress or 0))
+    playerHealthFill:SetColorTexture(D.UnitBar.GetHealthColor(healthProgress))
+    playerHealthBar:SetShown(healthProgress ~= nil)
+    playerPowerFill:SetWidth(CONTROL_BAR_WIDTH * (powerProgress or 0))
+    if channel and D.UnitAPI.GetPowerColor then
+        playerPowerFill:SetColorTexture(D.UnitAPI.GetPowerColor(
+            channel.powerType, channel.powerToken))
+    end
+    playerPowerBar:SetShown(powerProgress ~= nil)
 end
 
 function A.IsCurrentTarget(enemy, currentTargetGuid)
@@ -249,11 +298,12 @@ local function RenderStatusBar(row, enemy, now)
     row.statusBar:SetShown(progress ~= nil)
     if progress == nil then return false end
     row.statusFill:SetWidth(CONTROL_BAR_WIDTH * progress)
-    local color = HEALTH_COLOR
     if castProgress ~= nil then
-        color = notInterruptible and PROTECTED_CAST_COLOR or CAST_COLOR
+        local color = notInterruptible and PROTECTED_CAST_COLOR or CAST_COLOR
+        row.statusFill:SetColorTexture(color[1], color[2], color[3], 1)
+    else
+        SetHealthyHealthColor(row.statusFill)
     end
-    row.statusFill:SetColorTexture(color[1], color[2], color[3], 1)
     return castProgress ~= nil
 end
 
@@ -477,15 +527,9 @@ function A.ReconcileQueue(snapshot, previousSlots)
     return presentation
 end
 
-function A.GetFooterText(snapshot, presentation)
-    snapshot = snapshot or {}
+function A.GetFooterText(_, presentation)
     local overflow = tonumber(presentation and presentation.overflow) or 0
-    if overflow > 0 then
-        return "+" .. overflow .. " MORE"
-            .. (snapshot.limitedCoverage and "  |  LIMITED COVERAGE" or "")
-    end
-    return snapshot.limitedCoverage
-        and "LIMITED COVERAGE  |  Enable enemy nameplates" or ""
+    return overflow > 0 and ("+" .. overflow .. " MORE") or ""
 end
 
 local function Render(snapshot, presentation)
@@ -493,8 +537,9 @@ local function Render(snapshot, presentation)
     snapshot = snapshot or { enemies = {}, total = 0, limitedCoverage = true }
     presentation = presentation or A.ReconcileQueue(snapshot, {})
     local footerText = A.GetFooterText(snapshot, presentation)
-    coverage:SetText(footerText)
-    local currentTargetGuid = not previewing and UnitGUID and UnitGUID("target") or nil
+    overflowLabel:SetText(footerText)
+    RenderPlayerStatus()
+    local currentTargetGuid = not previewing and D.UnitAPI.GetGUID("target") or nil
     local now
     local highestSlot = 0
     for index = 1, QUEUE_LIMIT do
@@ -509,12 +554,16 @@ local function Render(snapshot, presentation)
     end
     local displayedRows = math.max(highestSlot, previewing and 1 or 0)
     local hasFooter = footerText ~= ""
-    local height = displayedRows * (ROW_HEIGHT + ROW_GAP)
+    local height = PLAYER_SECTION_HEIGHT + displayedRows * (ROW_HEIGHT + ROW_GAP)
         + (hasFooter and FOOTER_HEIGHT or 5)
     frame:SetSize(WIDTH, height)
-    local shouldShow = previewing or (IsEnabled() and not S.configMode
-        and (snapshot.total or 0) > 0)
-    frame:SetShown(shouldShow)
+    frame:SetShown(A.ShouldShow())
+end
+
+function A.RefreshPlayer()
+    if not frame or not frame:IsShown() then return false end
+    RenderPlayerStatus()
+    return true
 end
 
 
@@ -570,6 +619,11 @@ function A.Refresh()
     if previewing then
         snapshot = PreviewSnapshot()
         presentation = A.ReconcileQueue(snapshot, {})
+    elseif not A.ShouldObserveThreat() then
+        if observing then D.Observer.ResetHistory(); observing = false end
+        queueSlots = {}
+        snapshot = EmptySnapshot(false)
+        presentation = A.ReconcileQueue(snapshot, {})
     else
         snapshot = D.Observer.Refresh()
         observing = true
@@ -582,6 +636,14 @@ function A.Refresh()
 end
 
 function A.IsActive() return IsEnabled() or previewing end
+
+function A.ShouldShow()
+    return previewing or (IsEnabled() and not S.configMode)
+end
+
+function A.ShouldObserveThreat()
+    return previewing or D.IsInCombat() == true
+end
 
 function A.SetPreview(value)
     A.Build()
@@ -602,14 +664,44 @@ function A.Build()
     if frame then return frame end
     frame = CreateFrame("Frame", "ApogeePartyHealthBarsThreatAwarenessHud", UIParent, "BackdropTemplate")
     frame:SetSize(WIDTH, ROW_HEIGHT + FOOTER_HEIGHT)
-    frame:SetPoint("CENTER", UIParent, "CENTER", 0, 40)
+    -- Anchor the top edge, which owns the player-status cluster. Enemy rows and
+    -- the footer may change the frame's height, but they can now only expand
+    -- downward and cannot move health, power, reminders, or cooldowns.
+    frame:SetPoint("TOP", UIParent, "CENTER", 0, FIXED_ANCHOR_Y)
     frame:SetMovable(false); frame:EnableMouse(false); frame:SetFrameStrata("MEDIUM")
-    coverage = frame:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-    coverage:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT",
+    playerStatusAnchor = CreateFrame("Frame", nil, frame)
+    playerStatusAnchor:SetPoint("TOPRIGHT", frame, "TOPRIGHT",
+        -(ROW_INSET + CONTROL_RIGHT), 0)
+    playerStatusAnchor:SetSize(CONTROL_BAR_WIDTH, PLAYER_STATUS_HEIGHT)
+
+    playerHealthBar = CreateFrame("Frame", nil, playerStatusAnchor)
+    playerHealthBar:SetPoint("TOPLEFT", playerStatusAnchor, "TOPLEFT", 0, 0)
+    playerHealthBar:SetSize(CONTROL_BAR_WIDTH, PLAYER_HEALTH_HEIGHT)
+    local playerHealthBackground = playerHealthBar:CreateTexture(nil, "BACKGROUND")
+    playerHealthBackground:SetAllPoints()
+    playerHealthBackground:SetColorTexture(0.10, 0.10, 0.11, 0.90)
+    playerHealthFill = playerHealthBar:CreateTexture(nil, "ARTWORK")
+    playerHealthFill:SetPoint("TOPLEFT", playerHealthBar, "TOPLEFT", 0, 0)
+    playerHealthFill:SetPoint("BOTTOMLEFT", playerHealthBar, "BOTTOMLEFT", 0, 0)
+    playerHealthFill:SetWidth(0)
+    playerHealthFill:SetColorTexture(D.UnitBar.GetHealthColor(1))
+
+    playerPowerBar = CreateFrame("Frame", nil, frame)
+    playerPowerBar:SetPoint("TOPRIGHT", playerHealthBar, "BOTTOMRIGHT", 0, -PLAYER_BAR_GAP)
+    playerPowerBar:SetSize(CONTROL_BAR_WIDTH, PLAYER_POWER_HEIGHT)
+    local playerPowerBackground = playerPowerBar:CreateTexture(nil, "BACKGROUND")
+    playerPowerBackground:SetAllPoints()
+    playerPowerBackground:SetColorTexture(0.10, 0.10, 0.11, 0.90)
+    playerPowerFill = playerPowerBar:CreateTexture(nil, "ARTWORK")
+    playerPowerFill:SetPoint("TOPLEFT", playerPowerBar, "TOPLEFT", 0, 0)
+    playerPowerFill:SetPoint("BOTTOMLEFT", playerPowerBar, "BOTTOMLEFT", 0, 0)
+    playerPowerFill:SetWidth(0)
+    overflowLabel = frame:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    overflowLabel:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT",
         -(ROW_INSET + CONTROL_RIGHT), 5)
-    coverage:SetWidth(CONTROL_BAR_WIDTH)
-    coverage:SetJustifyH("CENTER"); coverage:SetWordWrap(false)
-    coverage:SetTextColor(0.55, 0.55, 0.60)
+    overflowLabel:SetWidth(CONTROL_BAR_WIDTH)
+    overflowLabel:SetJustifyH("CENTER"); overflowLabel:SetWordWrap(false)
+    overflowLabel:SetTextColor(0.55, 0.55, 0.60)
     D.SettingsSurfaces.Register("threatAwareness", frame, {
         automaticChrome = false,
         configurationStrata = "HIGH",
@@ -620,9 +712,18 @@ end
 
 function A.Initialize(deps)
     D = deps
-    assert(D and D.Observer and D.SettingsSurfaces and D.Now and D.UnitAPI,
+    assert(D and D.Observer and D.SettingsSurfaces and D.Now and D.IsInCombat
+            and D.UnitAPI
+            and D.UnitBar and D.UnitBar.GetHealthColor,
         "ThreatAwareness missing dependencies")
+end
+
+function A.GetPlayerHealthColor(progress)
+    return D.UnitBar.GetHealthColor(progress)
 end
 
 function A.GetFrame() return frame end
 function A.GetRows() return rows end
+function A.GetPlayerStatusAnchor() return playerStatusAnchor end
+function A.GetPlayerHealthBar() return playerHealthBar end
+function A.GetPlayerPowerBar() return playerPowerBar end

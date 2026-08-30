@@ -14,6 +14,7 @@ for ownership and discoverability, not automatic loading.
 | Mouse-wheel gesture actions | Mouse Wheel |
 | Middle/Button 4/Button 5 actions | Mouse Buttons |
 | Maintained harmful/helpful target auras | Target Effects |
+| Selected learned class/pet cooldowns | Ability Cooldowns |
 | Configured footer actions | Shortcut Bar |
 | Character-wide native equipment sets | Loadouts |
 
@@ -29,10 +30,10 @@ fixtures. Do not reuse them for new APIs, variables, files, or documentation.
   Library, Keyboard, Mouse Wheel, and Mouse Buttons.
 - `PartyFrames/`: secure unit frames, health/power rendering, layout, auras,
   healing indicators, fixed-row threat, dynamic hostile threat observation,
-  the shared movable current-target HUD, and attached utilities. Dynamic
+  the fixed Threat Control player-status topology, and attached utilities. Dynamic
   hostile tokens remain private to the threat domain and never extend fixed
   party-frame topology.
-- `Reminders/`: buff, cleansing, health/chat, and Target Effects reminders.
+- `Reminders/`: buff, cleansing, health/chat, Target Effects, and Ability Cooldowns.
 - `DungeonBoard/`: catalog, policy, session runtime, adapters, and presentation.
 - `Profiles/`: character-owned profile storage and portable profile codec.
 - `Settings/`: settings window, controller, surfaces, and settings pages.
@@ -57,7 +58,7 @@ call feature APIs, but runtime features must not depend on Settings.
   and keep their own mutable refresh state. `SettingsUI` owns group and page
   navigation.
 - Use page keys such as `partyFrameClicks`, `keyboard`, `mouseWheel`,
-  `mouseButtons`, and `targetEffects`. Do not introduce tab aliases.
+  `mouseButtons`, and `threatControl`. Do not introduce tab aliases.
 
 ## Adding or changing a feature
 

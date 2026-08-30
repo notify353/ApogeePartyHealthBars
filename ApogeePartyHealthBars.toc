@@ -33,6 +33,7 @@ DungeonBoard/DungeonBoardGroupFinder.lua
 DungeonBoard/DungeonBoardActions.lua
 Core/PlayerContext.lua
 Reminders/TargetEffects/TargetEffectData.lua
+Reminders/AbilityCooldowns/CooldownData.lua
 PartyFrames/CrowdControl.lua
 Actions/MouseWheel/MouseWheelData.lua
 Actions/Keyboard/KeyboardData.lua
@@ -43,7 +44,6 @@ Core/UIHelpers.lua
 Core/UIErrorSuppressor.lua
 Settings/SettingsSurfaces.lua
 PartyFrames/AccessoryLayout.lua
-PartyFrames/TargetNameplateHud.lua
 Core/EventRouter.lua
 PartyFrames/SecureFrames.lua
 Core/Sounds.lua
@@ -62,7 +62,6 @@ Actions/ActionData.lua
 Actions/ShortcutStore.lua
 Actions/EquipmentSets.lua
 PartyFrames/UnitBar.lua
-PartyFrames/PlayerStatusHud.lua
 Actions/ActionMacros.lua
 Actions/ActionSettingsComponents.lua
 Actions/BoundActionLayouts.lua
@@ -90,8 +89,13 @@ PartyFrames/GroupHelperPresentation.lua
 PartyFrames/PartyFramePreview.lua
 Core/PlayerSpells.lua
 Reminders/CleanseWatch.lua
+PartyFrames/ThreatObserver.lua
+PartyFrames/Threat.lua
+PartyFrames/ThreatAwareness.lua
 Reminders/TargetEffects/TargetEffectHud.lua
 Reminders/TargetEffects/TargetEffectTracker.lua
+Reminders/AbilityCooldowns/CooldownHud.lua
+Reminders/AbilityCooldowns/CooldownTracker.lua
 Reminders/BuffReminders.lua
 PartyFrames/PlayerUtility.lua
 PartyFrames/ShieldTracker.lua
@@ -100,9 +104,6 @@ PartyFrames/HotTracker.lua
 Actions/ShortcutBar.lua
 Actions/ConsumableBar.lua
 PartyFrames/RaidMarkers.lua
-PartyFrames/ThreatObserver.lua
-PartyFrames/Threat.lua
-PartyFrames/ThreatAwareness.lua
 PartyFrames/RowGeometry.lua
 PartyFrames/VisualTicker.lua
 PartyFrames/MinimapController.lua
@@ -121,7 +122,7 @@ Settings/MouseWheelSettingsPage.lua
 Settings/MouseButtonsSettingsPage.lua
 Settings/LoadoutsSettingsPage.lua
 Settings/ProfilesSettingsPage.lua
-Settings/TargetEffectsSettingsPage.lua
+Settings/ThreatControlSettingsPage.lua
 Settings/DungeonGuideSettingsPage.lua
 Settings/SettingsUI.lua
 Runtime/LifecycleEvents.lua
@@ -129,6 +130,7 @@ Runtime/UnitEvents.lua
 Runtime/ActionEvents.lua
 Runtime/ActionAssignmentEvents.lua
 Runtime/TargetEffectEvents.lua
+Runtime/CooldownEvents.lua
 Runtime/DungeonBoardEvents.lua
 Runtime/CleanseEvents.lua
 Runtime/BuffThanksEvents.lua

@@ -60,7 +60,6 @@ local rules = {
         token = "C_NamePlate.GetNamePlateForUnit",
         allowed = {
             ApogeePartyHealthBars_ClientCapabilities = true,
-            ApogeePartyHealthBars_TargetNameplateHud = true,
         },
     },
 }

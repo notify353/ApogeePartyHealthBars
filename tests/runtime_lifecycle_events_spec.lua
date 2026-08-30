@@ -52,9 +52,6 @@ ApogeePartyHealthBars_RaidMarkers = {
     OnCombatStarted = function() record("raid-combat-start") end,
     OnCombatEnded = function() record("raid-combat-end") end,
 }
-ApogeePartyHealthBars_TargetNameplateHud = {
-    OnTargetChanged = function() record("nameplate-target") end,
-}
 ApogeePartyHealthBars_Threat = { Refresh = function() record("threat") end }
 ApogeePartyHealthBars_SecureFrames = {
     FlushDeferredUpdates = function() record("secure-flush") end,
@@ -225,7 +222,7 @@ expect({ "player-spells", "minimap", "shield-seed", "threat", "request-update" }
 
 reset()
 dispatch("PLAYER_TARGET_CHANGED")
-expect({ "nameplate-target", "raid-auto", "shortcut-rebaseline", "wheel-refresh", "keys-refresh", "buttons-refresh", "threat", "request-update" },
+expect({ "raid-auto", "shortcut-rebaseline", "wheel-refresh", "keys-refresh", "buttons-refresh", "threat", "request-update" },
     "target-change order changed")
 
 reset()

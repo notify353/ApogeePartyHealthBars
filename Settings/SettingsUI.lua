@@ -8,7 +8,7 @@ local WC = ApogeePartyHealthBars_MouseWheelSettingsPage
 local BC = ApogeePartyHealthBars_MouseButtonsSettingsPage
 local LC = ApogeePartyHealthBars_LoadoutsSettingsPage
 local PC = ApogeePartyHealthBars_ProfilesSettingsPage
-local DC = ApogeePartyHealthBars_TargetEffectsSettingsPage
+local ThreatControlPage = ApogeePartyHealthBars_ThreatControlSettingsPage
 local DGC = ApogeePartyHealthBars_DungeonGuideSettingsPage
 local AC = ApogeePartyHealthBars_ActionSettingsComponents
 local UIH = ApogeePartyHealthBars_UIHelpers
@@ -19,7 +19,7 @@ local UI = ApogeePartyHealthBars_SettingsUI
 local built = false
 local D
 local configPanel, profileLabel, pageDropdown, pageTitle, pageSummary
-local profilesPage, coreSettingsPagesFrame, targetEffectsPage, partyFrameClicksPage, shortcutBarPage
+local profilesPage, coreSettingsPagesFrame, threatControlPage, partyFrameClicksPage, shortcutBarPage
 local dungeonGuidePage
 local keyboardPage, mouseWheelPage, mouseButtonsPage, loadoutsPage
 local pages, groups, allFrames = {}, {}, {}
@@ -260,7 +260,7 @@ function UI.Build(deps)
 
     profilesPage = PC.Create(configPanel, D)
     coreSettingsPagesFrame = GC.Create(configPanel, BuildCoreSettingsPagesDeps())
-    targetEffectsPage = DC.Create(configPanel, D)
+    threatControlPage = ThreatControlPage.Create(configPanel, D)
     dungeonGuidePage = DGC.Create(configPanel, D)
     partyFrameClicksPage = HC.Create(configPanel, D)
     shortcutBarPage = SC.Create(configPanel, D)
@@ -327,16 +327,11 @@ function UI.Build(deps)
         summary = "Configure buff and cleansing reminders.",
     })
     RegisterPage({
-        key = "targetEffects", group = "reminders", label = "Target HUD",
-        frame = targetEffectsPage, refresh = DC.Refresh, hint = DC.GetForm().hint, layout = DC.GetForm(),
-        featureKey = "targetHud",
-        summary = "Show player health, power, and maintained-effect reminders for your target.",
-    })
-    RegisterPage({
         key = "threatControl", group = "reminders", label = "Threat Control",
-        frame = coreSettingsPagesFrame, configure = function() GC.SetPage("threatControl") end,
-        refresh = GC.Refresh, hint = GC.GetForm().hint, layout = GC.GetForm(),
-        summary = "Configure multi-enemy tank threat control.",
+        frame = threatControlPage, refresh = ThreatControlPage.Refresh,
+        hint = ThreatControlPage.GetForm().hint, layout = ThreatControlPage.GetForm(),
+        featureKey = "threat",
+        summary = "Configure maintained effects, player status, ability cooldowns, and multi-enemy threat.",
     })
     RegisterPage({
         key = "dungeon", group = "dungeon", label = "Dungeon Board",
@@ -403,7 +398,7 @@ function UI.Build(deps)
     UI.configPanel = configPanel
     UI.RefreshConfigPanel = RefreshConfigPanel
     UI.RefreshPartyFrameClicksPage = HC.Refresh
-    UI.RefreshTargetEffectsPage = DC.Refresh
+    UI.RefreshThreatControlPage = ThreatControlPage.Refresh
     UI.RefreshShortcutPanel = SC.Refresh
     UI.RefreshKeyboardPage = KC.Refresh
     UI.RefreshMouseWheelPage = WC.Refresh

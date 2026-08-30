@@ -24,16 +24,20 @@ local function ApplyFlatBg(texture, color)
     texture:SetVertexColor(unpack(color))
 end
 
-local function SetHealthColor(bar, pct)
+function B.GetHealthColor(pct)
+    pct = tonumber(pct) or 0
     if pct > 0.60 then
-        bar:SetStatusBarColor(0.28, 0.74, 0.46, 1)
+        return 0.28, 0.74, 0.46, 1
     elseif pct > 0.35 then
-        bar:SetStatusBarColor(0.90, 0.74, 0.22, 1)
+        return 0.90, 0.74, 0.22, 1
     elseif pct > 0.15 then
-        bar:SetStatusBarColor(0.92, 0.48, 0.24, 1)
-    else
-        bar:SetStatusBarColor(0.86, 0.30, 0.30, 1)
+        return 0.92, 0.48, 0.24, 1
     end
+    return 0.86, 0.30, 0.30, 1
+end
+
+local function SetHealthColor(bar, pct)
+    bar:SetStatusBarColor(B.GetHealthColor(pct))
 end
 
 local function GetClassColor(classToken)

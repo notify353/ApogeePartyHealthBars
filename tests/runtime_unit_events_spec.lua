@@ -19,7 +19,6 @@ ApogeePartyHealthBars_Auras = {
 ApogeePartyHealthBars_ShortcutBar = {
     Refresh = function(full) record("shortcut:" .. tostring(full)) end,
 }
-ApogeePartyHealthBars_PlayerStatusHud = { Refresh = function() record("status") end }
 ApogeePartyHealthBars_RaidMarkers = {
     OnRaidTargetUpdate = function() record("raid-update") end,
     OnUnitDied = function(guid) record("raid-death:" .. tostring(guid)) end,
@@ -33,7 +32,8 @@ ApogeePartyHealthBars_ThreatObserver = {
 }
 ApogeePartyHealthBars_ThreatAwareness = { Refresh = function(suppress)
     record("awareness:" .. tostring(suppress))
-end, RefreshUnit = function(unit) record("awareness-unit:" .. unit) end }
+end, RefreshUnit = function(unit) record("awareness-unit:" .. unit) end,
+RefreshPlayer = function() record("awareness-player") end }
 
 local required, optional = {}, {}
 local router = {}
@@ -133,8 +133,8 @@ expect({ "invalidate:party1", "invalidate:target", "shield:party1", "values:targ
     "absorb alias invalidation or values request changed")
 reset()
 dispatch("UNIT_ABSORB_AMOUNT_CHANGED", "player")
-expect({ "invalidate:player", "shield:player", "status", "values:player" },
-    "player absorb change did not refresh the Target HUD")
+expect({ "invalidate:player", "shield:player", "awareness-player", "values:player" },
+    "player absorb change did not refresh Threat Control")
 
 reset()
 dispatch("UNIT_HEALTH", "party1")
@@ -153,28 +153,28 @@ dispatch("UNIT_HEAL_PREDICTION", "other")
 expect({}, "untracked heal prediction triggered an update")
 reset()
 dispatch("UNIT_HEALTH", "player")
-expect({ "status", "values:nil" }, "player health did not refresh the Target HUD")
+expect({ "awareness-player", "values:nil" }, "player health did not refresh Threat Control")
 
 reset()
 dispatch("UNIT_DISPLAYPOWER", "player")
-expect({ "shortcut:false", "status", "layout" }, "player display-power handling changed")
+expect({ "shortcut:false", "awareness-player", "layout" }, "player display-power handling changed")
 reset()
 dispatch("UNIT_DISPLAYPOWER", "party1")
 expect({ "layout" }, "adaptive party display-power handling changed")
 
 reset()
 dispatch("UNIT_MAXPOWER", "player")
-expect({ "shortcut:false", "status", "layout" }, "player max-power layout handling changed")
+expect({ "shortcut:false", "awareness-player", "layout" }, "player max-power layout handling changed")
 reset()
 dispatch("UNIT_POWER_UPDATE", "player")
-expect({ "shortcut:false", "status", "values:player" }, "player power update handling changed")
+expect({ "shortcut:false", "awareness-player", "values:player" }, "player power update handling changed")
 
 reset()
 dispatch("UNIT_CONNECTION", "party1")
 expect({ "layout" }, "connection changes stopped requesting layout")
 reset()
 dispatch("UNIT_CONNECTION", "player")
-expect({ "status", "layout" }, "player connection did not refresh the Target HUD")
+expect({ "awareness-player", "layout" }, "player connection did not refresh Threat Control")
 reset()
 dispatch("UNIT_TARGET", "party1")
 dispatch("UNIT_TARGET", "target")

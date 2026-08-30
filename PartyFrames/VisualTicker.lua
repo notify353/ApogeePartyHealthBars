@@ -38,6 +38,7 @@ local function OnUpdate(_, elapsed)
     D.ConsumableBar.Tick()
     D.MouseWheelActions.Refresh()
     if D.ThreatAwareness and D.ThreatAwareness.Tick then D.ThreatAwareness.Tick(elapsed) end
+    if D.CooldownTracker and D.CooldownTracker.Tick then D.CooldownTracker.Tick(elapsed) end
 
     rangeTimer = rangeTimer - (elapsed or 0)
     if rangeTimer <= 0 then
@@ -45,11 +46,14 @@ local function OnUpdate(_, elapsed)
         D.RefreshUnitChains()
         D.RefreshRangeAlpha()
         D.Threat.Refresh()
-        if D.ThreatAwareness then D.ThreatAwareness.Refresh() end
+        if D.ThreatAwareness
+            and (not D.ThreatAwareness.ShouldObserveThreat
+                or D.ThreatAwareness.ShouldObserveThreat()) then
+            D.ThreatAwareness.Refresh()
+        end
         D.KeyboardActions.Refresh()
         D.MouseButtonActions.Refresh()
         D.ConsumableBar.Refresh(false)
-        if D.TargetEffectTracker then D.TargetEffectTracker.Refresh(false) end
     end
 
     V.Sync()

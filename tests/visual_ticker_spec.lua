@@ -20,6 +20,7 @@ local flags = {
     wheel = false,
     keys = false,
     threat = false,
+    awarenessObserve = false,
 }
 local calls = {
     hotTicks = 0,
@@ -34,6 +35,7 @@ local calls = {
     buttonRefreshes = 0,
     consumableTicks = 0,
     consumableRefreshes = 0,
+    cooldownTicks = 0,
 }
 
 dofile("PartyFrames/VisualTicker.lua")
@@ -75,6 +77,10 @@ ticker.Initialize({
     ThreatAwareness = {
         Refresh = function() calls.awarenessRefreshes = calls.awarenessRefreshes + 1 end,
         Tick = function() calls.awarenessTicks = calls.awarenessTicks + 1 end,
+        ShouldObserveThreat = function() return flags.awarenessObserve end,
+    },
+    CooldownTracker = {
+        Tick = function() calls.cooldownTicks = calls.cooldownTicks + 1 end,
     },
 })
 
@@ -109,29 +115,34 @@ ClearActivationFlags()
 ticker.Sync()
 update(frame, 0.05)
 assert(calls.hotTicks == 1 and calls.shortcutTicks == 1 and calls.wheelRefreshes == 1
-        and calls.consumableTicks == 1 and calls.awarenessTicks == 1,
+        and calls.consumableTicks == 1 and calls.awarenessTicks == 1
+        and calls.cooldownTicks == 1,
     "per-frame visual callbacks did not run exactly once")
 assert(calls.chainRefreshes == 1 and calls.rangeRefreshes == 1
-        and calls.threatRefreshes == 1 and calls.awarenessRefreshes == 1 and calls.keyRefreshes == 1
+        and calls.threatRefreshes == 1 and calls.awarenessRefreshes == 0 and calls.keyRefreshes == 1
         and calls.buttonRefreshes == 1 and calls.consumableRefreshes == 1,
-    "initial range-cadence callbacks did not run")
+    "initial range-cadence callbacks did not skip idle Threat Control scans")
 
 update(frame, 0.10)
 assert(calls.hotTicks == 2 and calls.shortcutTicks == 2 and calls.wheelRefreshes == 2
-        and calls.consumableTicks == 2 and calls.awarenessTicks == 2,
+        and calls.consumableTicks == 2 and calls.awarenessTicks == 2
+        and calls.cooldownTicks == 2,
     "per-frame visual callbacks missed an intermediate tick")
 assert(calls.chainRefreshes == 1 and calls.rangeRefreshes == 1
-        and calls.threatRefreshes == 1 and calls.awarenessRefreshes == 1 and calls.keyRefreshes == 1
+        and calls.threatRefreshes == 1 and calls.awarenessRefreshes == 0 and calls.keyRefreshes == 1
         and calls.buttonRefreshes == 1 and calls.consumableRefreshes == 1,
     "range callbacks ran before the 0.2-second cadence")
 
+flags.awarenessObserve = true
 update(frame, 0.11)
 assert(calls.hotTicks == 3 and calls.shortcutTicks == 3 and calls.consumableTicks == 3,
     "per-frame callbacks did not continue on the range tick")
 assert(calls.awarenessTicks == 3,
     "Threat Control casts did not animate on the per-frame visual tick")
+assert(calls.cooldownTicks == 3,
+    "Ability Cooldown countdowns did not animate on the per-frame visual tick")
 assert(calls.chainRefreshes == 2 and calls.rangeRefreshes == 2
-        and calls.threatRefreshes == 2 and calls.awarenessRefreshes == 2 and calls.keyRefreshes == 2
+        and calls.threatRefreshes == 2 and calls.awarenessRefreshes == 1 and calls.keyRefreshes == 2
         and calls.buttonRefreshes == 2 and calls.consumableRefreshes == 2,
     "range callbacks did not run at the 0.2-second cadence")
 assert(calls.wheelRefreshes == 3,
@@ -142,7 +153,7 @@ assert(not frame:IsShown(), "Stop did not hide the ticker")
 ticker.Sync()
 update(frame, 0.01)
 assert(calls.chainRefreshes == 3 and calls.rangeRefreshes == 3
-        and calls.threatRefreshes == 3 and calls.awarenessRefreshes == 3 and calls.keyRefreshes == 3
+        and calls.threatRefreshes == 3 and calls.awarenessRefreshes == 2 and calls.keyRefreshes == 3
         and calls.buttonRefreshes == 3 and calls.consumableRefreshes == 3,
     "Stop did not reset the private range accumulator")
 

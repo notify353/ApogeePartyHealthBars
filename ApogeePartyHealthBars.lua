@@ -28,7 +28,6 @@ local hotTracker = ApogeePartyHealthBars_HotTracker
 local unitTopology = ApogeePartyHealthBars_UnitTopology
 local unitAPI = ApogeePartyHealthBars_UnitAPI
 local unitBar = ApogeePartyHealthBars_UnitBar
-local playerStatusHud = ApogeePartyHealthBars_PlayerStatusHud
 local playerUtility = ApogeePartyHealthBars_PlayerUtility
 local groupHelperData = ApogeePartyHealthBars.Require("Runtime", "GroupHelperData")
 local groupHelperPolicy = ApogeePartyHealthBars.Require("Runtime", "GroupHelperPolicy")
@@ -228,15 +227,6 @@ unitBar.Initialize({
     UpdateHotVisuals = UpdateRowHotVisuals,
     RequestLayoutUpdate = S.RequestLayoutUpdate,
 })
-playerStatusHud.Initialize({
-    IsShieldEnabled = IsShieldEnabled,
-    ShouldTrackShieldUnit = ShouldTrackShieldUnit,
-    GetShieldRemaining = GetUnitShieldRemaining,
-    IsIncomingHealEnabled = IsIncomingHealEnabled,
-    ShouldTrackIncomingUnit = ShouldTrackIncomingUnit,
-    GetIncomingAmount = GetIncomingHealAmount,
-})
-
 -- =============================================================================
 
 Print = function(msg)
@@ -265,7 +255,7 @@ visualTicker.Initialize({
     ConsumableBar = CB,
     Threat = H,
     ThreatAwareness = threatAwareness,
-    TargetEffectTracker = ApogeePartyHealthBars_TargetEffectTracker,
+    CooldownTracker = ApogeePartyHealthBars_CooldownTracker,
 })
 local targetChainGUIDs = {}
 
@@ -376,7 +366,15 @@ ApogeePartyHealthBars.Require("Bootstrap", "AuxiliaryComposition").Initialize({
         Observer = threatObserver,
         SettingsSurfaces = configSurfaces,
         Now = function() return GetTime and GetTime() or 0 end,
+        IsInCombat = function()
+            if UnitAffectingCombat then
+                local active = UnitAffectingCombat("player")
+                return active == true or active == 1
+            end
+            return InCombatLockdown and InCombatLockdown() == true
+        end,
         UnitAPI = ApogeePartyHealthBars_UnitAPI,
+        UnitBar = unitBar,
         IsSupported = function()
             return ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable("threat")
         end,
@@ -644,7 +642,7 @@ UpdateUI = function()
     end
 
     A.BeginAuraCacheGeneration()
-    playerStatusHud.Refresh()
+    threatAwareness.RefreshPlayer()
 
     -- Combat entry must not re-anchor the party panel or any protected overlays.
     -- Values and threat textures are safe to refresh against the geometry that
@@ -691,7 +689,7 @@ updateScheduler.RegisterHandlers({
     FullUpdate = UpdateUI,
     ValuesUpdate = function()
         A.BeginAuraCacheGeneration()
-        playerStatusHud.Refresh()
+        threatAwareness.RefreshPlayer()
         UpdateRowValues()
     end,
     IsEnabled = IsEnabled,
@@ -877,8 +875,8 @@ local settingsRuntime = ApogeePartyHealthBars.Require(
     ProfileStore = ApogeePartyHealthBars_ProfileStore,
     TargetEffectTracker = ApogeePartyHealthBars_TargetEffectTracker,
     TargetEffectHud = ApogeePartyHealthBars_TargetEffectHud,
-    PlayerStatusHud = playerStatusHud,
-    TargetNameplateHud = ApogeePartyHealthBars_TargetNameplateHud,
+    CooldownTracker = ApogeePartyHealthBars_CooldownTracker,
+    CooldownHud = ApogeePartyHealthBars_CooldownHud,
     DungeonBoardFeed = dungeonBoardFeed,
     CleanseWatch = cleanseWatch,
     BuffThanks = buffThanks,
@@ -922,8 +920,8 @@ local settingsRuntime = ApogeePartyHealthBars.Require(
     ClientCapabilities       = ApogeePartyHealthBars_ClientCapabilities,
     TargetEffectTracker               = ApogeePartyHealthBars_TargetEffectTracker,
     TargetEffectHud                   = ApogeePartyHealthBars_TargetEffectHud,
-    PlayerStatusHud                   = playerStatusHud,
-    TargetNameplateHud                = ApogeePartyHealthBars_TargetNameplateHud,
+    CooldownTracker                   = ApogeePartyHealthBars_CooldownTracker,
+    CooldownHud                       = ApogeePartyHealthBars_CooldownHud,
     DungeonBoardFeed         = dungeonBoardFeed,
     CleanseWatch             = cleanseWatch,
     BuffThanks               = buffThanks,

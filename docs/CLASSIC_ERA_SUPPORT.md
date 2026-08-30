@@ -71,6 +71,12 @@ worktrees only when different branches are being tested intentionally.
 
 ## Acceptance Record
 
+Owner-confirmed release acceptance completed on 2026-08-30 for `v0.49.0`:
+
+- Classic Era 1.15.9.69547 — Bold, Warrior — full checklist passed.
+- TBC Anniversary 2.5.6.69546 — Bold, Warrior — full checklist passed.
+- The pass included the release checklist and detailed dual-client matrix below.
+
 Owner-confirmed release acceptance completed on 2026-08-09 for `v0.48.0`:
 
 - Classic Era 1.15.9.69109 — full checklist passed.

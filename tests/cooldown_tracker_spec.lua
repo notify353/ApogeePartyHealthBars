@@ -12,6 +12,7 @@ local spellList = {
     { id = 871, baseName = "Shield Wall", sourceBook = "spell" },
     { id = 355, baseName = "Taunt", sourceBook = "spell" },
     { id = 1161, baseName = "Challenging Shout", sourceBook = "spell" },
+    { id = 2687, baseName = "Bloodrage", sourceBook = "spell" },
     { id = 694, baseName = "Mocking Blow", sourceBook = "spell" },
     { id = 5246, baseName = "Intimidating Shout", sourceBook = "spell" },
 }
@@ -53,8 +54,9 @@ tracker.Initialize()
 assert(tracker.GetSelectedCount() == 5 and #displayed == 5
         and displayed[1].definition.key == "pummel"
         and displayed[2].definition.key == "shieldBash"
+        and displayed[5].definition.key == "bloodrage"
         and #preview == 5,
-    "reviewed learned Warrior defaults or priority changed")
+    "reviewed learned Warrior defaults did not include Bloodrage in priority order")
 
 spellList[#spellList + 1] = { id = 12975, baseName = "Last Stand", sourceBook = "spell" }
 tracker.ResolveKnown()
@@ -63,7 +65,7 @@ assert(tracker.GetSelectedCount() == 6 and #displayed == 6,
 local changed, reason = tracker.SetEnabled("mockingBlow", true)
 assert(not changed and reason:find("six", 1, true),
     "six-slot selection limit accepted a seventh cooldown")
-local disabled = tracker.SetEnabled("challengingShout", false)
+local disabled = tracker.SetEnabled("bloodrage", false)
 local optedIn = tracker.SetEnabled("mockingBlow", true)
 assert(disabled and optedIn and tracker.GetSelectedCount() == 6,
     "explicit opt-out did not free a cooldown slot for an opt-in: "

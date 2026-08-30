@@ -218,6 +218,7 @@ local smokeSpells = {
     [7] = { "Taunt", 355 },
     [8] = { "Challenging Shout", 1161 },
     [9] = { "Last Stand", 12975 },
+    [10] = { "Bloodrage", 2687 },
 }
 function GetNumSpellTabs() return 1 end
 function GetSpellTabInfo() return nil, nil, 0, #smokeSpells end

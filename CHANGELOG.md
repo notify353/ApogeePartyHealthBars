@@ -6,6 +6,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Added learned Warrior Bloodrage to Threat Control's six default cooldowns, with the longer situational Challenging Shout remaining available as an opt-in.
 - Removed Threat Control's “Limited Coverage” helper text while retaining the compact `+N MORE` count for enemies beyond the five visible rows.
 - Centered both Threat Control spell-icon lanes against the full player health-and-power stack so the left reminders and right cooldowns share one clean vertical axis.
 - Anchored Threat Control by its player-status edge so enemy rows and overflow text expand downward without moving player health, power, maintained-effect reminders, or cooldowns on screen.

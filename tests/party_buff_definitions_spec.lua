@@ -71,26 +71,19 @@ for classToken, expected in pairs(supportedClassBuffs) do
 end
 
 local intellect = byCanonical["Arcane Intellect"]
+assert(intellect.manaOnly,
+    "Arcane Intellect did not exclude party members without mana")
 for _, spellId in ipairs({ 1459, 1460, 1461, 10156, 10157, 27126, 23028, 27127 }) do
     assert(intellect.auraIds[spellId], "missing Mage intellect aura ID " .. spellId)
 end
 
 local spirit = byCanonical["Divine Spirit"]
 assert(spirit and spirit.track == "spirit", "Divine Spirit reminder definition is missing")
+assert(spirit.manaOnly and spirit.eligibleClasses == nil,
+    "Divine Spirit did not use resource-based recipient eligibility")
 assert(spirit.auraNames["Divine Spirit"] and spirit.auraNames["Prayer of Spirit"],
     "Divine Spirit single-target or group aura name is missing")
 for _, spellId in ipairs({ 14752, 14818, 14819, 27841, 25312, 27681, 32999 }) do
     assert(spirit.auraIds[spellId], "missing Divine Spirit aura ID " .. spellId)
 end
-for _, classToken in ipairs({ "PRIEST", "MAGE", "DRUID" }) do
-    assert(spirit.eligibleClasses[classToken],
-        classToken .. " was not eligible for Divine Spirit reminders")
-end
-for _, classToken in ipairs({
-    "WARRIOR", "ROGUE", "HUNTER", "WARLOCK", "PALADIN", "SHAMAN",
-}) do
-    assert(not spirit.eligibleClasses[classToken],
-        classToken .. " was unexpectedly eligible for Divine Spirit reminders")
-end
-
 print("PASS party buff definitions")

@@ -140,26 +140,6 @@ local function StyleNavigation(activeGroup)
     end
 end
 
-local function SetContextualPreviews(pageKey)
-    local active = S.configMode == true
-    if not active then return end
-    if D.CleanseWatch then
-        D.CleanseWatch.SetUnlocked(active and pageKey == "buffsCleanse")
-    end
-    if D.BuffThanks then
-        D.BuffThanks.SetUnlocked(active and pageKey == "buffsCleanse")
-    end
-    if D.DungeonBoardFeed then
-        D.DungeonBoardFeed.SetUnlocked(active and pageKey == "dungeon")
-    end
-    if D.ThreatAwareness then
-        D.ThreatAwareness.SetUnlocked(active and pageKey == "threatControl")
-    end
-    if D.TargetNameplateHud then
-        D.TargetNameplateHud.SetUnlocked(active and pageKey == "targetEffects")
-    end
-end
-
 local function ActivatePage(pageKey)
     UIH.CloseActiveDropdown()
     pageKey = NormalizePageKey(pageKey)
@@ -178,7 +158,6 @@ local function ActivatePage(pageKey)
     spec.frame:Show()
     S.activeSettingsPageKey = pageKey
     S.activeSettingsGroupKey = spec.group
-    SetContextualPreviews(pageKey)
 
     local group = groups[spec.group]
     StyleNavigation(spec.group)

@@ -10,10 +10,8 @@ local trackedTokens = {}
 
 local function BuildTargetToken(owner, depth)
     if depth == 0 then return owner end
-    if owner == "player" then
-        return depth == 1 and "target" or "targettarget"
-    end
-    return owner .. string.rep("target", depth)
+    if owner == "player" then return "target" end
+    return owner .. "target"
 end
 
 for index, owner in ipairs(C.SLOT_UNITS) do
@@ -23,15 +21,13 @@ for index, owner in ipairs(C.SLOT_UNITS) do
         tokens = {
             BuildTargetToken(owner, 0),
             BuildTargetToken(owner, 1),
-            BuildTargetToken(owner, 2),
         },
     }
     rows[index] = descriptor
-    for depth = 0, 2 do
+    for depth = 0, 1 do
         local token = descriptor.tokens[depth + 1]
         ownerByToken[token] = owner
-        roleByToken[token] = depth == 0 and "primary"
-            or (depth == 1 and "target" or "targetOfTarget")
+        roleByToken[token] = depth == 0 and "primary" or "target"
         trackedTokens[#trackedTokens + 1] = token
     end
 end
@@ -45,7 +41,7 @@ function T.GetRow(index)
 end
 
 function T.GetToken(owner, depth)
-    if type(depth) ~= "number" or depth < 0 or depth > 2 then return nil end
+    if type(depth) ~= "number" or depth < 0 or depth > 1 then return nil end
     return BuildTargetToken(owner, depth)
 end
 

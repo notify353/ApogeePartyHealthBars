@@ -70,7 +70,7 @@ local function LayoutLive()
             icons[index] = icon
         end
         icon:ClearAllPoints()
-        icon:SetPoint("LEFT", row, "LEFT", (index - 1) * (ICON_SIZE + ICON_GAP), 0)
+        icon:SetPoint("RIGHT", row, "RIGHT", -(index - 1) * (ICON_SIZE + ICON_GAP), 0)
         ApplyItem(icon, item, false)
     end
     for index = count + 1, #icons do icons[index]:Hide() end
@@ -89,7 +89,7 @@ local function LayoutPreview(preview)
             preview.icons[index] = icon
         end
         icon:ClearAllPoints()
-        icon:SetPoint("LEFT", preview, "LEFT", (index - 1) * (ICON_SIZE + ICON_GAP), 0)
+        icon:SetPoint("RIGHT", preview, "RIGHT", -(index - 1) * (ICON_SIZE + ICON_GAP), 0)
         ApplyItem(icon, item, true)
     end
     for index = count + 1, #preview.icons do preview.icons[index]:Hide() end
@@ -164,7 +164,7 @@ function H.Initialize()
     row:SetSize(1, ICON_SIZE)
     row:EnableMouse(false)
     row:SetScript("OnUpdate", function() H.Tick() end)
-    TargetHud.RegisterSurface(SURFACE_KEY, row, 2, TARGET_EFFECT_GAP)
+    TargetHud.RegisterSurface(SURFACE_KEY, row, 2, TARGET_EFFECT_GAP, "leftAccessory")
 end
 
 function H.GetAnchor() return row end

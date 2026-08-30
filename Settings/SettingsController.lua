@@ -8,17 +8,23 @@ function C.Initialize(deps)
     D = deps
 end
 
+local function SetConfigurationPreviews(active)
+    if D.CleanseWatch then D.CleanseWatch.SetUnlocked(active) end
+    if D.BuffThanks then D.BuffThanks.SetUnlocked(active) end
+    if D.DungeonBoardFeed then D.DungeonBoardFeed.SetUnlocked(active) end
+    if D.PartyFramePreview then D.PartyFramePreview.SetActive(active) end
+    if D.ThreatAwareness then D.ThreatAwareness.SetUnlocked(active) end
+    if D.TargetNameplateHud then D.TargetNameplateHud.SetUnlocked(active) end
+end
+
 function C.Exit()
     if not S.configMode then return end
     S.configMode = false
     if D.TargetEffectHud then D.TargetEffectHud.RefreshVisibility() end
     if D.PlayerStatusHud then D.PlayerStatusHud.RefreshVisibility() end
-    if D.DungeonBoardFeed then D.DungeonBoardFeed.SetUnlocked(false) end
-    if D.CleanseWatch then D.CleanseWatch.SetUnlocked(false) end
-    if D.BuffThanks then D.BuffThanks.SetUnlocked(false) end
-    if D.ThreatAwareness then D.ThreatAwareness.SetUnlocked(false) end
-    if D.TargetNameplateHud then D.TargetNameplateHud.SetUnlocked(false) end
+    SetConfigurationPreviews(false)
     D.SettingsSurfaces.SetConfigurationActive(false)
+    if D.GroupHelperRuntime then D.GroupHelperRuntime.Refresh() end
     D.panel:EnableMouse(false)
     D.panel:RegisterForDrag()
     D.panel:SetScript("OnDragStart", nil)
@@ -163,6 +169,7 @@ function C.SetMode(active)
             D.SavePosition()
         end)
         D.SettingsSurfaces.SetConfigurationActive(true)
+        SetConfigurationPreviews(true)
         D.GetSettingsUI().Show()
     else
         C.Exit()

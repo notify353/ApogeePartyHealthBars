@@ -30,6 +30,13 @@ ApogeePartyHealthBars_DungeonBoardEvents = {
         assert(router.name == "router" and deps.name == "deps")
     end,
 }
+dofile("Core/Namespace.lua")
+ApogeePartyHealthBars.Define("Runtime", "GroupHelperEvents", {
+    Register = function(router, deps)
+        calls[#calls + 1] = "group-helper"
+        assert(router.name == "router" and deps.name == "deps")
+    end,
+})
 dofile("Runtime/RuntimeEvents.lua")
 local events = ApogeePartyHealthBars_RuntimeEvents
 
@@ -54,7 +61,8 @@ events.Register(router, {
     RefreshAssignmentAffordances = function() end,
 })
 
-assert(table.concat(calls, ",") == "initialize,lifecycle,unit,assignment,action,dungeon",
+assert(table.concat(calls, ",")
+        == "initialize,lifecycle,unit,assignment,action,dungeon,group-helper",
     "runtime subscriber registration order changed: " .. table.concat(calls, ","))
 
 print("PASS runtime event coordinator")

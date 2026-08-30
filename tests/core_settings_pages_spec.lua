@@ -105,6 +105,7 @@ local saved = {
     dungeonBoardSoundKey = "none",
     dungeonBoardLevelsBelow = 10,
     dungeonBoardLevelsAbove = 3,
+    groupHelperEnabled = true,
     hotEnabled = true,
     threatAwarenessEnabled = false,
     threatAwarenessMode = "radar",
@@ -126,6 +127,7 @@ local calls = {
     lfgAlertsReset = 0, dungeonBoardReset = 0,
     dungeonSoundPreview = 0, mentionSoundPreview = 0,
     messages = {}, feedbackClear = 0, consumablesEnabled = nil,
+    groupHelperRefresh = 0, previewScenario = "mana",
 }
 local timerCallback
 C_Timer = { After = function(_, callback) timerCallback = callback end }
@@ -224,6 +226,25 @@ local deps = {
             calls.dungeonBoardReset = calls.dungeonBoardReset + 1
         end,
     },
+    GroupHelperRuntime = {
+        Refresh = function()
+            calls.groupHelperRefresh = calls.groupHelperRefresh + 1
+        end,
+    },
+    PartyFramePreview = {
+        GetScenarios = function()
+            return {
+                { key = "mana", label = "Out of combat" },
+                { key = "combat", label = "Combat" },
+            }
+        end,
+        GetScenario = function() return calls.previewScenario end,
+        SetScenario = function(key)
+            calls.previewScenario = key
+            if calls.previewChanged then calls.previewChanged() end
+        end,
+        SetChangedCallback = function(callback) calls.previewChanged = callback end,
+    },
     InitHotSpells = function() calls.hotInit = calls.hotInit + 1 end,
     IsHotEnabled = function() return saved.hotEnabled ~= false end,
     IsHotTrackKnown = function(key) return known[key] == true end,
@@ -292,6 +313,9 @@ assert(config.GetPage() == "frames"
 assert(config.GetRow("showAllSlots").check:GetChecked() == false
         and config.GetRow("combatUIAutoHide").check:GetChecked() == true
         and config.GetRow("hideUIErrors").check:GetChecked() == true
+        and config.GetRow("groupHelperEnabled").check:GetChecked() == true
+        and config.GetRow("showUnitTargets").label:GetText()
+            == "Show each party member's target"
         and config.GetRow("showAllSlots").label:GetText()
             == "Show all 5 party frames while solo",
     "saved frame checkboxes did not refresh")
@@ -372,6 +396,33 @@ Click(showAll)
 assert(saved.showAllSlots and calls.savedKey == "showAllSlots"
         and calls.refresh == refreshBeforeShowAll + 1,
     "General checkbox did not persist and request refresh")
+
+local groupHelper = config.GetRow("groupHelperEnabled").check
+groupHelper:SetChecked(false)
+Click(groupHelper)
+assert(saved.groupHelperEnabled == false and calls.groupHelperRefresh == 1,
+    "Group Helper checkbox did not persist and refresh the integrated presentation")
+
+local preview = config.GetPreviewControls()
+assert(preview.text:GetText():find("OUT OF COMBAT", 1, true) ~= nil
+        and preview.text:GetText():find("DRINKING", 1, true) ~= nil
+        and preview.text:GetText():find("THIRSTY", 1, true) ~= nil
+        and preview.buttons.ready == nil,
+    "Party-frame helper did not default to the combined out-of-combat preview")
+Click(preview.buttons.mana)
+assert(calls.previewScenario == "mana"
+        and preview.buttons.buffs == nil
+        and preview.text:GetText():find("DRINKING", 1, true) ~= nil
+        and preview.text:GetText():find("THIRSTY", 1, true) ~= nil
+        and preview.text:GetText():find("below 75%", 1, true) ~= nil
+        and preview.text:GetText():find("Fort", 1, true) ~= nil
+        and preview.text:GetText():find("Spirit", 1, true) ~= nil
+        and preview.text:GetText():find("Int", 1, true) ~= nil
+        and preview.text:GetText():find("Mark", 1, true) ~= nil,
+    "combined mana and buff preview did not explain both checks")
+assert(preview.channel:GetText() == "PREVIEW GUIDE"
+        and preview.text:GetText():find("Fort", 1, true) ~= nil,
+    "settings guide was replaced by redundant chat-output feedback")
 
 local dungeonFeed = config.GetRow("dungeonBoardFeedEnabled").check
 dungeonFeed:SetChecked(false)

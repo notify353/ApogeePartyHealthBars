@@ -9,7 +9,6 @@ local ACTION_FEATURES = {
     { key = "mouseWheel", dependency = "MouseWheelActions" },
     { key = "keyboard", dependency = "KeyboardActions" },
     { key = "mouseButtons", dependency = "MouseButtonActions" },
-    { key = "consumables", dependency = "ConsumableBar" },
 }
 
 local function ResolveUnitId(rowOrUnit)

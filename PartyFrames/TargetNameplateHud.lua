@@ -6,13 +6,18 @@ local SettingsSurfaces = ApogeePartyHealthBars_SettingsSurfaces
 local DEFAULT_POINT = "CENTER"
 local DEFAULT_REL_POINT = "CENTER"
 local DEFAULT_X = 0
-local DEFAULT_Y = 120
+local DEFAULT_Y = -150
 local FRAME_STRATA = "MEDIUM"
 local FRAME_LEVEL = 27
 local PREVIEW_SURFACE_KEY = "playerStatus"
+local PREVIEW_ACCESSORY_KEY = "targetEffects"
+local LAYOUT_STACK = "stack"
+local LAYOUT_SPLIT_BASE = "splitBase"
+local LAYOUT_LEFT_ACCESSORY = "leftAccessory"
 
 local surfaces = {}
 local container
+local dragSurface
 local boundUnit
 local boundGuid
 local unlocked = false
@@ -57,17 +62,21 @@ local function EnsureContainer()
     container:SetFrameStrata(FRAME_STRATA)
     container:SetFrameLevel(FRAME_LEVEL)
     container:EnableMouse(false)
-    container:RegisterForDrag()
-    container:SetScript("OnDragStart", function(self)
+    dragSurface = CreateFrame("Frame", nil, container)
+    dragSurface:SetSize(1, 1)
+    dragSurface:SetPoint("CENTER", container, "CENTER", 0, 0)
+    dragSurface:EnableMouse(false)
+    dragSurface:RegisterForDrag()
+    dragSurface:SetScript("OnDragStart", function()
         if not unlocked then return end
-        self:StartMoving()
+        container:StartMoving()
     end)
-    container:SetScript("OnDragStop", function(self)
+    dragSurface:SetScript("OnDragStop", function()
         if not unlocked then return end
-        self:StopMovingOrSizing()
+        container:StopMovingOrSizing()
         SavePosition()
     end)
-    SettingsSurfaces.Register("targetHud", container, {
+    SettingsSurfaces.Register("targetHud", dragSurface, {
         automaticChrome = false,
         configurationStrata = "HIGH",
     })
@@ -78,7 +87,10 @@ local function EnsureContainer()
 end
 
 local function SurfaceIsVisible(surface)
-    return surface.enabled or (unlocked and surface.key == PREVIEW_SURFACE_KEY)
+    if surface.enabled then return true end
+    if not unlocked then return false end
+    if surface.key == PREVIEW_SURFACE_KEY then return true end
+    return surface.key == PREVIEW_ACCESSORY_KEY and (surface.frame:GetWidth() or 1) > 1
 end
 
 local function OrderedVisibleSurfaces()
@@ -95,18 +107,42 @@ end
 
 local function LayoutSurfaces()
     local visible = OrderedVisibleSurfaces()
-    local width, height = 1, 0
+    local splitBase, leftAccessory
+    for _, surface in ipairs(visible) do
+        if surface.layoutRole == LAYOUT_SPLIT_BASE then splitBase = surface end
+        if surface.layoutRole == LAYOUT_LEFT_ACCESSORY then leftAccessory = surface end
+    end
+
+    local left, right, bottom, top = 0, 0, 0, 0
+    local stackHeight = 0
     for index, surface in ipairs(visible) do
         local surfaceWidth = surface.frame:GetWidth() or 1
         local surfaceHeight = surface.frame:GetHeight() or 1
         surface.layoutWidth = surfaceWidth
         surface.layoutHeight = surfaceHeight
         surface.layoutVisible = true
-        width = math.max(width, surfaceWidth)
-        if index > 1 then height = height + surface.verticalGap end
         surface.frame:ClearAllPoints()
-        surface.frame:SetPoint("BOTTOM", container, "BOTTOM", 0, height)
-        height = height + surfaceHeight
+        if surface == splitBase then
+            surface.frame:SetPoint("CENTER", container, "CENTER", 0, 0)
+            left = math.min(left, -surfaceWidth / 2)
+            right = math.max(right, surfaceWidth / 2)
+            bottom = math.min(bottom, -surfaceHeight / 2)
+            top = math.max(top, surfaceHeight / 2)
+        elseif surface == leftAccessory and splitBase then
+            surface.frame:SetPoint("RIGHT", splitBase.frame, "LEFT", -surface.horizontalGap, 0)
+            left = math.min(left, -splitBase.layoutWidth / 2
+                - surface.horizontalGap - surfaceWidth)
+            right = math.max(right, splitBase.layoutWidth / 2)
+            bottom = math.min(bottom, -surfaceHeight / 2, -splitBase.layoutHeight / 2)
+            top = math.max(top, surfaceHeight / 2, splitBase.layoutHeight / 2)
+        else
+            if index > 1 then stackHeight = stackHeight + surface.verticalGap end
+            surface.frame:SetPoint("BOTTOM", container, "CENTER", 0, stackHeight)
+            stackHeight = stackHeight + surfaceHeight
+            left = math.min(left, -surfaceWidth / 2)
+            right = math.max(right, surfaceWidth / 2)
+            top = math.max(top, stackHeight)
+        end
         surface.frame:Show()
     end
     for _, surface in pairs(surfaces) do
@@ -117,7 +153,12 @@ local function LayoutSurfaces()
             surface.frame:Hide()
         end
     end
-    container:SetSize(width, math.max(1, height))
+    local width = math.max(1, right - left)
+    local height = math.max(1, top - bottom)
+    container:SetSize(width, height)
+    dragSurface:ClearAllPoints()
+    dragSurface:SetPoint("CENTER", container, "CENTER", (left + right) / 2, (bottom + top) / 2)
+    dragSurface:SetSize(width, height)
     return #visible > 0
 end
 
@@ -185,8 +226,8 @@ function H.SetUnlocked(value)
     EnsureContainer()
     local nextUnlocked = value == true and not (InCombatLockdown and InCombatLockdown())
     unlocked = nextUnlocked
-    container:EnableMouse(unlocked)
-    if unlocked then container:RegisterForDrag("LeftButton") else container:RegisterForDrag() end
+    dragSurface:EnableMouse(unlocked)
+    if unlocked then dragSurface:RegisterForDrag("LeftButton") else dragSurface:RegisterForDrag() end
     SettingsSurfaces.SetSurfaceChromeShown("targetHud", unlocked)
     LayoutSurfaces()
     H.Refresh()
@@ -197,7 +238,7 @@ function H.IsUnlocked()
     return unlocked
 end
 
-function H.RegisterSurface(key, frame, order, verticalGap)
+function H.RegisterSurface(key, frame, order, gap, layoutRole)
     assert(type(key) == "string" and key ~= "", "Target HUD surface key is required")
     assert(frame, "Target HUD surface frame is required")
     assert(not surfaces[key], "Target HUD surface is already registered: " .. key)
@@ -208,7 +249,9 @@ function H.RegisterSurface(key, frame, order, verticalGap)
         key = key,
         frame = frame,
         order = tonumber(order) or 1,
-        verticalGap = math.max(0, tonumber(verticalGap) or 0),
+        verticalGap = math.max(0, tonumber(gap) or 0),
+        horizontalGap = math.max(0, tonumber(gap) or 0),
+        layoutRole = layoutRole or LAYOUT_STACK,
         enabled = false,
     }
     LayoutSurfaces()
@@ -264,4 +307,5 @@ end
 function H.GetBoundUnit() return boundUnit end
 function H.GetBoundGuid() return boundGuid end
 function H.GetContainer() return container end
+function H.GetDragSurface() return dragSurface end
 function H.GetSurface(key) return surfaces[key] end

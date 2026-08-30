@@ -5,7 +5,6 @@ local surfaces = {}
 local configurationActive = false
 local restorePending = false
 local restoreFrame
-local PREVIEW_DOCK_GAP = 8
 
 local FOUNDATION = { 0, 0, 0, 1 }
 local BODY = { 0.018, 0.018, 0.024, 1 }
@@ -49,38 +48,6 @@ local function setVisible(region, shown)
     else
         region:Hide()
     end
-end
-
-local function capturePoint(frame)
-    if not frame or not frame.GetPoint then return nil end
-    local point, relativeTo, relativePoint, x, y = frame:GetPoint(1)
-    if not point then return nil end
-    return {
-        point = point,
-        relativeTo = relativeTo,
-        relativePoint = relativePoint,
-        x = x,
-        y = y,
-    }
-end
-
-local function applyPoint(frame, position)
-    if not frame or not position then return false end
-    frame:ClearAllPoints()
-    frame:SetPoint(position.point, position.relativeTo,
-        position.relativePoint, position.x, position.y)
-    return true
-end
-
-local function applyPreviewDock(surface)
-    local settings = surfaces.settings
-    if not surface or surface.key == "settings"
-        or not settings or not settings.frame then
-        return false
-    end
-    surface.frame:ClearAllPoints()
-    surface.frame:SetPoint("BOTTOM", settings.frame, "TOP", 0, PREVIEW_DOCK_GAP)
-    return true
 end
 
 local function addRegion(chrome, region)
@@ -212,43 +179,6 @@ function M.SetSurfaceChromeShown(key, shown)
     if not surface then return false end
     setChromeActive(surface.chrome, shown == true)
     return true
-end
-
-function M.DockConfigurationPreview(key)
-    local surface = surfaces[key]
-    if not configurationActive or not surface or surface.previewDock then return false end
-    local position = capturePoint(surface.frame)
-    if not position then return false end
-    surface.previewDock = {
-        restorePosition = position,
-        moved = false,
-    }
-    return applyPreviewDock(surface)
-end
-
-function M.MarkConfigurationPreviewMoved(key)
-    local surface = surfaces[key]
-    if not surface or not surface.previewDock then return false end
-    surface.previewDock.moved = true
-    return true
-end
-
-function M.RefreshConfigurationPreviewDock(key)
-    local surface = surfaces[key]
-    if not surface or not surface.previewDock then return false end
-    surface.previewDock.restorePosition = capturePoint(surface.frame)
-        or surface.previewDock.restorePosition
-    surface.previewDock.moved = false
-    return applyPreviewDock(surface)
-end
-
-function M.ReleaseConfigurationPreview(key)
-    local surface = surfaces[key]
-    if not surface or not surface.previewDock then return false end
-    local previewDock = surface.previewDock
-    surface.previewDock = nil
-    if previewDock.moved then return true end
-    return applyPoint(surface.frame, previewDock.restorePosition)
 end
 
 local function restoreRuntimeStrata()

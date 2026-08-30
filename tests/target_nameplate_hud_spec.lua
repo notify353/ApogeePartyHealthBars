@@ -7,7 +7,7 @@ ApogeePartyHealthBars_S = {
         targetHudPoint = "CENTER",
         targetHudRelPoint = "CENTER",
         targetHudX = 0,
-        targetHudY = 120,
+        targetHudY = -150,
     },
 }
 
@@ -79,23 +79,25 @@ C_NamePlate = {
 dofile("PartyFrames/TargetNameplateHud.lua")
 local hud = ApogeePartyHealthBars_TargetNameplateHud
 local status, effects = widget(UIParent), widget(UIParent)
-status:SetSize(159, 22)
+status:SetSize(382, 16)
 effects:SetSize(159, 24)
-hud.RegisterSurface("playerStatus", status, 1, 0)
-hud.RegisterSurface("targetEffects", effects, 2, 4)
+hud.RegisterSurface("playerStatus", status, 1, 0, "splitBase")
+hud.RegisterSurface("targetEffects", effects, 2, 4, "leftAccessory")
 
 local root = hud.GetContainer()
+local dragSurface = hud.GetDragSurface()
 assert(root and root.parent == UIParent and root.movable and root.clamped
-        and registeredSurface.key == "targetHud" and registeredSurface.frame == root
+        and registeredSurface.key == "targetHud" and registeredSurface.frame == dragSurface
         and registeredSurface.options.automaticChrome == false
         and root.points[1][1] == "CENTER" and root.points[1][2] == UIParent
-        and root.points[1][3] == "CENTER" and root.points[1][4] == 0 and root.points[1][5] == 120,
+        and root.points[1][3] == "CENTER" and root.points[1][4] == 0 and root.points[1][5] == -150,
     "Target HUD root was not created as a movable UIParent-only surface")
 
 hud.SetSurfaceEnabled("playerStatus", true)
 assert(root.shown and hud.GetBoundUnit() == "target" and hud.GetBoundGuid() == "Creature-1"
-        and root.width == 159 and root.height == 22
-        and status.points[1][1] == "BOTTOM" and status.points[1][2] == root,
+        and root.width == 382 and root.height == 16
+        and dragSurface.width == 382 and dragSurface.height == 16
+        and status.points[1][1] == "CENTER" and status.points[1][2] == root,
     "living hostile target did not show the player-status surface")
 
 local initialSetPointCalls, initialClearPointCalls = root.setPointCalls, root.clearPointCalls
@@ -103,15 +105,18 @@ hud.SetSurfaceEnabled("playerStatus", true)
 hud.Refresh()
 hud.SetSurfaceEnabled("targetEffects", true)
 assert(root.setPointCalls == initialSetPointCalls and root.clearPointCalls == initialClearPointCalls
-        and root.points[1][2] == UIParent and root.width == 159 and root.height == 50
-        and effects.points[1][5] == 26,
-    "surface refresh or stacking mutated the UIParent root anchor")
+        and root.points[1][2] == UIParent and root.width == 545 and root.height == 24
+        and dragSurface.width == 545 and dragSurface.height == 24
+        and effects.points[1][1] == "RIGHT" and effects.points[1][2] == status
+        and effects.points[1][3] == "LEFT" and effects.points[1][4] == -4,
+    "horizontal surface layout mutated the UIParent gap anchor")
 
 effects:SetSize(170, 28)
 hud.SetSurfaceEnabled("targetEffects", true)
-assert(root.width == 170 and root.height == 54
+assert(root.width == 556 and root.height == 28
+        and dragSurface.width == 556 and dragSurface.height == 28
         and root.setPointCalls == initialSetPointCalls and root.clearPointCalls == initialClearPointCalls,
-    "surface geometry change mutated the UIParent root anchor")
+    "left-growing reminder geometry mutated the UIParent gap anchor")
 
 units.target.guid = "Creature-2"
 hud.OnTargetChanged()
@@ -138,36 +143,37 @@ assert(root.shown and hud.GetBoundGuid() == "Creature-3",
 ApogeePartyHealthBars_S.configMode = true
 hud.SetSurfaceEnabled("playerStatus", false)
 assert(not root.shown and not status.shown, "configuration mode showed a locked Target HUD")
-assert(hud.SetUnlocked(true) and root.shown and status.shown and root.mouseEnabled
+assert(hud.SetUnlocked(true) and root.shown and status.shown and effects.shown
+        and dragSurface.mouseEnabled and not root.mouseEnabled
         and registeredSurface.chromeShown and root.points[1][2] == UIParent,
     "Target HUD configuration sample was not unlocked at its UIParent position")
-root.scripts.OnDragStart(root)
+dragSurface.scripts.OnDragStart(dragSurface)
 assert(root.moving, "unlocked Target HUD did not begin moving")
 root:ClearAllPoints()
 root:SetPoint("CENTER", UIParent, "CENTER", 35, 145)
-root.scripts.OnDragStop(root)
+dragSurface.scripts.OnDragStop(dragSurface)
 assert(not root.moving and ApogeePartyHealthBars_S.sv.targetHudX == 35
         and ApogeePartyHealthBars_S.sv.targetHudY == 145,
     "Target HUD drag did not save its profile-owned position")
 hud.SetUnlocked(false)
-assert(not root.shown and not root.mouseEnabled and not registeredSurface.chromeShown
+assert(not root.shown and not dragSurface.mouseEnabled and not registeredSurface.chromeShown
         and root.points[1][2] == UIParent,
     "locking the Target HUD changed its UIParent anchor or left its sample visible")
 
 inCombat = true
-assert(not hud.SetUnlocked(true) and not hud.IsUnlocked() and not root.mouseEnabled,
+assert(not hud.SetUnlocked(true) and not hud.IsUnlocked() and not dragSurface.mouseEnabled,
     "Target HUD became draggable in combat")
 inCombat = false
 hud.ResetPosition()
 assert(root.points[1][1] == "CENTER" and root.points[1][2] == UIParent
-        and root.points[1][4] == 0 and root.points[1][5] == 120
-        and ApogeePartyHealthBars_S.sv.targetHudY == 120,
+        and root.points[1][4] == 0 and root.points[1][5] == -150
+        and ApogeePartyHealthBars_S.sv.targetHudY == -150,
     "Target HUD reset did not restore the default UIParent position")
 
 ApogeePartyHealthBars_S.sv.targetHudX = math.huge
 ApogeePartyHealthBars_S.sv.targetHudY = 10
 assert(not hud.RestorePosition() and root.points[1][2] == UIParent
-        and root.points[1][4] == 0 and root.points[1][5] == 120,
+        and root.points[1][4] == 0 and root.points[1][5] == -150,
     "invalid Target HUD position did not fall back safely")
 
 ApogeePartyHealthBars_S.configMode = false

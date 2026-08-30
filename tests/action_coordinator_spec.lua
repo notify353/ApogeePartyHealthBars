@@ -69,7 +69,6 @@ local deps = {
     GetSpellFromCursor = function() end, GetSettingsUI = function() end,
     RefreshPartyFrameClicksPage = function() end,
     IsAddonEnabled = function() return true end,
-    GetConsumableLeftOffset = function() return 0 end,
 }
 
 local coordinator = ApogeePartyHealthBars.Require("Actions", "ActionCoordinator")

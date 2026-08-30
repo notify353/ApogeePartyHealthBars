@@ -217,6 +217,7 @@ P.IsKnownSpellName = IsKnownSpellName
 P.ResolveKnownSpell = ResolveKnownSpell
 P.GetSpellDescription = GetSpellDescription
 P.GetSpellTexture = GetSpellTextureById
+P.GetSpellName = GetSpellNameById
 P.IsSupported = function()
     return not ClientCapabilities
         or ClientCapabilities.IsFeatureAvailable("spellAssignment")

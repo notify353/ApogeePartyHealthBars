@@ -62,11 +62,15 @@ local function makeRow(unitId)
 end
 local playerRow = makeRow("player")
 local partyRow = makeRow("party1")
+playerRow.previewGuid = "preview-player"
+partyRow.previewGuid = "preview-party1"
 local existing = { player = true, party1 = true, target = true }
+local inCombat = true
+function InCombatLockdown() return inCombat end
 function UnitExists(unitId) return existing[unitId] == true end
 function UnitCanAttack(source, target) return source == "player" and target == "target" end
 function UnitIsDeadOrGhost() return false end
-function UnitAffectingCombat(unitId) return unitId == "player" end
+function UnitAffectingCombat(unitId) return inCombat and unitId == "player" end
 function UnitThreatSituation(unitId) return unitId == "player" and 3 or 1 end
 function UnitDetailedThreatSituation(unitId, target)
     assert(target == "target")
@@ -97,6 +101,29 @@ end
 threat.Refresh()
 assert(playerRow.threatBarFill.width == 0 and partyRow.threatBarFill.width == 32,
     "threat bars did not clamp their right-to-left fill to the 0-100 range")
+
+inCombat = false
+threat.Refresh()
+assert(not playerRow.threatRail.shown and not playerRow.threatBarBg.shown
+        and not partyRow.threatRail.shown and not threat.IsActive(),
+    "threat visuals remained visible out of combat")
+
+local liveUnitExists, liveThreatSituation = UnitExists, UnitThreatSituation
+UnitExists = function() error("preview consulted live unit existence") end
+UnitThreatSituation = function() error("preview consulted live threat status") end
+threat.SetPreview({
+    inCombat = true,
+    details = {
+        ["preview-player"] = { status = 3, isTanking = true, scaledPercent = 100 },
+        ["preview-party1"] = { status = 1, isTanking = false, scaledPercent = 62 },
+    },
+})
+assert(playerRow.threatRail.shown and playerRow.threatBarBg.shown
+        and partyRow.threatRail.shown and partyRow.threatBarBg.shown,
+    "synthetic Combat preview did not render isolated threat visuals")
+UnitExists, UnitThreatSituation = liveUnitExists, liveThreatSituation
+threat.ClearPreview()
+inCombat = true
 
 existing.target = false
 threat.Refresh()

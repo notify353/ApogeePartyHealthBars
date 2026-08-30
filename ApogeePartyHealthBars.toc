@@ -9,9 +9,13 @@
 Core/Namespace.lua
 Core/Data.lua
 Core/ClientCapabilities.lua
+Core/ChatComposer.lua
 Core/FeaturePolicy.lua
 Core/UpdateScheduler.lua
 Reminders/CleanseData.lua
+Reminders/GroupHelperData.lua
+Reminders/GroupHelperPolicy.lua
+Reminders/GroupHelperSettings.lua
 DungeonBoard/DungeonBoardCatalog.lua
 DungeonGuide/DungeonGuideCatalog.lua
 DungeonGuide/ScarletMonasteryGuide.lua
@@ -81,6 +85,9 @@ Profiles/ProfileCodec.lua
 Profiles/ProfileStore.lua
 Reminders/HealthAlerts.lua
 PartyFrames/Auras.lua
+Reminders/GroupHelperRuntime.lua
+PartyFrames/GroupHelperPresentation.lua
+PartyFrames/PartyFramePreview.lua
 Core/PlayerSpells.lua
 Reminders/CleanseWatch.lua
 Reminders/TargetEffects/TargetEffectHud.lua
@@ -125,6 +132,7 @@ Runtime/TargetEffectEvents.lua
 Runtime/DungeonBoardEvents.lua
 Runtime/CleanseEvents.lua
 Runtime/BuffThanksEvents.lua
+Runtime/GroupHelperEvents.lua
 Runtime/RuntimeEvents.lua
 Bootstrap/ActionComposition.lua
 Bootstrap/PartyFrameComposition.lua

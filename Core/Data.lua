@@ -1,12 +1,12 @@
 -- Constants and mutable state (separate file — Lua main-chunk 200 local limit).
 ApogeePartyHealthBars_C = {
-    SAVED_VARIABLES_VERSION = 8,
+    SAVED_VARIABLES_VERSION = 9,
     PROFILE_STORE_VERSION   = 3,
     PROFILE_PAYLOAD_VERSION = 4,
     ADDON_PREFIX         = "|cffFFD700Party Health:|r",
     FRAME_W              = 200,
-    ROW_H                = 26,
-    MANA_H               = 5,
+    ROW_H                = 36,
+    MANA_H               = 6,
     MANA_GAP             = 1,
     ROW_GAP              = 2,
     HEADER_H             = 22,
@@ -60,10 +60,10 @@ ApogeePartyHealthBars_C = {
     LOW_HEALTH_DEFAULT_SOUND = "focus",
     SHORTCUT_DEFAULTS_VERSION = 1,
     SHORTCUT_CLASS_DEFAULTS = {},
-    DEFAULT_ANCHOR       = "TOPRIGHT",
-    DEFAULT_REL          = "TOPRIGHT",
-    DEFAULT_X            = 0,
-    DEFAULT_Y            = -252,
+    DEFAULT_ANCHOR       = "RIGHT",
+    DEFAULT_REL          = "RIGHT",
+    DEFAULT_X            = -24,
+    DEFAULT_Y            = 0,
     MINIMAP_BTN_SIZE     = 31,
     MINIMAP_RADIUS       = 80,
     MINIMAP_ANGLE        = 225,
@@ -100,6 +100,7 @@ ApogeePartyHealthBars_C = {
         {
             canonical = "Arcane Intellect",
             track     = "primary",
+            manaOnly  = true,
             pattern   = "^Arcane Intellect",
             icon      = "Interface\\Icons\\Spell_Holy_MagicalSentry",
             auraIds = {
@@ -172,13 +173,9 @@ ApogeePartyHealthBars_C = {
         {
             canonical = "Divine Spirit",
             track     = "spirit",
+            manaOnly  = true,
             pattern   = "^Divine Spirit",
             icon      = "Interface\\Icons\\Spell_Holy_DivineSpirit",
-            eligibleClasses = {
-                PRIEST = true,
-                MAGE   = true,
-                DRUID  = true,
-            },
             auraIds = {
                 [14752] = true, [14818] = true, [14819] = true,
                 [27841] = true, [25312] = true,
@@ -342,10 +339,10 @@ ApogeePartyHealthBars_C = {
             },
         },
     },
-    BAR_BG_COLOR         = { 0.11, 0.11, 0.13, 1 },
+    BAR_BG_COLOR         = { 0.025, 0.030, 0.040, 0.98 },
     ENEMY_TARGET_BG_COLOR = { 0.32, 0.08, 0.08, 1 },
-    PANEL_BG_COLOR       = { 0.06, 0.06, 0.08, 0.96 },
-    PANEL_EDGE_COLOR     = { 0.22, 0.22, 0.26, 1 },
+    PANEL_BG_COLOR       = { 0.018, 0.022, 0.030, 0.94 },
+    PANEL_EDGE_COLOR     = { 0.20, 0.23, 0.29, 0.92 },
     PW_SHIELD_RANKS = {
         [17]    = { 45,  0.332 },
         [592]   = { 89,  0.332 },

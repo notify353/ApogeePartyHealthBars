@@ -5,15 +5,19 @@ local LIFETIME_SECONDS = 30
 local FADE_SECONDS = 5
 local SOUND_THROTTLE_SECONDS = 3
 local MAX_ENTRIES = 3
-local FRAME_WIDTH = 340
+local FRAME_WIDTH = 326
 local ROW_HEIGHT = 34
-local ROW_GAP = 2
-local ACTION_SIZE = 24
-local ACTION_GAP = 3
-local ACTION_RIGHT_INSET = 3
+local ROW_GAP = 1
+local ACTION_SIZE = 20
+local ACTION_GAP = 2
+local ACTION_RIGHT_INSET = 2
 local ACTIONS_WIDTH = ACTION_SIZE * 2 + ACTION_GAP + ACTION_RIGHT_INSET
 local WHO_TEXTURE = "Interface\\Common\\UI-Searchbox-Icon"
 local WHISPER_TEXTURE = "Interface\\ChatFrame\\UI-ChatIcon-Chat-Up"
+local ROW_FILL = { 0.025, 0.03, 0.04, 0.82 }
+local PREVIEW_RAIL = { 0.62, 0.48, 0.12, 0.95 }
+local GUILD_RAIL = { 0.20, 0.72, 0.28, 0.95 }
+local CHAT_RAIL = { 0.32, 0.58, 0.72, 0.95 }
 
 local D
 local frame
@@ -72,14 +76,19 @@ local function prune(atTime)
     entries = kept
 end
 
-local function dungeonNames(entry)
+local function styledDungeonNames(entry)
     local result = {}
     for _, key in ipairs(entry.dungeonKeys or {}) do
         local dungeon = D.Catalog.GetDungeon(key)
-        result[#result + 1] = dungeon
-            and (dungeon.name .. " • " .. tostring(dungeon.minLevel)
-                .. "-" .. tostring(dungeon.maxLevel))
-            or key
+        if dungeon then
+            result[#result + 1] = "|cffededf2"
+                .. D.Helpers.EscapeText(dungeon.name)
+                .. "|r  |cff77777f•  " .. tostring(dungeon.minLevel)
+                .. "-" .. tostring(dungeon.maxLevel) .. "|r"
+        else
+            result[#result + 1] = "|cffededf2"
+                .. D.Helpers.EscapeText(key) .. "|r"
+        end
     end
     return table.concat(result, "; ")
 end
@@ -111,19 +120,24 @@ local function createActionButton(parent, texturePath)
     button:SetSize(ACTION_SIZE, ACTION_SIZE)
     local background = button:CreateTexture(nil, "BACKGROUND")
     background:SetAllPoints()
-    background:SetColorTexture(0.07, 0.075, 0.095, 0.98)
+    background:SetColorTexture(0, 0, 0, 0)
     local icon = button:CreateTexture(nil, "ARTWORK")
-    icon:SetSize(16, 16)
+    icon:SetSize(15, 15)
     icon:SetPoint("CENTER")
     icon:SetTexture(texturePath)
+    icon:SetAlpha(0.78)
     button.background, button.icon = background, icon
     button:SetScript("OnEnter", function(self)
+        self.background:SetColorTexture(0.12, 0.12, 0.14, 0.72)
+        self.icon:SetAlpha(self.actionEnabled and 1 or 0.42)
         if not GameTooltip or not self.tooltip then return end
         GameTooltip:SetOwner(self, "ANCHOR_TOP")
         GameTooltip:SetText(self.tooltip, 1, 1, 1, 1, true)
         GameTooltip:Show()
     end)
-    button:SetScript("OnLeave", function()
+    button:SetScript("OnLeave", function(self)
+        self.background:SetColorTexture(0, 0, 0, 0)
+        self.icon:SetAlpha(self.actionEnabled and 0.78 or 0.32)
         if GameTooltip then GameTooltip:Hide() end
     end)
     return button
@@ -131,17 +145,19 @@ end
 
 local function configureAction(button, enabled, tooltip, callback)
     button.tooltip = tooltip
+    button.actionEnabled = enabled == true
     if enabled then
         if button.Enable then button:Enable() end
-        button.background:SetColorTexture(0.07, 0.075, 0.095, 0.98)
         button.icon:SetVertexColor(1, 1, 1, 1)
+        button.icon:SetAlpha(0.78)
         button:SetScript("OnClick", callback)
     else
         if button.Disable then button:Disable() end
-        button.background:SetColorTexture(0.045, 0.05, 0.065, 0.98)
         button.icon:SetVertexColor(0.42, 0.44, 0.48, 1)
+        button.icon:SetAlpha(0.32)
         button:SetScript("OnClick", nil)
     end
+    button.background:SetColorTexture(0, 0, 0, 0)
     button:Show()
 end
 
@@ -190,20 +206,25 @@ local function render()
         if entry then
             local source
             if entry.preview then
-                source = "|cffffd100PREVIEW|r  "
+                source = "|cffd8b64cPREVIEW|r  "
+                row.rail:SetColorTexture(unpack(PREVIEW_RAIL))
             elseif entry.source == "guild" then
-                source = "|cff4dff59GUILD|r  "
+                source = "|cff53c86aGUILD|r  "
+                row.rail:SetColorTexture(unpack(GUILD_RAIL))
             else
-                source = "|cff8aa4bdCHAT|r  "
+                source = "|cff6f93aeCHAT|r  "
+                row.rail:SetColorTexture(unpack(CHAT_RAIL))
             end
-            row.title:SetText(source .. "|cffffd100"
-                .. D.Helpers.EscapeText(dungeonNames(entry)) .. "|r")
+            row.title:SetText(source .. styledDungeonNames(entry))
             local sender = D.Helpers.EscapeText(entry.sender or "Unknown")
             local message = D.Helpers.EscapeText(entry.message or "")
-            row.detail:SetText(sender .. (message ~= "" and ("  •  " .. message) or ""))
+            row.detail:SetText("|cffededf2" .. sender .. "|r"
+                .. (message ~= "" and ("  |cff77777f>  " .. message .. "|r") or ""))
             if entry.preview then
                 configureAction(row.who, false, "Preview only.", nil)
                 configureAction(row.whisper, false, "Preview only.", nil)
+                row.who:Hide()
+                row.whisper:Hide()
             else
                 local canWho, whoReason = D.Actions.CanQueryWho(entry.sender)
                 configureAction(row.who, canWho,
@@ -222,11 +243,7 @@ local function render()
                             entry.sender, role, whisperDungeonNames(entry)))
                     end)
             end
-            if entry.source == "guild" then
-                row.background:SetColorTexture(0.04, 0.18, 0.06, 0.92)
-            else
-                row.background:SetColorTexture(0.035, 0.045, 0.065, 0.92)
-            end
+            row.background:SetColorTexture(unpack(ROW_FILL))
             row:SetAlpha(entry.preview and 1 or Feed.GetEntryAlpha(entry, now))
             row:Show()
         else
@@ -333,17 +350,24 @@ function Feed.Build()
 
         local background = row:CreateTexture(nil, "BACKGROUND")
         background:SetAllPoints()
+        background:SetColorTexture(unpack(ROW_FILL))
+        local rail = row:CreateTexture(nil, "ARTWORK")
+        rail:SetPoint("TOPLEFT", row, "TOPLEFT", 0, 0)
+        rail:SetPoint("BOTTOMLEFT", row, "BOTTOMLEFT", 0, 0)
+        rail:SetWidth(3)
+        rail:SetColorTexture(unpack(CHAT_RAIL))
         local title = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-        title:SetPoint("TOPLEFT", row, "TOPLEFT", 7, -3)
+        title:SetPoint("TOPLEFT", row, "TOPLEFT", 10, -3)
         title:SetPoint("TOPRIGHT", row, "TOPRIGHT", -ACTIONS_WIDTH, -3)
         title:SetJustifyH("LEFT")
         title:SetWordWrap(false)
         local detail = row:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-        detail:SetPoint("TOPLEFT", row, "TOPLEFT", 7, -18)
+        detail:SetPoint("TOPLEFT", row, "TOPLEFT", 10, -18)
         detail:SetPoint("TOPRIGHT", row, "TOPRIGHT", -ACTIONS_WIDTH, -18)
         detail:SetJustifyH("LEFT")
         detail:SetWordWrap(false)
         row.background = background
+        row.rail = rail
         row.title = title
         row.detail = detail
         row.who = createActionButton(row, WHO_TEXTURE)
@@ -355,7 +379,6 @@ function Feed.Build()
     end
 
     frame:SetScript("OnDragStart", function(self)
-        D.SettingsSurfaces.MarkConfigurationPreviewMoved("feed")
         self:StartMoving()
     end)
     frame:SetScript("OnDragStop", function(self)
@@ -383,14 +406,7 @@ local function applyUnlocked()
 end
 
 function Feed.SetUnlocked(value)
-    local nextUnlocked = value == true
-    local wasUnlocked = unlocked
-    unlocked = nextUnlocked
-    if nextUnlocked and not wasUnlocked then
-        D.SettingsSurfaces.DockConfigurationPreview("feed")
-    elseif wasUnlocked and not nextUnlocked then
-        D.SettingsSurfaces.ReleaseConfigurationPreview("feed")
-    end
+    unlocked = value == true
     applyUnlocked()
 end
 
@@ -416,5 +432,4 @@ end
 function Feed.ResetPosition()
     D.Settings.ResetFeedPosition()
     Feed.RestorePosition()
-    if unlocked then D.SettingsSurfaces.RefreshConfigurationPreviewDock("feed") end
 end

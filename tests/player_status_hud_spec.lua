@@ -36,8 +36,8 @@ ApogeePartyHealthBars_ClientCapabilities = {
 }
 local registered, enabledCalls = nil, {}
 ApogeePartyHealthBars_TargetNameplateHud = {
-    RegisterSurface = function(key, frame, order, gap)
-        registered = { key = key, frame = frame, order = order, gap = gap }
+    RegisterSurface = function(key, frame, order, gap, layoutRole)
+        registered = { key = key, frame = frame, order = order, gap = gap, layoutRole = layoutRole }
     end,
     SetSurfaceEnabled = function(key, enabled)
         enabledCalls[#enabledCalls + 1] = { key, enabled }
@@ -95,8 +95,8 @@ assert(not valid and tostring(validationError):find("IsShieldEnabled", 1, true),
 hud.Initialize(deps)
 local row = hud.GetAnchor()
 assert(registered and registered.key == "playerStatus" and registered.frame == row
-        and registered.order == 1 and registered.gap == 0
-        and row.width == 159 and row.height == 1 and row.mouseEnabled == false,
+        and registered.order == 1 and registered.gap == 0 and registered.layoutRole == "splitBase"
+        and row.width == 382 and row.height == 1 and row.mouseEnabled == false,
     "player status HUD did not register as the passive lower Target HUD surface")
 
 local snapshot = hud.Refresh()
@@ -104,19 +104,19 @@ local healthBar, shieldBar = hud.GetHealthBar(), hud.GetShieldBar()
 local incomingBar, powerBars = hud.GetIncomingHealBar(), hud.GetPowerBars()
 local powerBackgrounds = hud.GetPowerBackgrounds()
 assert(snapshot.health == 80 and snapshot.shield == 20 and snapshot.incoming == 30
-        and row.width == 159 and row.height == 22 and #hud.GetChannels() == 2
+        and row.width == 382 and row.height == 16 and #hud.GetChannels() == 2
         and healthBar.minimum == 0 and healthBar.maximum == 120 and healthBar.value == 80
         and healthBar.color[1] == 0.28 and healthBar.color[2] == 0.74
         and shieldBar.shown and shieldBar.points[1][4] == 106 and shieldBar.width == 26.5
         and incomingBar.shown and incomingBar.maximum == 120 and incomingBar.value == 110
-        and powerBackgrounds[1].points[1][5] == -11
-        and powerBackgrounds[2].points[1][5] == -17
-        and powerBars[1].value == 75 and powerBars[2].value == 40
+        and powerBackgrounds[1].points[1][1] == "TOPRIGHT"
+        and powerBackgrounds[2].points[1][1] == "TOPRIGHT"
+        and powerBars[1].value == 40 and powerBars[2].value == 75
         and enabledCalls[#enabledCalls][2] == true,
     "combined health, overlay, and dual-power geometry changed")
 
 local preview = hud.CreateConfigurationPreview(UIParent)
-assert(preview.width == 159 and preview.height == 22 and preview.shown
+assert(preview.width == 382 and preview.height == 16 and preview.shown
         and preview.display.healthBar.value == 55
         and preview.display.healthBar.maximum == 120
         and preview.display.shieldBar.shown
@@ -133,16 +133,22 @@ hud.Refresh()
 assert(not incomingBar.shown, "incoming-heal preference did not hide its overlay")
 shieldEnabled, incomingEnabled = true, true
 
+channels = { { powerType = 0, powerToken = "MANA", value = 62, maximum = 100 } }
+hud.Refresh()
+assert(row.height == 10 and powerBars[1].value == 62
+        and powerBars[1].color[1] == 0.3 and not powerBars[2].shown,
+    "mana-only player status did not use the primary right wing")
+
 channels = { { powerType = 1, powerToken = "RAGE", value = 35, maximum = 100 } }
 hud.Refresh()
-assert(row.height == 16 and powerBackgrounds[1].points[1][5] == -11
+assert(row.height == 10 and powerBackgrounds[1].points[1][1] == "TOPRIGHT"
         and not powerBars[2].shown,
     "single-resource player status HUD did not collapse to 16px")
 
 validHealthMaximum = false
 hud.Refresh()
-assert(row.height == 5 and not healthBar.shown and not shieldBar.shown
-        and not incomingBar.shown and powerBackgrounds[1].points[1][5] == 0,
+assert(row.height == 10 and not healthBar.shown and not shieldBar.shown
+        and not incomingBar.shown and powerBackgrounds[1].points[1][1] == "TOPRIGHT",
     "invalid health did not collapse while retaining valid power")
 channels = {}
 hud.Refresh()

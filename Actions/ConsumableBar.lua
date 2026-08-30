@@ -35,7 +35,7 @@ local READY_TRANSITION_STATES = {
     invalid = true,
 }
 
-local row, container, sectionLabel
+local footerAnchor, container, sectionLabel
 local icons = {}
 local resolved = {}
 local previousStates = {}
@@ -43,11 +43,12 @@ local effectiveEnabled = false
 local initialized = false
 local rebuildPending = false
 local totalCandidates = 0
-local layoutOffset = 0
-local requestLayout, syncTicker, getLeftOffset, isAddonEnabled, isItemAssigned
+local layoutLeftOffset = 0
+local requestLayout, syncTicker, isAddonEnabled, isItemAssigned
 local positionSecureOverlay, showSecureFrame, hideSecureFrame, setSecureMouseEnabled, deferSecureUpdate
 
-local GRID_HEIGHT = C.SHORTCUT_ICON_SIZE * C.CONSUMABLE_ROWS
+local GRID_HEIGHT = C.SHORTCUT_TOP_GAP
+    + C.SHORTCUT_ICON_SIZE * C.CONSUMABLE_ROWS
     + C.SHORTCUT_ICON_GAP * (C.CONSUMABLE_ROWS - 1)
 local GRID_WIDTH = C.SHORTCUT_ICON_SIZE * C.CONSUMABLE_COLUMNS
     + C.SHORTCUT_ICON_GAP * (C.CONSUMABLE_COLUMNS - 1)
@@ -168,7 +169,6 @@ end
 function B.Configure(deps)
     requestLayout = assert(deps.RequestLayout)
     syncTicker = deps.SyncTicker
-    getLeftOffset = assert(deps.GetLeftOffset)
     isAddonEnabled = deps.IsAddonEnabled
     isItemAssigned = deps.IsItemAssigned
     positionSecureOverlay = assert(deps.PositionSecureOverlay)
@@ -178,10 +178,10 @@ function B.Configure(deps)
     deferSecureUpdate = assert(deps.DeferSecureUpdate)
 end
 
-function B.Attach(playerRow)
-    row = playerRow
-    if container or not row then return end
-    container = CreateFrame("Frame", nil, row.btn)
+function B.Attach(anchor)
+    footerAnchor = anchor
+    if container or not footerAnchor then return end
+    container = CreateFrame("Frame", nil, footerAnchor)
     container:SetSize(GRID_WIDTH, GRID_HEIGHT)
     sectionLabel = ActionHud.CreateSectionLabel(container, "Consumables", GRID_WIDTH, "LEFT")
     sectionLabel:SetPoint("TOPLEFT", container, "TOPLEFT", 0, 0)
@@ -219,7 +219,7 @@ function B.Rebuild(force)
         initialized = false
         requestLayout()
     end
-    B.Layout(layoutOffset)
+    B.Layout(layoutLeftOffset)
     B.Refresh(true)
     if syncTicker then syncTicker() end
     return changed
@@ -285,9 +285,11 @@ function B.RefreshSecureActions()
     return true
 end
 
-function B.Layout(topOffset)
-    if not container or not row then return end
-    if topOffset ~= nil then layoutOffset = math.max(0, tonumber(topOffset) or 0) end
+function B.Layout(leftOffset)
+    if not container or not footerAnchor then return end
+    if leftOffset ~= nil then
+        layoutLeftOffset = math.max(0, tonumber(leftOffset) or 0)
+    end
     if not IsShown() then
         ActionHud.SetSectionLabelVisible(sectionLabel, false)
         container:Hide()
@@ -299,8 +301,7 @@ function B.Layout(topOffset)
     end
 
     container:ClearAllPoints()
-    container:SetPoint("TOPLEFT", row.btn, "TOPLEFT", getLeftOffset(),
-        -layoutOffset)
+    container:SetPoint("TOPLEFT", footerAnchor, "TOPLEFT", layoutLeftOffset, 0)
     local labelVisible = S.configMode == true
     local labelHeight = labelVisible and ActionHud.GetSectionLabelHeight() or 0
     container:SetSize(GRID_WIDTH, GRID_HEIGHT + labelHeight)
@@ -315,7 +316,7 @@ function B.Layout(topOffset)
             local column = zeroIndex % C.CONSUMABLE_COLUMNS
             local gridRow = math.floor(zeroIndex / C.CONSUMABLE_COLUMNS)
             icon:SetPoint("TOPLEFT", container, "TOPLEFT", column * stride,
-                -(labelHeight + gridRow * stride))
+                -(labelHeight + C.SHORTCUT_TOP_GAP + gridRow * stride))
             icon:Show()
         else
             icon:Hide()
@@ -392,7 +393,7 @@ end
 
 function B.GetWidth(unitId)
     if not IsShown() or unitId ~= "player" then return 0 end
-    return getLeftOffset() + GRID_WIDTH
+    return GRID_WIDTH
 end
 
 function B.GetIcons() return icons end

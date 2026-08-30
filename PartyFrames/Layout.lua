@@ -65,7 +65,8 @@ local function ApplyPartyBuffBinding(surface, index)
     ClearSimpleSpellAttributes(button)
     local icon = surface.partyBuffIcons and surface.partyBuffIcons[index]
     local active = surface.visible and icon and icon:IsShown()
-        and API.Exists(surface.unitId) and D.IsSavedFeatureEnabled("clickableBuffIcons")
+        and not S.configMode and API.Exists(surface.unitId)
+        and D.IsSavedFeatureEnabled("clickableBuffIcons")
     local spellName = active and D.GetPartyBuffCastSpellName(index) or nil
     if not spellName then
         D.SetSecureMouseEnabled(button, false)
@@ -114,6 +115,11 @@ function L.HideAllSecureOverlays()
 end
 
 local function SyncSurfaceVisibility(row)
+    if row.primary:IsPreviewing() then
+        row.primary:SetShown(true)
+        row.target:SetShown(D.IsUnitTargetsEnabled() and row.target:IsPreviewing())
+        return
+    end
     local primaryExists = API.Exists(row.unitId)
     row.primary:SetShown(true)
 
@@ -121,20 +127,19 @@ local function SyncSurfaceVisibility(row)
         and API.IsConnected(row.unitId) and API.Exists(row.target.unitId)
     row.target:SetShown(targetVisible)
 
-    local targetOfTargetVisible = targetVisible and API.Exists(row.targetOfTarget.unitId)
-    row.targetOfTarget:SetShown(targetOfTargetVisible)
 end
 
 local function RefreshRowSurfaces(row, slotIndex)
     SyncSurfaceVisibility(row)
-    if API.Exists(row.unitId) then
+    if row.primary:IsPreviewing() or API.Exists(row.unitId) then
         row.primary:RefreshValues()
     else
         row.primary:ShowPlaceholder("Party " .. (slotIndex - 1))
     end
     if row.target.visible then row.target:RefreshValues() end
-    if row.targetOfTarget.visible then row.targetOfTarget:RefreshValues() end
-    if row.unitId == "player" and D.PlayerUtility then D.PlayerUtility.Refresh() end
+    if row.unitId == "player" and D.PlayerUtility and not row.primary:IsPreviewing() then
+        D.PlayerUtility.Refresh()
+    end
 end
 
 local function PositionRow(row, yOffset)
@@ -142,7 +147,7 @@ local function PositionRow(row, yOffset)
     local actionHudHeight = D.GetActionAreaHeight(row, actionGeometry)
     local actionHeight = actionHudHeight + GetPartyFramesLabelHeight(row)
     local surfaceHeight = row.primary:GetHeight()
-    for _, surface in ipairs({ row.target, row.targetOfTarget }) do
+    for _, surface in ipairs({ row.target }) do
         if surface.visible then surfaceHeight = math.max(surfaceHeight, surface:GetHeight()) end
     end
     local totalHeight = actionHeight + surfaceHeight
@@ -155,7 +160,7 @@ local function PositionRow(row, yOffset)
     row.primary:RefreshLayout(actionHeight, totalHeight)
     row.btn:Show()
 
-    for depth, surface in ipairs({ row.target, row.targetOfTarget }) do
+    for depth, surface in ipairs({ row.target }) do
         surface.btn:ClearAllPoints()
         surface.btn:SetPoint(
             "TOPLEFT", row.btn, "TOPLEFT",
@@ -179,6 +184,10 @@ local function ComputePanelWidth()
         width = math.max(width,
             D.GetPlayerActionWidth() + C.PAD_H * 2 + D.GetThreatGutterWidth())
     end
+    if D.GetShortcutFooterWidth then
+        width = math.max(width,
+            D.GetShortcutFooterWidth() + C.PAD_H * 2 + D.GetThreatGutterWidth())
+    end
     return width
 end
 
@@ -197,7 +206,6 @@ function L.LayoutRows()
             row.btn:Hide()
             row.primary.visible = false
             row.target:SetShown(false)
-            row.targetOfTarget:SetShown(false)
         end
     end
 
@@ -207,15 +215,25 @@ function L.LayoutRows()
         return false
     end
 
+    if D.GroupHelperPresentation then
+        D.GroupHelperPresentation.LayoutSidecar(D.rowAnchor, yOffset)
+    end
+
     local shortcutFooterHeight = D.GetShortcutFooterHeight()
+    local panelWidth = ComputePanelWidth()
+    local footerWidth = panelWidth - C.PAD_H * 2 - D.GetThreatGutterWidth()
     D.shortcutFooterAnchor:ClearAllPoints()
     D.shortcutFooterAnchor:SetPoint("TOPLEFT", D.rowAnchor, "BOTTOMLEFT", 0, -yOffset)
-    D.shortcutFooterAnchor:SetSize(C.ROW_CONTENT_W, 1)
-    D.LayoutShortcutFooter()
+    D.shortcutFooterAnchor:SetSize(footerWidth, 1)
+    D.LayoutShortcutFooter(footerWidth)
 
     local bottomPad = S.configMode and C.PAD_BOT or 0
-    D.panel:SetHeight(yOffset + shortcutFooterHeight + bottomPad)
-    D.panel:SetWidth(ComputePanelWidth())
+    local partyContentHeight = yOffset + shortcutFooterHeight + bottomPad
+    -- The outboard companion is deliberately excluded from the movable party
+    -- panel's dimensions. Profiles may anchor the panel from any edge or its
+    -- center; changing its width or height would move the party rows on screen.
+    D.panel:SetHeight(partyContentHeight)
+    D.panel:SetWidth(panelWidth)
     D.panel:Show()
     D.RebuildUnitToRow()
     return true
@@ -229,7 +247,6 @@ function L.UpdateRowContent()
             local actionHeight = actionHudHeight + LayoutPartyFramesLabel(row, actionHudHeight)
             row.primary:RefreshLayout(actionHeight, row.btn:GetHeight())
             row.target:RefreshLayout(0)
-            row.targetOfTarget:RefreshLayout(0)
         end
     end
     D.RefreshThreat()

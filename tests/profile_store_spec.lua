@@ -1,7 +1,7 @@
 ApogeePartyHealthBars_C = {
     PROFILE_STORE_VERSION = 3,
     PROFILE_PAYLOAD_VERSION = 4,
-    SAVED_VARIABLES_VERSION = 8,
+    SAVED_VARIABLES_VERSION = 9,
 }
 ApogeePartyHealthBars_S = {}
 ApogeePartyHealthBars_Effects = {
@@ -28,6 +28,12 @@ ApogeePartyHealthBars_Effects = {
             "targetEffectHudPoint", "targetEffectHudRelPoint", "targetEffectHudX", "targetEffectHudY",
             "dotHudPoint", "dotHudRelPoint", "dotHudX", "dotHudY",
         }) do settings[key] = nil end
+        if version < 9 then
+            settings.targetHudPoint = "CENTER"
+            settings.targetHudRelPoint = "CENTER"
+            settings.targetHudX = 0
+            settings.targetHudY = -150
+        end
         for legacyKey, canonicalKey in pairs(renamedActions) do
             if actions[canonicalKey] == nil then actions[canonicalKey] = actions[legacyKey] end
             actions[legacyKey] = nil
@@ -63,6 +69,7 @@ ApogeePartyHealthBars_Effects = {
         end
         if settings.dungeonGuideWidth == nil then settings.dungeonGuideWidth = 1000 end
         if settings.dungeonGuideHeight == nil then settings.dungeonGuideHeight = 720 end
+        if settings.groupHelperEnabled == nil then settings.groupHelperEnabled = true end
         settings.dungeonGuideWidth = math.max(720, math.min(3840,
             math.floor(tonumber(settings.dungeonGuideWidth) or 1000)))
         settings.dungeonGuideHeight = math.max(520, math.min(2160,
@@ -89,7 +96,7 @@ ApogeePartyHealthBars_Effects = {
         if settings.threatAwarenessRelPoint == nil then settings.threatAwarenessRelPoint = "CENTER" end
         if settings.threatAwarenessX == nil then settings.threatAwarenessX = 0 end
         if settings.threatAwarenessY == nil then settings.threatAwarenessY = 40 end
-        settings.schemaVersion = 8
+        settings.schemaVersion = 9
         actions.bindings = type(actions.bindings) == "table" and actions.bindings or {}
         local legacyShortcuts = type(actions.trackedSpells) == "table" and actions.trackedSpells or nil
         if type(actions.shortcuts) ~= "table"
@@ -177,6 +184,8 @@ assert(account.enabled == false and account.profileStore == nil and character.bi
 
 active.payload.settings.dungeonBoardRole = "tank"
 active.payload.settings.dungeonBoardFeedEnabled = false
+active.payload.settings.groupHelperEnabled = false
+active.payload.settings.groupHelperX = -88
 local created = assert(store.Create("Clean"))
 assert(created.payload.settings.enabled
         and created.payload.settings.hideUIErrors == true
@@ -186,6 +195,9 @@ assert(created.payload.settings.enabled
         and created.payload.settings.dungeonGuideAutoMarkEnabled == true
         and created.payload.settings.dungeonGuideWidth == 1000
         and created.payload.settings.dungeonGuideHeight == 720
+        and created.payload.settings.groupHelperEnabled == true
+        and created.payload.settings.groupHelperPoint == nil
+        and created.payload.settings.groupHelperX == nil
         and created.payload.settings.cleanseWatchPoint == "TOPRIGHT"
         and created.payload.settings.cleanseWatchRelPoint == "TOPRIGHT"
         and created.payload.settings.cleanseWatchX == 0
@@ -195,6 +207,8 @@ assert(created.payload.settings.enabled
 local duplicate = assert(store.Duplicate(active.id, "Copy"))
 assert(duplicate.payload.settings.dungeonBoardRole == "tank"
         and duplicate.payload.settings.dungeonBoardFeedEnabled == false
+        and duplicate.payload.settings.groupHelperEnabled == false
+        and duplicate.payload.settings.groupHelperX == nil
         and duplicate.payload.settings.hideUIErrors == true,
     "profile duplication did not retain the Dungeon Board preferences")
 duplicate.payload.settings.x = 999
@@ -340,6 +354,8 @@ local sanitized = store.NormalizePayload({ settings = {
     dungeonGuidePoint = "TOP", dungeonGuideRelPoint = "TOP",
     dungeonGuideX = 24, dungeonGuideY = -48,
     dungeonGuideWidth = 1180, dungeonGuideHeight = 810,
+    groupHelperEnabled = false, groupHelperPoint = "TOP",
+    groupHelperRelPoint = "TOP", groupHelperX = 33, groupHelperY = -99,
     buffThanksEnabled = false, buffThanksPoint = "TOP", buffThanksRelPoint = "TOP",
     buffThanksX = 12, buffThanksY = -140,
 }, actions = {} })
@@ -351,8 +367,8 @@ assert(sanitized.settings.targetEffectRemindersEnabled == false
         and sanitized.settings.targetEffectPriority[2] == "immolate"
         and sanitized.settings.targetHudPoint == "CENTER"
         and sanitized.settings.targetHudRelPoint == "CENTER"
-        and sanitized.settings.targetHudX == 12
-        and sanitized.settings.targetHudY == 144
+        and sanitized.settings.targetHudX == 0
+        and sanitized.settings.targetHudY == -150
         and sanitized.settings.targetEffectHudPoint == nil
         and sanitized.settings.targetEffectHudRelPoint == nil
         and sanitized.settings.targetEffectHudX == nil
@@ -383,6 +399,12 @@ assert(sanitized.settings.dungeonGuideAutoMarkEnabled == true
         and sanitized.settings.dungeonGuideWidth == 1180
         and sanitized.settings.dungeonGuideHeight == 810,
     "Dungeon Guide profile preferences did not survive normalization")
+assert(sanitized.settings.groupHelperEnabled == false
+        and sanitized.settings.groupHelperPoint == nil
+        and sanitized.settings.groupHelperRelPoint == nil
+        and sanitized.settings.groupHelperX == nil
+        and sanitized.settings.groupHelperY == nil,
+    "retired Group Helper position data survived normalization")
 local retiredCombatMarking = store.NormalizePayload({
     settings = { dungeonGuideAutoMarkInCombatEnabled = true }, actions = {},
 })

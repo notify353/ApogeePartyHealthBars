@@ -32,11 +32,12 @@ local function AuraFromIndex(unitId, index)
         return C_UnitAuras.GetAuraDataByIndex(unitId, index, "HELPFUL")
     end
     if not UnitBuff then return nil end
-    local name, _, _, _, duration, expirationTime, unitCaster, _, _, spellId =
+    local name, icon, _, _, duration, expirationTime, unitCaster, _, _, spellId =
         UnitBuff(unitId, index)
     if not name then return nil end
     return {
         name = name,
+        icon = icon,
         spellId = spellId,
         duration = duration,
         expirationTime = expirationTime,
@@ -136,12 +137,6 @@ function A.ScanUnitHelpfulAuras(unitId)
     end
 
     local snapshot = BuildEmptySnapshot()
-    local trackCount = #hotMatchers
-    local hotMatched = 0
-    local partyMatched, partyMatchCount = {}, 0
-    local configuredPartyCount = 0
-    for _ in pairs(partyBuffMatchers) do configuredPartyCount = configuredPartyCount + 1 end
-
     for i = 1, 40 do
         local aura = AuraFromIndex(unitId, i)
         if not aura then break end
@@ -151,14 +146,6 @@ function A.ScanUnitHelpfulAuras(unitId)
         if not snapshot.partyBuff and MatchesAnyPartyBuff(aura) then
             snapshot.partyBuff = true
         end
-        for index, matcher in pairs(partyBuffMatchers) do
-            if not partyMatched[index]
-                and AuraMatchesTables(aura, matcher.auraIds, matcher.auraNames, false) then
-                partyMatched[index] = true
-                partyMatchCount = partyMatchCount + 1
-            end
-        end
-
         if not snapshot.selfBuff
             and AuraMatchesTables(
                 aura,
@@ -173,25 +160,22 @@ function A.ScanUnitHelpfulAuras(unitId)
             snapshot.pwShield = aura
         end
 
-        if trackCount > 0 then
+        if #hotMatchers > 0 then
             local src = aura.sourceUnit
             if src and UnitIsUnit(src, "player") then
                 for ti, track in ipairs(hotMatchers) do
                     if not snapshot.playerHots[ti] and MatchesHotTrack(aura, track) then
-                        snapshot.playerHots[ti] = aura
-                        hotMatched = hotMatched + 1
-                        break
+                    snapshot.playerHots[ti] = aura
+                    break
                     end
                 end
             end
         end
 
-        local allPartyMatched = configuredPartyCount > 0
-            and partyMatchCount >= configuredPartyCount
-        if allPartyMatched and snapshot.selfBuff and snapshot.pwShield
-            and hotMatched >= trackCount then
-            break
-        end
+        -- Keep the complete helpful-aura snapshot. Group-level consumers need
+        -- buffs that are unrelated to the local player's configured castable
+        -- reminders, so stopping after the legacy matcher set would make the
+        -- same unit produce different leadership observations by player class.
     end
 
     return snapshot

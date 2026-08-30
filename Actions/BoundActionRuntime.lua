@@ -939,13 +939,18 @@ function Factory.Create(options)
         local labelHeight = labelVisible and ActionHud.GetSectionLabelHeight() or 0
         container:ClearAllPoints()
         container:SetPoint("TOPLEFT", row.btn, "TOPLEFT", 0, -(topOffset + labelHeight))
+        W.RefreshConfigurationVisuals()
+        container:Show()
+        W.Refresh()
+        W.RefreshSecureActions()
+    end
+
+    function W.RefreshConfigurationVisuals()
+        local labelVisible = S.configMode == true
         ActionHud.SetSectionLabelVisible(sectionLabel, labelVisible)
         for _, icon in pairs(hudIcons) do
             if icon.keyLabel then icon.keyLabel:SetShown(labelVisible) end
         end
-        container:Show()
-        W.Refresh()
-        W.RefreshSecureActions()
     end
 
     function W.GetHeight(unitId)

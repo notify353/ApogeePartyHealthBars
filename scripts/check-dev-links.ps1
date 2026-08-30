@@ -39,9 +39,15 @@ if ($Target -ne 'All') {
     $definitions = @($definitions | Where-Object Name -eq $Target)
 }
 
-$branch = (& git -C $RepoRoot branch --show-current 2>$null | Select-Object -First 1)
-$commit = (& git -C $RepoRoot rev-parse --short HEAD 2>$null | Select-Object -First 1)
-$workingChanges = @(& git -C $RepoRoot status --porcelain 2>$null).Count -gt 0
+$branch = $null
+$commit = $null
+$workingChanges = $false
+$gitMetadata = Join-Path $RepoRoot '.git'
+if (Test-Path -LiteralPath $gitMetadata) {
+    $branch = (& git -C $RepoRoot branch --show-current 2>$null | Select-Object -First 1)
+    $commit = (& git -C $RepoRoot rev-parse --short HEAD 2>$null | Select-Object -First 1)
+    $workingChanges = @(& git -C $RepoRoot status --porcelain 2>$null).Count -gt 0
+}
 if (-not $branch) { $branch = '(detached or unavailable)' }
 if (-not $commit) { $commit = '(unavailable)' }
 Write-Host "Workspace: $RepoRoot"

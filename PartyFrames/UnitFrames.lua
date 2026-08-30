@@ -104,17 +104,14 @@ function F.Build(D)
     local function CreateHealthRow(parent, descriptor)
         local primary = UnitBar.Create(parent)
         local target = UnitBar.Create(primary.btn)
-        local targetOfTarget = UnitBar.Create(primary.btn)
         primary:SetUnit(descriptor.tokens[1])
         target:SetUnit(descriptor.tokens[2])
-        targetOfTarget:SetUnit(descriptor.tokens[3])
 
         local row = {
             unitId = descriptor.owner,
             primary = primary,
             target = target,
-            targetOfTarget = targetOfTarget,
-            surfaces = { primary, target, targetOfTarget },
+            surfaces = { primary, target },
             btn = primary.btn,
         }
 
@@ -140,7 +137,7 @@ function F.Build(D)
     W.Attach(rows[1].primary)
     K.Attach(rows[1].primary)
     B.Attach(rows[1].primary)
-    CB.Attach(rows[1].primary)
+    CB.Attach(shortcutFooterAnchor)
     local primarySurfaces = {}
     for index = 1, C.MAX_ROWS do primarySurfaces[index] = rows[index].primary end
     H.Attach(primarySurfaces, D.SyncVisualTicker)

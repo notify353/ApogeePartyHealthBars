@@ -6,6 +6,22 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Swapped the Group Helper row lanes so DRINKING and THIRSTY sit next to the party frames while missing-buff icons occupy the outer-left column.
+- Limited Group Helper's `pulling here` control to Warrior, Paladin, and Druid players, hiding it for classes that cannot tank.
+- Made buff coverage resource-aware across Group Helper and party-frame reminders: Intellect and Divine Spirit now target every actual mana user while excluding non-mana members, and Wisdom, Salvation, and Sanctuary count as valid long-duration Paladin blessing coverage alongside Might, Light, and Kings.
+- Listed every missing party member by name in Group Helper buff-icon tooltips instead of showing only the missing count.
+- Vertically centered the Party Frames reset/default position on the right side of the screen with a 24px margin.
+- Removed target-of-target party-frame surfaces while retaining the optional aligned immediate-target column for every player and party row.
+- Moved Automatic Consumables to the right of the Shortcut Bar in a shared party-panel footer, matched the Shortcut icon inset, and right-aligned them so toggling Unit target bars does not move them on screen.
+- Polished LFG Alerts to match the compact reminder HUDs with the same 326px footprint, neutral translucent rows, slim source-colored rails, restrained text hierarchy, and frameless Who and Whisper actions; preview-only actions now stay hidden.
+- Redesigned the Target HUD as fixed 159px player-health and active-power wings around a clear 64px center gap, moved its default to lower center, and docked prioritized Target Effect reminders to grow right-to-left from the health wing without shifting either bar; existing profile positions reset once for the new layout.
+- Showed every supported configurable HUD preview throughout Settings at its saved gameplay position, with page switching changing controls only; the full Dungeon Board and Dungeon Book remain separate windows.
+- Stopped opening the Blizzard Spellbook when add-on settings are opened and removed the minimap button's secure Spellbook delegation.
+- Refreshed party frames with roomy 36px health rows, 6px power strips, class identity rails, collision-safe names, rounded health percentages, and restrained dead/offline/range states while preserving the 200px panel footprint and existing accessories.
+- Added a default-on compact 140px party-frame companion that shows GUID-mapped `DRINKING` checks at any mana percentage when proven by an aura, sub-75% `THIRSTY` checks otherwise, observed-aura countdowns, and provider-aligned missing-buff indicators for Priest, Mage, Druid, and Paladin coverage. Fortitude, mana-user Intellect, Mark, and recognized blessings are immediate; Divine Spirit is session-evidence-gated. Clicking either mana status says `mana up`, clicking any missing-buff icon says `buff up`, and only the always-available out-of-combat charge icon remains above the rows to say `pulling here`. Missing-member counts use small neutral stack badges. Every message requires a physical click; the helper never whispers, infers drinking from mana movement, or sends from events or timers, and combat yields the reserved area to threat.
+- Turned Frames → Party Frames into an interactive WYSIWYG five-player demo with only Out of combat and Combat states; Out of combat is the default and demonstrates drink states plus the live Priest Fortitude/Spirit, Mage Intellect, and Druid Mark provider-row indicators together. Group Calls retain their real one-click `/say` behavior without redundantly echoing sent chat in Settings, while secure party-frame actions remain suppressed and cannot cast.
+- Condensed Group Helper command, drink-status, and missing-buff tooltips to short single-purpose explanations.
+
 ## [0.48.0] - 2026-08-09
 
 - Added polished Keyboard, Mouse Wheel, Mouse Buttons, Consumables, and Shortcuts headers to the live action HUD while add-on settings are open.

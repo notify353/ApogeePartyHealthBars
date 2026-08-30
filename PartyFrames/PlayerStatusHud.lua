@@ -11,9 +11,11 @@ local SURFACE_KEY = "playerStatus"
 local SURFACE_ORDER = 1
 local SURFACE_GAP = 0
 local BAR_WIDTH = 6 * (C.SHORTCUT_ICON_SIZE or 24) + 5 * (C.SHORTCUT_ICON_GAP or 3)
+local CENTER_GAP = 64
+local DISPLAY_WIDTH = BAR_WIDTH * 2 + CENTER_GAP
 local HEALTH_HEIGHT = 10
-local HEALTH_POWER_GAP = 1
-local POWER_HEIGHT = C.MANA_H or 5
+local PRIMARY_POWER_HEIGHT = 10
+local SECONDARY_POWER_HEIGHT = 5
 local POWER_GAP = C.MANA_GAP or 1
 local HEALTH_COLOR = { 0.28, 0.74, 0.46, 1 }
 
@@ -38,7 +40,7 @@ end
 
 local function CreateDisplay(parent)
     local frame = CreateFrame("Frame", nil, parent)
-    frame:SetSize(BAR_WIDTH, 1)
+    frame:SetSize(DISPLAY_WIDTH, 1)
     frame:EnableMouse(false)
 
     local healthBackground = frame:CreateTexture(nil, "BACKGROUND")
@@ -124,7 +126,7 @@ local function RenderHealth(display, health, healthMaximum, validMaximum, shield
     local visualMaximum = math.max(healthMaximum + shield, 1)
 
     display.healthBackground:ClearAllPoints()
-    display.healthBackground:SetPoint("TOPLEFT", display.frame, "TOPLEFT", 0, 0)
+    display.healthBackground:SetPoint("LEFT", display.frame, "LEFT", 0, 0)
     display.healthBackground:SetSize(BAR_WIDTH, HEALTH_HEIGHT)
     display.healthBar:ClearAllPoints()
     display.healthBar:SetAllPoints(display.healthBackground)
@@ -138,17 +140,23 @@ local function RenderHealth(display, health, healthMaximum, validMaximum, shield
     return true
 end
 
-local function RenderPower(display, channels, topOffset)
+local function RenderPower(display, channels)
     display.channels = channels or {}
     local count = math.min(2, #display.channels)
-    local y = topOffset
+    local primary = count == 2 and display.channels[2] or display.channels[1]
+    local secondary = count == 2 and display.channels[1] or nil
     for index = 1, 2 do
         local background, bar = display.powerBackgrounds[index], display.powerBars[index]
-        local channel = display.channels[index]
+        local channel = index == 1 and primary or secondary
         if channel then
             background:ClearAllPoints()
-            background:SetPoint("TOPLEFT", display.frame, "TOPLEFT", 0, -y)
-            background:SetSize(BAR_WIDTH, POWER_HEIGHT)
+            if index == 1 then
+                background:SetPoint("TOPRIGHT", display.frame, "TOPRIGHT", 0, 0)
+                background:SetSize(BAR_WIDTH, PRIMARY_POWER_HEIGHT)
+            else
+                background:SetPoint("TOPRIGHT", display.powerBackgrounds[1], "BOTTOMRIGHT", 0, -POWER_GAP)
+                background:SetSize(BAR_WIDTH, SECONDARY_POWER_HEIGHT)
+            end
             bar:ClearAllPoints()
             bar:SetAllPoints(background)
             bar:SetMinMaxValues(0, channel.maximum)
@@ -156,7 +164,6 @@ local function RenderPower(display, channels, topOffset)
             bar:SetStatusBarColor(API.GetPowerColor(channel.powerType, channel.powerToken))
             background:Show()
             bar:Show()
-            y = y + POWER_HEIGHT + POWER_GAP
         else
             background:Hide()
             bar:Hide()
@@ -168,14 +175,12 @@ end
 local function Render(display, snapshot)
     local hasHealth = RenderHealth(display, snapshot.health, snapshot.healthMaximum,
         snapshot.validHealthMaximum, snapshot.shield, snapshot.incoming)
-    local powerOffset = hasHealth and (HEALTH_HEIGHT + HEALTH_POWER_GAP) or 0
-    local powerCount = RenderPower(display, snapshot.channels, powerOffset)
+    local powerCount = RenderPower(display, snapshot.channels)
     local powerHeight = powerCount > 0
-        and powerCount * POWER_HEIGHT + (powerCount - 1) * POWER_GAP or 0
-    local height = (hasHealth and HEALTH_HEIGHT or 0)
-        + (hasHealth and powerCount > 0 and HEALTH_POWER_GAP or 0)
-        + powerHeight
-    display.frame:SetSize(BAR_WIDTH, math.max(1, height))
+        and PRIMARY_POWER_HEIGHT
+            + (powerCount > 1 and POWER_GAP + SECONDARY_POWER_HEIGHT or 0) or 0
+    local height = math.max(hasHealth and HEALTH_HEIGHT or 0, powerHeight)
+    display.frame:SetSize(DISPLAY_WIDTH, math.max(1, height))
     display.frame:SetShown(height > 0)
     return height > 0
 end
@@ -254,7 +259,7 @@ function H.Initialize(deps)
     end
     D = deps
     live = CreateDisplay(UIParent)
-    TargetHud.RegisterSurface(SURFACE_KEY, live.frame, SURFACE_ORDER, SURFACE_GAP)
+    TargetHud.RegisterSurface(SURFACE_KEY, live.frame, SURFACE_ORDER, SURFACE_GAP, "splitBase")
 end
 
 function H.GetAnchor() return live and live.frame or nil end

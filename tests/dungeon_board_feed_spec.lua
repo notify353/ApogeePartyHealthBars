@@ -9,6 +9,7 @@ local function widget(parent, name)
         parent = parent, name = name, shown = true, scripts = {}, children = {},
     }
     function value:SetSize(width, height) self.width, self.height = width, height end
+    function value:SetWidth(width) self.width = width end
     function value:SetHeight(height) self.height = height end
     function value:SetFrameStrata() end
     function value:SetClampedToScreen() end
@@ -72,17 +73,9 @@ local opportunityCallback
 local settingsListener
 local configActive = false
 local savedFeedPosition
-local dockCalls, releaseCalls, movedCalls, refreshDockCalls = 0, 0, 0, 0
 local configSurface = {
     Register = function() end,
     SetSurfaceChromeShown = function(_, value) configActive = value == true end,
-    DockConfigurationPreview = function() dockCalls = dockCalls + 1; return true end,
-    ReleaseConfigurationPreview = function() releaseCalls = releaseCalls + 1; return true end,
-    MarkConfigurationPreviewMoved = function() movedCalls = movedCalls + 1; return true end,
-    RefreshConfigurationPreviewDock = function()
-        refreshDockCalls = refreshDockCalls + 1
-        return true
-    end,
 }
 
 Feed.Initialize({
@@ -137,41 +130,46 @@ assert(type(opportunityCallback) == "function" and type(settingsListener) == "fu
     "LFG Alerts did not attach to live chat and settings changes")
 local feedFrame = ApogeePartyHealthBarsDungeonBoardFeed
 local firstRow = createdFrames[2]
-assert(not feedFrame.shown and feedFrame.width == 340 and feedFrame.height == 34
+assert(not feedFrame.shown and feedFrame.width == 326 and feedFrame.height == 34
         and not firstRow.shown,
     "profile-disabled LFG Alerts did not begin hidden")
 Feed.SetUnlocked(true)
 assert(Feed.IsUnlocked() and feedFrame.mouseEnabled
         and feedFrame.shown and configActive
-        and dockCalls == 1
         and feedFrame.height == 34 and firstRow.shown
         and firstRow.title.text:find("PREVIEW", 1, true)
         and firstRow.detail.text
-            == "ExamplePlayer  •  LFM Wailing Caverns - need healer"
-        and not firstRow.who.enabled and not firstRow.whisper.enabled,
+            == "|cffededf2ExamplePlayer|r  |cff77777f>  LFM Wailing Caverns - need healer|r"
+        and not firstRow.who.enabled and not firstRow.whisper.enabled
+        and not firstRow.who.shown and not firstRow.whisper.shown
+        and firstRow.rail.width == 3
+        and firstRow.rail.color[1] == 0.62
+        and firstRow.background.color[1] == 0.025
+        and firstRow.who.width == 20 and firstRow.whisper.width == 20,
     "disabled LFG Alerts did not expose its example and drag anchor")
 feedFrame.scripts.OnDragStart(feedFrame)
 feedFrame.scripts.OnDragStop(feedFrame)
-assert(movedCalls == 1 and savedFeedPosition and savedFeedPosition[1] == "CENTER"
+assert(savedFeedPosition and savedFeedPosition[1] == "CENTER"
         and savedFeedPosition[2] == "CENTER"
         and savedFeedPosition[3] == 0 and savedFeedPosition[4] == 0,
     "LFG Alerts drag stop did not preserve the released position directly")
 Feed.SetUnlocked(false)
-assert(releaseCalls == 1 and not feedFrame.shown and not configActive and not firstRow.shown,
+assert(not feedFrame.shown and not configActive and not firstRow.shown,
     "disabled LFG Alerts remained visible after configuration mode closed")
 feedEnabled = true
 settingsListener("feedEnabled")
 assert(not feedFrame.shown and feedFrame.height == 34 and not firstRow.shown,
     "enabled idle LFG Alerts did not remain hidden")
 Feed.SetUnlocked(true)
-assert(dockCalls == 2 and configActive and feedFrame.shown and firstRow.shown
+assert(configActive and feedFrame.shown and firstRow.shown
         and firstRow.title.text:find("PREVIEW", 1, true),
     "empty enabled LFG Alerts did not expose its preview and drag anchor")
 Feed.ResetPosition()
-assert(refreshDockCalls == 1,
-    "resetting LFG Alerts did not refresh its configuration dock")
+assert(feedFrame.point[1] == "CENTER" and feedFrame.point[2] == UIParent
+        and feedFrame.point[3] == "CENTER",
+    "resetting LFG Alerts did not retain its gameplay anchor")
 Feed.SetUnlocked(false)
-assert(releaseCalls == 2 and not configActive and not feedFrame.shown,
+assert(not configActive and not feedFrame.shown,
     "enabled LFG Alerts drag anchor remained visible after configuration mode closed")
 role = "tank"
 settingsListener("role")
@@ -198,10 +196,12 @@ assert(#Feed.GetEntries() == 1 and played[1] == "none",
     "eligible live chat opportunity did not enter the feed silently by default")
 assert(feedFrame.height == 34 and firstRow.shown,
     "single LFG Alert opportunity did not use the compact active height")
-assert(firstRow.title.text:find("|cff8aa4bdCHAT|r", 1, true)
-        and firstRow.title.text:find("Wailing Caverns • 17-25", 1, true),
+assert(firstRow.title.text:find("|cff6f93aeCHAT|r", 1, true)
+        and firstRow.title.text:find("Wailing Caverns", 1, true)
+        and firstRow.title.text:find("•  17-25", 1, true)
+        and firstRow.rail.color[1] == 0.32,
     "compact LFG Alert title did not show source, full dungeon, and range")
-assert(firstRow.detail.text == "one  •  Need tank",
+assert(firstRow.detail.text == "|cffededf2one|r  |cff77777f>  Need tank|r",
     "compact LFG Alert preview did not show sender and original chat")
 assert(firstRow.who.enabled and firstRow.whisper.enabled
         and firstRow.who.icon.texture == "Interface\\Common\\UI-Searchbox-Icon"
@@ -227,7 +227,7 @@ now = 4
 opportunityCallback(opportunity("four"))
 local entries = Feed.GetEntries()
 assert(#entries == 3 and entries[1].id == "four" and entries[3].id == "two"
-        and #played == 3 and feedFrame.height == 106,
+        and #played == 3 and feedFrame.height == 104,
     "newest-three ordering or sound throttle recovery changed")
 assert(Feed.GetEntryAlpha(entries[1], 28) == 1
         and Feed.GetEntryAlpha(entries[1], 31.5) == 0.5

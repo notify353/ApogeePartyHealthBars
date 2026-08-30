@@ -8,6 +8,7 @@ local H = ApogeePartyHealthBars_Threat
 
 local rows, syncTicker
 local needsTicker = false
+local previewSnapshot
 local FALLBACK_COLORS = {
     [1] = { 1.00, 0.85, 0.10 },
     [2] = { 1.00, 0.50, 0.00 },
@@ -79,7 +80,11 @@ local function HideRow(row, clearStatus)
 end
 
 local function BuildSnapshot()
+    if previewSnapshot then return previewSnapshot end
     local snapshot = { details = {} }
+    snapshot.inCombat = InCombatLockdown and InCombatLockdown()
+        or (UnitAffectingCombat and UnitAffectingCombat("player")) or false
+    if not snapshot.inCombat then return snapshot end
     snapshot.hasTarget = UnitDetailedThreatSituation and UnitExists("target")
         and UnitCanAttack("player", "target") and not UnitIsDeadOrGhost("target")
     if not snapshot.hasTarget then return snapshot end
@@ -96,7 +101,7 @@ local function GetClosestChallenger(snapshot, tankUnit)
     return closest
 end
 
-local function SetMarginBar(row, detail, snapshot)
+local function SetMarginBar(row, detail, snapshot, unitKey)
     if not IsMarginEnabled() or not detail then
         row.threatBarBg:Hide()
         row.threatBarFill:Hide()
@@ -105,7 +110,7 @@ local function SetMarginBar(row, detail, snapshot)
 
     local displayPercent = detail.scaledPercent
     if detail.isTanking then
-        displayPercent = math.max(0, 100 - GetClosestChallenger(snapshot, row.unitId))
+        displayPercent = math.max(0, 100 - GetClosestChallenger(snapshot, unitKey or row.unitId))
     end
 
     local rounded = math.floor(displayPercent + 0.5)
@@ -134,12 +139,26 @@ local function SetMarginBar(row, detail, snapshot)
 end
 
 local function RenderRow(row, snapshot)
-    if not IsEnabled() or not row.btn:IsShown() or not UnitExists(row.unitId) then
+    local unitKey = previewSnapshot and (row.previewGuid or row.unitId) or row.unitId
+    local detail = snapshot.details[unitKey]
+    local exists
+    if previewSnapshot then
+        exists = detail ~= nil
+    else
+        exists = UnitExists(row.unitId)
+    end
+    if not IsEnabled() or not snapshot.inCombat
+        or not row.btn:IsShown() or not exists then
         HideRow(row, true)
         return
     end
 
-    local status = UnitThreatSituation and UnitThreatSituation(row.unitId) or nil
+    local status
+    if previewSnapshot then
+        status = detail and detail.status
+    else
+        status = UnitThreatSituation and UnitThreatSituation(row.unitId) or nil
+    end
     if status and status > 0 then
         local r, g, b = GetStatusColor(status)
         row.threatRail:SetColorTexture(r, g, b, 1)
@@ -153,7 +172,7 @@ local function RenderRow(row, snapshot)
         row.threatRail:Hide()
     end
 
-    SetMarginBar(row, snapshot.details[row.unitId], snapshot)
+    SetMarginBar(row, detail, snapshot, unitKey)
     row._threatStatus = status
 end
 
@@ -175,7 +194,8 @@ end
 function H.Refresh()
     if not rows then return end
     needsTicker = false
-    if IsEnabled() then
+    local snapshot = BuildSnapshot()
+    if not previewSnapshot and IsEnabled() and snapshot.inCombat then
         if UnitAffectingCombat then
             for i = 1, C.MAX_ROWS do
                 if UnitExists(rows[i].unitId) and UnitAffectingCombat(rows[i].unitId) then
@@ -187,7 +207,20 @@ function H.Refresh()
             needsTicker = true
         end
     end
-    local snapshot = BuildSnapshot()
     for i = 1, C.MAX_ROWS do RenderRow(rows[i], snapshot) end
     if syncTicker then syncTicker() end
+end
+
+function H.SetPreview(snapshot)
+    previewSnapshot = snapshot
+    H.Refresh()
+end
+
+function H.ClearPreview()
+    previewSnapshot = nil
+    H.Refresh()
+end
+
+function H.IsPreviewing()
+    return previewSnapshot ~= nil
 end

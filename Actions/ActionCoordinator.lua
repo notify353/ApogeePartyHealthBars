@@ -15,7 +15,7 @@ local REQUIRED = {
     "PositionSecureOverlay", "ShowSecureFrame", "HideSecureFrame",
     "SetSecureMouseEnabled", "DeferSecureUpdate", "ForceRefresh",
     "GetSpellFromCursor", "GetSettingsUI", "RefreshPartyFrameClicksPage",
-    "IsAddonEnabled", "GetConsumableLeftOffset",
+    "IsAddonEnabled",
 }
 
 local function managers()
@@ -155,7 +155,6 @@ function C.Initialize(deps)
     D.ConsumableBar.Configure({
         RequestLayout = D.RequestLayout,
         SyncTicker = D.SyncTicker,
-        GetLeftOffset = D.GetConsumableLeftOffset,
         IsAddonEnabled = D.IsAddonEnabled,
         IsItemAssigned = C.IsItemAssigned,
         PositionSecureOverlay = D.PositionSecureOverlay,
@@ -180,4 +179,3 @@ function C.Initialize(deps)
     })
     return C
 end
-

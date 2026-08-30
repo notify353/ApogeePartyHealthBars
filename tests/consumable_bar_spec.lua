@@ -4,6 +4,7 @@ function wipe(value) for key in pairs(value or {}) do value[key] = nil end retur
 ApogeePartyHealthBars_C = {
     SHORTCUT_ICON_SIZE = 24,
     SHORTCUT_ICON_GAP = 3,
+    SHORTCUT_TOP_GAP = 2,
     SHORTCUT_READY_PULSE = 0.65,
     CONSUMABLE_MAX_SLOTS = 12,
     CONSUMABLE_ROWS = 2,
@@ -63,9 +64,9 @@ ApogeePartyHealthBars_ActionHud = {
 UIParent = widget()
 GameTooltip = widget()
 local createdFrames = {}
-function CreateFrame(_, name)
+function CreateFrame(_, name, parent)
     local frame = widget()
-    frame.name = name
+    frame.name, frame.parent = name, parent
     createdFrames[#createdFrames + 1] = frame
     return frame
 end
@@ -119,7 +120,6 @@ local layoutRequests, deferred = 0, 0
 bar.Configure({
     RequestLayout = function() layoutRequests = layoutRequests + 1 end,
     SyncTicker = function() end,
-    GetLeftOffset = function() return 300 end,
     IsAddonEnabled = function() return ApogeePartyHealthBars_S.sv.enabled end,
     IsItemAssigned = function(itemId) return assignedIds[itemId] == true end,
     PositionSecureOverlay = function() return true end,
@@ -129,23 +129,29 @@ bar.Configure({
     DeferSecureUpdate = function() deferred = deferred + 1 end,
 })
 
-local row = { btn = widget() }
-bar.Attach(row)
+local footerAnchor = widget()
+bar.Attach(footerAnchor)
 bar.Initialize()
 bar.Layout(27)
 
 local icons = bar.GetIcons()
 local entries = bar.GetEntries()
-assert(#entries == 8 and bar.GetWidth("player") == 459
-        and bar.GetHeight("player") == 51,
+assert(#entries == 8 and bar.GetWidth("player") == 159
+        and bar.GetHeight("player") == 53,
     "enabled consumable bar did not reserve its 2x6 footprint")
 assert(icons[1]:IsShown() and icons[8]:IsShown() and not icons[9]:IsShown(),
     "consumable bar showed placeholder icons")
-assert(icons[1].points[1][4] == 0 and icons[1].points[1][5] == 0
-        and icons[2].points[1][4] == 27 and icons[2].points[1][5] == 0
-        and icons[6].points[1][4] == 135 and icons[6].points[1][5] == 0
-        and icons[7].points[1][4] == 0 and icons[7].points[1][5] == -27,
-    "consumable bar did not fill rows from left to right")
+assert(icons[1].points[1][4] == 0 and icons[1].points[1][5] == -2
+        and icons[2].points[1][4] == 27 and icons[2].points[1][5] == -2
+        and icons[6].points[1][4] == 135 and icons[6].points[1][5] == -2
+        and icons[7].points[1][4] == 0 and icons[7].points[1][5] == -29,
+    "consumable bar did not match the Shortcut inset while filling rows left to right")
+local container = icons[1].parent
+assert(container.parent == footerAnchor
+        and container.points[1][1] == "TOPLEFT"
+        and container.points[1][2] == footerAnchor
+        and container.points[1][4] == 27 and container.points[1][5] == 0,
+    "consumables were not positioned to the right of the Shortcut footer offset")
 assert(icons[1].castButton:GetAttribute("macrotext") == "/use Item 101"
         and icons[1].castButton.mouseEnabled,
     "automatic consumable did not receive a clickable secure item action")
@@ -161,14 +167,14 @@ assert(shown == 8 and total == 8 and omitted == 0,
 
 ApogeePartyHealthBars_S.configMode = true
 bar.Layout(27)
-assert(bar.GetHeight("player") == 67 and bar.GetSectionLabel():IsShown()
+assert(bar.GetHeight("player") == 69 and bar.GetSectionLabel():IsShown()
         and bar.GetSectionLabel().text == "Consumables"
-        and icons[1].points[1][5] == -16,
+        and icons[1].points[1][5] == -18,
     "settings-open consumables did not reserve and show the shared label band")
 ApogeePartyHealthBars_S.configMode = false
 bar.Layout(27)
-assert(bar.GetHeight("player") == 51 and not bar.GetSectionLabel():IsShown()
-        and icons[1].points[1][5] == 0,
+assert(bar.GetHeight("player") == 53 and not bar.GetSectionLabel():IsShown()
+        and icons[1].points[1][5] == -2,
     "closing settings did not restore consumable gameplay geometry")
 
 assignedIds[102] = true

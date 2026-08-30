@@ -149,9 +149,11 @@ function DC.Create(parent, deps)
     previewLabel:SetPoint("TOP", previewRow, "TOP", 0, -4)
     previewLabel:SetText("Target HUD preview")
     local preview = D.TargetEffectHud.CreateConfigurationPreview(previewRow)
-    preview:SetPoint("TOP", previewRow, "TOP", 0, -20)
     local statusPreview = D.PlayerStatusHud.CreateConfigurationPreview(previewRow)
-    statusPreview:SetPoint("TOP", preview, "BOTTOM", 0, -4)
+    if preview.SetScale then preview:SetScale(0.75) end
+    if statusPreview.SetScale then statusPreview:SetScale(0.75) end
+    statusPreview:SetPoint("TOP", previewRow, "TOP", 48, -24)
+    preview:SetPoint("RIGHT", statusPreview, "LEFT", -4, 0)
     previewRow.preview, previewRow.statusPreview = preview, statusPreview
     resetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local reset = UIH.CreateButton(resetRow, "Reset Target HUD Position", 178, 22)

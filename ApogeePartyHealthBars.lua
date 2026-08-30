@@ -30,6 +30,13 @@ local unitAPI = ApogeePartyHealthBars_UnitAPI
 local unitBar = ApogeePartyHealthBars_UnitBar
 local playerStatusHud = ApogeePartyHealthBars_PlayerStatusHud
 local playerUtility = ApogeePartyHealthBars_PlayerUtility
+local groupHelperData = ApogeePartyHealthBars.Require("Runtime", "GroupHelperData")
+local groupHelperPolicy = ApogeePartyHealthBars.Require("Runtime", "GroupHelperPolicy")
+local groupHelperSettings = ApogeePartyHealthBars.Require("Runtime", "GroupHelperSettings")
+local groupHelperRuntime = ApogeePartyHealthBars.Require("Runtime", "GroupHelperRuntime")
+local groupHelperPresentation = ApogeePartyHealthBars.Require(
+    "Runtime", "GroupHelperPresentation")
+local partyFramePreview = ApogeePartyHealthBars.Require("Runtime", "PartyFramePreview")
 
 local panel, configUI, minimapController, dungeonBoardUI, dungeonGuideUI
 local rows = {}
@@ -90,7 +97,7 @@ end
 
 local function GetTargetColumnWidth()
     if not IsUnitTargetsEnabled() then return 0 end
-    return 2 * (C.UNIT_BAR_W + C.UNIT_COLUMN_GAP)
+    return C.UNIT_BAR_W + C.UNIT_COLUMN_GAP
 end
 
 local function GetRowBtnWidth(row)
@@ -270,7 +277,7 @@ function S.RefreshUnitChains()
     if IsSavedFeatureEnabled("showUnitTargets") then
         for _, row in ipairs(rows) do
             if row.btn:IsShown() then
-                for _, surface in ipairs({ row.target, row.targetOfTarget }) do
+                for _, surface in ipairs({ row.target }) do
                     local guid = unitAPI.GetGUID(surface.unitId) or false
                     if targetChainGUIDs[surface.unitId] ~= guid then
                         targetChainGUIDs[surface.unitId] = guid
@@ -321,6 +328,7 @@ local GetBindingDisplay = bindingStore.GetDisplay
 local GetBindingsTable = bindingStore.GetPagele
 local bindingController = ApogeePartyHealthBars_BindingController
 local playerSpells = ApogeePartyHealthBars_PlayerSpells
+groupHelperData.ConfigureDrinkAuraNames(playerSpells.GetSpellName)
 local actionCoordinator = ApogeePartyHealthBars.Require("Actions", "ActionCoordinator")
 local AssignCursorDrop = actionCoordinator.AssignCursorDrop
 
@@ -349,10 +357,6 @@ ApogeePartyHealthBars.Require("Bootstrap", "ActionComposition").Initialize({
     GetSettingsUI = function() return configUI end,
     RefreshPartyFrameClicksPage = function() RefreshPartyFrameClicksPage() end,
     IsAddonEnabled = IsEnabled,
-    GetConsumableLeftOffset = function()
-        return math.max(C.ROW_CONTENT_W, B.GetWidth("player"))
-            + C.SHORTCUT_ICON_SIZE + C.SHORTCUT_ICON_GAP
-        end,
     },
 })
 
@@ -397,6 +401,29 @@ local ApplyDefaultPosition = unitFrames.ApplyDefaultPosition
 local RestorePosition = unitFrames.RestorePosition
 local ApplyBackdrop = ApogeePartyHealthBars_UIHelpers.ApplyBackdrop
 local ApplyPanelChrome = unitFrames.ApplyPanelChrome
+
+groupHelperPresentation.Initialize({
+    Rows = rows,
+    Runtime = groupHelperRuntime,
+    Helpers = ApogeePartyHealthBars_UIHelpers,
+    GetUnitGUID = unitAPI.GetGUID,
+    RequestLayoutUpdate = S.RequestLayoutUpdate,
+})
+groupHelperPresentation.Build(panel)
+partyFramePreview.Initialize({
+    Rows = rows,
+    Presentation = groupHelperPresentation,
+    Runtime = groupHelperRuntime,
+    Threat = H,
+    RequestLayoutUpdate = S.RequestLayoutUpdate,
+    DisableSecureActions = function()
+        if HideAllSecureOverlays then HideAllSecureOverlays() end
+    end,
+    RestoreLive = function()
+        if ForceRefresh then ForceRefresh() end
+        secureFrames.RequestReconcile()
+    end,
+})
 
 local function GetDungeonBoardClientFlavor()
     local info = ApogeePartyHealthBars_ClientCapabilities.GetClientInfo()
@@ -502,6 +529,32 @@ buffThanks.Initialize({
 })
 buffThanks.Build()
 
+groupHelperSettings.Initialize({
+    GetSavedVariables = function() return S.sv end,
+    OnChanged = function()
+        if groupHelperRuntime then groupHelperRuntime.Refresh() end
+    end,
+})
+groupHelperData.ConfigureBuffDefinitions(C.PARTY_BUFF_DEFINITIONS)
+groupHelperRuntime.Initialize({
+    Data = groupHelperData,
+    Policy = groupHelperPolicy,
+    Auras = A,
+    UnitAPI = unitAPI,
+    Settings = groupHelperSettings,
+    ChatComposer = ApogeePartyHealthBars.Require("Core", "ChatComposer"),
+    ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities,
+    UnitIds = C.SLOT_UNITS,
+    After = C_Timer and C_Timer.After or nil,
+    OnSnapshot = groupHelperPresentation.Render,
+    OnCombatStarted = groupHelperPresentation.HideForCombat,
+    OnCombatEnded = function()
+        groupHelperPresentation.RefreshAfterCombat()
+        partyFramePreview.RefreshAfterCombat()
+    end,
+    Print = Print,
+})
+
 dungeonBoardUI = ApogeePartyHealthBars_DungeonBoardUI.Build({
     Runtime = ApogeePartyHealthBars_DungeonBoardRuntime,
     Catalog = ApogeePartyHealthBars_DungeonBoardCatalog,
@@ -589,6 +642,20 @@ UpdateUI = function()
     A.BeginAuraCacheGeneration()
     playerStatusHud.Refresh()
 
+    -- Combat entry must not re-anchor the party panel or any protected overlays.
+    -- Values and threat textures are safe to refresh against the geometry that
+    -- was committed out of combat; pending layout is rebuilt after combat.
+    if InCombatLockdown() then
+        AH.SetSectionLabelVisible(partyFramesLabel, false)
+        W.RefreshConfigurationVisuals()
+        K.RefreshConfigurationVisuals()
+        B.RefreshConfigurationVisuals()
+        UpdateRowValues()
+        H.Refresh()
+        ClearDirtyFlags()
+        return
+    end
+
     local doLayout = S.layoutDirty
     local doValues = S.valuesDirty
     if not doLayout and not doValues then
@@ -662,17 +729,35 @@ local partyFrameRuntime = ApogeePartyHealthBars.Require(
             GetActionAreaHeight = GetActionAreaHeight,
             GetActionHudGeometry = rowGeometry.GetActionHudGeometry,
             GetPlayerActionWidth = function()
-                return math.max(C.ROW_CONTENT_W, B.GetWidth("player"), CB.GetWidth("player"))
+                return math.max(C.ROW_CONTENT_W, B.GetWidth("player"))
             end,
             LayoutPlayerActions = function(actionGeometry)
                 W.Layout(actionGeometry.offsets.mouseWheel)
                 K.Layout(actionGeometry.offsets.keyboard)
                 B.Layout(actionGeometry.offsets.mouseButtons)
-                CB.Layout(actionGeometry.offsets.consumables)
                 AH.Layout(actionGeometry.iconHeight)
             end,
-            GetShortcutFooterHeight = T.GetFooterHeight,
-            LayoutShortcutFooter = T.Layout,
+            GetShortcutFooterHeight = function()
+                local shortcutHeight = T.GetFooterHeight()
+                local consumableHeight = CB.GetHeight("player")
+                return math.max(shortcutHeight, consumableHeight)
+            end,
+            GetShortcutFooterWidth = function()
+                local shortcutHeight = T.GetFooterHeight()
+                local shortcutWidth = shortcutHeight > 0
+                    and C.SHORTCUT_ICON_SIZE * C.SHORTCUT_COLUMNS
+                        + C.SHORTCUT_ICON_GAP * (C.SHORTCUT_COLUMNS - 1)
+                    or 0
+                local consumableWidth = CB.GetWidth("player")
+                local gap = shortcutWidth > 0 and consumableWidth > 0
+                    and C.SHORTCUT_ICON_GAP or 0
+                return shortcutWidth + gap + consumableWidth
+            end,
+            LayoutShortcutFooter = function(footerWidth)
+                T.Layout()
+                local consumableWidth = CB.GetWidth("player")
+                CB.Layout(math.max(0, (tonumber(footerWidth) or 0) - consumableWidth))
+            end,
             GetThreatGutterWidth = H.GetGutterWidth,
             RefreshThreat = H.Refresh,
             IsUnitTargetsEnabled = IsUnitTargetsEnabled,
@@ -681,6 +766,7 @@ local partyFrameRuntime = ApogeePartyHealthBars.Require(
             IsEnabled = IsEnabled,
             RebuildUnitToRow = RebuildUnitToRow,
             PlayerUtility = playerUtility,
+            GroupHelperPresentation = groupHelperPresentation,
         },
 })
 ApplyAllBindings = partyFrameRuntime.ApplyAllBindings
@@ -793,8 +879,11 @@ local settingsRuntime = ApogeePartyHealthBars.Require(
     CleanseWatch = cleanseWatch,
     BuffThanks = buffThanks,
     ThreatAwareness = threatAwareness,
+    PartyFramePreview = partyFramePreview,
+    GroupHelperPresentation = groupHelperPresentation,
+    GroupHelperRuntime = groupHelperRuntime,
     SettingsSurfaces = configSurfaces,
-        Print = Print,
+    Print = Print,
     },
     BuildUI = function(settings)
         ExitConfigMode = settings.ExitConfigMode
@@ -835,6 +924,10 @@ local settingsRuntime = ApogeePartyHealthBars.Require(
     CleanseWatch             = cleanseWatch,
     BuffThanks               = buffThanks,
     ThreatAwareness          = threatAwareness,
+    GroupHelperSettings      = groupHelperSettings,
+    GroupHelperRuntime       = groupHelperRuntime,
+    PartyFramePreview        = partyFramePreview,
+    GroupHelperPresentation = groupHelperPresentation,
     DungeonGuideSettings    = dungeonGuideSettings,
     DungeonGuideUI          = dungeonGuideUI,
     RaidMarkers             = M,
@@ -870,6 +963,8 @@ local settingsRuntime = ApogeePartyHealthBars.Require(
         DungeonBoardUI              = dungeonBoardUI,
         CleanseWatch                 = cleanseWatch,
         BuffThanks                   = buffThanks,
+        GroupHelperRuntime           = groupHelperRuntime,
+        PartyFramePreview            = partyFramePreview,
         Threat                      = H,
         ThreatAwareness             = threatAwareness,
         CombatUIFader               = ApogeePartyHealthBars_CombatUIFader,
@@ -912,7 +1007,8 @@ ApogeePartyHealthBars.Require("Bootstrap", "EventRegistration").Register({
     ResolvePanelUnit = ResolvePanelUnit,
     ShieldTrackerSyncUnit = ShieldTrackerSyncUnit,
     AuraEventNeedsLayout = AuraEventNeedsLayout,
-        GetSettingsUI = function() return configUI end,
+    GroupHelperRuntime = groupHelperRuntime,
+    GetSettingsUI = function() return configUI end,
     },
     HealthAlerts = ApogeePartyHealthBars_HealthAlerts,
 })

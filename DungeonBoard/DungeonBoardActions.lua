@@ -1,9 +1,9 @@
 ApogeePartyHealthBars_DungeonBoardActions = {}
 local Actions = ApogeePartyHealthBars_DungeonBoardActions
+local Composer = ApogeePartyHealthBars.Require("Core", "ChatComposer")
 
 local PLAYER_UNAVAILABLE = "Player name is unavailable."
 local WHO_UNAVAILABLE = "Blizzard's Who lookup is unavailable on this client."
-local WHISPER_UNAVAILABLE = "Blizzard's whisper composer is unavailable on this client."
 
 local function isFunction(value)
     return type(value) == "function"
@@ -23,16 +23,6 @@ local function whoIsDisabled()
     local ok, disabled = pcall(
         C_GameRules.IsGameRuleActive, Enum.GameRule.IngameWhoListDisabled)
     return ok and disabled == true
-end
-
-local function getWhisperFunction()
-    if ChatFrameUtil and isFunction(ChatFrameUtil.SendTellWithMessage) then
-        return ChatFrameUtil.SendTellWithMessage
-    end
-    if isFunction(ChatFrame_SendTellWithMessage) then
-        return ChatFrame_SendTellWithMessage
-    end
-    return nil
 end
 
 function Actions.CanQueryWho(playerName)
@@ -59,9 +49,7 @@ function Actions.QueryWho(playerName)
 end
 
 function Actions.CanWhisper(playerName)
-    if not validPlayerName(playerName) then return false, PLAYER_UNAVAILABLE end
-    if not getWhisperFunction() then return false, WHISPER_UNAVAILABLE end
-    return true
+    return Composer.CanWhisper(playerName)
 end
 
 function Actions.OpenWhisper(playerName, role, dungeonText)
@@ -73,9 +61,5 @@ function Actions.OpenWhisper(playerName, role, dungeonText)
     local message = destination
         and (roleText .. " LF " .. destination)
         or (roleText .. " LFG")
-    local ok, failure = pcall(getWhisperFunction(), playerName, message)
-    if not ok then
-        return false, "Could not open whisper: " .. tostring(failure)
-    end
-    return true
+    return Composer.OpenWhisper(playerName, message)
 end

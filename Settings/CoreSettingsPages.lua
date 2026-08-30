@@ -11,8 +11,7 @@ local generalRows = {}
 local generalRowsByKey = {}
 local hotRows = {}
 local hotRowsByKey = {}
-local resetBarBtn, resetSettingsBtn, resetMinimapBtn, threatAwarenessResetBtn, buffThanksResetBtn, prepareDisableBtn, factoryResetBtn
-local lfgAlertsResetBtn, dungeonBoardResetBtn
+local resetButtons = {}
 local behaviorSection, alertsSection, lowHealthSection, nameMentionsSection
 local dungeonBoardSection, displaySection, threatAwarenessSection, hudDisplaysSection
 local hotSection, compatibilitySection
@@ -20,6 +19,7 @@ local positionsSection, recoverySection, dangerSection
 local resetPartyFramesRow, resetSettingsRow, resetMinimapRow
 local threatAwarenessResetRow, cleanseResetRow, buffThanksResetRow, lfgAlertsResetRow, dungeonBoardResetRow
 local compatibilityRow, compatibilityLabel, prepareDisableRow, factoryRow
+local previewControls = { buttons = {} }
 local prepareDisableArmed, prepareDisableToken = false, 0
 local factoryResetArmed, factoryResetToken = false, 0
 local refreshing = false
@@ -127,13 +127,74 @@ end
 local function DisarmFactoryReset()
     factoryResetArmed = false
     factoryResetToken = factoryResetToken + 1
-    if factoryResetBtn then factoryResetBtn.label:SetText("Reset Character") end
+    if resetButtons.factory then resetButtons.factory.label:SetText("Reset Character") end
 end
 
 local function DisarmPrepareDisable()
     prepareDisableArmed = false
     prepareDisableToken = prepareDisableToken + 1
-    if prepareDisableBtn then prepareDisableBtn.label:SetText("Restore All") end
+    if resetButtons.prepareDisable then resetButtons.prepareDisable.label:SetText("Restore All") end
+end
+
+local function RefreshPreviewControls()
+    if not D or not D.PartyFramePreview then return end
+    local selected = D.PartyFramePreview.GetScenario()
+    for key, button in pairs(previewControls.buttons) do
+        if button.label then
+            button.label:SetTextColor(key == selected and 1 or 0.72,
+                key == selected and 0.82 or 0.72,
+                key == selected and 0 or 0.76)
+        end
+    end
+    previewControls.channel:SetText("PREVIEW GUIDE")
+    if selected == "combat" then
+        previewControls.text:SetText(
+            "COMBAT: Group Helper hides.\n"
+            .. "Threat rails and target margins use the reserved companion area.")
+    else
+        previewControls.text:SetText(
+            "OUT OF COMBAT\n"
+            .. "DRINKING: active drink aura. THIRSTY: below 75% without one.\n"
+            .. "Buffs: Priest Fort/Spirit · Mage Int · Druid Mark.\n"
+            .. "Click mana: mana up · buff: buff up · charge: pulling here.")
+    end
+end
+
+function previewControls.Create(parent, rowWidth)
+    local scenarioRow = UIH.CreateFormRow(parent, rowWidth, 58)
+    local scenarioLabel = scenarioRow:CreateFontString(
+        nil, "ARTWORK", "GameFontHighlightSmall")
+    scenarioLabel:SetPoint("TOPLEFT", scenarioRow, "TOPLEFT", 8, -6)
+    scenarioLabel:SetText("Preview a five-player dungeon moment")
+    local scenarios = D.PartyFramePreview.GetScenarios()
+    local buttonWidth = math.floor((rowWidth - 16 - (#scenarios - 1) * 4) / #scenarios)
+    for index, scenario in ipairs(scenarios) do
+        local button = UIH.CreateButton(
+            scenarioRow, scenario.label, buttonWidth, 22, "quiet")
+        button:SetPoint("BOTTOMLEFT", scenarioRow, "BOTTOMLEFT",
+            8 + (index - 1) * (buttonWidth + 4), 5)
+        button:SetScript("OnClick", function()
+            D.PartyFramePreview.SetScenario(scenario.key)
+            RefreshPreviewControls()
+        end)
+        previewControls.buttons[scenario.key] = button
+    end
+
+    local actionRow = UIH.CreateFormRow(parent, rowWidth, 86)
+    local channel = actionRow:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    channel:SetPoint("TOPLEFT", actionRow, "TOPLEFT", 8, -7)
+    channel:SetTextColor(1, 0.78, 0.18)
+    local text = actionRow:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    text:SetPoint("TOPLEFT", channel, "BOTTOMLEFT", 0, -4)
+    text:SetPoint("BOTTOMRIGHT", actionRow, "BOTTOMRIGHT", -8, 7)
+    text:SetJustifyH("LEFT")
+    text:SetJustifyV("TOP")
+    text:SetWordWrap(true)
+    previewControls.scenarioRow = scenarioRow
+    previewControls.actionRow = actionRow
+    previewControls.channel = channel
+    previewControls.text = text
+    D.PartyFramePreview.SetChangedCallback(RefreshPreviewControls)
 end
 
 local function Layout()
@@ -146,12 +207,13 @@ local function Layout()
     for _, entry in ipairs(hotRows) do entry.row:Hide() end
     for _, frame in ipairs({
         behaviorSection, alertsSection, lowHealthSection, nameMentionsSection,
-        dungeonBoardSection, displaySection,
+        dungeonBoardSection, displaySection, previewControls.section,
         threatAwarenessSection, hudDisplaysSection, hotSection, compatibilitySection, positionsSection, dangerSection,
         recoverySection, resetPartyFramesRow, resetSettingsRow, resetMinimapRow,
         threatAwarenessResetRow, cleanseResetRow, buffThanksResetRow,
         lfgAlertsResetRow, dungeonBoardResetRow,
         compatibilityRow, prepareDisableRow, factoryRow,
+        previewControls.scenarioRow, previewControls.actionRow,
     }) do
         if frame then frame:Hide() end
     end
@@ -258,6 +320,11 @@ local function Layout()
         addSetting("showAllSlots")
         addSetting("combatUIAutoHide")
         addSetting("hideUIErrors")
+        entries[#entries + 1] = { frame = previewControls.section, height = 16, gap = 10 }
+        addSetting("groupHelperEnabled")
+        entries[#entries + 1] = { frame = previewControls.scenarioRow, height = 58 }
+        entries[#entries + 1] = { frame = previewControls.actionRow, height = 86, gap = 3 }
+        RefreshPreviewControls()
         entries[#entries + 1] = { frame = displaySection, height = 16, gap = 10 }
         addSetting("shieldEnabled")
         addSetting("incomingHealEnabled")
@@ -644,7 +711,7 @@ function G.Create(parent, deps)
         "SetHotTrackEnabled", "SetSavedFeature", "SetSelfBuffPreference", "Sounds",
         "SyncVisualTicker", "Threat", "ThreatAwareness", "ConsumableBar", "DungeonBoardSettings",
         "UIErrorSuppressor",
-        "CleanseWatch", "BuffThanks",
+        "CleanseWatch", "BuffThanks", "GroupHelperRuntime", "PartyFramePreview",
     }) do
         assert(deps[key] ~= nil, "CoreSettingsPages missing dependency: " .. key)
     end
@@ -659,6 +726,8 @@ function G.Create(parent, deps)
         "Choose what the party bars show and how they behave.", false)
 
     behaviorSection = UIH.CreateFormSection(form.content, form.rowWidth, "Behavior")
+    previewControls.section = UIH.CreateFormSection(
+        form.content, form.rowWidth, "Dungeon leadership")
     alertsSection = UIH.CreateFormSection(form.content, form.rowWidth, "Alerts and reminders")
     lowHealthSection = UIH.CreateFormSection(form.content, form.rowWidth, "Low Health")
     nameMentionsSection = UIH.CreateFormSection(form.content, form.rowWidth, "Name Mentions")
@@ -686,6 +755,9 @@ function G.Create(parent, deps)
     end)
     AddCheckbox("Show brief action feedback text", "actionFeedbackEnabled", function()
         D.ActionHud.Clear()
+    end)
+    AddCheckbox("Show Group Helper companion", "groupHelperEnabled", function()
+        D.GroupHelperRuntime.Refresh()
     end)
     AddCheckbox("Show automatic consumables from carried bags", "automaticConsumablesEnabled", function()
         local saved = D.GetSavedVariables()
@@ -731,8 +803,10 @@ function G.Create(parent, deps)
     end)
     AddThreatAwarenessExplanation()
     AddThreatAwarenessSoundPreference()
-    AddCheckbox("Show each party member's target and target-of-target", "showUnitTargets")
+    AddCheckbox("Show each party member's target", "showUnitTargets")
     AddCheckbox("Show heal-over-time duration bars", "hotEnabled", D.InitHotSpells)
+
+    previewControls.Create(form.content, form.rowWidth)
 
     for _, def in ipairs(C.HOT_SPELL_DEFINITIONS) do
         local frame = CreateCheckboxRow(form.content, def.canonical, 4)
@@ -765,27 +839,27 @@ function G.Create(parent, deps)
         return row, button
     end
 
-    resetPartyFramesRow, resetBarBtn = CreatePositionResetRow("Party Frames")
-    resetBarBtn:SetScript("OnClick", function()
+    resetPartyFramesRow, resetButtons.bar = CreatePositionResetRow("Party Frames")
+    resetButtons.bar:SetScript("OnClick", function()
         D.ApplyDefaultPosition()
         D.ForceRefresh()
     end)
 
-    resetSettingsRow, resetSettingsBtn = CreatePositionResetRow("Settings Window")
-    resetSettingsBtn:SetScript("OnClick", D.ApplyDefaultConfigPosition)
+    resetSettingsRow, resetButtons.settings = CreatePositionResetRow("Settings Window")
+    resetButtons.settings:SetScript("OnClick", D.ApplyDefaultConfigPosition)
 
-    resetMinimapRow, resetMinimapBtn = CreatePositionResetRow("Minimap Button")
-    resetMinimapBtn:SetScript("OnClick", D.ApplyDefaultMinimapPosition)
+    resetMinimapRow, resetButtons.minimap = CreatePositionResetRow("Minimap Button")
+    resetButtons.minimap:SetScript("OnClick", D.ApplyDefaultMinimapPosition)
 
     threatAwarenessResetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local threatAwarenessResetLabel = threatAwarenessResetRow:CreateFontString(
         nil, "ARTWORK", "GameFontHighlightSmall")
     threatAwarenessResetLabel:SetPoint("LEFT", threatAwarenessResetRow, "LEFT", 8, 0)
     threatAwarenessResetLabel:SetText("Tank Threat Control HUD")
-    threatAwarenessResetBtn = UIH.CreateButton(
+    resetButtons.threatAwareness = UIH.CreateButton(
         threatAwarenessResetRow, "Reset Position", 126, 22)
-    threatAwarenessResetBtn:SetPoint("RIGHT", threatAwarenessResetRow, "RIGHT", -5, 0)
-    threatAwarenessResetBtn:SetScript("OnClick", function()
+    resetButtons.threatAwareness:SetPoint("RIGHT", threatAwarenessResetRow, "RIGHT", -5, 0)
+    resetButtons.threatAwareness:SetScript("OnClick", function()
         D.ThreatAwareness.ResetPosition()
         D.ThreatAwareness.Refresh(true)
     end)
@@ -808,10 +882,10 @@ function G.Create(parent, deps)
         nil, "ARTWORK", "GameFontHighlightSmall")
     buffThanksResetLabel:SetPoint("LEFT", buffThanksResetRow, "LEFT", 8, 0)
     buffThanksResetLabel:SetText("Thank You prompts")
-    buffThanksResetBtn = UIH.CreateButton(
+    resetButtons.buffThanks = UIH.CreateButton(
         buffThanksResetRow, "Reset Position", 126, 22)
-    buffThanksResetBtn:SetPoint("RIGHT", buffThanksResetRow, "RIGHT", -5, 0)
-    buffThanksResetBtn:SetScript("OnClick", function()
+    resetButtons.buffThanks:SetPoint("RIGHT", buffThanksResetRow, "RIGHT", -5, 0)
+    resetButtons.buffThanks:SetScript("OnClick", function()
         D.BuffThanks.ResetPosition()
         D.BuffThanks.Refresh()
     end)
@@ -821,36 +895,36 @@ function G.Create(parent, deps)
         nil, "ARTWORK", "GameFontHighlightSmall")
     lfgAlertsResetLabel:SetPoint("LEFT", lfgAlertsResetRow, "LEFT", 8, 0)
     lfgAlertsResetLabel:SetText("LFG Alerts")
-    lfgAlertsResetBtn = UIH.CreateButton(
+    resetButtons.lfgAlerts = UIH.CreateButton(
         lfgAlertsResetRow, "Reset Position", 126, 22)
-    lfgAlertsResetBtn:SetPoint("RIGHT", lfgAlertsResetRow, "RIGHT", -5, 0)
-    lfgAlertsResetBtn:SetScript("OnClick", D.DungeonBoardFeed.ResetPosition)
+    resetButtons.lfgAlerts:SetPoint("RIGHT", lfgAlertsResetRow, "RIGHT", -5, 0)
+    resetButtons.lfgAlerts:SetScript("OnClick", D.DungeonBoardFeed.ResetPosition)
 
     dungeonBoardResetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local dungeonBoardResetLabel = dungeonBoardResetRow:CreateFontString(
         nil, "ARTWORK", "GameFontHighlightSmall")
     dungeonBoardResetLabel:SetPoint("LEFT", dungeonBoardResetRow, "LEFT", 8, 0)
     dungeonBoardResetLabel:SetText("Dungeon Board")
-    dungeonBoardResetBtn = UIH.CreateButton(
+    resetButtons.dungeonBoard = UIH.CreateButton(
         dungeonBoardResetRow, "Reset Position", 126, 22)
-    dungeonBoardResetBtn:SetPoint("RIGHT", dungeonBoardResetRow, "RIGHT", -5, 0)
-    dungeonBoardResetBtn:SetScript("OnClick", D.DungeonBoardUI.ResetPosition)
+    resetButtons.dungeonBoard:SetPoint("RIGHT", dungeonBoardResetRow, "RIGHT", -5, 0)
+    resetButtons.dungeonBoard:SetScript("OnClick", D.DungeonBoardUI.ResetPosition)
 
     prepareDisableRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local prepareDisableLabel = prepareDisableRow:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     prepareDisableLabel:SetPoint("LEFT", prepareDisableRow, "LEFT", 8, 0)
     prepareDisableLabel:SetText("Restore keyboard, wheel, and mouse button bindings")
-    prepareDisableBtn = UIH.CreateButton(prepareDisableRow, "Restore All", 118, 22)
-    prepareDisableBtn:SetPoint("RIGHT", prepareDisableRow, "RIGHT", -5, 0)
-    prepareDisableLabel:SetPoint("RIGHT", prepareDisableBtn, "LEFT", -8, 0)
+    resetButtons.prepareDisable = UIH.CreateButton(prepareDisableRow, "Restore All", 118, 22)
+    resetButtons.prepareDisable:SetPoint("RIGHT", prepareDisableRow, "RIGHT", -5, 0)
+    prepareDisableLabel:SetPoint("RIGHT", resetButtons.prepareDisable, "LEFT", -8, 0)
     prepareDisableLabel:SetJustifyH("LEFT")
     prepareDisableLabel:SetWordWrap(false)
-    prepareDisableBtn:SetScript("OnClick", function()
+    resetButtons.prepareDisable:SetScript("OnClick", function()
         if not prepareDisableArmed then
             prepareDisableArmed = true
             prepareDisableToken = prepareDisableToken + 1
             local token = prepareDisableToken
-            prepareDisableBtn.label:SetText("Confirm Restore")
+            resetButtons.prepareDisable.label:SetText("Confirm Restore")
             if C_Timer and C_Timer.After then
                 C_Timer.After(5, function()
                     if prepareDisableToken == token then DisarmPrepareDisable() end
@@ -869,14 +943,14 @@ function G.Create(parent, deps)
     local factoryLabel = factoryRow:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     factoryLabel:SetPoint("LEFT", factoryRow, "LEFT", 8, 0)
     factoryLabel:SetText("Erase this character's profiles and settings")
-    factoryResetBtn = UIH.CreateButton(factoryRow, "Reset Character", 126, 22, "danger")
-    factoryResetBtn:SetPoint("RIGHT", factoryRow, "RIGHT", -5, 0)
-    factoryResetBtn:SetScript("OnClick", function()
+    resetButtons.factory = UIH.CreateButton(factoryRow, "Reset Character", 126, 22, "danger")
+    resetButtons.factory:SetPoint("RIGHT", factoryRow, "RIGHT", -5, 0)
+    resetButtons.factory:SetScript("OnClick", function()
         if not factoryResetArmed then
             factoryResetArmed = true
             factoryResetToken = factoryResetToken + 1
             local token = factoryResetToken
-            factoryResetBtn.label:SetText("Confirm Erase")
+            resetButtons.factory.label:SetText("Confirm Erase")
             if C_Timer and C_Timer.After then
                 C_Timer.After(5, function()
                     if factoryResetToken == token then DisarmFactoryReset() end
@@ -921,19 +995,20 @@ end
 
 function G.GetResetButtons()
     return {
-        bar = resetBarBtn,
-        settings = resetSettingsBtn,
-        minimap = resetMinimapBtn,
-        threatAwareness = threatAwarenessResetBtn,
-        buffThanks = buffThanksResetBtn,
-        lfgAlerts = lfgAlertsResetBtn,
-        dungeonBoard = dungeonBoardResetBtn,
-        prepareDisable = prepareDisableBtn,
-        factory = factoryResetBtn,
+        bar = resetButtons.bar,
+        settings = resetButtons.settings,
+        minimap = resetButtons.minimap,
+        threatAwareness = resetButtons.threatAwareness,
+        buffThanks = resetButtons.buffThanks,
+        lfgAlerts = resetButtons.lfgAlerts,
+        dungeonBoard = resetButtons.dungeonBoard,
+        prepareDisable = resetButtons.prepareDisable,
+        factory = resetButtons.factory,
     }
 end
 
 G.GetFrame = function() return page end
-G.GetPrepareDisableButton = function() return prepareDisableBtn end
-G.GetFactoryResetButton = function() return factoryResetBtn end
+G.GetPrepareDisableButton = function() return resetButtons.prepareDisable end
+G.GetFactoryResetButton = function() return resetButtons.factory end
 G.GetForm = function() return form end
+G.GetPreviewControls = function() return previewControls end

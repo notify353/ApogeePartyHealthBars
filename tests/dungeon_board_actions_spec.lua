@@ -25,6 +25,8 @@ ChatFrameUtil = {
     end,
 }
 
+dofile("Core/Namespace.lua")
+dofile("Core/ChatComposer.lua")
 dofile("DungeonBoard/DungeonBoardActions.lua")
 local Actions = ApogeePartyHealthBars_DungeonBoardActions
 

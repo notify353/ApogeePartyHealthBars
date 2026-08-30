@@ -5,8 +5,8 @@ ApogeePartyHealthBars_UIHelpers = { ShowSpellTooltip = function() end }
 local registered
 local enabledCalls = {}
 ApogeePartyHealthBars_TargetNameplateHud = {
-    RegisterSurface = function(key, frame, order, gap)
-        registered = { key = key, frame = frame, order = order, gap = gap }
+    RegisterSurface = function(key, frame, order, gap, layoutRole)
+        registered = { key = key, frame = frame, order = order, gap = gap, layoutRole = layoutRole }
     end,
     SetSurfaceEnabled = function(key, enabled)
         enabledCalls[#enabledCalls + 1] = { key, enabled }
@@ -50,6 +50,7 @@ hud.Initialize()
 local row = hud.GetAnchor()
 assert(registered and registered.key == "targetEffects" and registered.frame == row
         and registered.order == 2 and registered.gap == 4
+        and registered.layoutRole == "leftAccessory"
         and row.width == 1 and row.height == 24 and row.mouseEnabled == false,
     "Target Effects did not register a passive upper nameplate row")
 
@@ -60,7 +61,8 @@ hud.SetSuggestions({
 })
 local icons = hud.GetIcons()
 assert(row.width == 51 and #icons == 2
-        and icons[1].points[1][4] == 0 and icons[2].points[1][4] == 27
+        and icons[1].points[1][1] == "RIGHT" and icons[1].points[1][4] == 0
+        and icons[2].points[1][1] == "RIGHT" and icons[2].points[1][4] == -27
         and icons[1].mouseEnabled == false and icons[2].mouseEnabled == false
         and icons[2].cooldown.cooldownStart == 93
         and icons[2].cooldown.cooldownDuration == 12

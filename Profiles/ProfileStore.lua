@@ -29,6 +29,7 @@ local SETTINGS_KEYS = {
     "dungeonGuideAutoMarkEnabled",
     "dungeonGuidePoint", "dungeonGuideRelPoint",
     "dungeonGuideX", "dungeonGuideY", "dungeonGuideWidth", "dungeonGuideHeight",
+    "groupHelperEnabled",
     "hotDisabled", "point", "relPoint", "x", "y", "configPoint", "configRelPoint",
     "configX", "configY", "minimapAngle",
 }
@@ -74,6 +75,8 @@ local LEGACY_SETTINGS_KEYS = {
     "dungeonGuideAutoMarkEnabled",
     "dungeonGuidePoint", "dungeonGuideRelPoint",
     "dungeonGuideX", "dungeonGuideY", "dungeonGuideWidth", "dungeonGuideHeight",
+    "groupHelperEnabled", "groupHelperPoint", "groupHelperRelPoint",
+    "groupHelperX", "groupHelperY",
     "hotDisabled", "point", "relPoint", "x", "y", "configPoint", "configRelPoint",
     "configX", "configY", "minimapAngle", "fortEnabled", "innerFireEnabled",
     "lowHealthSoundEnabled", "spellTrackerEnabled", "spellTrackerSoundsEnabled", "bindings",
@@ -115,6 +118,7 @@ local SETTINGS_TYPES = {
     dungeonGuidePoint = "string",
     dungeonGuideRelPoint = "string", dungeonGuideX = "number", dungeonGuideY = "number",
     dungeonGuideWidth = "number", dungeonGuideHeight = "number",
+    groupHelperEnabled = "boolean",
     threatPercentEnabled = "boolean", hotDisabled = "table", point = "string",
     relPoint = "string", x = "number", y = "number", configPoint = "string",
     configRelPoint = "string", configX = "number", configY = "number", minimapAngle = "number",
@@ -126,6 +130,10 @@ local ACTION_TYPES = {
 }
 local LEGACY_SETTINGS_TYPES = {}
 for key, valueType in pairs(SETTINGS_TYPES) do LEGACY_SETTINGS_TYPES[key] = valueType end
+LEGACY_SETTINGS_TYPES.groupHelperPoint = "string"
+LEGACY_SETTINGS_TYPES.groupHelperRelPoint = "string"
+LEGACY_SETTINGS_TYPES.groupHelperX = "number"
+LEGACY_SETTINGS_TYPES.groupHelperY = "number"
 LEGACY_SETTINGS_TYPES.fortEnabled = "boolean"
 LEGACY_SETTINGS_TYPES.innerFireEnabled = "boolean"
 LEGACY_SETTINGS_TYPES.lowHealthSoundEnabled = "boolean"

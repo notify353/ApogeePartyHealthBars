@@ -96,6 +96,11 @@ assert(M.Resolve == nil and M.ResolveAfterDrag == nil
     "configuration surface manager retained automatic placement APIs")
 assert(M.SetActive == nil and M.SetSurfaceActive == nil,
     "configuration surface manager retained ambiguous lifecycle aliases")
+assert(M.DockConfigurationPreview == nil
+        and M.MarkConfigurationPreviewMoved == nil
+        and M.RefreshConfigurationPreviewDock == nil
+        and M.ReleaseConfigurationPreview == nil,
+    "configuration surface manager retained preview-position overrides")
 
 M.SetConfigurationActive(true)
 assert(M.IsConfigurationActive(),
@@ -129,40 +134,6 @@ M.Register("lateThreat", lateThreat, {
 })
 assert(lateThreat.strata == "HIGH",
     "surface registered during configuration did not receive its configuration strata")
-
-assert(M.DockConfigurationPreview("dot"),
-    "contextual preview could not enter its configuration dock")
-assert(dot.point[1] == "BOTTOM" and dot.point[2] == settings
-        and dot.point[3] == "TOP" and dot.point[4] == 0 and dot.point[5] == 8,
-    "contextual preview did not dock above the settings panel")
-assert(M.ReleaseConfigurationPreview("dot")
-        and dot.point[1] == "CENTER" and dot.point[2] == nil
-        and dot.point[3] == "CENTER" and dot.point[4] == 0 and dot.point[5] == 0,
-    "untouched contextual preview did not restore its gameplay position")
-
-assert(M.DockConfigurationPreview("dot"),
-    "contextual preview could not re-enter its configuration dock")
-assert(M.MarkConfigurationPreviewMoved("dot"),
-    "contextual preview drag was not recorded")
-dot:ClearAllPoints()
-dot:SetPoint("TOPLEFT", settings, "BOTTOMLEFT", 4, -5)
-assert(M.ReleaseConfigurationPreview("dot")
-        and dot.point[1] == "TOPLEFT" and dot.point[2] == settings
-        and dot.point[3] == "BOTTOMLEFT"
-        and dot.point[4] == 4 and dot.point[5] == -5,
-    "dragged contextual preview reverted to its pre-configuration position")
-
-assert(M.DockConfigurationPreview("dot"),
-    "contextual preview could not dock before a position reset")
-dot:ClearAllPoints()
-dot:SetPoint("CENTER", nil, "CENTER", 0, 120)
-assert(M.RefreshConfigurationPreviewDock("dot")
-        and dot.point[1] == "BOTTOM" and dot.point[2] == settings,
-    "reset contextual preview did not return to its configuration dock")
-assert(M.ReleaseConfigurationPreview("dot")
-        and dot.point[1] == "CENTER" and dot.point[3] == "CENTER"
-        and dot.point[4] == 0 and dot.point[5] == 120,
-    "reset contextual preview did not retain its new gameplay position")
 
 M.SetConfigurationActive(false)
 assert(settings.strata == "DIALOG" and party.strata == "MEDIUM"

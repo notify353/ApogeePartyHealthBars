@@ -4,6 +4,12 @@ unpack = unpack or table.unpack
 function wipe(value) for key in pairs(value or {}) do value[key] = nil end return value end
 local originalPrint, messages = print, {}
 function print(message) messages[#messages + 1] = tostring(message) end
+local sentChat = {}
+C_ChatInfo = {
+    SendChatMessage = function(message, channel)
+        sentChat[#sentChat + 1] = { message = message, channel = channel }
+    end,
+}
 
 local frames = {}
 local function widget()
@@ -196,6 +202,9 @@ function UnitGUID(unit) return "GUID-" .. tostring(unit) end
 function UnitFactionGroup() return "Alliance" end
 function UnitGetIncomingHeals() return 0 end
 function UnitGetTotalAbsorbs() return 0 end
+function UnitThreatSituation() return nil end
+function UnitDetailedThreatSituation() return nil end
+function GetThreatStatusColor() return 1, 0.1, 0.1 end
 function UnitAura() return nil end
 function UnitBuff() return nil end
 function UnitDebuff() return nil end
@@ -301,17 +310,6 @@ function GetBindingName(action) return action end
 function SetBinding(key, action) smokeBindings[key] = action or ""; return true end
 function SaveBindings(set) assert(set == 2); savedBindingCount = savedBindingCount + 1 end
 function LoadBindings(set) assert(set == 2) end
-local spellbookOpenCount = 0
-local directSpellbookToggleCount = 0
-SpellbookMicroButton = widget()
-function SpellbookMicroButton:Click()
-    spellbookOpenCount = spellbookOpenCount + 1
-    SpellBookFrame:Show()
-end
-function ToggleSpellBook()
-    directSpellbookToggleCount = directSpellbookToggleCount + 1
-end
-
 local tocLoadOrder = {}
 for line in io.lines("ApogeePartyHealthBars.toc") do
     if line:match("%.lua$") then
@@ -518,12 +516,12 @@ local router = ApogeePartyHealthBars_EventRouter
 local playerStatusRow = ApogeePartyHealthBars_PlayerStatusHud.GetAnchor()
 assert(playerStatusRow and playerStatusRow.frameType == "Frame"
         and playerStatusRow.template == nil and not playerStatusRow.mouseEnabled
-        and playerStatusRow.width == 159,
-    "player health and power did not create a passive lower Target HUD surface")
+        and playerStatusRow.width == 382,
+    "player health and power did not create the split Target HUD surface")
 local targetEffectRow = ApogeePartyHealthBars_TargetEffectHud.GetAnchor()
 assert(targetEffectRow and targetEffectRow.frameType == "Frame"
         and targetEffectRow.template == nil and not targetEffectRow.mouseEnabled,
-    "Target Effects did not create a passive nameplate row")
+    "Target Effects did not create a passive left-growing reminder row")
 local inlinePreview = ApogeePartyHealthBars_TargetEffectHud.CreateConfigurationPreview(UIParent)
 ApogeePartyHealthBars_TargetEffectHud.SetConfigurationPreview({
     { key = "preview", label = "Preview", spellId = 1160, icon = 132154, preview = true },
@@ -537,7 +535,7 @@ assert(settingsPreviewRow and settingsPreviewRow.preview
         and settingsPreviewRow.preview.icons[1]
         and settingsPreviewRow.preview.icons[1].scripts.OnDragStart == nil,
     "Target HUD settings page did not own its effect sample")
-assert(settingsPreviewRow.statusPreview and settingsPreviewRow.statusPreview.width == 159,
+assert(settingsPreviewRow.statusPreview and settingsPreviewRow.statusPreview.width == 382,
     "Target HUD settings page did not own its player-status sample")
 assert(settingsPreviewRow.statusPreview.display
         and settingsPreviewRow.statusPreview.display.healthBar,
@@ -557,6 +555,47 @@ assert(#automaticConsumables == 2
         and automaticConsumableIcons[2].castButton:GetAttribute("macrotext")
             == "/use [@player] Localized Dynamite",
     "automatic consumables did not include the Trade Goods explosive with a player-feet macro")
+local shortcutSection = ApogeePartyHealthBars_ShortcutBar.GetSectionLabel()
+local consumableContainer = automaticConsumableIcons[1].parent
+local shortcutGridWidth = ApogeePartyHealthBars_C.SHORTCUT_ICON_SIZE
+        * ApogeePartyHealthBars_C.SHORTCUT_COLUMNS
+    + ApogeePartyHealthBars_C.SHORTCUT_ICON_GAP
+        * (ApogeePartyHealthBars_C.SHORTCUT_COLUMNS - 1)
+assert(consumableContainer.point[4]
+        == consumableContainer.parent:GetWidth()
+            - ApogeePartyHealthBars_ConsumableBar.GetWidth("player"),
+    "Consumables were not right-aligned when Shortcuts were empty")
+assert(ApogeePartyHealthBars_ShortcutBar.AssignSpell(1, 9001, "Fireball"),
+    "smoke test could not add a Shortcut for shared-footer layout coverage")
+RunFrameUpdates()
+local targetPanelWidth = ApogeePartyHealthBarsPanel:GetWidth()
+local targetConsumableOffset = consumableContainer.point[4]
+assert(shortcutSection.point[2] == consumableContainer.point[2]
+        and shortcutSection.point[5] == consumableContainer.point[5]
+        and targetConsumableOffset
+            == consumableContainer.parent:GetWidth()
+                - ApogeePartyHealthBars_ConsumableBar.GetWidth("player")
+        and targetConsumableOffset
+            >= shortcutGridWidth + ApogeePartyHealthBars_C.SHORTCUT_ICON_GAP,
+    "Consumables did not render to the right of Shortcuts in the shared footer")
+ApogeePartyHealthBars_S.sv.showUnitTargets = false
+ApogeePartyHealthBars_S.RequestLayoutUpdate()
+RunFrameUpdates()
+local noTargetPanelWidth = ApogeePartyHealthBarsPanel:GetWidth()
+local noTargetConsumableOffset = consumableContainer.point[4]
+assert(noTargetPanelWidth < targetPanelWidth
+        and noTargetConsumableOffset
+            == consumableContainer.parent:GetWidth()
+                - ApogeePartyHealthBars_ConsumableBar.GetWidth("player")
+        and targetPanelWidth - targetConsumableOffset
+            == noTargetPanelWidth - noTargetConsumableOffset,
+    "Consumables moved on screen when player targets were disabled")
+ApogeePartyHealthBars_S.sv.showUnitTargets = true
+ApogeePartyHealthBars_S.RequestLayoutUpdate()
+RunFrameUpdates()
+assert(ApogeePartyHealthBars_ShortcutBar.ClearSlot(1),
+    "smoke test could not restore the empty Shortcut fixture")
+RunFrameUpdates()
 local dotHudAnchor = ApogeePartyHealthBars_TargetEffectHud.GetAnchor()
 assert(dotHudAnchor and dotHudAnchor.frameType == "Frame" and dotHudAnchor.template == nil
         and dotHudAnchor.scripts.OnClick == nil and dotHudAnchor == targetEffectRow,
@@ -564,11 +603,11 @@ assert(dotHudAnchor and dotHudAnchor.frameType == "Frame" and dotHudAnchor.templ
 assert(ApogeePartyHealthBars_TargetEffectHud.ResetPosition == nil
         and ApogeePartyHealthBars_TargetEffectHud.SetUnlocked == nil,
     "removed movable Target Effects APIs were still exposed")
-assert(ApogeePartyHealthBarsPanel.point[1] == "TOPRIGHT"
-        and ApogeePartyHealthBarsPanel.point[3] == "TOPRIGHT"
-        and ApogeePartyHealthBarsPanel.point[4] == 0
-        and ApogeePartyHealthBarsPanel.point[5] == -252,
-    "party bars did not default flush right beneath the debuff preview")
+assert(ApogeePartyHealthBarsPanel.point[1] == "RIGHT"
+        and ApogeePartyHealthBarsPanel.point[3] == "RIGHT"
+        and ApogeePartyHealthBarsPanel.point[4] == -24
+        and ApogeePartyHealthBarsPanel.point[5] == 0,
+    "party bars did not use the vertically centered right-side default")
 assert(ApogeePartyHealthBarsBindPanel.point[1] == "CENTER"
         and ApogeePartyHealthBarsBindPanel.point[3] == "CENTER"
         and ApogeePartyHealthBarsBindPanel.point[4] == -96
@@ -881,21 +920,18 @@ assert(specChangeCount == 1 and wheelRuntime.GetActiveSpecKey() == "2",
 wheelRuntime.OnActiveSpecChanged = originalSpecChanged
 
 local minimapButton = ApogeePartyHealthBarsMinimapButton
-assert(minimapButton and minimapButton.template == "InsecureActionButtonTemplate",
-    "minimap button did not use the out-of-combat action template")
-assert(minimapButton:GetAttribute("alt-type1") == "",
-    "minimap button did not reserve Alt-left-click as a secure no-op")
-assert(minimapButton.scripts.OnClick == nil,
-    "add-on replaced or extended the action template's protected OnClick handler")
-assert(type(minimapButton.scripts.PreClick) == "function"
-        and type(minimapButton.scripts.PostClick) == "function",
-    "minimap action phases were not configured")
+assert(minimapButton and minimapButton.template == nil,
+    "minimap button unexpectedly used a secure action template")
+assert(type(minimapButton.scripts.OnClick) == "function"
+        and minimapButton.scripts.PreClick == nil
+        and minimapButton.scripts.PostClick == nil,
+    "minimap click handler retained secure action delegation")
 assert(not ApogeePartyHealthBars_DungeonBoardUI.IsShown(),
     "Dungeon Board started visible")
-minimapButton.scripts.PostClick(minimapButton, "MiddleButton")
+minimapButton.scripts.OnClick(minimapButton, "MiddleButton")
 assert(ApogeePartyHealthBars_DungeonBoardUI.IsShown(),
     "middle-click did not open Dungeon Board")
-minimapButton.scripts.PostClick(minimapButton, "MiddleButton")
+minimapButton.scripts.OnClick(minimapButton, "MiddleButton")
 assert(not ApogeePartyHealthBars_DungeonBoardUI.IsShown(),
     "second middle-click did not close Dungeon Board")
 assert(SlashCmdList and type(SlashCmdList.APOGEEPARTYHEALTHBARS) == "function",
@@ -1021,21 +1057,11 @@ SlashCmdList.APOGEEPARTYHEALTHBARS("guide")
 assert(not ApogeePartyHealthBars_DungeonGuideUI.IsShown(), "Dungeon Guide slash command did not close the Book")
 local function ClickMinimapButton(useAlt)
     altDown = useAlt == true
-    local preClick = minimapButton.scripts.PreClick
-    if preClick then preClick(minimapButton, "LeftButton") end
-    local actionType = altDown and minimapButton:GetAttribute("alt-type1") or nil
-    if actionType == nil then actionType = minimapButton:GetAttribute("type1") end
-    local clickTarget = minimapButton:GetAttribute("clickbutton1")
-    if actionType == "click" and clickTarget then
-        clickTarget:Click("LeftButton")
-    end
-    local postClick = minimapButton.scripts.PostClick
-    if postClick then postClick(minimapButton, "LeftButton") end
+    minimapButton.scripts.OnClick(minimapButton, "LeftButton")
     altDown = false
 end
 
 local configModeBeforeGuideClick = ApogeePartyHealthBars_S.configMode
-local spellbookCountBeforeGuideClick = spellbookOpenCount
 currentInstanceId = 70
 ClickMinimapButton(true)
 assert(ApogeePartyHealthBars_DungeonGuideUI.IsShown()
@@ -1044,9 +1070,8 @@ assert(ApogeePartyHealthBars_DungeonGuideUI.IsShown()
         and guideMapTexture.texture == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\Uldaman.png"
         and ApogeePartyHealthBars_DungeonGuideUI.GetActiveView() == "map",
     "Alt-left-click did not open the detected Uldaman map")
-assert(ApogeePartyHealthBars_S.configMode == configModeBeforeGuideClick
-        and spellbookOpenCount == spellbookCountBeforeGuideClick,
-    "Alt-left-click changed settings mode or opened the Spellbook")
+assert(ApogeePartyHealthBars_S.configMode == configModeBeforeGuideClick,
+    "Alt-left-click changed settings mode")
 
 currentInstanceId = 90
 ClickMinimapButton(true)
@@ -1073,9 +1098,8 @@ ApogeePartyHealthBars_DungeonGuideUI.Hide()
 inCombat = true
 ClickMinimapButton(true)
 assert(ApogeePartyHealthBars_DungeonGuideUI.IsShown()
-        and spellbookOpenCount == spellbookCountBeforeGuideClick
         and ApogeePartyHealthBars_S.configMode == configModeBeforeGuideClick,
-    "combat Alt-left-click invoked the Spellbook action or failed to open the Dungeon Book")
+    "combat Alt-left-click changed settings mode or failed to open the Dungeon Book")
 inCombat = false
 ApogeePartyHealthBars_DungeonGuideUI.Hide()
 currentInstanceId = nil
@@ -1105,14 +1129,15 @@ local configSurfaces = ApogeePartyHealthBars_SettingsSurfaces
 local expectedConfigSurfaceKeys = { "settings", "party", "feed", "cleanse" }
 for _, key in ipairs(expectedConfigSurfaceKeys) do
     local surface = assert(configSurfaces.Get(key), "missing configuration surface: " .. key)
-    local shouldShowChrome = key == "settings"
+    local shouldShowChrome = key == "settings" or key == "feed"
+        or (key == "cleanse" and ApogeePartyHealthBars_CleanseWatch.HasCapability())
     assert(surface.chrome.active == shouldShowChrome
             and surface.chrome.foundation:IsShown() == shouldShowChrome
             and surface.chrome.foundation.color[1] == 0
             and surface.chrome.foundation.color[2] == 0
             and surface.chrome.foundation.color[3] == 0
             and surface.chrome.foundation.color[4] == 1,
-        "configuration surface chrome did not match the active settings page: " .. key)
+        "configuration surface chrome did not match Settings-wide preview state: " .. key)
     assert(surface.frame.topLevel and surface.frame.frameStrata == "DIALOG",
         "configuration surface did not join native active-window stacking: " .. key)
 end
@@ -1133,7 +1158,7 @@ assert(ApogeePartyHealthBars_SettingsUI.prepareDisableButton
 assert(table.concat(ApogeePartyHealthBars_SettingsUI.groupOrder, ",")
         == "frames,actions,reminders,dungeon,manage",
     "settings groups did not follow the compact task order")
-assert(table.concat(ApogeePartyHealthBars_SettingsUI.pageOrder, ",")
+    assert(table.concat(ApogeePartyHealthBars_SettingsUI.pageOrder, ",")
         == "frames,partyFrameClicks,shortcuts,keyboard,mouseWheel,mouseButtons,"
             .. "healthChat,buffsCleanse,targetEffects,threatControl,dungeon,dungeonGuide,profiles,loadouts,maintenance",
     "settings pages did not retain every configuration workflow")
@@ -1191,9 +1216,7 @@ assert(ApogeePartyHealthBars_MacroData == nil
         and ApogeePartyHealthBars_MacroLibrarySettingsPage == nil
         and configUI.RefreshMacroPanel == nil,
     "removed Macro Library interfaces were still loaded")
-assert(SpellBookFrame:IsShown(), "opening settings did not open the spellbook")
-assert(spellbookOpenCount == 1, "spellbook did not open exactly once")
-assert(directSpellbookToggleCount == 0, "add-on called ToggleSpellBook directly")
+assert(not SpellBookFrame:IsShown(), "opening settings unexpectedly opened the Spellbook")
 assert(ApogeePartyHealthBars_ShortcutBar.AssignSpell(2, 9003, "Frostbolt"),
     "could not assign a Shortcut spell while settings were open")
 assert(ApogeePartyHealthBars_ShortcutBar.AssignItem(3, 1251, "Linen Bandage"),
@@ -1221,6 +1244,14 @@ assert(ApogeePartyHealthBars_ShortcutBar.GetSlotState(3) == "ready",
 ApogeePartyHealthBars_SettingsController.SetMode(false)
 assert(ApogeePartyHealthBars_TargetNameplateHud.GetSurface("playerStatus").enabled,
     "closing Settings did not restore the enabled player-status surface")
+assert(not ApogeePartyHealthBars_CleanseWatch.IsUnlocked()
+        and not ApogeePartyHealthBars_BuffThanks.IsUnlocked()
+        and not ApogeePartyHealthBars_DungeonBoardFeed.IsUnlocked()
+        and not ApogeePartyHealthBars_ThreatAwareness.GetFrame().mouseEnabled
+        and not ApogeePartyHealthBars.Require(
+            "Runtime", "PartyFramePreview").IsActive()
+        and not ApogeePartyHealthBars_TargetNameplateHud.IsUnlocked(),
+    "closing Settings retained a configuration preview")
 for _, key in ipairs(expectedConfigSurfaceKeys) do
     assert(not configSurfaces.Get(key).chrome.foundation:IsShown(),
         "configuration chrome leaked into normal gameplay: " .. key)
@@ -1243,13 +1274,18 @@ assert(existingShortcutButton.shown and existingShortcutButton.mouseEnabled
         and addedShortcutButton.shown and addedShortcutButton.mouseEnabled,
     "Shortcuts stopped receiving clicks after settings close")
 ClickMinimapButton()
-assert(SpellBookFrame:IsShown() and spellbookOpenCount == 1,
-    "opening settings toggled an already-open spellbook closed")
+assert(not SpellBookFrame:IsShown(), "reopening settings unexpectedly opened the Spellbook")
 local combatShortcutMutations = existingShortcutButton.mutations + addedShortcutButton.mutations
+local combatPartyRows = ApogeePartyHealthBars.Require(
+    "Runtime", "GroupHelperPresentation").GetRows()
+local combatPartyPointWrites = {}
+for index, row in ipairs(combatPartyRows) do
+    combatPartyPointWrites[index] = row.btn.pointWrites
+end
 inCombat = true
 router.Dispatch("PLAYER_REGEN_DISABLED")
 assert(not ApogeePartyHealthBars_S.configMode, "combat did not close add-on settings")
-assert(SpellBookFrame:IsShown(), "combat settings cleanup hid the protected spellbook")
+assert(not SpellBookFrame:IsShown(), "combat settings cleanup unexpectedly opened the Spellbook")
 RunFrameUpdates()
 assert(not key1Icon.keyLabel:IsShown() and not keyFIcon.keyLabel:IsShown()
         and not keyGIcon.keyLabel:IsShown() and not keyVIcon.keyLabel:IsShown(),
@@ -1258,6 +1294,10 @@ assert(not partyFramesLabel:IsShown(),
     "combat-forced settings close retained the Party Frames label")
 assert(existingShortcutButton.mutations + addedShortcutButton.mutations == combatShortcutMutations,
     "combat settings close mutated protected Shortcut overlays")
+for index, row in ipairs(combatPartyRows) do
+    assert(row.btn.pointWrites == combatPartyPointWrites[index],
+        "combat entry re-anchored party-row geometry")
+end
 assert(ApogeePartyHealthBars_S.secureUpdatePending,
     "combat settings close did not defer secure reconciliation")
 inCombat = false
@@ -1265,11 +1305,7 @@ router.Dispatch("PLAYER_REGEN_ENABLED")
 assert(existingShortcutButton.shown and existingShortcutButton.mouseEnabled
         and addedShortcutButton.shown and addedShortcutButton.mouseEnabled,
     "leaving combat did not restore Shortcut clickability")
-SpellBookFrame:Hide()
-
-ApogeePartyHealthBars_S.configMode = true
-ApogeePartyHealthBars_PlayerStatusHud.RefreshVisibility()
-ApogeePartyHealthBars_SettingsSurfaces.SetConfigurationActive(true)
+ApogeePartyHealthBars_SettingsController.SetMode(true)
 ApogeePartyHealthBars_SettingsUI.ActivatePage("macros")
 assert(ApogeePartyHealthBars_S.activeSettingsPageKey == "frames",
     "retired Macro Library page key did not fall back to Frames")
@@ -1286,6 +1322,11 @@ assert(ApogeePartyHealthBars_BuffThanks.GetFrame().width == 326
         and buffThanksPreviewRow.dismiss == nil
         and buffThanksPreviewRow.background ~= nil,
     "Buff Thanks did not use the shaded Threat Awareness HUD treatment")
+local groupHelperPresentation = ApogeePartyHealthBars.Require(
+    "Runtime", "GroupHelperPresentation")
+local partyFramePreview = ApogeePartyHealthBars.Require("Runtime", "PartyFramePreview")
+local feedPoint = { ApogeePartyHealthBars_DungeonBoardFeed.GetFrame():GetPoint(1) }
+local threatPoint = { ApogeePartyHealthBars_ThreatAwareness.GetFrame():GetPoint(1) }
 for _, key in ipairs({
     "frames", "partyFrameClicks", "shortcuts", "keyboard", "mouseWheel",
     "mouseButtons", "healthChat", "buffsCleanse", "targetEffects", "threatControl", "dungeon", "dungeonGuide",
@@ -1294,14 +1335,11 @@ for _, key in ipairs({
     ApogeePartyHealthBars_SettingsUI.ActivatePage(key)
     assert(ApogeePartyHealthBars_S.activeSettingsPageKey == key, "could not activate settings page: " .. key)
     assert(ApogeePartyHealthBars_CleanseWatch.IsUnlocked()
-                == (key == "buffsCleanse")
             and ApogeePartyHealthBars_BuffThanks.IsUnlocked()
-                == (key == "buffsCleanse")
             and ApogeePartyHealthBars_DungeonBoardFeed.IsUnlocked()
-                == (key == "dungeon")
-            and ApogeePartyHealthBars_TargetNameplateHud.IsUnlocked()
-                == (key == "targetEffects"),
-        "settings page exposed an unrelated configuration preview: " .. key)
+            and partyFramePreview.IsActive()
+            and ApogeePartyHealthBars_TargetNameplateHud.IsUnlocked(),
+        "settings page hid a configuration preview: " .. key)
     local buffThanksSurface = ApogeePartyHealthBars_SettingsSurfaces.Get("buffThanks")
     assert(buffThanksSurface.previewDock == nil and buffThanksSurface.automaticChrome == false,
         "Buff Thanks preview retained LFG-style docking or configuration chrome: " .. key)
@@ -1316,22 +1354,223 @@ for _, key in ipairs({
                     "Cleansed: Crippling Poison", 1, true),
             "Thank You settings demo did not show multiple helpers and a cleanse")
     end
-    assert((key == "targetEffects"
-                or not ApogeePartyHealthBars_TargetEffectHud.GetAnchor():IsShown())
-            and not ApogeePartyHealthBars_TargetNameplateHud.GetSurface("playerStatus").enabled
+    assert(not ApogeePartyHealthBars_TargetNameplateHud.GetSurface("playerStatus").enabled
             and ApogeePartyHealthBars_TargetNameplateHud.GetContainer():IsShown()
-                == (key == "targetEffects")
             and ApogeePartyHealthBars_BuffThanks.GetFrame():IsShown()
-                == (key == "buffsCleanse")
-            and (key == "buffsCleanse"
-                or not ApogeePartyHealthBars_CleanseWatch.GetFrame():IsShown())
-            and (key == "buffsCleanse"
-                or not ApogeePartyHealthBars_BuffThanks.GetFrame():IsShown())
-            and (key == "dungeon"
-                or not ApogeePartyHealthBars_DungeonBoardFeed.GetFrame():IsShown())
-            and ApogeePartyHealthBars_ThreatAwareness.GetFrame():IsShown()
-                == (key == "threatControl"),
-        "settings page left an unrelated auxiliary surface visible: " .. key)
+            and ApogeePartyHealthBars_CleanseWatch.GetFrame():IsShown()
+                == ApogeePartyHealthBars_CleanseWatch.HasCapability()
+            and ApogeePartyHealthBars_DungeonBoardFeed.GetFrame():IsShown()
+            and groupHelperPresentation.GetFrame():IsShown()
+            and ApogeePartyHealthBars_ThreatAwareness.GetFrame():IsShown(),
+        "settings page hid an auxiliary surface: " .. key)
+    local currentFeedPoint = { ApogeePartyHealthBars_DungeonBoardFeed.GetFrame():GetPoint(1) }
+    local currentThreatPoint = { ApogeePartyHealthBars_ThreatAwareness.GetFrame():GetPoint(1) }
+    for index = 1, 5 do
+        assert(currentFeedPoint[index] == feedPoint[index]
+                and currentThreatPoint[index] == threatPoint[index],
+            "settings page switch moved a HUD preview: " .. key)
+    end
+    if key == "frames" then
+        local helperPreview = groupHelperPresentation.GetFrame()
+        local helperRows = groupHelperPresentation.GetRows()
+        assert(partyFramePreview.IsActive()
+                and helperRows[1].primary:IsPreviewing()
+                and not helperRows[1].primary.castBtn:IsShown(),
+            "Party Frames preview did not suppress the live secure unit action")
+
+        groupHelperPresentation.SetPreview({
+            eligible = true, visible = true, pullVisible = true, auraAvailable = true,
+            sayAvailable = false, buffIssues = {}, manaRows = {
+                {
+                    guid = "preview-player", unitId = "player", name = "Ironwall",
+                    classToken = "WARRIOR", percent = 22,
+                    drinkState = "notDetected",
+                },
+            },
+        }, function() error("disabled Group Calls should not expose an action") end)
+        assert(helperRows[1].groupHelperDrinkCard:IsShown()
+                and not helperRows[1].groupHelperDrinkCard:IsEnabled()
+                and helperPreview.buffButton == nil
+                and helperPreview.manaButton == nil
+                and not helperPreview.tankButton:IsEnabled(),
+            "unavailable say state did not disable the clickable drink status")
+
+        groupHelperPresentation.SetPreview({
+            eligible = true, visible = true, pullVisible = true, auraAvailable = false,
+            auraReason = "Helpful aura data unavailable in this client.",
+            sayAvailable = true, buffIssues = {}, manaRows = {
+                {
+                    guid = "preview-player", unitId = "player", name = "Ironwall",
+                    percent = 22, drinkState = "unavailable",
+                },
+            },
+        }, function() end)
+        assert(helperRows[1].groupHelperDrinkCard:IsShown()
+                and helperRows[1].groupHelperDrinkCard.state:GetText()
+                    == "DRINK STATUS UNAVAILABLE"
+                and helperRows[1].groupHelperDrinkCard:IsEnabled()
+                and helperPreview.tankButton:IsEnabled(),
+            "aura degradation disabled independent Group Calls or hid status")
+
+        groupHelperPresentation.SetPreview({
+            eligible = false, visible = false, pullVisible = true,
+            auraAvailable = true, sayAvailable = true, manaRows = {}, buffIssues = {},
+        })
+        assert(helperPreview:IsShown() and helperPreview.commandRow:IsShown()
+                and helperPreview.commandRow:GetWidth() == 20
+                and helperPreview.tankButton:IsShown()
+                and helperPreview.buffButton == nil
+                and helperPreview.manaButton == nil,
+            "solo out-of-combat preview did not collapse to the pull icon")
+
+        partyFramePreview.SetScenario("mana")
+        RunFrameUpdates()
+        local previewPanelWidth = ApogeePartyHealthBarsPanel:GetWidth()
+        local previewPanelHeight = ApogeePartyHealthBarsPanel:GetHeight()
+        local previewRowWidth = helperRows[1].primary.btn:GetWidth()
+        local previewRowHeight = helperRows[1].primary.btn:GetHeight()
+        local function assertPartyGeometryUnchanged(label)
+            assert(ApogeePartyHealthBarsPanel:GetWidth() == previewPanelWidth
+                    and ApogeePartyHealthBarsPanel:GetHeight() == previewPanelHeight
+                    and helperRows[1].primary.btn:GetWidth() == previewRowWidth
+                    and helperRows[1].primary.btn:GetHeight() == previewRowHeight,
+                label .. " changed party-panel or party-row dimensions")
+        end
+
+        partyFramePreview.SetScenario("mana")
+        RunFrameUpdates()
+        assertPartyGeometryUnchanged("Mana and buff companion")
+        assert(groupHelperPresentation.GetWidth() == 140
+                and helperRows[2].groupHelperDrinkCard:IsShown()
+                and helperRows[3].groupHelperDrinkCard:IsShown()
+                and helperRows[2].primary.previewModel.powerChannels[1].value == 2890
+                and helperRows[2].primary.previewModel.powerChannels[1].maximum == 3400
+                and helperRows[3].primary.previewModel.powerChannels[1].value == 540
+                and helperPreview.tankButton:IsShown()
+                and helperRows[2].groupHelperDrinkCard:GetWidth() == 84
+                and helperRows[2].groupHelperDrinkCard:GetHeight() == 22
+                and helperRows[2].groupHelperDrinkCard.point[1] == "RIGHT"
+                and helperRows[2].groupHelperDrinkCard.point[2]
+                    == helperRows[2].primary.barBg
+                and helperRows[2].groupHelperDrinkCard.point[3] == "LEFT"
+                and helperRows[2].groupHelperDrinkCard.point[4] == -6
+                and helperRows[2].groupHelperDrinkCard.name == nil
+                and helperRows[2].groupHelperDrinkCard:GetScript("OnClick") ~= nil
+                and helperRows[2].groupHelperDrinkCard.state:GetText()
+                    == "DRINKING 18s"
+                and helperRows[3].groupHelperDrinkCard.state:GetText()
+                    == "THIRSTY"
+                and not helperRows[1].groupHelperBuffLane:IsShown()
+                and helperRows[2].groupHelperBuffLane:IsShown()
+                and helperRows[2].groupHelperBuffLane.point[1] == "RIGHT"
+                and helperRows[2].groupHelperBuffLane.point[2]
+                    == helperRows[2].primary.barBg
+                and helperRows[2].groupHelperBuffLane.point[3] == "LEFT"
+                and helperRows[2].groupHelperBuffLane.point[4] == -93
+                and helperRows[2].groupHelperBuffLane.icons[1]:IsShown()
+                and helperRows[2].groupHelperBuffLane.icons[2]:IsShown()
+                and helperRows[2].groupHelperBuffLane.icons[1].icon.texture
+                    == "Interface\\Icons\\Spell_Holy_WordFortitude"
+                and helperRows[2].groupHelperBuffLane.icons[1].count:GetText() == "4"
+                and helperRows[2].groupHelperBuffLane.icons[2].icon.texture
+                    == "Interface\\Icons\\Spell_Holy_DivineSpirit"
+                and helperRows[2].groupHelperBuffLane.icons[2].count:GetText() == "3"
+                and helperRows[2].groupHelperBuffLane.icons[1].apogeeTooltipBody:find(
+                    "Ironwall, Spellweave, Quickshiv, Mosscaller", 1, true)
+                and helperRows[3].groupHelperBuffLane:IsShown()
+                and helperRows[3].groupHelperBuffLane.icons[1].icon.texture
+                    == "Interface\\Icons\\Spell_Holy_MagicalSentry"
+                and helperRows[3].groupHelperBuffLane.icons[1].count:GetText() == "2"
+                and not helperRows[4].groupHelperBuffLane:IsShown()
+                and helperRows[5].groupHelperBuffLane:IsShown()
+                and helperRows[5].groupHelperBuffLane.icons[1].icon.texture
+                    == "Interface\\Icons\\Spell_Nature_Regeneration"
+                and helperRows[5].groupHelperBuffLane.icons[1].count:GetText() == "5",
+            "combined scenario did not place buffs left of the inner drink-status lane")
+        groupHelperPresentation.Tick(6)
+        assert(helperRows[2].groupHelperDrinkCard.state:GetText()
+                == "DRINKING 13s",
+            "confirmed drink aura countdown did not advance from expiration time")
+
+        local previewControls = ApogeePartyHealthBars_CoreSettingsPages.GetPreviewControls()
+        assert(previewControls.text:GetText():find("Fort", 1, true)
+                and previewControls.text:GetText():find("Int", 1, true)
+                and previewControls.text:GetText():find("Mark", 1, true),
+            "combined scenario did not identify its representative buff issues")
+
+        partyFramePreview.SetScenario("combat")
+        RunFrameUpdates()
+        assertPartyGeometryUnchanged("Combat threat companion")
+        assert(not helperPreview:IsShown()
+                and helperRows[1].primary.btn:IsShown()
+                and helperRows[1].primary.threatRail:IsShown()
+                and helperRows[1].primary.threatBarBg:IsShown(),
+            "combat scenario hid party frames, retained helper chrome, or omitted threat")
+        partyFramePreview.SetScenario("mana")
+        assert(helperPreview.commandRow.point[1] == "BOTTOMRIGHT"
+                and helperPreview.commandRow.point[2] == helperRows[1].primary.barBg
+                and helperPreview.commandRow.point[3] == "TOPLEFT"
+                and helperPreview.commandRow.point[4] == -6
+                and helperPreview.commandRow.point[5] == 3,
+            "Group Calls were not aligned immediately above the party frames")
+        partyFramePreview.SetScenario("mana")
+        local previewBuffAction = helperRows[2].groupHelperBuffLane.icons[1]
+        previewBuffAction:GetScript("OnClick")(previewBuffAction)
+        previewControls = ApogeePartyHealthBars_CoreSettingsPages.GetPreviewControls()
+        assert(helperPreview:IsShown() and helperPreview.commandRow:IsShown()
+                and helperPreview.commandLabel == nil
+                and helperPreview.commandRow:GetWidth() == 20
+                and helperPreview.buffButton == nil
+                and helperPreview.manaButton == nil
+                and helperPreview.tankButton:GetWidth() == 20
+                and helperPreview.tankButton.bg == nil
+                and helperPreview.tankButton.border == nil
+                and helperPreview.tankButton:IsShown()
+                and sentChat[1].channel == "SAY"
+                and sentChat[1].message == "buff up"
+                and previewControls.channel:GetText() == "PREVIEW GUIDE"
+                and previewControls.text:GetText():find("DRINKING", 1, true),
+            "Party Frames settings did not send Buff Up while retaining its guide")
+        local previewDrinkingAction = helperRows[2].groupHelperDrinkCard
+        previewDrinkingAction:GetScript("OnClick")(previewDrinkingAction)
+        assert(sentChat[2].channel == "SAY"
+                and sentChat[2].message == "mana up"
+                and previewControls.text:GetText():find("DRINKING", 1, true),
+            "DRINKING status did not send Mana Up while retaining its guide")
+        local previewThirstyAction = helperRows[3].groupHelperDrinkCard
+        previewThirstyAction:GetScript("OnClick")(previewThirstyAction)
+        assert(sentChat[3].channel == "SAY"
+                and sentChat[3].message == "mana up",
+            "THIRSTY status did not send Mana Up")
+        helperPreview.tankButton:GetScript("OnClick")()
+        assert(sentChat[4].channel == "SAY"
+                and sentChat[4].message == "pulling here"
+                and previewControls.text:GetText():find("DRINKING", 1, true)
+                and partyFramePreview.GetAction == nil,
+            "Party Frames settings retained redundant Pulling Here feedback")
+
+        inCombat = true
+        assert(not partyFramePreview.SetScenario("mana"),
+            "preview geometry changed after combat began")
+        local previewPartyPointWrites = {}
+        for index, row in ipairs(helperRows) do
+            previewPartyPointWrites[index] = row.btn.pointWrites
+        end
+        partyFramePreview.SetActive(false)
+        assert(not partyFramePreview.IsActive()
+                and not helperRows[1].primary:IsPreviewing()
+                and not helperPreview:IsShown()
+                and not ApogeePartyHealthBars_Threat.IsPreviewing(),
+            "combat preview teardown retained synthetic party, helper, or threat state")
+        for index, row in ipairs(helperRows) do
+            assert(row.btn.pointWrites == previewPartyPointWrites[index],
+                "combat preview teardown re-anchored protected party geometry")
+        end
+        inCombat = false
+        assert(not partyFramePreview.RefreshAfterCombat(),
+            "combat preview teardown left a deferred synthetic restore")
+        partyFramePreview.SetActive(true)
+    end
     if key == "threatControl" then
         assert(ApogeePartyHealthBars_ThreatAwareness.GetFrame().frameStrata == "HIGH"
                 and ApogeePartyHealthBarsBindPanel.frameStrata == "DIALOG",
@@ -1347,8 +1586,8 @@ for _, key in ipairs({
             == ApogeePartyHealthBars_SettingsUI.pages[key].summary,
         "settings page did not expose its concise full-width summary: " .. key)
     local threatSurface = ApogeePartyHealthBars_SettingsSurfaces.Get("threatAwareness")
-    assert((threatSurface.previewDock ~= nil) == (key == "threatControl"),
-        "Tank Threat Control preview did not follow the contextual dock lifecycle: " .. key)
+    assert(threatSurface.previewDock == nil,
+        "Tank Threat Control moved away from its gameplay position: " .. key)
     ApogeePartyHealthBars_SettingsUI.RefreshPage(key, true)
 end
 assert(ApogeePartyHealthBars_SettingsUI.pageDropdown.width == 240
@@ -1393,8 +1632,7 @@ assert(smokeKeyRowCount == 15
 ApogeePartyHealthBars_SettingsUI.Show()
 assert(smokeKeyRows.keyF.secondary:GetText():find("Key F", 1, true),
     "reopening settings did not refresh the active Keys row list")
-ApogeePartyHealthBars_SettingsUI.Hide()
-ApogeePartyHealthBars_S.configMode = false
+ApogeePartyHealthBars_SettingsController.SetMode(false)
 
 RunFrameUpdates()
 
@@ -1415,6 +1653,15 @@ assert(ApogeePartyHealthBars_S.sv.dungeonBoardRole == "healer"
     "Dungeon Board should default to Healer with feed alerts and its standard level window")
 assert(ApogeePartyHealthBars_S.sv.dungeonGuideAutoMarkEnabled == true,
     "automatic Dungeon Guide marking should default on")
+assert(ApogeePartyHealthBars_S.sv.groupHelperEnabled == true
+        and ApogeePartyHealthBars_S.sv.groupHelperPoint == nil
+        and ApogeePartyHealthBars_S.sv.groupHelperX == nil,
+    "party-frame Group Helper should default on without standalone position state")
+assert(ApogeePartyHealthBars_C.DEFAULT_ANCHOR == "RIGHT"
+        and ApogeePartyHealthBars_C.DEFAULT_REL == "RIGHT"
+        and ApogeePartyHealthBars_C.DEFAULT_X == -24
+        and ApogeePartyHealthBars_C.DEFAULT_Y == 0,
+    "party-frame reset did not restore the vertically centered right-side default")
 assert(ApogeePartyHealthBars_S.sv.dungeonGuideAutoMarkInCombatEnabled == nil,
     "retired automatic combat-marking preference persisted")
 assert(ApogeePartyHealthBars_S.sv.dungeonGuideCoachEnabled == nil,
@@ -1492,7 +1739,10 @@ ApogeePartyHealthBars_Effects.InitializeSavedVariables(renamedSettings, renamedA
 assert(renamedSettings.targetEffectRemindersEnabled == false
         and renamedSettings.targetEffectRefreshThreshold == 8
         and renamedSettings.targetEffectPriority[1] == "shadowWordPain"
-        and renamedSettings.targetHudX == 42
+        and renamedSettings.targetHudPoint == "CENTER"
+        and renamedSettings.targetHudRelPoint == "CENTER"
+        and renamedSettings.targetHudX == 0
+        and renamedSettings.targetHudY == -150
         and renamedSettings.targetEffectHudX == nil
         and renamedSettings.dotHudX == nil
         and renamedSettings.dotRemindersEnabled == nil
@@ -1508,6 +1758,10 @@ ApogeePartyHealthBars_Effects.InitializeSavedVariables(renamedSettings, renamedA
 assert(renamedSettings.targetEffectPriority[1] == "shadowWordPain"
         and renamedActions.keyboardActions.schemaVersion == 2,
     "terminology migration was not idempotent")
+renamedSettings.targetHudX, renamedSettings.targetHudY = 42, -90
+ApogeePartyHealthBars_Effects.InitializeSavedVariables(renamedSettings, renamedActions)
+assert(renamedSettings.targetHudX == 42 and renamedSettings.targetHudY == -90,
+    "completed Target HUD layout migration reset the profile position again")
 local legacyPreferences = {
     schemaVersion = 2,
     lowHealthSoundEnabled = false,

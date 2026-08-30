@@ -49,7 +49,7 @@ local FEATURE_DEFAULTS = {
     targetHudPoint = "CENTER",
     targetHudRelPoint = "CENTER",
     targetHudX = 0,
-    targetHudY = 120,
+    targetHudY = -150,
     targetEffectRemindersEnabled = true,
     targetEffectRefreshThreshold = 3,
     dungeonBoardRole = "healer",
@@ -72,6 +72,7 @@ local FEATURE_DEFAULTS = {
     dungeonGuideY = 0,
     dungeonGuideWidth = 1000,
     dungeonGuideHeight = 720,
+    groupHelperEnabled = true,
 }
 
 local function NormalizeDotThreshold(value, fallback)
@@ -149,6 +150,13 @@ function E.InitializeSavedVariables(saved, characterSaved)
         "dotHudPoint", "dotHudRelPoint", "dotHudX", "dotHudY",
     }) do
         saved[key] = nil
+    end
+
+    if version < 9 then
+        saved.targetHudPoint = FEATURE_DEFAULTS.targetHudPoint
+        saved.targetHudRelPoint = FEATURE_DEFAULTS.targetHudRelPoint
+        saved.targetHudX = FEATURE_DEFAULTS.targetHudX
+        saved.targetHudY = FEATURE_DEFAULTS.targetHudY
     end
 
     if version < 1 then

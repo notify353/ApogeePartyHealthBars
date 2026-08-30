@@ -31,7 +31,11 @@ local function ApplyPartyBuffIconTexture(index, texture)
     if not index or not texture then return end
     for _, surface in ipairs(D.GetSurfaces()) do
         local icon = surface.partyBuffIcons and surface.partyBuffIcons[index]
-        if icon then icon:SetTexture(texture) end
+        if surface.SetPartyBuffIconTexture then
+            surface:SetPartyBuffIconTexture(index, texture)
+        elseif icon then
+            icon:SetTexture(texture)
+        end
     end
 end
 
@@ -243,6 +247,17 @@ function B.ShouldShowPartyIcon(unitId, index)
     if not IsPartyEnabled(index) or D.IsConfigMode() then return false end
     if not CanPartyBuffUnit(unitId) then return false end
     local definition = partyBuffs[index] and partyBuffs[index].definition
+    if definition and definition.manaOnly then
+        local hasMana = false
+        for _, channel in ipairs(API.GetPowerChannels(unitId)) do
+            if (channel.powerType == C.MANA_POWER or channel.powerToken == "MANA")
+                and (tonumber(channel.maximum) or 0) > 0 then
+                hasMana = true
+                break
+            end
+        end
+        if not hasMana then return false end
+    end
     local eligibleClasses = definition and definition.eligibleClasses
     if eligibleClasses then
         local classToken = API.GetIdentity(unitId).classToken

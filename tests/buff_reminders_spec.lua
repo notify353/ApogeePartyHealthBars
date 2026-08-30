@@ -8,7 +8,7 @@ ApogeePartyHealthBars_C = {
         {
             canonical = "Divine Spirit",
             track = "spirit",
-            eligibleClasses = { PRIEST = true, MAGE = true, DRUID = true },
+            manaOnly = true,
         },
     },
     SELF_BUFF_FAMILIES = {},
@@ -75,6 +75,7 @@ local assist = { player = true, party1 = true, enemy = false }
 local enemy = { player = false, party1 = false, enemy = true }
 local factions = { player = "Alliance", party1 = "Horde", enemy = "Horde" }
 local classes = { player = "PRIEST", party1 = "MAGE", enemy = "WARRIOR" }
+local manaMaximums = { player = 100, party1 = 100, enemy = 0 }
 local featureEnabled = { partyBuffEnabled = true, selfBuffEnabled = true }
 local configMode = false
 local inCombat = false
@@ -90,6 +91,9 @@ function UnitCanAssist(_, unitId) return assist[unitId] == true end
 function UnitIsEnemy(_, unitId) return enemy[unitId] == true end
 function UnitIsPlayer(unitId) return existing[unitId] == true end
 function UnitFactionGroup(unitId) return factions[unitId] end
+function UnitPowerType() return 0, "MANA" end
+function UnitPowerMax(unitId) return manaMaximums[unitId] or 0 end
+function UnitPower() return 0 end
 function InCombatLockdown() return inCombat end
 
 local function Icon()
@@ -158,6 +162,14 @@ assert(not reminders.ShouldShowPartyIcon("party1", 2),
     "active Divine Spirit left its reminder visible")
 assert(not reminders.ShouldShowPartyIcon("enemy", 2),
     "Divine Spirit reminder appeared for an ineligible class")
+snapshots.party1.auras = {}
+classes.party1, manaMaximums.party1 = "WARRIOR", 0
+assert(not reminders.ShouldShowPartyIcon("party1", 2),
+    "mana-only buff reminder appeared for a non-mana party member")
+classes.party1, manaMaximums.party1 = "WARLOCK", 100
+assert(reminders.ShouldShowPartyIcon("party1", 2),
+    "mana-only buff reminder excluded a mana-using class")
+classes.party1 = "MAGE"
 
 assert(reminders.ShouldShowSelfIcon("player"),
     "missing self buff did not show its reminder")

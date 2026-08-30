@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.49.0] - 2026-08-30
+
 - Swapped the Group Helper row lanes so DRINKING and THIRSTY sit next to the party frames while missing-buff icons occupy the outer-left column.
 - Limited Group Helper's `pulling here` control to Warrior, Paladin, and Druid players, hiding it for classes that cannot tank.
 - Made buff coverage resource-aware across Group Helper and party-frame reminders: Intellect and Divine Spirit now target every actual mana user while excluding non-mana members, and Wisdom, Salvation, and Sanctuary count as valid long-duration Paladin blessing coverage alongside Might, Light, and Kings.

@@ -28,10 +28,12 @@ ApogeePartyHealthBars_Threat = { Refresh = function() record("threat") end }
 ApogeePartyHealthBars_ThreatObserver = {
     OnNamePlateAdded = function(unit) record("plate+:" .. unit) end,
     OnNamePlateRemoved = function(unit) record("plate-:" .. unit) end,
+    IsObservedUnit = function(unit) return unit == "other" end,
+    InvalidateAuras = function(unit) record("observer-aura:" .. unit) end,
 }
 ApogeePartyHealthBars_ThreatAwareness = { Refresh = function(suppress)
     record("awareness:" .. tostring(suppress))
-end }
+end, RefreshUnit = function(unit) record("awareness-unit:" .. unit) end }
 
 local required, optional = {}, {}
 local router = {}
@@ -92,10 +94,19 @@ for _, event in ipairs({
     assert(optionalHasOwner(event, "Bootstrap"),
         "optional unit event changed registration: " .. event)
 end
+for _, event in ipairs({
+    "UNIT_SPELLCAST_START", "UNIT_SPELLCAST_STOP", "UNIT_SPELLCAST_FAILED",
+    "UNIT_SPELLCAST_FAILED_QUIET", "UNIT_SPELLCAST_INTERRUPTED",
+    "UNIT_SPELLCAST_DELAYED", "UNIT_SPELLCAST_SUCCEEDED",
+    "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_CHANNEL_UPDATE",
+    "UNIT_SPELLCAST_CHANNEL_STOP", "UNIT_SPELLCAST_INTERRUPTIBLE",
+    "UNIT_SPELLCAST_NOT_INTERRUPTIBLE",
+}) do
+    assert(optionalHasOwner(event, "ThreatAwareness"),
+        "Threat Control cast event changed registration: " .. event)
+end
 assert(optionalHasOwner("RAID_TARGET_UPDATE", "RaidMarkers")
         and optionalHasOwner("UNIT_DIED", "RaidMarkers")
-        and optionalHasOwner("UNIT_THREAT_SITUATION_UPDATE", "Threat")
-        and optionalHasOwner("UNIT_THREAT_LIST_UPDATE", "Threat")
         and optionalHasOwner("NAME_PLATE_UNIT_ADDED", "ThreatAwareness")
         and optionalHasOwner("NAME_PLATE_UNIT_REMOVED", "ThreatAwareness"),
     "visual event owners changed")
@@ -111,6 +122,11 @@ expect({ "invalidate:party1", "invalidate:target", "shield:party1", "layout" },
     "aura alias invalidation or layout request changed")
 
 reset()
+dispatch("UNIT_AURA", "other")
+expect({ "invalidate:other", "observer-aura:other", "awareness:nil" },
+    "observed enemy aura change did not refresh Threat Control debuffs")
+
+reset()
 auraNeedsLayout = false
 dispatch("UNIT_ABSORB_AMOUNT_CHANGED", "party1")
 expect({ "invalidate:party1", "invalidate:target", "shield:party1", "values:target" },
@@ -123,6 +139,15 @@ expect({ "invalidate:player", "shield:player", "status", "values:player" },
 reset()
 dispatch("UNIT_HEALTH", "party1")
 expect({ "values:nil" }, "health aliases no longer coalesced into an all-row update")
+reset()
+dispatch("UNIT_HEALTH", "other")
+expect({ "awareness-unit:other" }, "observed enemy health did not refresh Threat Control")
+reset()
+dispatch("UNIT_SPELLCAST_START", "other")
+dispatch("UNIT_SPELLCAST_CHANNEL_UPDATE", "other")
+dispatch("UNIT_SPELLCAST_INTERRUPTED", "party1")
+expect({ "awareness-unit:other", "awareness-unit:other" },
+    "observed enemy casts did not refresh Threat Control")
 reset()
 dispatch("UNIT_HEAL_PREDICTION", "other")
 expect({}, "untracked heal prediction triggered an update")
@@ -155,10 +180,6 @@ dispatch("UNIT_TARGET", "party1")
 dispatch("UNIT_TARGET", "target")
 dispatch("UNIT_TARGET", "other")
 expect({ "layout", "layout" }, "unit-target filtering changed")
-
-reset()
-dispatch("UNIT_THREAT_LIST_UPDATE")
-expect({ "threat", "awareness:nil" }, "threat visual refresh changed")
 
 reset()
 dispatch("NAME_PLATE_UNIT_ADDED", "nameplate7")

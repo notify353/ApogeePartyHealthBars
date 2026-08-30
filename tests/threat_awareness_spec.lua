@@ -20,6 +20,49 @@ assert(positive.direction == "positive" and positive.progress == 41.6
         and heldZero.progress == 0 and lostZero.progress == 0
         and awareness.GetControlDisplay({ control = -40, live = false }) == nil,
     "directional tank-control display calculation changed")
+assert(awareness.GetSmoothedControlWidth(nil, 40, 0.01) == 40
+        and awareness.GetSmoothedControlWidth(0, 100, 0.02) == 48
+        and awareness.GetSmoothedControlWidth(99.95, 100, 0.01) == 100
+        and awareness.GetSmoothedControlWidth(40, nil, 0.01) == nil,
+    "Tank Threat Control width interpolation changed")
+assert(awareness.GetHealthDisplay({ live = true, health = 75, healthMaximum = 100,
+            healthValid = true }) == 0.75
+        and awareness.GetHealthDisplay({ live = true, health = 150, healthMaximum = 100,
+            healthValid = true }) == 1
+        and awareness.GetHealthDisplay({ live = true, health = -10, healthMaximum = 100,
+            healthValid = true }) == 0
+        and awareness.GetHealthDisplay({ live = false, health = 75, healthMaximum = 100,
+            healthValid = true }) == nil
+        and awareness.GetHealthDisplay({ live = true, health = 75, healthMaximum = 0,
+            healthValid = true }) == nil,
+    "Tank Threat Control health-strip normalization changed")
+local castDisplay = awareness.GetCastDisplay({ live = true, cast = {
+    name = "Fireball", startTime = 10, endTime = 14,
+} }, 11)
+local channelDisplay = awareness.GetCastDisplay({ live = true, cast = {
+    name = "Drain Life", startTime = 10, endTime = 14, isChannel = true,
+    notInterruptible = true,
+} }, 11)
+assert(castDisplay and castDisplay.progress == 0.25 and castDisplay.name == "Fireball"
+        and not castDisplay.isChannel and not castDisplay.notInterruptible
+        and channelDisplay and channelDisplay.progress == 0.75
+        and channelDisplay.isChannel and channelDisplay.notInterruptible
+        and awareness.GetCastDisplay({ live = true, cast = {
+            startTime = 10, endTime = 14,
+        } }, 14) == nil
+        and awareness.GetCastDisplay({ live = false, cast = {
+            startTime = 10, endTime = 14,
+        } }, 11) == nil,
+    "Tank Threat Control cast and channel progress changed")
+local firstDemoCast = awareness.GetDemoCast(10, 9)
+local continuedDemoCast = awareness.GetDemoCast(11, 9)
+assert(firstDemoCast and continuedDemoCast
+        and firstDemoCast.startTime == continuedDemoCast.startTime
+        and awareness.GetCastDisplay({ live = true, cast = firstDemoCast }, 10).progress == 0.25
+        and awareness.GetCastDisplay({ live = true, cast = continuedDemoCast }, 11).progress == 0.5
+        and awareness.GetDemoCast(13.5, 9) == nil
+        and awareness.GetDemoCast(14, 9).startTime == 14,
+    "Tank Threat Control demo cast timeline restarted or skipped its health interval")
 
 local initial = {
     total = 6,
@@ -121,10 +164,34 @@ assert(left == 0.75 and right == 1 and top == 0.5 and bottom == 1,
 
 local demo = awareness.GetDemoSnapshot()
 local demoView = awareness.ReconcileQueue(demo, {})
+local demoDebuffs, demoOverflow = awareness.GetDebuffDisplay(demo.enemies[1])
 assert(demo.total == 7 and demo.counts.lost == 1
         and demo.enemies[1].control == -38 and demo.enemies[2].control == 7
-        and demoView.visible == 5 and demoView.overflow == 2 and demo.demoHint,
+        and awareness.GetHealthDisplay(demo.enemies[1]) == 0.72
+        and awareness.GetCastDisplay(demo.enemies[2], 0).progress == 0.25
+        and #demoDebuffs == 6 and demoDebuffs[1].applications == 3
+        and demoDebuffs[2] == false and demoDebuffs[4].name == "Rend"
+        and demoOverflow == 0
+        and demoView.visible == 5 and demoView.overflow == 2
+        and awareness.GetFooterText(demo, demoView) == "+2 MORE",
     "Tank Threat Control demo no longer shows directional lead, recovery, and overflow")
+local crowdedDebuffs = {}
+for index = 1, 6 do crowdedDebuffs[index] = { icon = index, applications = index } end
+local visibleDebuffs, debuffOverflow = awareness.GetDebuffDisplay({
+    live = true, playerDebuffSlots = crowdedDebuffs, playerDebuffOverflow = 2,
+})
+local staleDebuffs, staleDebuffOverflow = awareness.GetDebuffDisplay({
+    live = false, playerDebuffSlots = crowdedDebuffs, playerDebuffOverflow = 2,
+})
+assert(#visibleDebuffs == 6 and debuffOverflow == 2
+        and next(staleDebuffs) == nil and staleDebuffOverflow == 0,
+    "Tank Threat Control player-debuff lane limit or stale suppression changed")
+assert(awareness.GetDebuffAlpha({ expirationTime = 25 }, 10) == 1
+        and awareness.GetDebuffAlpha({}, 10) == 1
+        and awareness.GetDebuffAlpha({ expirationTime = 14 }, 10) == 1
+        and awareness.GetDebuffAlpha({ expirationTime = 14 }, 10.25) == 0.3
+        and awareness.GetDebuffAlpha({ expirationTime = 10 }, 10) == 0,
+    "Tank Threat Control final-five-second debuff pulse changed")
 local liveQueue = {
     enemies = demo.enemies, counts = demo.counts,
     total = demo.total, limitedCoverage = false,
@@ -137,18 +204,9 @@ assert(awareness.GetFooterText(liveQueue, liveQueueView)
         == "+2 MORE  |  LIMITED COVERAGE",
     "Tank Threat Control overflow hid its reduced-coverage warning")
 
-local alertSnapshot = { lostTransitions = { "lost" } }
-assert(awareness.ShouldPlayLostAlert(alertSnapshot, true, false, 10, 0)
-        and not awareness.ShouldPlayLostAlert(alertSnapshot, false, false, 10, 0)
-        and not awareness.ShouldPlayLostAlert(alertSnapshot, true, true, 10, 0)
-        and not awareness.ShouldPlayLostAlert(alertSnapshot, true, false, 10, 9),
-    "lost-threat sound gating or throttle changed")
-alertSnapshot.lostTransitions = {}
-assert(not awareness.ShouldPlayLostAlert(alertSnapshot, true, false, 10, 0),
-    "alert played without a tanked-to-lost transition")
-
 awareness.Initialize({
-    Observer = {}, Sounds = {}, SettingsSurfaces = {}, Now = function() return 10 end,
+    Observer = {}, SettingsSurfaces = {}, Now = function() return 10 end,
+    UnitAPI = {},
     IsSupported = function() return true end,
 })
 ApogeePartyHealthBars_S.sv = { enabled = false, threatAwarenessEnabled = true }
@@ -157,4 +215,4 @@ assert(not awareness.IsActive(),
 ApogeePartyHealthBars_S.sv.enabled = true
 assert(awareness.IsActive(), "enabled Tank Threat Control did not become active")
 
-print("PASS Tank Threat Control presentation and alert policy")
+print("PASS Tank Threat Control presentation policy")

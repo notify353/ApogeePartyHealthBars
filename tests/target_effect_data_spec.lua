@@ -72,4 +72,40 @@ assert(disarm.castIds[1] == 676 and #disarm.castIds == 1
         and disarm.defaultPriority > Data.Get("sunderArmor").defaultPriority,
     "Disarm did not use its cast/aura ID or follow existing Warrior maintained effects")
 
+local threatSlotRepresentatives = {
+    WARRIOR = { 7386, 1160, 6343, 772 },
+    DRUID = { 770, 99, 33745, 8921 },
+    HUNTER = { 1130, 1978, 3043, 19386 },
+    MAGE = { 11366 },
+    PALADIN = { 20185 },
+    PRIEST = { 589, 2944, 14914 },
+    ROGUE = { 8647, 1943, 703 },
+    SHAMAN = { 17364, 8050 },
+    WARLOCK = { 980, 172, 348, 18265 },
+}
+for classToken, spellIds in pairs(threatSlotRepresentatives) do
+    assert(Data.GetThreatDebuffSlotCount(classToken) == #spellIds,
+        classToken .. " Threat Control reserved-column count changed")
+    for slot, spellId in ipairs(spellIds) do
+        assert(Data.GetThreatDebuffSlot(classToken, spellId) == slot,
+            classToken .. " Threat Control debuff column changed at " .. slot)
+    end
+end
+assert(Data.GetThreatDebuffSlot("WARRIOR", 25225) == 1,
+    "Warrior Sunder Armor ranks did not share the first Threat Control column")
+assert(Data.GetThreatDebuffSlot("DRUID", 770) == 1
+        and Data.GetThreatDebuffSlot("DRUID", 16857) == 1
+        and Data.GetThreatDebuffSlot("WARLOCK", 702) == 1
+        and Data.GetThreatDebuffSlot("WARLOCK", 1490) == 1
+        and Data.GetThreatDebuffSlot("PALADIN", 20185) == 1
+        and Data.GetThreatDebuffSlot("PALADIN", 20186) == 1,
+    "Threat Control mutually exclusive debuff variants did not share a column")
+for classToken in pairs(threatSlotRepresentatives) do
+    assert(Data.GetThreatDebuffSlotCount(classToken) <= 4,
+        classToken .. " reserves more than four Threat Control debuff columns")
+end
+assert(Data.GetThreatDebuffSlot("WARRIOR", 999999) == nil
+        and Data.GetThreatDebuffSlotCount("UNKNOWN") == 0,
+    "unknown Threat Control debuffs or classes received reserved columns")
+
 print("PASS maintained DoT and debuff catalog")

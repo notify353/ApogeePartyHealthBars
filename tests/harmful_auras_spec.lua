@@ -16,7 +16,9 @@ end }
 dofile("PartyFrames/Auras.lua")
 local A = ApogeePartyHealthBars_Auras
 local snapshot = A.GetUnitHarmfulAuraSnapshot("target")
-assert(#snapshot.auras == 2 and snapshot.playerBySpellId[172] == modern[1],
+assert(#snapshot.auras == 2 and #snapshot.playerAuras == 1
+        and snapshot.playerAuras[1] == modern[1]
+        and snapshot.playerBySpellId[172] == modern[1],
     "modern harmful scan did not distinguish the player caster")
 assert(#snapshot.bySpellId[172] == 2
         and snapshot.bySpellId[172][1] == modern[1]
@@ -38,6 +40,7 @@ end
 A.InvalidateUnitAuraCache("target")
 snapshot = A.GetUnitHarmfulAuraSnapshot("target")
 assert(snapshot.playerBySpellId[589]
+        and #snapshot.playerAuras == 1 and snapshot.playerAuras[1].spellId == 589
         and snapshot.playerBySpellId[589].name == "Legacy"
         and snapshot.playerBySpellId[589].icon == 136118
         and snapshot.playerBySpellId[589].applications == 2

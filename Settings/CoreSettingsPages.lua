@@ -17,7 +17,7 @@ local dungeonBoardSection, displaySection, threatAwarenessSection, hudDisplaysSe
 local hotSection, compatibilitySection
 local positionsSection, recoverySection, dangerSection
 local resetPartyFramesRow, resetSettingsRow, resetMinimapRow
-local threatAwarenessResetRow, cleanseResetRow, buffThanksResetRow, lfgAlertsResetRow, dungeonBoardResetRow
+local cleanseResetRow, buffThanksResetRow, lfgAlertsResetRow, dungeonBoardResetRow
 local compatibilityRow, compatibilityLabel, prepareDisableRow, factoryRow
 local previewControls = { buttons = {} }
 local prepareDisableArmed, prepareDisableToken = false, 0
@@ -29,7 +29,7 @@ local PAGE_HINTS = {
     frames = "Choose party-frame behavior, details, and nearby HUD displays.",
     healthChat = "Configure low-health and name-mention alerts.",
     buffsCleanse = "Configure buff and cleansing reminders; samples remain visible and draggable while this page is open.",
-    threatControl = "Configure tank threat lead, recovery, and lost-threat alerts; the sample remains visible and draggable while this page is open.",
+    threatControl = "Configure tank threat lead and recovery; the sample remains visible at its fixed gameplay position while this page is open.",
     dungeon = "Configure LFG results and alerts.",
     maintenance = "Restore bindings or reset this character.",
 }
@@ -45,7 +45,6 @@ local SUPPORT_FEATURE_BY_SETTING = {
     threatEnabled = "threat",
     threatPercentEnabled = "threat",
     threatAwarenessEnabled = "threat",
-    threatAwarenessSoundKey = "threat",
     hotEnabled = "hotTracking",
     buffThanksEnabled = "buffThanks",
 }
@@ -210,7 +209,7 @@ local function Layout()
         dungeonBoardSection, displaySection, previewControls.section,
         threatAwarenessSection, hudDisplaysSection, hotSection, compatibilitySection, positionsSection, dangerSection,
         recoverySection, resetPartyFramesRow, resetSettingsRow, resetMinimapRow,
-        threatAwarenessResetRow, cleanseResetRow, buffThanksResetRow,
+        cleanseResetRow, buffThanksResetRow,
         lfgAlertsResetRow, dungeonBoardResetRow,
         compatibilityRow, prepareDisableRow, factoryRow,
         previewControls.scenarioRow, previewControls.actionRow,
@@ -243,8 +242,6 @@ local function Layout()
                 row.frame.value:SetSelectedKey(D.DungeonBoardSettings.GetSoundKey())
             elseif row.svKey == "threatAwarenessExplanation" then
                 -- Static guidance for the signed tank-control meter.
-            elseif row.svKey == "threatAwarenessSoundKey" then
-                row.frame.value:SetSelectedKey(D.ThreatAwareness.GetSoundKey())
             elseif row.svKey == "dungeonBoardLevelsBelow"
                 or row.svKey == "dungeonBoardLevelsAbove"
             then
@@ -405,20 +402,6 @@ local function Layout()
         entries[#entries + 1] = { frame = threatAwarenessSection, height = 16, gap = 9 }
         addSetting("threatAwarenessEnabled")
         addSetting("threatAwarenessExplanation")
-        addSetting("threatAwarenessSoundKey")
-        local awarenessEnabled = D.IsSavedFeatureEnabled("threatAwarenessEnabled")
-        local soundRow = generalRowsByKey.threatAwarenessSoundKey
-        if soundRow and GetSettingSupport("threatAwarenessSoundKey") then
-            if awarenessEnabled then
-                soundRow.frame.value:Enable()
-                soundRow.frame.label:SetTextColor(0.9, 0.9, 0.9)
-            else
-                soundRow.frame.value:Disable()
-                soundRow.frame.label:SetTextColor(0.45, 0.45, 0.45)
-            end
-        end
-        entries[#entries + 1] = { frame = positionsSection, height = 16, gap = 10 }
-        entries[#entries + 1] = { frame = threatAwarenessResetRow, height = 32 }
     elseif activePage == "dungeon" then
         entries[#entries + 1] = { frame = dungeonBoardSection, height = 16, gap = 9 }
         addSetting("dungeonBoardRole")
@@ -509,24 +492,6 @@ local function AddThreatAwarenessExplanation()
     label:SetTextColor(0.65, 0.65, 0.68)
     frame.label = label
     AddGeneralRow(frame, "threatAwarenessExplanation")
-end
-
-local function AddThreatAwarenessSoundPreference()
-    local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
-    local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    label:SetPoint("LEFT", frame, "LEFT", 8, 0)
-    label:SetWidth(155); label:SetJustifyH("LEFT"); label:SetText("Lost-threat sound")
-    local value = UIH.CreateDropdown(frame, 220, 22)
-    value:SetOptions(D.Sounds.GetOptions(true)); value:SetArrowShown(false)
-    value:SetPoint("RIGHT", frame, "RIGHT", -5, 0)
-    value:SetSelectionCallback(function(soundKey)
-        if refreshing then return end
-        D.ThreatAwareness.SetSoundKey(soundKey)
-        D.ThreatAwareness.PreviewSound()
-        D.RequestConfigRefresh()
-    end)
-    frame.label, frame.value = label, value
-    AddGeneralRow(frame, "threatAwarenessSoundKey")
 end
 
 local function AddSelfBuffPreference()
@@ -798,11 +763,10 @@ function G.Create(parent, deps)
     AddCheckbox("Show party threat status", "threatEnabled", refreshThreatSetting)
     AddCheckbox("Show threat margin for the current target", "threatPercentEnabled", refreshThreatSetting)
     AddCheckbox("Show Tank Threat Control HUD", "threatAwarenessEnabled", function()
-        D.ThreatAwareness.Refresh(true)
+        D.ThreatAwareness.Refresh()
         D.SyncVisualTicker()
     end)
     AddThreatAwarenessExplanation()
-    AddThreatAwarenessSoundPreference()
     AddCheckbox("Show each party member's target", "showUnitTargets")
     AddCheckbox("Show heal-over-time duration bars", "hotEnabled", D.InitHotSpells)
 
@@ -850,19 +814,6 @@ function G.Create(parent, deps)
 
     resetMinimapRow, resetButtons.minimap = CreatePositionResetRow("Minimap Button")
     resetButtons.minimap:SetScript("OnClick", D.ApplyDefaultMinimapPosition)
-
-    threatAwarenessResetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
-    local threatAwarenessResetLabel = threatAwarenessResetRow:CreateFontString(
-        nil, "ARTWORK", "GameFontHighlightSmall")
-    threatAwarenessResetLabel:SetPoint("LEFT", threatAwarenessResetRow, "LEFT", 8, 0)
-    threatAwarenessResetLabel:SetText("Tank Threat Control HUD")
-    resetButtons.threatAwareness = UIH.CreateButton(
-        threatAwarenessResetRow, "Reset Position", 126, 22)
-    resetButtons.threatAwareness:SetPoint("RIGHT", threatAwarenessResetRow, "RIGHT", -5, 0)
-    resetButtons.threatAwareness:SetScript("OnClick", function()
-        D.ThreatAwareness.ResetPosition()
-        D.ThreatAwareness.Refresh(true)
-    end)
 
     cleanseResetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local cleanseResetLabel = cleanseResetRow:CreateFontString(
@@ -998,7 +949,6 @@ function G.GetResetButtons()
         bar = resetButtons.bar,
         settings = resetButtons.settings,
         minimap = resetButtons.minimap,
-        threatAwareness = resetButtons.threatAwareness,
         buffThanks = resetButtons.buffThanks,
         lfgAlerts = resetButtons.lfgAlerts,
         dungeonBoard = resetButtons.dungeonBoard,

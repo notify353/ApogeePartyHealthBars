@@ -206,7 +206,7 @@ function A.InvalidateUnitAuraCache(unitId)
 end
 
 function A.ScanUnitHarmfulAuras(unitId)
-    local snapshot = { auras = {}, playerBySpellId = {}, bySpellId = {} }
+    local snapshot = { auras = {}, playerAuras = {}, playerBySpellId = {}, bySpellId = {} }
     if not unitId or not UnitExists or not UnitExists(unitId) then return snapshot end
     for index = 1, 40 do
         local aura = HarmfulAuraFromIndex(unitId, index)
@@ -222,6 +222,7 @@ function A.ScanUnitHarmfulAuras(unitId)
         end
         local sourceUnit = aura.sourceUnit
         if aura.spellId and sourceUnit and UnitIsUnit and UnitIsUnit(sourceUnit, "player") then
+            snapshot.playerAuras[#snapshot.playerAuras + 1] = aura
             snapshot.playerBySpellId[aura.spellId] = aura
         end
     end
@@ -229,7 +230,9 @@ function A.ScanUnitHarmfulAuras(unitId)
 end
 
 function A.GetUnitHarmfulAuraSnapshot(unitId)
-    if not unitId then return { auras = {}, playerBySpellId = {}, bySpellId = {} } end
+    if not unitId then
+        return { auras = {}, playerAuras = {}, playerBySpellId = {}, bySpellId = {} }
+    end
     local cached = harmfulCache[unitId]
     if cached then return cached end
     cached = A.ScanUnitHarmfulAuras(unitId)

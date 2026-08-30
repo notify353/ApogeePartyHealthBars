@@ -41,7 +41,6 @@ local FEATURE_DEFAULTS = {
     threatPercentEnabled = true,
     threatAwarenessEnabled = false,
     threatAwarenessMode = "radar",
-    threatAwarenessSoundKey = "alarm_soft",
     threatAwarenessPoint = "CENTER",
     threatAwarenessRelPoint = "CENTER",
     threatAwarenessX = 0,
@@ -204,10 +203,7 @@ function E.InitializeSavedVariables(saved, characterSaved)
             saved[key] = defaultValue
         end
     end
-    if ApogeePartyHealthBars_Sounds then
-        saved.threatAwarenessSoundKey = ApogeePartyHealthBars_Sounds.NormalizeKey(
-            saved.threatAwarenessSoundKey, "alarm_soft", true)
-    end
+    saved.threatAwarenessSoundKey = nil
     -- Loading the addon is the enable action. The internal flag is only kept
     -- false for the remainder of a session after restoring owned bindings so
     -- the user can safely disable the addon through WoW's AddOns manager.

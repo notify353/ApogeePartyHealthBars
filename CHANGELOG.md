@@ -6,6 +6,15 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Removed Tank Threat Control's lost-threat sound, including its setting, alert runtime, transition tracking, and profile preference.
+- Fixed Tank Threat Control at its center-screen gameplay anchor and removed its drag and reset-position controls from settings.
+- Split Tank Threat Control into left-side enemy names and right-side threat lines with a clear center channel over gameplay, keeping raid markers and footer status with the threat wing and widening the selected-target edge for visibility.
+- Added a player-owned debuff lane to every observable Tank Threat Control enemy, showing aura icons, prominent centered stack counts, a fading pulse during the final five seconds, and compact overflow immediately beyond the current-target edge. Up to four rank-aware class anchors reserve consistent columns across mobs—Sunder Armor always occupies the Warrior's first slot—while other effects fill the remaining slots deterministically.
+- Added a polished full-row threat stack to Tank Threat Control, pairing a taller threat meter with a clearly readable green live-health strip without narrowing the center gameplay channel.
+- Replaced each Tank Threat Control health strip with live cast or channel progress while that enemy is casting, distinguishing interruptible amber casts from protected gray casts and restoring health immediately afterward.
+- Removed combat hitching and stepped updates from Tank Threat Control by deduplicating mobs before threat work, caching stable debuff layouts, minimizing history copies and unit queries, coalescing threat refreshes, updating health/casts per enemy, and smoothly interpolating threat and active cast strips each frame.
+- Fixed the Tank Threat Control preview cast repeatedly snapping backward by keeping one continuous demo timeline and briefly restoring the sample health bar between casts.
+
 ## [0.49.0] - 2026-08-30
 
 - Swapped the Group Helper row lanes so DRINKING and THIRSTY sit next to the party frames while missing-buff icons occupy the outer-left column.

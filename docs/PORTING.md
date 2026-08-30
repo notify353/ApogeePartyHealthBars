@@ -74,7 +74,7 @@ preference to `false` merely because the active client lacks its API.
 
 Keep volatile API families in their existing domain modules:
 
-- `UnitAPI`: unit identity, health, power, healability, and range normalization
+- `UnitAPI`: unit identity, health, casting, power, healability, and range normalization
 - `Auras`: modern and legacy helpful-aura normalization
 - `PlayerSpells`: Spellbook enumeration, cursor resolution, and known-spell lookup
 - `ShortcutItems`: item information, count, usability, cooldown normalization,

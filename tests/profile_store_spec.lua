@@ -91,7 +91,6 @@ ApogeePartyHealthBars_Effects = {
         settings.dungeonBoardMode = nil
         if settings.threatAwarenessEnabled == nil then settings.threatAwarenessEnabled = false end
         if settings.threatAwarenessMode == nil then settings.threatAwarenessMode = "radar" end
-        if settings.threatAwarenessSoundKey == nil then settings.threatAwarenessSoundKey = "alarm_soft" end
         if settings.threatAwarenessPoint == nil then settings.threatAwarenessPoint = "CENTER" end
         if settings.threatAwarenessRelPoint == nil then settings.threatAwarenessRelPoint = "CENTER" end
         if settings.threatAwarenessX == nil then settings.threatAwarenessX = 0 end
@@ -344,6 +343,7 @@ local sanitized = store.NormalizePayload({ settings = {
     targetEffectDisabled = { corruption = true },
     targetEffectPriority = { "corruption", "immolate" },
     targetEffectHudPoint = "CENTER", targetEffectHudRelPoint = "CENTER", targetEffectHudX = 12, targetEffectHudY = 144,
+    threatAwarenessSoundKey = "alarm_soft",
     dungeonBoardMode = "healer", dungeonBoardSoundKey = "alarm_soft",
     dungeonBoardFeedEnabled = false,
     dungeonBoardLevelsBelow = 12, dungeonBoardLevelsAbove = 4,
@@ -361,6 +361,8 @@ local sanitized = store.NormalizePayload({ settings = {
 }, actions = {} })
 assert(sanitized.settings.minimapAngle == nil,
     "non-finite minimap position survived profile normalization")
+assert(sanitized.settings.threatAwarenessSoundKey == nil,
+    "retired Tank Threat Control sound preference survived profile normalization")
 assert(sanitized.settings.x == nil and sanitized.settings.y == 24,
     "profile numeric normalization did not reject only non-finite values")
 assert(sanitized.settings.targetEffectRemindersEnabled == false
@@ -564,7 +566,7 @@ assert(resetRoot.profileStore.schemaVersion == 3 and #store.List() == 1
         and store.GetActiveProfile().payload.settings.buffThanksY == -120
         and store.GetActiveProfile().payload.settings.threatAwarenessEnabled == false
         and store.GetActiveProfile().payload.settings.threatAwarenessMode == "radar"
-        and store.GetActiveProfile().payload.settings.threatAwarenessSoundKey == "alarm_soft"
+        and store.GetActiveProfile().payload.settings.threatAwarenessSoundKey == nil
         and next(resetRoot.bindingRuntime) == nil,
     "character reset did not create a clean authoritative store")
 local resetAgain = store.Initialize(legacyAccount, resetRoot, "WARRIOR", "Bolderbear - Dreamscythe")

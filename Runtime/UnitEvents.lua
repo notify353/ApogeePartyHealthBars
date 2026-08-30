@@ -3,9 +3,17 @@ local A = ApogeePartyHealthBars_Auras
 local T = ApogeePartyHealthBars_ShortcutBar
 local P = ApogeePartyHealthBars_PlayerStatusHud
 local M = ApogeePartyHealthBars_RaidMarkers
-local H = ApogeePartyHealthBars_Threat
 local O = ApogeePartyHealthBars_ThreatObserver
 local TA = ApogeePartyHealthBars_ThreatAwareness
+
+local THREAT_CAST_EVENTS = {
+    "UNIT_SPELLCAST_START", "UNIT_SPELLCAST_STOP", "UNIT_SPELLCAST_FAILED",
+    "UNIT_SPELLCAST_FAILED_QUIET", "UNIT_SPELLCAST_INTERRUPTED",
+    "UNIT_SPELLCAST_DELAYED", "UNIT_SPELLCAST_SUCCEEDED",
+    "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_CHANNEL_UPDATE",
+    "UNIT_SPELLCAST_CHANNEL_STOP", "UNIT_SPELLCAST_INTERRUPTIBLE",
+    "UNIT_SPELLCAST_NOT_INTERRUPTIBLE",
+}
 
 ApogeePartyHealthBars_UnitEvents = {}
 local U = ApogeePartyHealthBars_UnitEvents
@@ -20,10 +28,12 @@ function U.Register(eventRouter, deps)
 
     local function HandleEvent(event, unit)
         local ok, err = pcall(function()
+            local auraInvalidated = false
             if event == "UNIT_AURA"
                 or event == "UNIT_ABSORB_AMOUNT_CHANGED" then
                 if deps.IsPanelTrackedUnit(unit) then
                     A.InvalidateUnitAuraCache(unit)
+                    auraInvalidated = event == "UNIT_AURA"
                     local panelUnit = deps.ResolvePanelUnit(unit)
                     if panelUnit ~= unit then
                         A.InvalidateUnitAuraCache(panelUnit)
@@ -81,6 +91,16 @@ function U.Register(eventRouter, deps)
                     S.RequestLayoutUpdate()
                 end
             end
+            if event == "UNIT_AURA" and O and O.IsObservedUnit
+                and O.IsObservedUnit(unit) then
+                if not auraInvalidated then A.InvalidateUnitAuraCache(unit) end
+                if O.InvalidateAuras then O.InvalidateAuras(unit) end
+                if TA then TA.Refresh() end
+            end
+            if (event == "UNIT_HEALTH" or event == "UNIT_MAXHEALTH")
+                and O and O.IsObservedUnit and O.IsObservedUnit(unit) and TA then
+                if TA.RefreshUnit then TA.RefreshUnit(unit) end
+            end
         end)
         if not ok then
             deps.Print("event error (" .. tostring(event) .. "): " .. tostring(err))
@@ -97,13 +117,15 @@ function U.Register(eventRouter, deps)
     }) do
         eventRouter.RegisterOptional(event, "Bootstrap", HandleEvent)
     end
-
-    for _, event in ipairs({ "UNIT_THREAT_SITUATION_UPDATE", "UNIT_THREAT_LIST_UPDATE" }) do
-        eventRouter.RegisterOptional(event, "Threat", function()
-            H.Refresh()
-            if TA then TA.Refresh() end
+    for _, event in ipairs(THREAT_CAST_EVENTS) do
+        eventRouter.RegisterOptional(event, "ThreatAwareness", function(_, unit)
+            if O and O.IsObservedUnit and O.IsObservedUnit(unit) and TA
+                and TA.RefreshUnit then
+                TA.RefreshUnit(unit)
+            end
         end)
     end
+
     eventRouter.RegisterOptional("RAID_TARGET_UPDATE", "RaidMarkers", function()
         M.OnRaidTargetUpdate()
     end)

@@ -18,6 +18,14 @@ local rules = {
         allowed = { ApogeePartyHealthBars_UnitAPI = true },
     },
     {
+        token = "UnitCastingInfo(",
+        allowed = { ApogeePartyHealthBars_UnitAPI = true },
+    },
+    {
+        token = "UnitChannelInfo(",
+        allowed = { ApogeePartyHealthBars_UnitAPI = true },
+    },
+    {
         token = "GetSpellBookItemInfo(",
         allowed = { ApogeePartyHealthBars_PlayerSpells = true },
     },

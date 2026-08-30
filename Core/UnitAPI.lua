@@ -32,6 +32,40 @@ function U.GetHealth(unitId)
     return value, maximum, validMaximum
 end
 
+local function NormalizeCast(name, icon, startTimeMs, endTimeMs, notInterruptible,
+        spellId, isChannel)
+    local startTime = tonumber(startTimeMs)
+    local endTime = tonumber(endTimeMs)
+    if not name or not startTime or not endTime or endTime <= startTime then return nil end
+    return {
+        name = name,
+        icon = icon,
+        startTime = startTime / 1000,
+        endTime = endTime / 1000,
+        notInterruptible = notInterruptible == true,
+        spellId = spellId,
+        isChannel = isChannel == true,
+    }
+end
+
+function U.GetCast(unitId)
+    if not U.Exists(unitId) then return nil end
+    if UnitCastingInfo then
+        local name, _, icon, startTimeMs, endTimeMs, _, _, notInterruptible, spellId =
+            UnitCastingInfo(unitId)
+        local cast = NormalizeCast(name, icon, startTimeMs, endTimeMs,
+            notInterruptible, spellId, false)
+        if cast then return cast end
+    end
+    if UnitChannelInfo then
+        local name, _, icon, startTimeMs, endTimeMs, _, notInterruptible, spellId =
+            UnitChannelInfo(unitId)
+        return NormalizeCast(name, icon, startTimeMs, endTimeMs,
+            notInterruptible, spellId, true)
+    end
+    return nil
+end
+
 function U.GetIdentity(unitId)
     local identity = { name = unitId, isPlayer = false }
     if not U.Exists(unitId) then return identity end

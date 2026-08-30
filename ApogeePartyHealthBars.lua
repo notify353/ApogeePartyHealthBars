@@ -366,13 +366,17 @@ ApogeePartyHealthBars.Require("Bootstrap", "AuxiliaryComposition").Initialize({
     ThreatObserver = threatObserver,
     ThreatObserverDependencies = {
         Now = function() return GetTime and GetTime() or 0 end,
+        Auras = ApogeePartyHealthBars_Auras,
+        DebuffData = ApogeePartyHealthBars_TargetEffectData,
+        GetClassToken = ApogeePartyHealthBars_PlayerContext.GetClassToken,
+        UnitAPI = ApogeePartyHealthBars_UnitAPI,
     },
     ThreatAwareness = threatAwareness,
     ThreatAwarenessDependencies = {
         Observer = threatObserver,
-        Sounds = ApogeePartyHealthBars_Sounds,
         SettingsSurfaces = configSurfaces,
         Now = function() return GetTime and GetTime() or 0 end,
+        UnitAPI = ApogeePartyHealthBars_UnitAPI,
         IsSupported = function()
             return ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable("threat")
         end,

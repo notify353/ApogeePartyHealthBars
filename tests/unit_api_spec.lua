@@ -3,9 +3,11 @@ dofile("Core/Data.lua")
 local units = {
     player = { exists = true, connected = true, guid = "Player-1", health = 80, healthMax = 100,
         powerType = 3, powerToken = "ENERGY", mana = 75, manaMax = 100,
-        power = 60, powerMax = 100 },
+        power = 60, powerMax = 100,
+        cast = { "Fireball", "Fireball", 135812, 10000, 13000, false, "cast-1", false, 133 } },
     target = { exists = true, connected = false, health = 0, healthMax = 0,
-        powerType = 0, powerToken = "MANA", mana = 0, manaMax = 0 },
+        powerType = 0, powerToken = "MANA", mana = 0, manaMax = 0,
+        channel = { "Drain Life", "Drain Life", 136169, 20000, 25000, false, true, 689 } },
 }
 function UnitExists(unit) return units[unit] and units[unit].exists or false end
 function UnitGUID(unit) return units[unit] and units[unit].guid end
@@ -13,6 +15,14 @@ function UnitIsConnected(unit) return units[unit].connected end
 function UnitIsDeadOrGhost() return false end
 function UnitHealth(unit) return units[unit].health end
 function UnitHealthMax(unit) return units[unit].healthMax end
+function UnitCastingInfo(unit)
+    local cast = units[unit] and units[unit].cast
+    if cast then return unpack(cast) end
+end
+function UnitChannelInfo(unit)
+    local channel = units[unit] and units[unit].channel
+    if channel then return unpack(channel) end
+end
 function UnitPowerType(unit) return units[unit].powerType, units[unit].powerToken end
 function UnitPowerMax(unit, powerType)
     if powerType == 0 then return units[unit].manaMax end
@@ -38,6 +48,16 @@ local health, maximum = api.GetHealth("target")
 assert(health == 0 and maximum == 1, "invalid maximum health did not fail closed")
 local _, _, validMaximum = api.GetHealth("target")
 assert(not validMaximum, "invalid maximum health was not reported to strict consumers")
+local cast = api.GetCast("player")
+local channel = api.GetCast("target")
+assert(cast and cast.name == "Fireball" and cast.startTime == 10 and cast.endTime == 13
+        and cast.spellId == 133 and not cast.isChannel and not cast.notInterruptible,
+    "ordinary unit cast was not normalized")
+assert(channel and channel.name == "Drain Life" and channel.startTime == 20
+        and channel.endTime == 25 and channel.spellId == 689 and channel.isChannel
+        and channel.notInterruptible,
+    "channeled unit cast was not normalized")
+assert(api.GetCast("focus") == nil, "missing unit exposed cast state")
 assert(not api.IsConnected("target") and not api.GetDefaultRange("player"))
 assert(api.GetGUID("player") == "Player-1" and api.GetGUID("focus") == nil)
 assert(not api.Exists("focus") and #api.GetPowerChannels("focus") == 0)

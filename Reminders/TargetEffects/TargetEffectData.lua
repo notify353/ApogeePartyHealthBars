@@ -134,6 +134,34 @@ D.FAMILIES = {
     }),
 }
 
+-- Threat Control reserves only the most useful cross-mob comparison columns.
+-- Each inner table is one column; mutually exclusive variants share a column.
+local THREAT_DEBUFF_SLOT_KEYS = {
+    WARRIOR = {
+        { "sunderArmor" }, { "demoralizingShout" }, { "thunderClap" }, { "rend" },
+    },
+    DRUID = {
+        { "faerieFire", "faerieFireFeral" }, { "demoralizingRoar" },
+        { "lacerate" }, { "moonfire" },
+    },
+    HUNTER = {
+        { "huntersMark" }, { "serpentSting" }, { "scorpidSting" }, { "wyvernSting" },
+    },
+    MAGE = { { "pyroblast" } },
+    PALADIN = {
+        { "judgementOfLight", "judgementOfWisdom", "judgementOfCrusader",
+            "judgementOfJustice" },
+    },
+    PRIEST = { { "shadowWordPain" }, { "devouringPlague" }, { "holyFire" } },
+    ROGUE = { { "exposeArmor" }, { "rupture" }, { "garrote" } },
+    SHAMAN = { { "stormstrike" }, { "flameShock" } },
+    WARLOCK = {
+        { "curseOfAgony", "curseOfDoom", "curseOfWeakness", "curseOfRecklessness",
+            "curseOfElements", "curseOfShadow", "curseOfTongues" },
+        { "corruption" }, { "immolate" }, { "siphonLife" },
+    },
+}
+
 local byKey = {}
 local coverageGroups = {}
 for index, definition in ipairs(D.FAMILIES) do
@@ -153,6 +181,26 @@ for index, definition in ipairs(D.FAMILIES) do
     end
 end
 
+local threatDebuffSlotCounts = {}
+local threatDebuffSlotsByAuraId = {}
+for classToken, slotGroups in pairs(THREAT_DEBUFF_SLOT_KEYS) do
+    threatDebuffSlotCounts[classToken] = #slotGroups
+    local slotsByAuraId = {}
+    threatDebuffSlotsByAuraId[classToken] = slotsByAuraId
+    for slot, keys in ipairs(slotGroups) do
+        for _, key in ipairs(keys) do
+            local definition = assert(byKey[key], "unknown Threat Control debuff family: " .. key)
+            assert(definition.classToken == classToken,
+                "Threat Control debuff family belongs to another class: " .. key)
+            for _, spellId in ipairs(definition.auraIds) do
+                assert(not slotsByAuraId[spellId] or slotsByAuraId[spellId] == slot,
+                    "Threat Control debuff aura assigned to multiple slots: " .. spellId)
+                slotsByAuraId[spellId] = slot
+            end
+        end
+    end
+end
+
 function D.Get(key) return byKey[key] end
 function D.GetCoverageGroup(key) return coverageGroups[key] or {} end
 function D.ForClass(classToken)
@@ -161,4 +209,11 @@ function D.ForClass(classToken)
         if definition.classToken == classToken then result[#result + 1] = definition end
     end
     return result
+end
+function D.GetThreatDebuffSlot(classToken, auraSpellId)
+    local slots = threatDebuffSlotsByAuraId[classToken]
+    return slots and slots[tonumber(auraSpellId)] or nil
+end
+function D.GetThreatDebuffSlotCount(classToken)
+    return threatDebuffSlotCounts[classToken] or 0
 end

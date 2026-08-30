@@ -13,7 +13,7 @@ local function SetConfigurationPreviews(active)
     if D.BuffThanks then D.BuffThanks.SetUnlocked(active) end
     if D.DungeonBoardFeed then D.DungeonBoardFeed.SetUnlocked(active) end
     if D.PartyFramePreview then D.PartyFramePreview.SetActive(active) end
-    if D.ThreatAwareness then D.ThreatAwareness.SetUnlocked(active) end
+    if D.ThreatAwareness then D.ThreatAwareness.SetPreview(active) end
     if D.TargetNameplateHud then D.TargetNameplateHud.SetUnlocked(active) end
 end
 

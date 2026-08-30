@@ -109,7 +109,6 @@ local saved = {
     hotEnabled = true,
     threatAwarenessEnabled = false,
     threatAwarenessMode = "radar",
-    threatAwarenessSoundKey = "alarm_soft",
     hotDisabled = { renew = true },
 }
 local known = { party = true, self = false, reminder = true, renew = true, rejuv = false }
@@ -275,10 +274,6 @@ local deps = {
     Threat = { Refresh = function() calls.threat = calls.threat + 1 end },
     ThreatAwareness = {
         Refresh = function() calls.threatAwareness = (calls.threatAwareness or 0) + 1 end,
-        GetSoundKey = function() return saved.threatAwarenessSoundKey end,
-        SetSoundKey = function(key) saved.threatAwarenessSoundKey = key end,
-        PreviewSound = function() calls.threatAwarenessPreview = (calls.threatAwarenessPreview or 0) + 1 end,
-        ResetPosition = function() calls.threatAwarenessReset = (calls.threatAwarenessReset or 0) + 1 end,
     },
     CleanseWatch = {
         HasCapability = function() return true end,
@@ -321,18 +316,18 @@ assert(config.GetRow("showAllSlots").check:GetChecked() == false
     "saved frame checkboxes did not refresh")
 assert(not config.GetRow("threatAwarenessEnabled"):IsShown()
         and not config.GetRow("threatAwarenessExplanation"):IsShown()
-        and not config.GetRow("threatAwarenessSoundKey"):IsShown(),
+        and config.GetRow("threatAwarenessSoundKey") == nil,
     "Frames still exposed Tank Threat Control settings")
 config.SetPage("threatControl")
 assert(config.GetPage() == "threatControl"
         and config.GetForm().hint:GetText()
-            == "Configure tank threat lead, recovery, and lost-threat alerts; the sample remains visible and draggable while this page is open."
+            == "Configure tank threat lead and recovery; the sample remains visible at its fixed gameplay position while this page is open."
         and config.GetRow("threatAwarenessMode") == nil
         and config.GetRow("threatAwarenessExplanation").label:GetText()
             == "Right is threat lead; left is effort to regain."
         and config.GetRow("threatAwarenessEnabled").label:GetText()
             == "Show Tank Threat Control HUD"
-        and not config.GetRow("threatAwarenessSoundKey").value:IsEnabled(),
+        and config.GetRow("threatAwarenessSoundKey") == nil,
     "dedicated Tank Threat Control page did not expose its complete workflow")
 assert(config.GetRow("enabled") == nil,
     "General still exposed the redundant add-on enable checkbox")
@@ -475,14 +470,8 @@ awarenessToggle:SetChecked(true)
 Click(awarenessToggle)
 assert(saved.threatAwarenessEnabled and calls.threatAwareness == 1 and calls.ticker == 2,
     "Threat Awareness enablement did not refresh the HUD and ticker")
-config.GetRow("threatAwarenessSoundKey").value.onSelect("alarm_soft")
-assert(saved.threatAwarenessMode == "radar"
-        and saved.threatAwarenessSoundKey == "alarm_soft"
-        and calls.threatAwarenessPreview == 1,
-    "Tank Threat Control sound selection changed legacy mode compatibility")
-Click(config.GetResetButtons().threatAwareness)
-assert(calls.threatAwarenessReset == 1,
-    "Threat Awareness position reset did not reach the HUD")
+assert(config.GetResetButtons().threatAwareness == nil,
+    "Threat Awareness still exposed a position reset")
 
 config.SetPage("frames")
 local hotGlobal = config.GetRow("hotEnabled").check
@@ -579,7 +568,7 @@ assert(config.GetPage() == "threatControl"
         and config.GetRow("threatAwarenessEnabled").check:GetChecked()
         and not config.GetRow("threatAwarenessEnabled").check:IsEnabled()
         and config.GetRow("threatAwarenessEnabled").unavailableReason == "threat unavailable"
-        and not config.GetRow("threatAwarenessSoundKey").value:IsEnabled()
+        and config.GetRow("threatAwarenessSoundKey") == nil
         and saved.threatAwarenessEnabled == true,
     "unsupported Threat Control page did not preserve and disable its saved preference")
 config.SetPage("frames")

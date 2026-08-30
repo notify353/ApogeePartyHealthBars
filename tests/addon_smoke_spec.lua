@@ -603,6 +603,23 @@ assert(dotHudAnchor and dotHudAnchor.frameType == "Frame" and dotHudAnchor.templ
 assert(ApogeePartyHealthBars_TargetEffectHud.ResetPosition == nil
         and ApogeePartyHealthBars_TargetEffectHud.SetUnlocked == nil,
     "removed movable Target Effects APIs were still exposed")
+local threatHudFrame = ApogeePartyHealthBars_ThreatAwareness.GetFrame()
+assert(type(ApogeePartyHealthBars_ThreatAwareness.SetPreview) == "function"
+        and ApogeePartyHealthBars_ThreatAwareness.SetUnlocked == nil
+        and ApogeePartyHealthBars_ThreatAwareness.ResetPosition == nil
+        and ApogeePartyHealthBars_ThreatAwareness.RestorePosition == nil
+        and ApogeePartyHealthBars_ThreatAwareness.GetSoundKey == nil
+        and ApogeePartyHealthBars_ThreatAwareness.SetSoundKey == nil
+        and ApogeePartyHealthBars_ThreatAwareness.PreviewSound == nil
+        and not threatHudFrame.mouseEnabled
+        and threatHudFrame.scripts.OnDragStart == nil
+        and threatHudFrame.scripts.OnDragStop == nil
+        and threatHudFrame.point[1] == "CENTER"
+        and threatHudFrame.point[2] == UIParent
+        and threatHudFrame.point[3] == "CENTER"
+        and threatHudFrame.point[4] == 0
+        and threatHudFrame.point[5] == 40,
+    "Tank Threat Control retained movable APIs or left its fixed gameplay anchor")
 assert(ApogeePartyHealthBarsPanel.point[1] == "RIGHT"
         and ApogeePartyHealthBarsPanel.point[3] == "RIGHT"
         and ApogeePartyHealthBarsPanel.point[4] == -24
@@ -1363,6 +1380,20 @@ for _, key in ipairs({
             and groupHelperPresentation.GetFrame():IsShown()
             and ApogeePartyHealthBars_ThreatAwareness.GetFrame():IsShown(),
         "settings page hid an auxiliary surface: " .. key)
+    if key == "threatControl" then
+        local threatRows = ApogeePartyHealthBars_ThreatAwareness.GetRows()
+        assert(threatRows[1].debuffIcons[1]:IsShown()
+                and threatRows[1].debuffIcons[1].icon.texture
+                    == "Interface\\Icons\\Ability_Warrior_Sunder"
+                and threatRows[1].debuffIcons[1].count:GetText() == "3"
+                and threatRows[1].debuffIcons[1].count.fontTemplate == "GameFontHighlight"
+                and threatRows[1].debuffIcons[1].count.point[1] == "CENTER"
+                and not threatRows[1].debuffIcons[2]:IsShown()
+                and threatRows[1].debuffIcons[4]:IsShown()
+                and threatRows[2].debuffIcons[1].count:GetText() == "5"
+                and not threatRows[3].debuffIcons[1]:IsShown(),
+            "Tank Threat Control preview did not render centered player-debuff stacks")
+    end
     local currentFeedPoint = { ApogeePartyHealthBars_DungeonBoardFeed.GetFrame():GetPoint(1) }
     local currentThreatPoint = { ApogeePartyHealthBars_ThreatAwareness.GetFrame():GetPoint(1) }
     for index = 1, 5 do
@@ -1677,6 +1708,7 @@ local existingPreferences = {
     spellTrackerSoundsEnabled = false,
     lowHealthSoundKey = "alarm_bell",
     lowHealthThreshold = 65,
+    threatAwarenessSoundKey = "alarm_soft",
     dungeonBoardMode = "tank",
     dungeonBoardFeedEnabled = false,
 }
@@ -1687,6 +1719,8 @@ assert(existingPreferences.spellTrackerEnabled == nil, "saved tracker preference
 assert(existingPreferences.spellTrackerSoundsEnabled == nil, "saved tracker sounds preference was not retired")
 assert(existingPreferences.lowHealthSoundKey == "alarm_bell", "saved low-health sound choice was overwritten")
 assert(existingPreferences.lowHealthThreshold == 65, "saved low-health threshold was overwritten")
+assert(existingPreferences.threatAwarenessSoundKey == nil,
+    "retired Tank Threat Control sound preference was not removed")
 assert(existingPreferences.dungeonBoardRole == "tank"
         and existingPreferences.dungeonBoardMode == nil
         and existingPreferences.dungeonBoardFeedEnabled == false,

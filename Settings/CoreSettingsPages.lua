@@ -13,7 +13,7 @@ local hotRows = {}
 local hotRowsByKey = {}
 local resetButtons = {}
 local behaviorSection, alertsSection, lowHealthSection, nameMentionsSection
-local dungeonBoardSection, displaySection, threatAwarenessSection, hudDisplaysSection
+local dungeonBoardSection, displaySection, hudDisplaysSection
 local hotSection, compatibilitySection
 local positionsSection, recoverySection, dangerSection
 local resetPartyFramesRow, resetSettingsRow, resetMinimapRow
@@ -29,7 +29,6 @@ local PAGE_HINTS = {
     frames = "Choose party-frame behavior, details, and nearby HUD displays.",
     healthChat = "Configure low-health and name-mention alerts.",
     buffsCleanse = "Configure buff and cleansing reminders; samples remain visible and draggable while this page is open.",
-    threatControl = "Configure tank threat lead and recovery; the sample remains visible at its fixed gameplay position while this page is open.",
     dungeon = "Configure LFG results and alerts.",
     maintenance = "Restore bindings or reset this character.",
 }
@@ -207,7 +206,7 @@ local function Layout()
     for _, frame in ipairs({
         behaviorSection, alertsSection, lowHealthSection, nameMentionsSection,
         dungeonBoardSection, displaySection, previewControls.section,
-        threatAwarenessSection, hudDisplaysSection, hotSection, compatibilitySection, positionsSection, dangerSection,
+        hudDisplaysSection, hotSection, compatibilitySection, positionsSection, dangerSection,
         recoverySection, resetPartyFramesRow, resetSettingsRow, resetMinimapRow,
         cleanseResetRow, buffThanksResetRow,
         lfgAlertsResetRow, dungeonBoardResetRow,
@@ -240,8 +239,6 @@ local function Layout()
                 row.frame.value:SetSelectedKey(D.DungeonBoardSettings.GetRole())
             elseif row.svKey == "dungeonBoardSoundKey" then
                 row.frame.value:SetSelectedKey(D.DungeonBoardSettings.GetSoundKey())
-            elseif row.svKey == "threatAwarenessExplanation" then
-                -- Static guidance for the signed tank-control meter.
             elseif row.svKey == "dungeonBoardLevelsBelow"
                 or row.svKey == "dungeonBoardLevelsAbove"
             then
@@ -398,10 +395,6 @@ local function Layout()
         entries[#entries + 1] = { frame = positionsSection, height = 16, gap = 10 }
         entries[#entries + 1] = { frame = cleanseResetRow, height = 32 }
         entries[#entries + 1] = { frame = buffThanksResetRow, height = 32 }
-    elseif activePage == "threatControl" then
-        entries[#entries + 1] = { frame = threatAwarenessSection, height = 16, gap = 9 }
-        addSetting("threatAwarenessEnabled")
-        addSetting("threatAwarenessExplanation")
     elseif activePage == "dungeon" then
         entries[#entries + 1] = { frame = dungeonBoardSection, height = 16, gap = 9 }
         addSetting("dungeonBoardRole")
@@ -480,18 +473,6 @@ local function AddDungeonBoardRolePreference()
     frame.value = value
     frame.label = label
     AddGeneralRow(frame, "dungeonBoardRole")
-end
-
-local function AddThreatAwarenessExplanation()
-    local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
-    local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    label:SetPoint("LEFT", frame, "LEFT", 8, 0)
-    label:SetPoint("RIGHT", frame, "RIGHT", -8, 0)
-    label:SetJustifyH("LEFT")
-    label:SetText("Right is threat lead; left is effort to regain.")
-    label:SetTextColor(0.65, 0.65, 0.68)
-    frame.label = label
-    AddGeneralRow(frame, "threatAwarenessExplanation")
 end
 
 local function AddSelfBuffPreference()
@@ -698,7 +679,6 @@ function G.Create(parent, deps)
     nameMentionsSection = UIH.CreateFormSection(form.content, form.rowWidth, "Name Mentions")
     dungeonBoardSection = UIH.CreateFormSection(form.content, form.rowWidth, "Dungeon Board")
     displaySection = UIH.CreateFormSection(form.content, form.rowWidth, "Frame details")
-    threatAwarenessSection = UIH.CreateFormSection(form.content, form.rowWidth, "Tank threat control")
     hudDisplaysSection = UIH.CreateFormSection(form.content, form.rowWidth, "HUD displays")
     hotSection = UIH.CreateFormSection(form.content, form.rowWidth, "Tracked heal-over-time effects")
     compatibilitySection = UIH.CreateFormSection(form.content, form.rowWidth,
@@ -762,11 +742,6 @@ function G.Create(parent, deps)
     end
     AddCheckbox("Show party threat status", "threatEnabled", refreshThreatSetting)
     AddCheckbox("Show threat margin for the current target", "threatPercentEnabled", refreshThreatSetting)
-    AddCheckbox("Show Tank Threat Control HUD", "threatAwarenessEnabled", function()
-        D.ThreatAwareness.Refresh()
-        D.SyncVisualTicker()
-    end)
-    AddThreatAwarenessExplanation()
     AddCheckbox("Show each party member's target", "showUnitTargets")
     AddCheckbox("Show heal-over-time duration bars", "hotEnabled", D.InitHotSpells)
 

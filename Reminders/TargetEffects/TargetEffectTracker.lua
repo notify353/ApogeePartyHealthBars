@@ -22,8 +22,7 @@ local function enabled(definition)
 end
 
 local function spellTexture(spellId)
-    if C_Spell and C_Spell.GetSpellTexture then return C_Spell.GetSpellTexture(spellId) end
-    return GetSpellTexture and GetSpellTexture(spellId) or nil
+    return Spells.GetSpellTexture and Spells.GetSpellTexture(spellId) or nil
 end
 
 local function resolveHighestKnown(definition)
@@ -90,36 +89,24 @@ local function targetValid()
         and not (UnitIsDeadOrGhost and UnitIsDeadOrGhost("target"))
 end
 
-local function contextAllows(entry, context)
+local function contextAllows(entry, context, helpfulSnapshot)
     local definition = entry.definition
     if definition.formSpellIds and not definition.formSpellIds[context.formSpellId] then return false end
     if definition.requiresStealth and not context.stealthed then return false end
     if definition.nonPlayerTarget and UnitIsPlayer and UnitIsPlayer("target") then return false end
     if definition.requiredPlayerAuraIdSet then
-        local snapshot = Auras.GetUnitAuraSnapshot("player")
-        if not Auras.SnapshotHasAura(snapshot, definition.requiredPlayerAuraIdSet) then return false end
+        if not Auras.SnapshotHasAura(helpfulSnapshot,
+                definition.requiredPlayerAuraIdSet) then return false end
     end
     return true
 end
 
-local function usable(entry, context, now)
-    if not contextAllows(entry, context) then return false end
-    local isUsable, lacksResource
-    if C_Spell and C_Spell.IsSpellUsable then
-        isUsable, lacksResource = C_Spell.IsSpellUsable(entry.spellId)
-    elseif IsUsableSpell then
-        isUsable, lacksResource = IsUsableSpell(entry.spellId)
-    else
-        return false
-    end
+local function usable(entry, context, helpfulSnapshot, now)
+    if not contextAllows(entry, context, helpfulSnapshot) then return false end
+    local isUsable, lacksResource = Cooldowns.GetSpellUsability(entry.spellId)
     if not isUsable or lacksResource then return false end
     if Cooldowns.IsRealCooldownActive(entry.spellId, now) then return false end
-    local inRange
-    if C_Spell and C_Spell.IsSpellInRange then
-        inRange = C_Spell.IsSpellInRange(entry.spellId, "target")
-    elseif IsSpellInRange then
-        inRange = IsSpellInRange(entry.spellId, "target")
-    end
+    local inRange = Cooldowns.GetSpellRange(entry.spellId, "target")
     if entry.definition.casterCentered and inRange == nil then return true end
     -- Both supported API families return nil when the range check is invalid
     -- (for example, for an invalid spell/target pairing).  A passive reminder
@@ -227,13 +214,14 @@ function T.Refresh(invalidate)
     local context, now = playerContext or Context.GetSnapshot(), (GetTime and GetTime()) or 0
     local ordered = orderedKnown()
     local refreshThreshold = settings().targetEffectRefreshThreshold
-    local groupChoice = {}
+    local eligible, groupChoice = {}, {}
     for _, entry in ipairs(ordered) do
         local group = entry.definition.exclusiveGroup
         local validUnit = entry.definition.auraUnit == "player" or hostileTargetValid
-        if group and not groupChoice[group] and validUnit
-            and enabled(entry.definition) and usable(entry, context, now) then
-            groupChoice[group] = entry
+        if validUnit and enabled(entry.definition) and (not group or not groupChoice[group])
+            and usable(entry, context, helpfulSnapshot, now) then
+            eligible[entry] = true
+            if group and not groupChoice[group] then groupChoice[group] = entry end
         end
     end
     local suggestions, nextWake
@@ -242,8 +230,7 @@ function T.Refresh(invalidate)
         local definition = entry.definition
         local group = definition.exclusiveGroup
         local validUnit = definition.auraUnit == "player" or hostileTargetValid
-        if validUnit and enabled(definition) and (not group or groupChoice[group] == entry)
-            and usable(entry, context, now) then
+        if eligible[entry] and (not group or groupChoice[group] == entry) then
             local aura, strength = strongestAura(entry, harmfulSnapshot, helpfulSnapshot)
             if aura and strength < requiredStrength(entry) then aura = nil end
             local remaining = aura and math.max(0, (tonumber(aura.expirationTime) or 0) - now) or 0

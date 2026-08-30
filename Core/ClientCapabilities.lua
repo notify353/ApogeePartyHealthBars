@@ -95,6 +95,18 @@ local CAPABILITIES = {
             return usable and cooldown and range
         end,
     },
+    cooldownState = {
+        reason = "This client does not provide supported spell cooldown, charge, and usability APIs.",
+        detect = function()
+            local cooldown = (C_Spell and isFunction(C_Spell.GetSpellCooldown))
+                or isFunction(GetSpellCooldown)
+            local charges = (C_Spell and isFunction(C_Spell.GetSpellCharges))
+                or isFunction(GetSpellCharges)
+            local usable = (C_Spell and isFunction(C_Spell.IsSpellUsable))
+                or isFunction(IsUsableSpell)
+            return cooldown and charges and usable
+        end,
+    },
     items = {
         reason = "This client does not provide supported item information APIs.",
         detect = function()
@@ -232,13 +244,13 @@ local FEATURES = {
         label = "Dungeon Board official listings",
         requires = { "groupFinderListings" },
     },
-    targetHud = {
-        label = "Target HUD",
-        requires = {},
-    },
     targetEffectReminders = {
         label = "Target Effects reminders",
         requires = { "harmfulAuras", "spellbook", "dotActionState" },
+    },
+    abilityCooldowns = {
+        label = "Ability Cooldowns",
+        requires = { "spellbook", "cooldownState" },
     },
 }
 

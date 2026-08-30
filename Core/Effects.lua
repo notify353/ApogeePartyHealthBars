@@ -45,12 +45,9 @@ local FEATURE_DEFAULTS = {
     threatAwarenessRelPoint = "CENTER",
     threatAwarenessX = 0,
     threatAwarenessY = 40,
-    targetHudPoint = "CENTER",
-    targetHudRelPoint = "CENTER",
-    targetHudX = 0,
-    targetHudY = -150,
     targetEffectRemindersEnabled = true,
     targetEffectRefreshThreshold = 3,
+    abilityCooldownsEnabled = true,
     dungeonBoardRole = "healer",
     dungeonBoardFeedEnabled = true,
     dungeonBoardSoundKey = "none",
@@ -132,30 +129,12 @@ function E.InitializeSavedVariables(saved, characterSaved)
     local version = tonumber(saved.schemaVersion) or 0
     MigrateRenamedFields(saved, RENAMED_SETTINGS_FIELDS)
     MigrateRenamedFields(characterSaved, RENAMED_ACTION_FIELDS)
-    if saved.targetHudPoint == nil then
-        saved.targetHudPoint = saved.targetEffectHudPoint or saved.dotHudPoint
-    end
-    if saved.targetHudRelPoint == nil then
-        saved.targetHudRelPoint = saved.targetEffectHudRelPoint or saved.dotHudRelPoint
-    end
-    if saved.targetHudX == nil then
-        saved.targetHudX = saved.targetEffectHudX or saved.dotHudX
-    end
-    if saved.targetHudY == nil then
-        saved.targetHudY = saved.targetEffectHudY or saved.dotHudY
-    end
     for _, key in ipairs({
+        "targetHudPoint", "targetHudRelPoint", "targetHudX", "targetHudY",
         "targetEffectHudPoint", "targetEffectHudRelPoint", "targetEffectHudX", "targetEffectHudY",
         "dotHudPoint", "dotHudRelPoint", "dotHudX", "dotHudY",
     }) do
         saved[key] = nil
-    end
-
-    if version < 9 then
-        saved.targetHudPoint = FEATURE_DEFAULTS.targetHudPoint
-        saved.targetHudRelPoint = FEATURE_DEFAULTS.targetHudRelPoint
-        saved.targetHudX = FEATURE_DEFAULTS.targetHudX
-        saved.targetHudY = FEATURE_DEFAULTS.targetHudY
     end
 
     if version < 1 then
@@ -213,6 +192,8 @@ function E.InitializeSavedVariables(saved, characterSaved)
     end
     if type(saved.targetEffectDisabled) ~= "table" then saved.targetEffectDisabled = {} end
     if type(saved.targetEffectPriority) ~= "table" then saved.targetEffectPriority = {} end
+    if type(saved.abilityCooldownOverrides) ~= "table" then saved.abilityCooldownOverrides = {} end
+    if type(saved.abilityCooldownPriority) ~= "table" then saved.abilityCooldownPriority = {} end
     saved.targetEffectRefreshThreshold = NormalizeDotThreshold(saved.targetEffectRefreshThreshold, 3)
     saved.dungeonBoardLevelsBelow = NormalizeDungeonBoardLevelOffset(
         saved.dungeonBoardLevelsBelow, 10)
@@ -229,6 +210,19 @@ function E.InitializeSavedVariables(saved, characterSaved)
         end
     end
     saved.targetEffectPriority = normalizedPriority
+    for key, value in pairs(saved.abilityCooldownOverrides) do
+        if type(key) ~= "string" or type(value) ~= "boolean" then
+            saved.abilityCooldownOverrides[key] = nil
+        end
+    end
+    seenPriority, normalizedPriority = {}, {}
+    for _, key in ipairs(saved.abilityCooldownPriority) do
+        if type(key) == "string" and not seenPriority[key] then
+            seenPriority[key] = true
+            normalizedPriority[#normalizedPriority + 1] = key
+        end
+    end
+    saved.abilityCooldownPriority = normalizedPriority
 
     if type(characterSaved.bindings) ~= "table" then
         characterSaved.bindings = {}

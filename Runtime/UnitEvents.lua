@@ -1,7 +1,6 @@
 local S = ApogeePartyHealthBars_S
 local A = ApogeePartyHealthBars_Auras
 local T = ApogeePartyHealthBars_ShortcutBar
-local P = ApogeePartyHealthBars_PlayerStatusHud
 local M = ApogeePartyHealthBars_RaidMarkers
 local O = ApogeePartyHealthBars_ThreatObserver
 local TA = ApogeePartyHealthBars_ThreatAwareness
@@ -39,7 +38,9 @@ function U.Register(eventRouter, deps)
                         A.InvalidateUnitAuraCache(panelUnit)
                     end
                     deps.ShieldTrackerSyncUnit(unit)
-                    if unit == "player" then P.Refresh() end
+                    if unit == "player" and TA and TA.RefreshPlayer then
+                        TA.RefreshPlayer()
+                    end
                     if deps.AuraEventNeedsLayout(panelUnit) then
                         S.RequestLayoutUpdate()
                     else
@@ -50,7 +51,9 @@ function U.Register(eventRouter, deps)
             elseif event == "UNIT_HEALTH" or event == "UNIT_MAXHEALTH"
                 or event == "UNIT_HEAL_PREDICTION" then
                 if deps.IsPanelTrackedUnit(unit) then
-                    if unit == "player" then P.Refresh() end
+                    if unit == "player" then
+                        if TA and TA.RefreshPlayer then TA.RefreshPlayer() end
+                    end
                     -- The event token may be party1 while a target pane displays the
                     -- same GUID through "target" or "partyNtarget". Refresh every row
                     -- so health and incoming-heal overlays stay correct for aliases.
@@ -61,7 +64,7 @@ function U.Register(eventRouter, deps)
                 if deps.IsPanelTrackedUnit(unit) then
                     if unit == "player" then
                         T.Refresh(false)
-                        P.Refresh()
+                        if TA and TA.RefreshPlayer then TA.RefreshPlayer() end
                     end
                     S.RequestLayoutUpdate()
                 end
@@ -71,7 +74,7 @@ function U.Register(eventRouter, deps)
                 if deps.IsPanelTrackedUnit(unit) then
                     if unit == "player" then
                         T.Refresh(false)
-                        P.Refresh()
+                        if TA and TA.RefreshPlayer then TA.RefreshPlayer() end
                     end
                     if event == "UNIT_MAXPOWER" then
                         S.RequestLayoutUpdate()
@@ -82,7 +85,9 @@ function U.Register(eventRouter, deps)
 
             elseif event == "UNIT_CONNECTION" then
                 if deps.IsPanelTrackedUnit(unit) then
-                    if unit == "player" then P.Refresh() end
+                    if unit == "player" and TA and TA.RefreshPlayer then
+                        TA.RefreshPlayer()
+                    end
                     S.RequestLayoutUpdate()
                 end
 

@@ -57,8 +57,9 @@ core purpose. The following families are optional and degrade independently:
 - party range: range fading
 - incoming heals: incoming-heal overlay
 - threat: threat indicators and current-target margin
-- target HUD: the shared movable hostile-target display and basic player-status surface
+- threat/player status: the fixed Threat Control surface
 - harmful auras, Spellbook, and action state: Target Effects reminders
+- Spellbook plus cooldown, charge, and usability state: Ability Cooldowns
 - raid markers: target marker controls
 - Spellbook and items: new action assignment from those sources
 - physical bindings: Keys, Wheel, and Buttons
@@ -81,7 +82,8 @@ Keep volatile API families in their existing domain modules:
   carried-bag enumeration, and automatic-consumable classification
 - `BoundActionBindings`: binding claims, restoration, and binding-set transactions
 - `BoundActionLayouts`: specialization, form, stance, and stealth layout state
-- `TargetNameplateHud`: current-target eligibility, profile-owned placement, and surface lifecycle; the legacy-named module must not touch nameplate frames
+- `ThreatAwareness`: fixed Threat Control topology, player-status presentation, and left/right accessory anchoring
+- `ActionCooldowns`: spell cooldown, charge, usability, and global-cooldown normalization shared by action HUDs and Ability Cooldowns
 - `IncomingHeals`, `Threat`, and `RaidMarkers`: their optional client APIs
 - `ProfileCodec`: native serialization, compression, and Base64
 - `ClientCapabilities`: detection and addon/client metadata only

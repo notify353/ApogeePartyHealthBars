@@ -314,21 +314,9 @@ assert(config.GetRow("showAllSlots").check:GetChecked() == false
         and config.GetRow("showAllSlots").label:GetText()
             == "Show all 5 party frames while solo",
     "saved frame checkboxes did not refresh")
-assert(not config.GetRow("threatAwarenessEnabled"):IsShown()
-        and not config.GetRow("threatAwarenessExplanation"):IsShown()
-        and config.GetRow("threatAwarenessSoundKey") == nil,
-    "Frames still exposed Tank Threat Control settings")
-config.SetPage("threatControl")
-assert(config.GetPage() == "threatControl"
-        and config.GetForm().hint:GetText()
-            == "Configure tank threat lead and recovery; the sample remains visible at its fixed gameplay position while this page is open."
-        and config.GetRow("threatAwarenessMode") == nil
-        and config.GetRow("threatAwarenessExplanation").label:GetText()
-            == "Right is threat lead; left is effort to regain."
-        and config.GetRow("threatAwarenessEnabled").label:GetText()
-            == "Show Tank Threat Control HUD"
-        and config.GetRow("threatAwarenessSoundKey") == nil,
-    "dedicated Tank Threat Control page did not expose its complete workflow")
+assert(config.GetRow("threatAwarenessEnabled") == nil
+        and config.GetRow("threatAwarenessExplanation") == nil,
+    "core settings retained controls owned by the consolidated Threat Control page")
 assert(config.GetRow("enabled") == nil,
     "General still exposed the redundant add-on enable checkbox")
 config.SetPage("buffsCleanse")
@@ -464,12 +452,6 @@ Click(threat)
 assert(calls.threat == 1 and calls.ticker == 1,
     "threat setting did not refresh threat and ticker state")
 
-config.SetPage("threatControl")
-local awarenessToggle = config.GetRow("threatAwarenessEnabled").check
-awarenessToggle:SetChecked(true)
-Click(awarenessToggle)
-assert(saved.threatAwarenessEnabled and calls.threatAwareness == 1 and calls.ticker == 2,
-    "Threat Awareness enablement did not refresh the HUD and ticker")
 assert(config.GetResetButtons().threatAwareness == nil,
     "Threat Awareness still exposed a position reset")
 
@@ -562,15 +544,6 @@ assert(calls.factoryReset == 1 and resets.factory.label:GetText() == "Reset Char
 
 saved.threatEnabled = true
 unsupportedFeatures.threat = true
-config.SetPage("threatControl")
-config.Refresh()
-assert(config.GetPage() == "threatControl"
-        and config.GetRow("threatAwarenessEnabled").check:GetChecked()
-        and not config.GetRow("threatAwarenessEnabled").check:IsEnabled()
-        and config.GetRow("threatAwarenessEnabled").unavailableReason == "threat unavailable"
-        and config.GetRow("threatAwarenessSoundKey") == nil
-        and saved.threatAwarenessEnabled == true,
-    "unsupported Threat Control page did not preserve and disable its saved preference")
 config.SetPage("frames")
 config.Refresh()
 assert(config.GetRow("threatEnabled").check:GetChecked()

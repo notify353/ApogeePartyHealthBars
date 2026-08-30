@@ -4,6 +4,13 @@ ApogeePartyHealthBars_UIHelpers = {}
 dofile("PartyFrames/ThreatAwareness.lua")
 local awareness = ApogeePartyHealthBars_ThreatAwareness
 
+local healthProgress, powerProgress, powerChannel = awareness.GetPlayerStatusDisplay(
+    72, 100, true, { { value = 58, maximum = 100, powerToken = "MANA" } })
+assert(healthProgress == 0.72 and powerProgress == 0.58
+        and powerChannel.powerToken == "MANA"
+        and awareness.GetPlayerStatusDisplay(10, 0, false, {}) == nil,
+    "Tank Threat Control player-status normalization changed")
+
 local function Enemy(guid, severity, control, isTanking, live)
     return {
         guid = guid, name = guid, severity = severity, control = control,
@@ -201,18 +208,43 @@ assert(awareness.GetFooterText(liveQueue, liveQueueView) == "+2 MORE",
     "Tank Threat Control lost its live overflow indicator")
 liveQueue.limitedCoverage = true
 assert(awareness.GetFooterText(liveQueue, liveQueueView)
-        == "+2 MORE  |  LIMITED COVERAGE",
-    "Tank Threat Control overflow hid its reduced-coverage warning")
+        == "+2 MORE",
+    "Tank Threat Control mixed the removed coverage helper into overflow")
+assert(awareness.GetFooterText({ limitedCoverage = true }, { overflow = 0 }) == "",
+    "Tank Threat Control retained the limited-coverage helper")
 
+local inCombat = false
 awareness.Initialize({
     Observer = {}, SettingsSurfaces = {}, Now = function() return 10 end,
+    IsInCombat = function() return inCombat end,
     UnitAPI = {},
+    UnitBar = { GetHealthColor = function(progress)
+        if progress > 0.60 then return 0.28, 0.74, 0.46, 1 end
+        if progress > 0.35 then return 0.90, 0.74, 0.22, 1 end
+        if progress > 0.15 then return 0.92, 0.48, 0.24, 1 end
+        return 0.86, 0.30, 0.30, 1
+    end },
     IsSupported = function() return true end,
 })
+local playerRed, playerGreen, playerBlue = awareness.GetPlayerHealthColor(0.35)
+assert(playerRed == 0.92 and playerGreen == 0.48 and playerBlue == 0.24,
+    "Threat Control player health did not use the party-bar color policy")
 ApogeePartyHealthBars_S.sv = { enabled = false, threatAwarenessEnabled = true }
 assert(not awareness.IsActive(),
     "Tank Threat Control remained active after the add-on session was disabled")
 ApogeePartyHealthBars_S.sv.enabled = true
 assert(awareness.IsActive(), "enabled Tank Threat Control did not become active")
+assert(awareness.ShouldShow(0),
+    "enabled Threat Control disappeared when no combat enemies were observed")
+assert(not awareness.ShouldObserveThreat(),
+    "out-of-combat persistent HUD retained full hostile threat polling")
+inCombat = true
+assert(awareness.ShouldObserveThreat(),
+    "in-combat Threat Control did not enable hostile threat polling")
+inCombat = false
+ApogeePartyHealthBars_S.configMode = true
+assert(not awareness.ShouldShow(0),
+    "live Threat Control remained visible beneath a non-preview configuration state")
+ApogeePartyHealthBars_S.configMode = false
 
 print("PASS Tank Threat Control presentation policy")

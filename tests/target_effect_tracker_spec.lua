@@ -58,7 +58,10 @@ local currentClass = "WARLOCK"
 ApogeePartyHealthBars_PlayerContext = { GetSnapshot = function()
     return { classToken = currentClass, raceToken = "Human", level = 70, form = 0, stealthed = false }
 end }
-ApogeePartyHealthBars_PlayerSpells = { IsKnownSpell = function(id) return id ~= 10 end }
+ApogeePartyHealthBars_PlayerSpells = {
+    IsKnownSpell = function(id) return id ~= 10 end,
+    GetSpellTexture = function(id) return id + 1000 end,
+}
 local auraSnapshot = { playerBySpellId = {}, bySpellId = {} }
 local playerAuraSnapshot = { auras = {} }
 local invalidations = 0
@@ -73,9 +76,18 @@ ApogeePartyHealthBars_Auras = {
     end,
     InvalidateUnitAuraCache = function() invalidations = invalidations + 1 end,
 }
-local realCooldown = {}
+local realCooldown, spellInRange = {}, true
+local usabilityCalls, rangeCalls = 0, 0
 ApogeePartyHealthBars_ActionCooldowns = {
     IsRealCooldownActive = function(id) return realCooldown[id] == true end,
+    GetSpellUsability = function()
+        usabilityCalls = usabilityCalls + 1
+        return true, false
+    end,
+    GetSpellRange = function()
+        rangeCalls = rangeCalls + 1
+        return spellInRange
+    end,
 }
 local shown = {}
 local configurationPreview = {}
@@ -86,18 +98,13 @@ ApogeePartyHealthBars_TargetEffectHud = {
 }
 ApogeePartyHealthBars_ClientCapabilities = { IsFeatureAvailable = function() return true end }
 
-local now, timers, spellInRange = 100, {}, true
+local now, timers = 100, {}
 function GetTime() return now end
 local targetExists = true
 function UnitExists(unit) return unit == "player" or (unit == "target" and targetExists) end
 function UnitCanAttack() return true end
 function UnitIsDeadOrGhost() return false end
 function UnitIsPlayer() return false end
-C_Spell = {
-    GetSpellTexture = function(id) return id + 1000 end,
-    IsSpellUsable = function() return true, false end,
-    IsSpellInRange = function() return spellInRange end,
-}
 C_Timer = { After = function(delay, callback) timers[#timers + 1] = { delay, callback } end }
 
 dofile("Reminders/TargetEffects/TargetEffectTracker.lua")
@@ -106,6 +113,8 @@ T.Initialize()
 assert(#shown == 3 and shown[1].spellId == 11 and shown[2].key == "curseA"
         and shown[3].key == "demo",
     "missing DoTs did not resolve highest ranks or collapse exclusive families")
+assert(usabilityCalls == 3 and rangeCalls == 3,
+    "exclusive maintained-effect families repeated eligibility API queries")
 assert(#configurationPreview == 3 and configurationPreview[1].key == "first"
         and configurationPreview[2].key == "curseA"
         and configurationPreview[3].key == "curseB"

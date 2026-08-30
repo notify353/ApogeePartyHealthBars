@@ -22,6 +22,40 @@ function A.GetSpellCooldown(identifier)
     return 0, 0, true
 end
 
+function A.GetSpellCharges(identifier)
+    if C_Spell and C_Spell.GetSpellCharges then
+        local info = C_Spell.GetSpellCharges(identifier)
+        if info then
+            return tonumber(info.currentCharges), tonumber(info.maxCharges),
+                tonumber(info.cooldownStartTime), tonumber(info.cooldownDuration)
+        end
+    end
+    if GetSpellCharges then
+        local current, maximum, start, duration = GetSpellCharges(identifier)
+        return tonumber(current), tonumber(maximum), tonumber(start), tonumber(duration)
+    end
+end
+
+function A.GetSpellUsability(identifier)
+    if C_Spell and C_Spell.IsSpellUsable then
+        local usable, lacksResource = C_Spell.IsSpellUsable(identifier)
+        return usable == true, lacksResource == true
+    end
+    if IsUsableSpell then
+        local usable, lacksResource = IsUsableSpell(identifier)
+        return usable == true, lacksResource == true
+    end
+    return true, false
+end
+
+function A.GetSpellRange(identifier, unit)
+    unit = unit or "target"
+    if C_Spell and C_Spell.IsSpellInRange then
+        return C_Spell.IsSpellInRange(identifier, unit)
+    end
+    if IsSpellInRange then return IsSpellInRange(identifier, unit) end
+end
+
 function A.IsGlobalCooldown(start, duration, reportedGCD)
     duration = tonumber(duration) or 0
     if duration <= 0 then return false end

@@ -74,6 +74,15 @@ function UnitIsEnemy() return false end
 dofile("Core/UnitAPI.lua")
 dofile("PartyFrames/UnitBar.lua")
 local bars = ApogeePartyHealthBars_UnitBar
+local healthyR, healthyG, healthyB = bars.GetHealthColor(0.61)
+local cautionR, cautionG, cautionB = bars.GetHealthColor(0.60)
+local dangerR, dangerG, dangerB = bars.GetHealthColor(0.35)
+local criticalR, criticalG, criticalB = bars.GetHealthColor(0.15)
+assert(healthyR == 0.28 and healthyG == 0.74 and healthyB == 0.46
+        and cautionR == 0.90 and cautionG == 0.74 and cautionB == 0.22
+        and dangerR == 0.92 and dangerG == 0.48 and dangerB == 0.24
+        and criticalR == 0.86 and criticalG == 0.30 and criticalB == 0.30,
+    "shared party-health color thresholds changed")
 local partyBuffState = { false, false }
 bars.Initialize({
     GetHotStripHeight = function() return 0 end,

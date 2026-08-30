@@ -1,45 +1,37 @@
-local C = ApogeePartyHealthBars_C
 local S = ApogeePartyHealthBars_S
-local UIH = ApogeePartyHealthBars_UIHelpers
-local TargetHud = ApogeePartyHealthBars_TargetNameplateHud
+local ThreatHud = ApogeePartyHealthBars_ThreatAwareness
 
 ApogeePartyHealthBars_TargetEffectHud = {}
 local H = ApogeePartyHealthBars_TargetEffectHud
 
-local ICON_SIZE = C.SHORTCUT_ICON_SIZE or 24
-local ICON_GAP = C.SHORTCUT_ICON_GAP or 3
-local SURFACE_KEY = "targetEffects"
+local ICON_SIZE = 18
+local ICON_GAP = 2
 local TARGET_EFFECT_GAP = 4
 
 local row
 local icons = {}
 local suggestions = {}
 local configurationPreview = {}
-local previewRows = {}
+local showingConfiguration = false
+local tickTimer = 0
+local COUNTDOWN_UPDATE_RATE = 0.1
 
-local function CreateIcon(parent, interactive)
+local function CreateIcon(parent)
     local frame = CreateFrame("Frame", nil, parent)
     frame:SetSize(ICON_SIZE, ICON_SIZE)
     local texture = frame:CreateTexture(nil, "ARTWORK")
     texture:SetAllPoints()
+    texture:SetTexCoord(0.07, 0.93, 0.07, 0.93)
     local cooldown = CreateFrame("Cooldown", nil, frame, "CooldownFrameTemplate")
     cooldown:SetAllPoints()
     if cooldown.SetDrawEdge then cooldown:SetDrawEdge(false) end
     if cooldown.SetDrawBling then cooldown:SetDrawBling(false) end
     if cooldown.SetHideCountdownNumbers then cooldown:SetHideCountdownNumbers(true) end
-    local count = frame:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
-    count:SetPoint("BOTTOM", frame, "BOTTOM", 0, 1)
+    local count = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    count:SetPoint("CENTER", frame, "CENTER", 0, 0)
+    count:SetJustifyH("CENTER")
     if count.SetShadowOffset then count:SetShadowOffset(1, -1) end
-    frame:EnableMouse(interactive == true)
-    if interactive then
-        frame:SetScript("OnEnter", function(self)
-            local item = self.suggestion
-            if not item then return end
-            UIH.ShowSpellTooltip(self, item.spellId, item.label, "Configuration preview", nil,
-                { { text = "Passive reminder — this icon never casts.", wrap = true } })
-        end)
-        frame:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
-    end
+    frame:EnableMouse(false)
     frame.texture, frame.cooldown, frame.count = texture, cooldown, count
     return frame
 end
@@ -59,47 +51,37 @@ local function ApplyItem(icon, item, preview)
     icon:Show()
 end
 
-local function LayoutLive()
-    local count = #suggestions
+local function Layout(items, preview)
+    items = items or {}
+    local count = #items
     local width = count > 0 and count * ICON_SIZE + (count - 1) * ICON_GAP or 1
+    tickTimer = 0
     row:SetSize(width, ICON_SIZE)
-    for index, item in ipairs(suggestions) do
+    for index, item in ipairs(items) do
         local icon = icons[index]
         if not icon then
-            icon = CreateIcon(row, false)
+            icon = CreateIcon(row)
             icons[index] = icon
         end
         icon:ClearAllPoints()
         icon:SetPoint("RIGHT", row, "RIGHT", -(index - 1) * (ICON_SIZE + ICON_GAP), 0)
-        ApplyItem(icon, item, false)
+        ApplyItem(icon, item, preview)
     end
     for index = count + 1, #icons do icons[index]:Hide() end
 end
 
-local function LayoutPreview(preview)
-    if not preview then return end
-    local count = #configurationPreview
-    local width = count > 0 and count * ICON_SIZE + (count - 1) * ICON_GAP or 1
-    preview:SetSize(width, ICON_SIZE)
-    preview.icons = preview.icons or {}
-    for index, item in ipairs(configurationPreview) do
-        local icon = preview.icons[index]
-        if not icon then
-            icon = CreateIcon(preview, true)
-            preview.icons[index] = icon
-        end
-        icon:ClearAllPoints()
-        icon:SetPoint("RIGHT", preview, "RIGHT", -(index - 1) * (ICON_SIZE + ICON_GAP), 0)
-        ApplyItem(icon, item, true)
-    end
-    for index = count + 1, #preview.icons do preview.icons[index]:Hide() end
-    preview:SetShown(count > 0)
-end
-
 local function RefreshVisibility()
     if not row then return end
-    TargetHud.SetSurfaceEnabled(SURFACE_KEY,
-        S.sv and S.sv.enabled == true and #suggestions > 0 and not S.configMode)
+    local items = S.configMode and configurationPreview or suggestions
+    if S.configMode then
+        Layout(items, true)
+        showingConfiguration = true
+    elseif showingConfiguration then
+        Layout(suggestions, false)
+        H.Tick()
+        showingConfiguration = false
+    end
+    row:SetShown(S.sv and S.sv.enabled == true and #items > 0)
 end
 
 function H.SetSuggestions(nextSuggestions)
@@ -119,12 +101,18 @@ function H.SetSuggestions(nextSuggestions)
         end
     end
     suggestions = nextSuggestions
-    if not unchanged then LayoutLive() end
+    if not unchanged and not S.configMode then Layout(suggestions, false) end
     H.Tick()
     RefreshVisibility()
 end
 
-function H.Tick()
+function H.Tick(elapsed)
+    if S.configMode then return end
+    if elapsed ~= nil then
+        tickTimer = tickTimer - (tonumber(elapsed) or 0)
+        if tickTimer > 0 then return end
+        tickTimer = COUNTDOWN_UPDATE_RATE
+    end
     local now = GetTime and GetTime() or 0
     for index, item in ipairs(suggestions) do
         local remaining = item.aura and item.aura.expirationTime
@@ -137,16 +125,7 @@ end
 
 function H.SetConfigurationPreview(items)
     configurationPreview = items or {}
-    for _, preview in ipairs(previewRows) do LayoutPreview(preview) end
-end
-
-function H.CreateConfigurationPreview(parent)
-    H.Initialize()
-    local preview = CreateFrame("Frame", nil, parent)
-    preview:SetSize(1, ICON_SIZE)
-    previewRows[#previewRows + 1] = preview
-    LayoutPreview(preview)
-    return preview
+    RefreshVisibility()
 end
 
 function H.RefreshVisibility()
@@ -155,16 +134,19 @@ function H.RefreshVisibility()
 end
 
 function H.Hide()
-    if row then TargetHud.SetSurfaceEnabled(SURFACE_KEY, false) end
+    if row then row:Hide() end
 end
 
 function H.Initialize()
     if row then return end
-    row = CreateFrame("Frame", nil, UIParent)
+    local playerStatusAnchor = ThreatHud.GetPlayerStatusAnchor()
+    assert(playerStatusAnchor, "TargetEffectHud requires the built Threat Control player status")
+    row = CreateFrame("Frame", nil, ThreatHud.GetFrame())
     row:SetSize(1, ICON_SIZE)
+    row:SetPoint("RIGHT", playerStatusAnchor, "LEFT", -TARGET_EFFECT_GAP, 0)
     row:EnableMouse(false)
-    row:SetScript("OnUpdate", function() H.Tick() end)
-    TargetHud.RegisterSurface(SURFACE_KEY, row, 2, TARGET_EFFECT_GAP, "leftAccessory")
+    row:SetScript("OnUpdate", function(_, elapsed) H.Tick(elapsed) end)
+    row:Hide()
 end
 
 function H.GetAnchor() return row end

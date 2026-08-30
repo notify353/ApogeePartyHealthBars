@@ -19,6 +19,23 @@ C_Spell = {
             isOnGCD = actionGCD,
         }
     end,
+    GetSpellCharges = function(identifier)
+        requestedSpell = identifier
+        return {
+            currentCharges = 1,
+            maxCharges = 2,
+            cooldownStartTime = 30,
+            cooldownDuration = 12,
+        }
+    end,
+    IsSpellUsable = function(identifier)
+        requestedSpell = identifier
+        return identifier ~= 9001, identifier == 9001
+    end,
+    IsSpellInRange = function(identifier, unit)
+        requestedSpell = identifier
+        return unit == "target" and true or nil
+    end,
 }
 
 dofile("Actions/ActionCooldowns.lua")
@@ -27,6 +44,15 @@ local cooldowns = ApogeePartyHealthBars_ActionCooldowns
 local start, duration, enabled, reportedGCD = cooldowns.GetSpellCooldown(8092)
 assert(start == 10 and duration == 8 and enabled and reportedGCD == false,
     "structured spell cooldown was not normalized")
+local charges, maximum, chargeStart, chargeDuration = cooldowns.GetSpellCharges(8092)
+assert(charges == 1 and maximum == 2 and chargeStart == 30 and chargeDuration == 12
+        and requestedSpell == 8092,
+    "structured spell charges were not normalized")
+local usable, lacksResource = cooldowns.GetSpellUsability(9001)
+assert(not usable and lacksResource and requestedSpell == 9001,
+    "structured spell usability was not normalized")
+assert(cooldowns.GetSpellRange(9001, "target") == true and requestedSpell == 9001,
+    "structured spell range was not normalized")
 
 assert(cooldowns.IsGlobalCooldown(10, 8, true),
     "client-reported global cooldown was ignored")
@@ -113,8 +139,25 @@ C_Spell = nil
 GetSpellCooldown = function()
     return 4, 12, 0
 end
+GetSpellCharges = function()
+    return 2, 3, 40, 15
+end
+IsUsableSpell = function(identifier)
+    return identifier ~= 9000, false
+end
+IsSpellInRange = function(_, unit)
+    return unit == "focus" and 1 or nil
+end
 start, duration, enabled, reportedGCD = cooldowns.GetSpellCooldown(8092)
 assert(start == 4 and duration == 12 and not enabled and reportedGCD == nil,
     "legacy spell cooldown was not normalized")
+charges, maximum, chargeStart, chargeDuration = cooldowns.GetSpellCharges(8092)
+assert(charges == 2 and maximum == 3 and chargeStart == 40 and chargeDuration == 15,
+    "legacy spell charges were not normalized")
+usable, lacksResource = cooldowns.GetSpellUsability(9000)
+assert(not usable and not lacksResource,
+    "legacy spell usability was not normalized")
+assert(cooldowns.GetSpellRange(9000, "focus") == 1,
+    "legacy spell range was not normalized")
 
 print("PASS shared action cooldown classification")

@@ -342,6 +342,9 @@ local sanitized = store.NormalizePayload({ settings = {
     targetEffectRefreshThreshold = 4,
     targetEffectDisabled = { corruption = true },
     targetEffectPriority = { "corruption", "immolate" },
+    abilityCooldownsEnabled = false,
+    abilityCooldownOverrides = { pummel = false, mockingBlow = true },
+    abilityCooldownPriority = { "shieldWall", "pummel" },
     targetEffectHudPoint = "CENTER", targetEffectHudRelPoint = "CENTER", targetEffectHudX = 12, targetEffectHudY = 144,
     threatAwarenessSoundKey = "alarm_soft",
     dungeonBoardMode = "healer", dungeonBoardSoundKey = "alarm_soft",
@@ -376,6 +379,12 @@ assert(sanitized.settings.targetEffectRemindersEnabled == false
         and sanitized.settings.targetEffectHudX == nil
         and sanitized.settings.targetEffectHudY == nil,
     "Target HUD placement migration or Target Effects policy changed")
+assert(sanitized.settings.abilityCooldownsEnabled == false
+        and sanitized.settings.abilityCooldownOverrides.pummel == false
+        and sanitized.settings.abilityCooldownOverrides.mockingBlow == true
+        and sanitized.settings.abilityCooldownPriority[1] == "shieldWall"
+        and sanitized.settings.abilityCooldownPriority[2] == "pummel",
+    "Ability Cooldowns portable intent did not survive profile normalization")
 assert(sanitized.settings.dungeonBoardRole == "healer"
         and sanitized.settings.dungeonBoardMode == nil
         and sanitized.settings.dungeonBoardFeedEnabled == false

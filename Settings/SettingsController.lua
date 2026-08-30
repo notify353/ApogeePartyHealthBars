@@ -14,14 +14,13 @@ local function SetConfigurationPreviews(active)
     if D.DungeonBoardFeed then D.DungeonBoardFeed.SetUnlocked(active) end
     if D.PartyFramePreview then D.PartyFramePreview.SetActive(active) end
     if D.ThreatAwareness then D.ThreatAwareness.SetPreview(active) end
-    if D.TargetNameplateHud then D.TargetNameplateHud.SetUnlocked(active) end
 end
 
 function C.Exit()
     if not S.configMode then return end
     S.configMode = false
     if D.TargetEffectHud then D.TargetEffectHud.RefreshVisibility() end
-    if D.PlayerStatusHud then D.PlayerStatusHud.RefreshVisibility() end
+    if D.CooldownHud then D.CooldownHud.RefreshVisibility() end
     SetConfigurationPreviews(false)
     D.SettingsSurfaces.SetConfigurationActive(false)
     if D.GroupHelperRuntime then D.GroupHelperRuntime.Refresh() end
@@ -54,13 +53,14 @@ function C.SetAddonEnabled(enabled)
     if enabled then
         D.ForceRefresh()
         if D.TargetEffectTracker then D.TargetEffectTracker.Refresh(true) end
+        if D.CooldownTracker then D.CooldownTracker.Refresh() end
     else
         D.StopUpdateFrames()
         D.ClearDirtyFlags()
         D.panel:Hide()
         D.HideAllSecureOverlays()
         if D.TargetEffectHud then D.TargetEffectHud.Hide() end
-        if D.PlayerStatusHud then D.PlayerStatusHud.Hide() end
+        if D.CooldownHud then D.CooldownHud.Hide() end
         if D.ThreatAwareness then D.ThreatAwareness.Hide() end
         if D.BuffThanks then D.BuffThanks.Hide() end
         C.Exit()
@@ -159,7 +159,7 @@ function C.SetMode(active)
     if active then
         S.configMode = true
         if D.TargetEffectHud then D.TargetEffectHud.RefreshVisibility() end
-        if D.PlayerStatusHud then D.PlayerStatusHud.RefreshVisibility() end
+        if D.CooldownHud then D.CooldownHud.RefreshVisibility() end
         S.activeSettingsPageKey = S.activeSettingsPageKey or "frames"
         D.panel:EnableMouse(true)
         D.panel:RegisterForDrag("LeftButton")

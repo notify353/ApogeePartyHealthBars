@@ -107,15 +107,13 @@ SetRaidTarget = noop
 GetRaidTargetIndex = noop
 assert(capabilities.IsFeatureAvailable("raidMarkers")
         and not capabilities.Has("nameplates")
-        and capabilities.IsFeatureAvailable("targetHud")
         and not capabilities.IsFeatureAvailable("targetEffectReminders"),
-    "Target HUD or automatic raid marking still required nameplates")
+    "automatic raid marking still required nameplates")
 C_NamePlate = { GetNamePlateForUnit = noop }
 assert(capabilities.Has("nameplates")
-        and capabilities.IsFeatureAvailable("targetHud")
         and capabilities.IsFeatureAvailable("raidMarkers")
         and not capabilities.IsFeatureAvailable("targetEffectReminders"),
-    "nameplate availability incorrectly changed Target HUD feature policy")
+    "nameplate availability incorrectly changed raid-marker feature policy")
 
 assert(not capabilities.IsFeatureAvailable("profileSharing"),
     "missing profile codec APIs were accepted")
@@ -170,6 +168,10 @@ assert(#auraSnapshot.auras == 0 and not auraSnapshot.partyBuff
     "missing aura APIs did not return a normalized empty snapshot")
 
 C_SpellBook, GetSpellBookItemInfo, GetSpellBookItemName = nil, nil, nil
+C_Spell, GetSpellCooldown, GetSpellCharges, IsUsableSpell = nil, nil, nil, nil
+assert(not capabilities.IsFeatureAvailable("abilityCooldowns")
+        and capabilities.GetFeatureReason("abilityCooldowns"):find("Spellbook", 1, true),
+    "missing Ability Cooldowns APIs were not reported")
 dofile("Core/PlayerSpells.lua")
 local spellId, spellName = ApogeePartyHealthBars_PlayerSpells.GetSpellFromCursor(1, nil, nil)
 local byId, byName, known = ApogeePartyHealthBars_PlayerSpells.BuildKnownSpellMap()
@@ -184,6 +186,18 @@ C_SpellBook = {
     end,
     IsSpellKnown = function(id) return id == 9001 end,
 }
+C_Spell = {
+    GetSpellCooldown = noop,
+    GetSpellCharges = noop,
+    IsSpellUsable = noop,
+}
+assert(capabilities.IsFeatureAvailable("abilityCooldowns"),
+    "complete Spellbook and cooldown API families were not detected")
+C_Spell.GetSpellCharges = nil
+assert(not capabilities.IsFeatureAvailable("abilityCooldowns")
+        and capabilities.GetFeatureReason("abilityCooldowns"):find("charge", 1, true),
+    "Ability Cooldowns accepted a missing charge API")
+C_Spell.GetSpellCharges = noop
 GetSpellInfo = function(id) return id == 9001 and "Modern Spell" or nil end
 local modernOk, modernId, modernName = pcall(
     ApogeePartyHealthBars_PlayerSpells.GetSpellFromCursor, 1, nil, nil)

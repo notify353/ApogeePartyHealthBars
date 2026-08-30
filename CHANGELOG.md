@@ -6,6 +6,15 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Removed Threat Control's “Limited Coverage” helper text while retaining the compact `+N MORE` count for enemies beyond the five visible rows.
+- Centered both Threat Control spell-icon lanes against the full player health-and-power stack so the left reminders and right cooldowns share one clean vertical axis.
+- Anchored Threat Control by its player-status edge so enemy rows and overflow text expand downward without moving player health, power, maintained-effect reminders, or cooldowns on screen.
+- Removed the ambiguous green borders from Threat Control cooldown icons and now dim abilities that are cooldown-ready but cannot be cast with the player's current Rage, Mana, Energy, or other power.
+- Kept enabled Threat Control visible outside combat and with no observed enemies so player health, power, maintained effects, and selected cooldowns no longer disappear with the mob rows.
+- Reduced Threat Control overhead by suspending full hostile-token and threat scans outside combat, eliminating static cooldown-icon rewrites and redundant maintained-effect polling, throttling whole-second countdown text, coalescing delayed cooldown sampling, and removing duplicate eligibility checks and obsolete preview code.
+- Unified healthy-bar green across party frames and Threat Control: the player bar still progresses through yellow, orange, and red as health falls, while mob health strips now use that same healthy green without changing threat-state colors.
+- Consolidated the standalone Target HUD into Threat Control: maintained-effect reminders now use the enemy-debuff styling in a right-to-left lane on the player bars' left, a new passive six-slot lane on their right tracks selected learned class and pet cooldowns with ready, cooldown, charge, and unavailable states, all controls share one Threat Control settings page, and the duplicate movable HUD, player-status renderer, position fields, capability entry, and tests were removed.
+- Added the player's own health and active-power bars above and exactly aligned with the Tank Threat Control threat-meter column.
 - Removed Tank Threat Control's lost-threat sound, including its setting, alert runtime, transition tracking, and profile preference.
 - Fixed Tank Threat Control at its center-screen gameplay anchor and removed its drag and reset-position controls from settings.
 - Split Tank Threat Control into left-side enemy names and right-side threat lines with a clear center channel over gameplay, keeping raid markers and footer status with the threat wing and widening the selected-target edge for visibility.

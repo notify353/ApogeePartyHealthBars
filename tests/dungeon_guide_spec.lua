@@ -77,8 +77,12 @@ for _, npcId in ipairs(requiredIds) do
         "missing or incomplete Scarlet Monastery NPC: " .. npcId)
 end
 assert(Catalog.FindMob("classicEra", 189, 999999) == nil, "unknown NPC returned guide advice")
-assert(hasAbility(guide.mobs.chaplain, "Heal")
+assert(hasAbility(guide.mobs.chaplain, "Renew")
         and hasAbility(guide.mobs.chaplain, "Power Word: Shield")
+        and hasAbility(guide.mobs.diviner, "Mana Burn")
+        and guide.mobs.diviner.marker == "skull"
+        and guide.mobs.adept.marker == "cross"
+        and guide.mobs.chaplain.marker == "cross"
         and hasAbility(guide.mobs.diviner, "Fireball")
         and hasAbility(guide.mobs.monk, "Kick")
         and hasAbility(guide.mobs.doan, "Detonation")
@@ -232,7 +236,8 @@ assert(Catalog.GetGuideForInstance("classicEra", 47).key == "razorfenKraul"
 local razorfenKraulIds = {
     [6066] = "earthgrabTotem", [2992] = "healingWard",
     [6017] = "lavaSpoutTotem", [6021] = "boarSpirit",
-    [4440] = "razorfenTotemic", [4517] = "deathsHeadPriest",
+    [4440] = "razorfenTotemic", [4515] = "deathsHeadAcolyte",
+    [4517] = "deathsHeadPriest",
     [4518] = "deathsHeadSage", [4519] = "deathsHeadSeer",
     [4427] = "wardGuardian", [4516] = "deathsHeadAdept",
     [4522] = "razorfenDustweaver", [4523] = "razorfenGroundshaker",
@@ -260,6 +265,9 @@ assert(Catalog.FindMob("classicEra", 47, 999999) == nil
         and Catalog.FindMob("unsupported", 47, 4440) == nil,
     "Razorfen Kraul NPC advice escaped its catalog boundaries")
 assert(hasAbility(razorfenKraul.mobs.razorfenTotemic, "Earthgrab Totem")
+        and hasAbility(razorfenKraul.mobs.deathsHeadAcolyte, "Mana Burn")
+        and hasAbility(razorfenKraul.mobs.deathsHeadAcolyte, "Renew")
+        and razorfenKraul.mobs.deathsHeadAcolyte.marker == "skull"
         and hasAbility(razorfenKraul.mobs.razorfenDustweaver, "Enveloping Winds")
         and hasAbility(razorfenKraul.mobs.deathSpeakerJargba, "Dominate Mind")
         and hasAbility(razorfenKraul.mobs.agathelos, "Rushing Charge")
@@ -379,7 +387,8 @@ local uldamanIds = {
     [4861] = "shrikeBat", [4860] = "stoneSteward",
     [7012] = "earthenSculptor", [4857] = "stoneKeeper",
     [7076] = "earthenGuardian", [10120] = "vaultWarder",
-    [4863] = "jadespineBasilisk", [4855] = "stonevaultBrawler",
+    [4863] = "jadespineBasilisk", [4853] = "stonevaultGeomancer",
+    [4855] = "stonevaultBrawler",
     [6907] = "ericTheSwift", [6908] = "olaf", [6906] = "baelog",
     [6910] = "revelosh", [7228] = "ironaya",
     [7023] = "obsidianSentinel", [7206] = "ancientStoneKeeper",
@@ -405,8 +414,7 @@ local uldamanBossKeys = {
 }
 for _, bossKey in ipairs(uldamanBossKeys) do
     local boss = uldaman.mobs[bossKey]
-    assert(boss and boss.boss and boss.marker == "circle",
-        "Uldaman boss coverage or Circle classification drifted: " .. bossKey)
+    assert(boss and boss.boss, "Uldaman boss coverage drifted: " .. bossKey)
 end
 assert(hasAbility(uldaman.mobs.shadowforgeDarkcaster, "Spell Bomb")
         and hasAbility(uldaman.mobs.shadowforgeGeologist, "Flame Spike")
@@ -418,6 +426,11 @@ assert(hasAbility(uldaman.mobs.shadowforgeDarkcaster, "Spell Bomb")
         and uldaman.mobs.shadowforgeDarkcaster.marker == "skull"
         and uldaman.mobs.shrikeBat.marker == "cross"
         and uldaman.mobs.jadespineBasilisk.marker == "none"
+        and hasAbility(uldaman.mobs.stonevaultGeomancer, "Flame Buffet")
+        and uldaman.mobs.stonevaultGeomancer.marker == "none"
+        and uldaman.mobs.ericTheSwift.marker == "circle"
+        and uldaman.mobs.olaf.marker == "cross"
+        and uldaman.mobs.baelog.marker == "none"
         and uldaman.mobs.ericTheSwift.exceptions[1]:find("Alliance", 1, true)
         and uldaman.mobs.ericTheSwift.exceptions[1]:find("Horde", 1, true),
     "Uldaman high-risk mechanics, markers, or faction guidance drifted")
@@ -445,7 +458,7 @@ local zulFarrakRoute = table.concat({
 assert(zulFarrakRoute:find("Antu'sul", 1, true)
         and zulFarrakRoute:find("shallow graves", 1, true)
         and zulFarrakRoute:find("Sandfury Executioner", 1, true)
-        and zulFarrakRoute:find("Nekrum and Sezz'ziz", 1, true)
+        and zulFarrakRoute:find("Sezz'ziz and Nekrum", 1, true)
         and zulFarrakRoute:find("Weegli Blastfuse", 1, true)
         and zulFarrakRoute:find("Mallet of Zul'Farrak", 1, true)
         and zulFarrakRoute:find("Ruuzlu first", 1, true),
@@ -463,8 +476,8 @@ local zulFarrakIds = {
     [7271] = "zumrah", [7272] = "theka", [7273] = "gahzrilla",
     [7274] = "sandfuryExecutioner", [7275] = "sezzziz",
     [7286] = "zulFarrakZombie", [7604] = "sergeantBly",
-    [7606] = "oroEyegouge", [7608] = "murtaGrimgut",
-    [7785] = "wardOfZumrah", [7789] = "sandfuryCretin",
+    [7605] = "raven", [7606] = "oroEyegouge", [7608] = "murtaGrimgut",
+    [7785] = "wardOfZumrah", [7789] = "sandfuryCretin", [8876] = "sandfuryAcolyte",
     [7795] = "velratha", [7796] = "nekrum", [7797] = "ruuzlu",
     [8127] = "antusul", [8156] = "servantOfAntusul",
     [10080] = "sandarr", [10081] = "dustwraith", [10082] = "zerillis",
@@ -490,8 +503,7 @@ local zulFarrakBossKeys = {
 }
 for _, bossKey in ipairs(zulFarrakBossKeys) do
     local boss = zulFarrak.mobs[bossKey]
-    assert(boss and boss.boss and boss.marker == "circle",
-        "Zul'Farrak boss coverage or Circle classification drifted: " .. bossKey)
+    assert(boss and boss.boss, "Zul'Farrak boss coverage drifted: " .. bossKey)
 end
 assert(hasAbility(zulFarrak.mobs.sandfuryShadowhunter, "Hex")
         and hasAbility(zulFarrak.mobs.sandfuryWitchDoctor, "Healing Ward")
@@ -499,11 +511,17 @@ assert(hasAbility(zulFarrak.mobs.sandfuryShadowhunter, "Hex")
         and hasAbility(zulFarrak.mobs.antusul, "Earthgrab Totem")
         and hasAbility(zulFarrak.mobs.theka, "Theka Transform")
         and hasAbility(zulFarrak.mobs.zumrah, "Shadow Bolt Volley")
+        and hasAbility(zulFarrak.mobs.sandfuryAcolyte, "Area Mana Burn")
         and hasAbility(zulFarrak.mobs.sezzziz, "Psychic Scream")
         and hasAbility(zulFarrak.mobs.gahzrilla, "Gahz'rilla Slam")
         and zulFarrak.mobs.sandfuryShadowhunter.marker == "skull"
         and zulFarrak.mobs.sandfuryBloodDrinker.marker == "cross"
         and zulFarrak.mobs.scarab.marker == "none"
+        and zulFarrak.mobs.sezzziz.marker == "circle"
+        and zulFarrak.mobs.nekrum.marker == "cross"
+        and zulFarrak.mobs.raven.marker == "none"
+        and zulFarrak.mobs.ruuzlu.marker == "skull"
+        and zulFarrak.mobs.ukorz.marker == "circle"
         and zulFarrak.mobs.gahzrilla.exceptions[1]:find("Mallet", 1, true)
         and zulFarrak.mobs.sergeantBly.exceptions[1]:find("Divino%-matic Rod"),
     "Zul'Farrak mechanics, markers, Mallet, or optional betrayal guidance drifted")
@@ -520,22 +538,90 @@ assert(Catalog.GetMarker("skull").index == 8 and Catalog.GetMarker("cross").inde
         and Catalog.GetMarker("none").label == "NO AUTO MARK",
     "semantic marker mapping changed")
 
+local expectedMarkers = {
+    gnomeregan = {
+        skull = { "mobileAlertSystem", "irradiatedPillager", "leprousTechnician", "leprousMachinesmith", "darkIronLandMine", "walkingBomb", "darkIronAgent", "burningServant" },
+        cross = { "caverndeepReaver", "irradiatedHorror", "mechanizedSentry", "peacekeeper", "mechanoFlamewalker", "mechanoFrostwalker", "arcaneNullifier" },
+        circle = { "grubbis", "viscousFallout", "electrocutioner", "crowdPummeler", "darkIronAmbassador", "thermaplugg" },
+        none = { "caverndeepBurrower", "corrosiveLurker", "irradiatedSlime", "chomper", "leprousDefender", "mechanoTank", "mechanizedGuardian" },
+    },
+    razorfenDowns = {
+        skull = { "frostSpectre", "deathsHeadGeomancer", "skeletalSummoner", "frozenSoul" },
+        cross = { "witheredSpearhide", "skeletalFrostweaver", "freezingSpirit", "thornEaterGhoul", "splinterboneCaptain", "tombReaver", "battleBoarHorror" },
+        circle = { "tutenkash", "plaguemaw", "ladyFaltheress", "mordreshFireEye", "glutton", "ragglesnout", "amnennar" },
+        none = { "deathsHeadNecromancer", "tombFiend", "splinterboneSkeleton", "splinterboneWarrior", "splinterboneCenturion" },
+    },
+    razorfenKraul = {
+        skull = { "earthgrabTotem", "healingWard", "lavaSpoutTotem", "boarSpirit", "razorfenTotemic", "deathsHeadAcolyte", "deathsHeadPriest", "deathsHeadSage", "deathsHeadSeer", "wardGuardian" },
+        cross = { "deathsHeadAdept", "razorfenDustweaver", "razorfenGroundshaker", "razorfenEarthbreaker", "razorfenSpearhide", "quilguardChampion", "greaterKraulBat" },
+        circle = { "roogug", "aggemThorncurse", "deathSpeakerJargba", "overlordRamtusk", "earthcallerHalmgar", "blindHunter", "agathelos", "charlgaRazorflank" },
+        none = { "razorfenBeastTrainer", "razorfenDefender", "kraulBat", "wardKeeper" },
+    },
+    scarletMonastery = {
+        skull = { "scryer", "anguishedDead", "diviner", "protector", "evoker", "abbot", "wizard", "whitemane" },
+        cross = { "torturer", "adept", "chaplain", "beastmaster", "monk", "conjuror", "myrmidon", "sorcerer", "champion", "centurion" },
+        circle = { "vishas", "thalnos", "azshir", "fallenChampion", "ironspine", "loksey", "doan", "herod", "mograine", "fairbanks" },
+        none = { "hauntingPhantasm", "illusionaryPhantasm", "sentry", "unfetteredSpirit", "trackingHound", "gallant", "defender", "guardsman", "soldier", "fireElemental", "trainee" },
+    },
+    stockades = {
+        skull = { "defiasPrisoner", "defiasInsurgent" }, cross = { "defiasConvict" },
+        circle = { "targorr", "kamDeepfury", "bruegal", "dextrenWard", "hamhock", "bazilThredd" },
+        none = { "defiasCaptive", "defiasInmate" },
+    },
+    uldaman = {
+        skull = { "shadowforgeDarkcaster", "stonevaultOracle", "stonevaultFlameweaver", "shadowforgeGeologist", "obsidianShard", "earthenHallshaper" },
+        cross = { "shrikeBat", "stoneSteward", "earthenSculptor", "stoneKeeper", "earthenGuardian", "vaultWarder", "olaf" },
+        circle = { "ericTheSwift", "revelosh", "ironaya", "obsidianSentinel", "ancientStoneKeeper", "galgann", "grimlok", "archaedas" },
+        none = { "jadespineBasilisk", "stonevaultGeomancer", "stonevaultBrawler", "baelog" },
+    },
+    zulFarrak = {
+        skull = { "sandfuryShadowhunter", "sandfuryWitchDoctor", "sandfurySoulEater", "sandfuryShadowcaster", "wardOfZumrah", "sandfuryAcolyte", "murtaGrimgut", "ruuzlu" },
+        cross = { "sandfuryBloodDrinker", "nekrum", "oroEyegouge", "sandfuryGuardian" },
+        circle = { "sandfuryExecutioner", "sezzziz", "antusul", "theka", "zumrah", "sergeantBly", "velratha", "gahzrilla", "ukorz", "sandarr", "dustwraith", "zerillis" },
+        none = { "scarab", "zulFarrakZombie", "sandfuryCretin", "raven", "servantOfAntusul" },
+    },
+}
+for _, clientFlavor in ipairs({ "classicEra", "tbcAnniversary" }) do
+    for guideKey, markerGroups in pairs(expectedMarkers) do
+        local expectedGuide = Catalog.GetGuide(guideKey, clientFlavor)
+        local seen = {}
+        for marker, mobKeys in pairs(markerGroups) do
+            for _, mobKey in ipairs(mobKeys) do
+                assert(not seen[mobKey], guideKey .. " marker fixture duplicated " .. mobKey)
+                seen[mobKey] = true
+                assert(expectedGuide.mobs[mobKey] and expectedGuide.mobs[mobKey].marker == marker,
+                    clientFlavor .. "/" .. guideKey .. " marker drifted: " .. mobKey)
+            end
+        end
+        for mobKey in pairs(expectedGuide.mobs) do
+            assert(seen[mobKey], clientFlavor .. "/" .. guideKey .. " missing fixture entry: " .. mobKey)
+        end
+        for mobKey in pairs(seen) do
+            assert(expectedGuide.mobs[mobKey], clientFlavor .. "/" .. guideKey .. " stale fixture entry: " .. mobKey)
+        end
+    end
+end
+
 guide.name = "mutated"
 guide.mobs.scryer.rationale = "mutated"
 local fresh = Catalog.GetGuide("scarletMonastery", "classicEra")
 assert(fresh.name == "Scarlet Monastery" and fresh.mobs.scryer.rationale ~= "mutated",
     "catalog callers could mutate reviewed strategy data")
+fresh.mobs.whitemane.encounterKey = "mutated"
+assert(Catalog.GetGuide("scarletMonastery", "classicEra").mobs.whitemane.encounterKey
+        == "mograineWhitemane",
+    "catalog callers could mutate encounter metadata")
 for _, registeredGuide in ipairs(Catalog.ListGuides("classicEra")) do
     for mobKey, mobData in pairs(registeredGuide.mobs) do
-        if mobData.boss then
-            assert(mobData.marker == "circle",
-                registeredGuide.key .. " boss did not use Circle: " .. mobKey)
+        if mobData.boss and mobData.marker ~= "circle" then
+            assert(mobData.encounterKey and mobData.primaryBoss == false,
+                registeredGuide.key .. " secondary boss lacks encounter metadata: " .. mobKey)
         end
     end
 end
-assert(fresh.mobs.whitemane.marker == "circle" and fresh.mobs.mograine.marker == "circle"
+assert(fresh.mobs.whitemane.marker == "skull" and fresh.mobs.mograine.marker == "circle"
         and fresh.mobs.azshir.marker == "circle",
-    "Scarlet Monastery main, phase, or rare bosses did not use Circle")
+    "Scarlet Monastery encounter boss markers drifted")
 local cathedralRules
 for _, section in ipairs(fresh.sections) do
     if section.key == "cathedral" then cathedralRules = section.rules end
@@ -573,13 +659,13 @@ local houndRecommendation = Policy.GetRecommendationForGuid(
 assert(houndRecommendation and houndRecommendation.markerKey == "none"
         and houndRecommendation.markerIndex == nil,
     "Scarlet Tracking Hound retained an automatic CC marker")
-for _, npcId in ipairs({ 3977, 3976, 6490 }) do
+for npcId, expectedMarker in pairs({ [3977] = { "skull", 8 }, [3976] = { "circle", 2 }, [6490] = { "circle", 2 } }) do
     local bossRecommendation = Policy.GetRecommendationForGuid(
         "Creature-0-1-189-1-" .. npcId .. "-0000000001")
     assert(bossRecommendation and bossRecommendation.boss
-            and bossRecommendation.markerKey == "circle"
-            and bossRecommendation.markerIndex == 2,
-        "Scarlet Monastery boss policy did not resolve Circle for NPC " .. npcId)
+            and bossRecommendation.markerKey == expectedMarker[1]
+            and bossRecommendation.markerIndex == expectedMarker[2],
+        "Scarlet Monastery boss policy marker drifted for NPC " .. npcId)
 end
 instanceId = 90
 local gnomereganRecommendations = {
@@ -737,17 +823,19 @@ assert(point == "CENTER" and relativePoint == "CENTER" and x == 0 and y == 0
 
 local UI = ApogeePartyHealthBars_DungeonGuideUI
 local chapter = UI.BuildChapterText(fresh, "library", Catalog)
+local cathedralChapter = UI.BuildChapterText(fresh, "cathedral", Catalog)
 local bookWidth, bookHeight, maxWidth, maxHeight =
     UI.ClampBookSize(1600, 900, 1280, 720)
 assert(bookWidth == 1256 and bookHeight == 696
         and maxWidth == 1256 and maxHeight == 696,
     "Dungeon Book size did not clamp to screen-aware bounds")
 assert(chapter:find("MARKER LEGEND", 1, true)
-        and chapter:find("CIRCLE — automatic boss", 1, true)
+        and chapter:find("CIRCLE — primary boss / encounter anchor", 1, true)
         and chapter:find("NO AUTO MARK", 1, true)
         and chapter:find("Scarlet Adept", 1, true)
         and chapter:find("Houndmaster Loksey", 1, true)
-        and chapter:find("Chaplain plus Diviner", 1, true)
+        and chapter:find("Mana burner plus healer", 1, true)
+        and cathedralChapter:find("High Inquisitor Whitemane  |cffffc15b[BOSS]|r", 1, true)
         and chapter:find("WHY", 1, true)
         and chapter:find("PLAN", 1, true)
         and chapter:find("WATCH", 1, true)
@@ -900,6 +988,70 @@ for _, registeredGuide in ipairs(Catalog.ListGuides("classicEra")) do
         end
     end
 end
+
+local function schemaBoss(id, marker, priority, encounterKey, primaryBoss)
+    return {
+        npcIds = { id }, name = "Boss " .. id, marker = marker, priority = priority,
+        liveReason = "valid", rationale = "valid", abilities = {}, response = "valid",
+        creatureType = "Humanoid", cc = "valid", boss = true,
+        encounterKey = encounterKey, primaryBoss = primaryBoss,
+    }
+end
+local standaloneBossGuide = {
+    key = "standalone", name = "Standalone", instanceIds = { 901 },
+    clientFlavors = { classicEra = true },
+    mobs = { primary = schemaBoss(901, "circle", 1) },
+    sections = { { key = "one", name = "One", entries = { "primary" } } },
+}
+assert(Catalog.ValidateGuide(standaloneBossGuide), "catalog rejected a standalone Circle boss")
+local groupedBossGuide = {
+    key = "grouped", name = "Grouped", instanceIds = { 902 },
+    clientFlavors = { classicEra = true },
+    mobs = {
+        primary = schemaBoss(902, "circle", 1, "encounter", true),
+        first = schemaBoss(903, "skull", 2, "encounter", false),
+        second = schemaBoss(904, "cross", 3, "encounter", false),
+        cleanup = schemaBoss(905, "none", 4, "encounter", false),
+    },
+    sections = { { key = "one", name = "One", entries = { "primary", "first", "second", "cleanup" } } },
+}
+assert(Catalog.ValidateGuide(groupedBossGuide),
+    "catalog rejected Skull, Cross, or unmarked secondary bosses")
+local missingPrimaryGuide = {
+    key = "missing", name = "Missing", instanceIds = { 903 },
+    clientFlavors = { classicEra = true },
+    mobs = { secondary = schemaBoss(906, "skull", 1, "missing", false) },
+    sections = { { key = "one", name = "One", entries = { "secondary" } } },
+}
+assert(not pcall(Catalog.ValidateGuide, missingPrimaryGuide),
+    "catalog accepted an encounter without a primary Circle")
+local duplicatePrimaryGuide = {
+    key = "duplicate", name = "Duplicate", instanceIds = { 904 },
+    clientFlavors = { classicEra = true },
+    mobs = {
+        one = schemaBoss(907, "circle", 1, "duplicate", true),
+        two = schemaBoss(908, "circle", 2, "duplicate", true),
+    },
+    sections = { { key = "one", name = "One", entries = { "one", "two" } } },
+}
+assert(not pcall(Catalog.ValidateGuide, duplicatePrimaryGuide),
+    "catalog accepted multiple primary Circles in one encounter")
+local invalidSecondaryGuide = {
+    key = "secondary", name = "Secondary", instanceIds = { 905 },
+    clientFlavors = { classicEra = true },
+    mobs = { secondary = schemaBoss(909, "cross", 1, "unknown", false) },
+    sections = { { key = "one", name = "One", entries = { "secondary" } } },
+}
+assert(not pcall(Catalog.ValidateGuide, invalidSecondaryGuide),
+    "catalog accepted a secondary boss without its primary encounter")
+local invalidCircleGuide = {
+    key = "circle", name = "Circle", instanceIds = { 906 },
+    clientFlavors = { classicEra = true },
+    mobs = { secondary = schemaBoss(910, "circle", 1, "circle", false) },
+    sections = { { key = "one", name = "One", entries = { "secondary" } } },
+}
+assert(not pcall(Catalog.ValidateGuide, invalidCircleGuide),
+    "catalog accepted Circle on an explicitly secondary boss")
 
 local invalid = {
     key = "invalid", name = "Invalid", instanceIds = { 1 }, clientFlavors = { classicEra = true },

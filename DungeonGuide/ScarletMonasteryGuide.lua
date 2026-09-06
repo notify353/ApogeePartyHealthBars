@@ -1,12 +1,13 @@
 local Catalog = ApogeePartyHealthBars_DungeonGuideCatalog
 
 local mobs = {}
-local function mob(key, id, name, marker, priority, live, rationale, abilities, response, creatureType, cc, exceptions, boss)
+local function mob(key, id, name, marker, priority, live, rationale, abilities, response, creatureType, cc, exceptions, boss, encounterKey, primaryBoss)
     mobs[key] = {
         npcIds = { id }, name = name, marker = marker, priority = priority,
         liveReason = live, rationale = rationale, abilities = abilities or {},
         response = response, creatureType = creatureType, cc = cc,
         exceptions = exceptions or {}, boss = boss == true,
+        encounterKey = encounterKey, primaryBoss = primaryBoss,
     }
 end
 
@@ -37,12 +38,12 @@ mob("ironspine", 6489, "Ironspine", "circle", 120, "rare boss; spread for Poison
     "This rare is a single encounter whose area poison, rather than target order, threatens the party.", { "Poison Cloud", "Curse of Weakness" }, "Spread, move from Poison Cloud, and remove poison or curse when available.", "Undead", "Boss control is generally unreliable.", {}, true)
 
 -- Library
-mob("adept", 4296, "Scarlet Adept", "skull", 10, "healer; interrupt and kill first",
-    "A healer can extend the entire pull, making it the clearest first kill.", { "Heal" }, "Interrupt Heal and focus immediately.", "Humanoid", "Polymorph, Sap, Fear, silence, and stuns work.")
-mob("diviner", 4291, "Scarlet Diviner", "skull", 30, "caster; interrupt after healer",
-    "Fireball adds avoidable ranged damage and can keep the pack spread outside the tank's control.", { "Fireball" }, "Interrupt or line-of-sight it into melee, then focus after any healer.", "Humanoid", "Normal humanoid control works.", { "With a Chaplain, kill or control the Chaplain first." })
-mob("chaplain", 4299, "Scarlet Chaplain", "skull", 20, "healer; stop Heal",
-    "Heal and Power Word: Shield can erase progress on the active kill target.", { "Heal", "Power Word: Shield" }, "Interrupt Heal, purge the shield when practical, and focus before non-healers.", "Humanoid", "Polymorph, Sap, Fear, silence, and stuns work.", { "With a Diviner, Chaplain is the first Skull and Diviner follows." })
+mob("adept", 4296, "Scarlet Adept", "cross", 20, "healer; interrupt after the mana burner",
+    "Heal extends the pull, but an active Diviner can remove the healer's mana and is the safer first kill for an ordinary PUG.", { "Heal" }, "Interrupt Heal while the group burns a Diviner, then kill the Adept second.", "Humanoid", "Polymorph, Sap, Fear, silence, and stuns work.", { "Without a Diviner, treat the Adept as the first kill." })
+mob("diviner", 4291, "Scarlet Diviner", "skull", 10, "Mana Burn threatens the healer; kill first",
+    "Mana Burn can remove the healer's resources faster than a Library healer can restore enemy health.", { "Mana Burn", "Fireball" }, "Interrupt Mana Burn first, line-of-sight the Diviner into melee, and focus it before healers.", "Humanoid", "Polymorph, Sap, Fear, silence, and stuns work.", { "If the healer has no mana bar, an uncontrolled healer may become the first kill." })
+mob("chaplain", 4299, "Scarlet Chaplain", "cross", 30, "support caster; purge and kill second",
+    "Renew and Power Word: Shield prolong the pull, but they are less immediately dangerous than Mana Burn.", { "Renew", "Power Word: Shield", "Inner Fire" }, "Purge Renew or the shield when practical and kill the Chaplain after the Diviner.", "Humanoid", "Polymorph, Sap, Fear, silence, and stuns work.", { "Without a Diviner, treat the Chaplain as the first kill." })
 mob("beastmaster", 4288, "Scarlet Beastmaster", "cross", 40, "hound handler; kill after Skull",
     "Removing the handler after the primary caster stabilizes hound packs.", {}, "Kill second and keep hounds controlled.", "Humanoid", "Normal humanoid control works.")
 mob("monk", 4540, "Scarlet Monk", "cross", 50, "dangerous melee; control or kill second",
@@ -89,10 +90,10 @@ mob("champion", 4302, "Scarlet Champion", "cross", 50, "dangerous melee; face aw
     "Holy Strike creates sharper tank damage than routine Scarlet melee.", { "Holy Strike" }, "Face away, mitigate, and kill after healers and casters.", "Humanoid", "Disarm and normal humanoid control work.")
 mob("centurion", 4301, "Scarlet Centurion", "cross", 60, "dangerous melee; kill second",
     "Battle Shout strengthens nearby melee enemies in tightly packed Cathedral pulls.", { "Battle Shout" }, "Purge the shout when practical and kill after the primary healer or caster.", "Humanoid", "Disarm and normal humanoid control work.")
-mob("whitemane", 3977, "High Inquisitor Whitemane", "circle", 80, "after resurrection: interrupt and focus healing",
-    "Deep Sleep leads into Scarlet Resurrection; afterward Heal and Power Word: Shield make her the decisive focus.", { "Holy Smite", "Heal", "Deep Sleep", "Power Word: Shield", "Scarlet Resurrection" }, "After the forced sleep and resurrection, pick up Mograine, interrupt Heal, and focus Whitemane.", "Humanoid", "Boss control is unreliable; save interrupts for Heal.", { "Before the resurrection sequence, follow the encounter rather than forcing a kill-order mark." }, true)
+mob("whitemane", 3977, "High Inquisitor Whitemane", "skull", 80, "after resurrection: interrupt and focus healing",
+    "Deep Sleep leads into Scarlet Resurrection; afterward Heal and Power Word: Shield make her the decisive focus.", { "Holy Smite", "Heal", "Deep Sleep", "Power Word: Shield", "Scarlet Resurrection" }, "After the forced sleep and resurrection, pick up Mograine, interrupt Heal, and focus Whitemane.", "Humanoid", "Boss control is unreliable; save interrupts for Heal.", { "Before the resurrection sequence, she is inactive; Skull matters only after she joins the fight." }, true, "mograineWhitemane", false)
 mob("mograine", 3976, "Scarlet Commander Mograine", "circle", 90, "initial boss; face away through both phases",
-    "Hammer of Justice can stun the tank, while Divine Shield and Lay on Hands can prolong either phase.", { "Retribution Aura", "Hammer of Justice", "Crusader Strike", "Lay on Hands", "Divine Shield" }, "Face him away, heal through the tank stun, then pick him up immediately after Whitemane resurrects him.", "Humanoid", "Boss control is unreliable; use mitigation and dispels when available.", { "Clear the chapel before engaging and keep both bosses positioned safely after the resurrection." }, true)
+    "Hammer of Justice can stun the tank, while Divine Shield and Lay on Hands can prolong either phase.", { "Retribution Aura", "Hammer of Justice", "Crusader Strike", "Lay on Hands", "Divine Shield" }, "Face him away, heal through the tank stun, then pick him up immediately after Whitemane resurrects him.", "Humanoid", "Boss control is unreliable; use mitigation and dispels when available.", { "Clear the chapel before engaging and keep both bosses positioned safely after the resurrection." }, true, "mograineWhitemane", true)
 mob("fairbanks", 4542, "High Inquisitor Fairbanks", "circle", 100, "hidden boss; interrupt healing",
     "Curse of Blood increases physical damage taken, while Fear, Sleep, Heal, and Power Word: Shield prolong the fight.", { "Curse of Blood", "Fear", "Sleep", "Heal", "Power Word: Shield" }, "Clear the room, remove Curse of Blood, interrupt Heal, and purge the shield when practical.", "Undead", "Boss control is unreliable; use interrupts and curse removal.", {}, true)
 
@@ -112,8 +113,8 @@ Catalog.RegisterGuide({
             "Enter through the far-right portal and pull ranged Scarlet packs around corners; stop every low-health runner before it reaches the next room.",
             "Clear Loksey's side room for his optional encounter, then return to the main hall and continue through the Athenaeum.",
             "Spread around Doan, retreat before Detonation, then loot the Scarlet Key from the strongbox behind him for Armory and Cathedral.",
-        }, entries = { "adept", "chaplain", "diviner", "beastmaster", "monk", "trackingHound", "gallant", "loksey", "doan" }, rules = {
-            { title = "Chaplain plus Diviner", guidance = "Skull and interrupt the Chaplain first, then make the Diviner the next focus. Control either caster only when reliable CC is safer than a fast kill." },
+        }, entries = { "diviner", "adept", "chaplain", "beastmaster", "monk", "trackingHound", "gallant", "loksey", "doan" }, rules = {
+            { title = "Mana burner plus healer", guidance = "Skull and interrupt the Diviner first, then kill the Cross healer. If Mana Burn cannot affect the healer, reverse the order or control one caster." },
             { title = "Loksey's hounds", guidance = "Control one Tracking Hound when needed, establish threat on the others, kill the uncontrolled hounds, then finish Loksey. Skip control when the group can safely cleave." },
         } },
         { key = "armory", name = "Armory", route = {

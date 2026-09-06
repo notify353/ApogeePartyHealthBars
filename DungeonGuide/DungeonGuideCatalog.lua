@@ -59,8 +59,20 @@ local function validateMob(key, mob, ids)
     assert(type(mob) == "table" and nonblank(mob.name), "guide mob name is required: " .. key)
     assert(MARKERS[mob.marker], "unsupported guide marker: " .. tostring(mob.marker))
     assert(mob.boss == nil or type(mob.boss) == "boolean", "invalid guide boss flag: " .. key)
-    assert(not mob.boss or mob.marker == "circle", "guide boss marker must be circle: " .. key)
+    assert(mob.primaryBoss == nil or type(mob.primaryBoss) == "boolean",
+        "invalid guide primary boss flag: " .. key)
+    assert(mob.encounterKey == nil or nonblank(mob.encounterKey),
+        "invalid guide encounter key: " .. key)
+    assert(mob.encounterKey == nil or mob.primaryBoss ~= nil,
+        "grouped guide boss requires explicit primary flag: " .. key)
+    assert(mob.boss or (mob.primaryBoss == nil and mob.encounterKey == nil),
+        "guide encounter metadata requires boss flag: " .. key)
+    assert(not mob.primaryBoss or mob.boss, "guide primary boss requires boss flag: " .. key)
+    assert(not mob.primaryBoss or mob.marker == "circle",
+        "guide primary boss marker must be circle: " .. key)
     assert(mob.marker ~= "circle" or mob.boss, "guide Circle marker requires boss flag: " .. key)
+    assert(mob.marker ~= "circle" or mob.primaryBoss ~= false,
+        "guide Circle marker cannot be secondary: " .. key)
     assert(type(mob.priority) == "number" and mob.priority >= 0, "invalid guide priority: " .. key)
     assert(nonblank(mob.liveReason), "guide live reason is required: " .. key)
     assert(#mob.liveReason <= LIVE_TEXT_LIMIT, "guide live reason is too long: " .. key)
@@ -105,8 +117,28 @@ function C.ValidateGuide(guide)
         assert(not instanceIds[instanceId], "duplicate guide instance ID: " .. instanceId)
         instanceIds[instanceId] = true
     end
-    local ids, referenced, sectionKeys = {}, {}, {}
-    for key, mob in pairs(guide.mobs) do validateMob(key, mob, ids) end
+    local ids, referenced, sectionKeys, encounters = {}, {}, {}, {}
+    for key, mob in pairs(guide.mobs) do
+        validateMob(key, mob, ids)
+        if mob.boss then
+            local encounterKey = mob.encounterKey or key
+            local encounter = encounters[encounterKey] or { bosses = 0, primaries = 0 }
+            encounter.bosses = encounter.bosses + 1
+            if mob.primaryBoss == true or (mob.primaryBoss == nil and mob.marker == "circle") then
+                encounter.primaries = encounter.primaries + 1
+            end
+            encounters[encounterKey] = encounter
+        end
+    end
+    for encounterKey, encounter in pairs(encounters) do
+        assert(encounter.primaries == 1,
+            "guide encounter must have exactly one primary Circle: " .. encounterKey)
+        if encounter.bosses == 1 then
+            local mob = guide.mobs[encounterKey]
+            assert(mob and not mob.encounterKey,
+                "guide secondary boss encounter reference is invalid: " .. encounterKey)
+        end
+    end
     for _, section in ipairs(guide.sections) do
         assert(nonblank(section.key) and not sectionKeys[section.key], "invalid or duplicate guide section")
         assert(nonblank(section.name), "guide section name is required")

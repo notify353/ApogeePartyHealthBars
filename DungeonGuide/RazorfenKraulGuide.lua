@@ -43,6 +43,12 @@ mob("razorfenTotemic", 4440, "Razorfen Totemic", "skull", 20,
     { "Healing Ward V", "Earthgrab Totem" },
     "Focus the Totemic while switching immediately to every ward or root totem it drops.",
     "Humanoid", "Polymorph, Sap, Fear, roots, stuns, and other humanoid control work.")
+mob("deathsHeadAcolyte", 4515, "Death's Head Acolyte", "skull", 25,
+    "Mana Burn threatens the healer; kill first",
+    "Mana Burn attacks the party's recovery while Renew sustains Death's Head packs and Jargba's linked pull.",
+    { "Mana Burn", "Renew" },
+    "Interrupt Mana Burn and focus the Acolyte before Groundshakers, Jargba, or routine melee.",
+    "Humanoid", "Polymorph, Sap, Fear, silence, stuns, and other humanoid control work.")
 mob("deathsHeadPriest", 4517, "Death's Head Priest", "skull", 30,
     "direct healer; interrupt and kill first",
     "Heal restores allies while Shadow Bolt adds ranged pressure from outside the tank's melee cluster.",
@@ -152,9 +158,9 @@ mob("aggemThorncurse", 4424, "Aggem Thorncurse", "circle", 210,
     "Humanoid", "Interrupt Heal; use beast control on a Boar Spirit only when it cannot be killed promptly.", {}, true)
 mob("deathSpeakerJargba", 4428, "Death Speaker Jargba", "circle", 220,
     "boss; control casters and stop mind control",
-    "Jargba's two caster allies and Dominate Mind can remove a party member while Shadow Bolts pressure the group.",
+    "Jargba's Acolyte can burn healer mana while a Groundshaker and Dominate Mind disrupt the party.",
     { "Dominate Mind", "Shadow Bolt" },
-    "Control at least one ally, interrupt Jargba, and burn the boss before cleaning up controlled casters.",
+    "Kill or control the Acolyte first, remove the Groundshaker next, then focus Jargba and break Dominate Mind.",
     "Humanoid", "Boss control is unreliable; control Jargba's humanoid allies instead.", {}, true)
 mob("overlordRamtusk", 4420, "Overlord Ramtusk", "circle", 230,
     "boss; control Spearhides and protect the tank",
@@ -235,7 +241,7 @@ Catalog.RegisterGuide({
             },
             entries = {
                 "earthgrabTotem", "healingWard", "lavaSpoutTotem", "boarSpirit",
-                "razorfenTotemic", "deathsHeadPriest", "deathsHeadSage", "deathsHeadSeer",
+                "razorfenTotemic", "deathsHeadAcolyte", "deathsHeadPriest", "deathsHeadSage", "deathsHeadSeer",
                 "deathsHeadAdept", "razorfenDustweaver", "razorfenGroundshaker",
                 "razorfenSpearhide", "quilguardChampion", "razorfenBeastTrainer",
                 "razorfenDefender", "aggemThorncurse", "deathSpeakerJargba", "overlordRamtusk",
@@ -243,6 +249,7 @@ Catalog.RegisterGuide({
             rules = {
                 { title = "Ledge discipline", guidance = "Pull down whenever possible and never fight two Groundshakers together. If the ledge chains, retreat or drop to cleared ground instead of standing in place." },
                 { title = "Totem priority", guidance = "Switch immediately to healing, root, and fire totems. Killing a low-health totem is faster and safer than trying to out-damage its effect." },
+                { title = "Jargba's casters", guidance = "Kill or control the Acolyte first to stop Mana Burn, then remove a Groundshaker before committing to Jargba." },
                 { title = "Ramtusk's guards", guidance = "Assign humanoid control to both Spearhides when possible. If control is limited, keep Ramtusk tanked while the group kills one active guard at a time." },
             },
         },

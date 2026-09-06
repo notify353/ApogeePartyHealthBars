@@ -1,12 +1,13 @@
 local Catalog = ApogeePartyHealthBars_DungeonGuideCatalog
 
 local mobs = {}
-local function mob(key, id, name, marker, priority, live, rationale, abilities, response, creatureType, cc, exceptions, boss)
+local function mob(key, id, name, marker, priority, live, rationale, abilities, response, creatureType, cc, exceptions, boss, encounterKey, primaryBoss)
     mobs[key] = {
         npcIds = { id }, name = name, marker = marker, priority = priority,
         liveReason = live, rationale = rationale, abilities = abilities or {},
         response = response, creatureType = creatureType, cc = cc,
         exceptions = exceptions or {}, boss = boss == true,
+        encounterKey = encounterKey, primaryBoss = primaryBoss,
     }
 end
 
@@ -41,6 +42,12 @@ mob("wardOfZumrah", 7785, "Ward of Zum'rah", "skull", 50,
     {},
     "Destroy each ward as it appears, then return to interrupts and summoned undead before resuming boss damage.",
     "Totem", "Wards cannot be controlled; destroy them immediately.")
+mob("sandfuryAcolyte", 8876, "Sandfury Acolyte", "skull", 55,
+    "area Mana Burn threatens recovery; kill first",
+    "Its area Mana Burn can drain several mana users during the pyramid event, where recovery time is limited.",
+    { "Area Mana Burn", "Shadow Bolt", "Shadow Word: Pain", "Curse of Weakness" },
+    "Focus and interrupt the Acolyte before other wave elites; spread mana users when an interrupt is missed.",
+    "Humanoid", "Polymorph, Sap, Fear, stuns, silences, and other humanoid control work.")
 mob("murtaGrimgut", 7608, "Murta Grimgut", "skull", 60,
     "Bly ally healer; interrupt and kill first",
     "If Sergeant Bly turns hostile, Murta's healing can sustain the entire mercenary party while Oro pressures the group.",
@@ -61,18 +68,18 @@ mob("sandfuryExecutioner", 7274, "Sandfury Executioner", "circle", 80,
     {},
     "Clear the pyramid base, pull the Executioner alone, recover fully, then use his key only when the whole group is ready.",
     "Humanoid", "Boss control is unreliable; use safe pulling, stuns, and focused damage.", {}, true)
-mob("nekrum", 7796, "Nekrum Gutchewer", "circle", 90,
-    "final pyramid melee boss; focus before Sezz'ziz",
-    "Nekrum arrives with Sezz'ziz in the final wave and is the faster first kill while the priest's casts are interrupted.",
-    { "Fevered Plague" },
-    "Focus Nekrum, cleanse Fevered Plague, and keep Sezz'ziz interrupted until the melee boss is dead.",
-    "Humanoid", "Boss control is unreliable; use slows, stuns, and disease removal.", {}, true)
-mob("sezzziz", 7275, "Shadowpriest Sezz'ziz", "circle", 100,
-    "pyramid healer and fear caster; interrupt",
+mob("sezzziz", 7275, "Shadowpriest Sezz'ziz", "circle", 90,
+    "pyramid anchor; interrupt and focus the healer",
     "Heal and Renew undo progress while Psychic Scream can scatter the party into remaining event enemies.",
     { "Heal", "Renew", "Psychic Scream", "Shadow Bolt" },
-    "Tank away from uncleared ground, interrupt healing first, purge Renew when available, and regroup quickly after fear.",
-    "Humanoid", "Boss control is unreliable; interrupts, fear breaks, and dispels are dependable.", {}, true)
+    "Tank away from uncleared ground, interrupt healing first, purge Renew, and focus Sezz'ziz before Nekrum.",
+    "Humanoid", "Boss control is unreliable; interrupts, fear breaks, and dispels are dependable.", {}, true, "nekrumSezzziz", true)
+mob("nekrum", 7796, "Nekrum Gutchewer", "cross", 100,
+    "pyramid second kill; cleanse Fevered Plague",
+    "Nekrum arrives with Sezz'ziz and remains dangerous, but has no healing or fear cast to stop.",
+    { "Fevered Plague" },
+    "Keep Nekrum on the tank, cleanse Fevered Plague, and kill him after Sezz'ziz.",
+    "Humanoid", "Boss control is unreliable; use slows, stuns, and disease removal.", {}, true, "nekrumSezzziz", false)
 mob("oroEyegouge", 7606, "Oro Eyegouge", "cross", 110,
     "Bly ally area damage; kill after healer",
     "If Bly betrays the party, Oro adds heavy area pressure while Murta heals and Bly disrupts the tank.",
@@ -105,6 +112,12 @@ mob("sandfuryCretin", 7789, "Sandfury Cretin", "none", 150,
     {},
     "Fight near the upper landing, let the mercenaries meet each wave, and keep loose trolls off the healer and Weegli.",
     "Humanoid", "Polymorph, Fear, roots, stuns, and other humanoid control work if a wave needs to be slowed.")
+mob("raven", 7605, "Raven", "none", 155,
+    "Bly ally cleanup; control or kill after Murta and Oro",
+    "Raven adds another elite body if Bly's optional betrayal is triggered, but has no mechanic that outranks the healer or Oro.",
+    {},
+    "Control Raven when practical, kill Murta and Oro first, then clean up Raven before finishing Bly.",
+    "Humanoid", "Polymorph, Sap, Fear, roots, stuns, and other humanoid control work.")
 mob("servantOfAntusul", 8156, "Servant of Antu'sul", "none", 160,
     "Antu'sul add; control or clear after wards",
     "Antu'sul summons elite servants alongside broodlings, increasing tank and healer pressure while his healing remains active.",
@@ -135,7 +148,7 @@ mob("sergeantBly", 7604, "Sergeant Bly", "circle", 230,
     "optional betrayal boss; handle his healer first",
     "Talking to Bly after the pyramid event can turn his surviving mercenary party hostile for the Divino-matic Rod quest.",
     { "Revenge", "Shield Bash" },
-    "Have Weegli open the gate first, recover, then trigger Bly only if needed; kill Murta, Oro, and Bly in that order.",
+    "Open the gate first, then trigger Bly only if needed; kill Murta, Oro, Raven, and Bly in that order.",
     "Humanoid", "Boss control is unreliable; control his companions and protect casters from Shield Bash.",
     { "Skip the betrayal when nobody needs the Divino-matic Rod quest objective." }, true)
 mob("velratha", 7795, "Hydromancer Velratha", "circle", 240,
@@ -151,18 +164,18 @@ mob("gahzrilla", 7273, "Gahz'rilla", "circle", 250,
     "Clear the pool, use the Mallet at the gong, and fight under the arch or in water so Slam cannot cause lethal fall damage.",
     "Beast", "Boss control is unreliable; use positioning, magic dispels, and mitigation.",
     { "The encounter is unavailable unless someone carries the Mallet of Zul'Farrak." }, true)
-mob("ruuzlu", 7797, "Ruuzlu", "circle", 260,
+mob("ruuzlu", 7797, "Ruuzlu", "skull", 260,
     "chief's companion; kill before Ukorz",
     "Ruuzlu begins beside Ukorz and adds cleave and execute pressure throughout the final encounter if left alive.",
     { "Cleave", "Execute" },
     "Have the tank face both enemies away, focus Ruuzlu first, and keep low-health players away from his execute range.",
-    "Humanoid", "Boss control is unreliable; use focused damage and defensive cooldowns.", {}, true)
+    "Humanoid", "Boss control is unreliable; use focused damage and defensive cooldowns.", {}, true, "ukorzRuuzlu", false)
 mob("ukorz", 7267, "Chief Ukorz Sandscalp", "circle", 270,
     "final boss; face away and manage Enrage",
     "Cleave punishes players in front, and Berserker Stance increases Ukorz's damage as the final fight progresses.",
     { "Cleave", "Berserker Stance" },
     "Kill Ruuzlu first, keep Ukorz faced away from the party, and save mitigation and healing cooldowns for Enrage.",
-    "Humanoid", "Boss control is unreliable; use positioning, mitigation, and focused damage.", {}, true)
+    "Humanoid", "Boss control is unreliable; use positioning, mitigation, and focused damage.", {}, true, "ukorzRuuzlu", true)
 mob("sandarr", 10080, "Sandarr Dunereaver", "circle", 280,
     "optional rare; isolate before engaging",
     "Sandarr can appear along the early route near ordinary patrols, turning a routine pull into an unexpected elite fight.",
@@ -228,19 +241,19 @@ Catalog.RegisterGuide({
             route = {
                 "Clear every patrol at the pyramid base and both stair approaches, pull the Sandfury Executioner alone, then recover fully before using his cage key.",
                 "Open all cages only when the party is ready, remain near the upper landing, and let Bly's mercenaries help gather the waves climbing both staircases.",
-                "Protect the healer and Weegli Blastfuse through every wave; Nekrum and Sezz'ziz arrive together at the end, so focus Nekrum while interrupting the priest.",
+                "Protect the healer and Weegli Blastfuse through every wave; Sezz'ziz and Nekrum arrive together, so interrupt and focus the priest first.",
                 "After the event, speak with Weegli before any optional Bly confrontation so he survives to blast open the gate leading to Chief Ukorz.",
                 "Trigger Sergeant Bly's betrayal only for the Divino-matic Rod objective, after the gate is open and the party has recovered.",
             },
             entries = {
-                "murtaGrimgut", "sandfuryExecutioner", "nekrum", "sezzziz",
-                "oroEyegouge", "sandfuryCretin", "sergeantBly",
+                "sandfuryAcolyte", "murtaGrimgut", "sandfuryExecutioner", "sezzziz",
+                "nekrum", "oroEyegouge", "sandfuryCretin", "raven", "sergeantBly",
             },
             rules = {
                 { title = "Event commitment", guidance = "Do not open the cages until the base is empty and everyone has restored health and mana; the event runs through successive waves without a reset break." },
                 { title = "Hold the landing", guidance = "Stay near the top so friendly mercenaries meet both stair waves together. Do not run downhill and split tank threat or healer line of sight." },
                 { title = "Keep Weegli alive", guidance = "Keep enemies off Weegli and talk to him as soon as the final wave is secure; his demolition opens the only normal route to the chief." },
-                { title = "Optional betrayal", guidance = "Open the chief's gate first. If the quest fight is needed, interrupt Murta, kill her before Oro, and control Bly until his companions are dead." },
+                { title = "Optional betrayal", guidance = "Open the chief's gate first. If the quest fight is needed, kill Murta, then Oro, control Raven, and keep Bly occupied until cleanup." },
             },
         },
         {

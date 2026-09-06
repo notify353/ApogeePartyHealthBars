@@ -1,12 +1,13 @@
 local Catalog = ApogeePartyHealthBars_DungeonGuideCatalog
 
 local mobs = {}
-local function mob(key, id, name, marker, priority, live, rationale, abilities, response, creatureType, cc, exceptions, boss)
+local function mob(key, id, name, marker, priority, live, rationale, abilities, response, creatureType, cc, exceptions, boss, encounterKey, primaryBoss)
     mobs[key] = {
         npcIds = { id }, name = name, marker = marker, priority = priority,
         liveReason = live, rationale = rationale, abilities = abilities or {},
         response = response, creatureType = creatureType, cc = cc,
         exceptions = exceptions or {}, boss = boss == true,
+        encounterKey = encounterKey, primaryBoss = primaryBoss,
     }
 end
 
@@ -92,6 +93,13 @@ mob("jadespineBasilisk", 4863, "Jadespine Basilisk", "none", 130,
     "Control it before Grimlok's pull when possible, interrupt the sleep, and kill it after the boss and Geomancer.",
     "Beast", "Hibernate, Polymorph, Fear, roots, and stuns work; keep manual control away from area damage.",
     { "Skip control when the Basilisk is alone and the pull is already stable." })
+mob("stonevaultGeomancer", 4853, "Stonevault Geomancer", "none", 135,
+    "Grimlok add; control, then clean up after boss",
+    "It adds Fireball and Flame Buffet to Grimlok's four-enemy pull, but most groups control an add and burn the boss first.",
+    { "Fireball", "Flame Buffet" },
+    "Control it if practical, focus Grimlok, then kill the Geomancer before the remaining melee adds.",
+    "Humanoid", "Polymorph, Sap, Fear, stuns, silences, and other humanoid control work.",
+    { "If control is unreliable and caster pressure is high, make the Geomancer a manual first kill." })
 mob("stonevaultBrawler", 4855, "Stonevault Brawler", "none", 140,
     "durable runner; snare and clean up late",
     "Brawlers flee at low health and Enrage, but caster healing and area damage are more urgent in their mixed packs.",
@@ -106,21 +114,21 @@ mob("ericTheSwift", 6907, "Eric \"The Swift\"", "circle", 200,
     { "Intercept" },
     "Keep the group close, pick Eric up after an Intercept, and focus one dwarf at a time without spreading damage.",
     "Humanoid", "Boss control is unreliable; use stuns, slows, and focused damage.",
-    { "Alliance groups meet the Lost Dwarves as friendly quest NPCs; Horde groups fight the trio." }, true)
-mob("olaf", 6908, "Olaf", "circle", 210,
-    "Lost Dwarves knockdown threat; keep on the tank",
+    { "Alliance groups meet the Lost Dwarves as friendly quest NPCs; Horde groups fight the trio." }, true, "lostDwarves", true)
+mob("olaf", 6908, "Olaf", "cross", 210,
+    "Lost Dwarves second kill; keep on the tank",
     "Olaf's Shield Slam knocks down its target while Eric and Baelog continue attacking during the linked encounter.",
     { "Shield Slam" },
     "Keep Olaf faced into the tank, recover from the knockdown, and maintain one-target focus across the trio.",
     "Humanoid", "Boss control is unreliable; use stuns and mitigation.",
-    { "Alliance groups meet the Lost Dwarves as friendly quest NPCs; Horde groups fight the trio." }, true)
-mob("baelog", 6906, "Baelog", "circle", 220,
-    "Lost Dwarves ranged boss; finish the trio safely",
+    { "Alliance groups meet the Lost Dwarves as friendly quest NPCs; Horde groups fight the trio." }, true, "lostDwarves", false)
+mob("baelog", 6906, "Baelog", "none", 220,
+    "Lost Dwarves cleanup; control while Eric and Olaf die",
     "Baelog attacks from range while Eric and Olaf occupy the tank, making split positioning more dangerous than his own abilities.",
     {},
     "Use line of sight if Baelog stays at range, keep all hostile dwarves on the tank, and finish one target at a time.",
     "Humanoid", "Boss control is unreliable; use line of sight and focused damage.",
-    { "Alliance groups meet the Lost Dwarves as friendly quest NPCs; Horde groups fight the trio." }, true)
+    { "Alliance groups meet the Lost Dwarves as friendly quest NPCs; Horde groups fight the trio." }, true, "lostDwarves", false)
 mob("revelosh", 6910, "Revelosh", "circle", 230,
     "linked caster boss; spread for Chain Lightning",
     "Revelosh arrives with two Rockchewers and can chain lightning through players who remain stacked together.",
@@ -181,7 +189,7 @@ Catalog.RegisterGuide({
             },
             rules = {
                 { title = "Runners and corners", guidance = "Snare Stonevault and Shadowforge enemies before low health, and pull ranged enemies around corners so a fleeing target cannot reach the next room." },
-                { title = "Lost Dwarves", guidance = "The trio is friendly to Alliance groups and hostile to Horde groups. In either case, loot the table chest for the Gni'kiv Medallion before leaving." },
+                { title = "Lost Dwarves", guidance = "For Horde, focus Eric, keep Olaf on the tank, and control Baelog; kill Olaf second and Baelog last. Alliance can speak with the trio." },
                 { title = "Pet pathing", guidance = "Do not jump the keeper-hall debris with an active pet. Dismiss it or take the cleared route so it does not run through the uncleared opposite hall." },
             },
         },
@@ -215,7 +223,7 @@ Catalog.RegisterGuide({
             entries = {
                 "shadowforgeDarkcaster", "stonevaultFlameweaver", "shadowforgeGeologist",
                 "shrikeBat", "stoneSteward", "earthenSculptor", "jadespineBasilisk",
-                "stonevaultBrawler", "ancientStoneKeeper", "galgann", "grimlok",
+                "stonevaultGeomancer", "stonevaultBrawler", "ancientStoneKeeper", "galgann", "grimlok",
             },
             rules = {
                 { title = "Spell Bomb", guidance = "Treat Spell Bomb as a silence: the affected player stops casting until it expires. Interrupt and kill Darkcasters before other Shadowforge enemies." },

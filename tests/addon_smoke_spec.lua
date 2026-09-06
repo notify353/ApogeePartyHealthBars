@@ -1004,7 +1004,7 @@ assert(ApogeePartyHealthBarsDungeonGuide.legend:GetText():find("CIRCLE", 1, true
         and ApogeePartyHealthBarsDungeonGuide.legend:GetText():find("NO AUTO MARK", 1, true)
         and not ApogeePartyHealthBarsDungeonGuide.legend:GetText():find("MOON", 1, true)
         and ApogeePartyHealthBarsDungeonGuide.subtitle:GetText():find(
-            "kill and boss targets", 1, true),
+            "kill order and encounter anchors", 1, true),
     "Dungeon Book's live marker policy was incomplete or retained Moon")
 local originalClientInfo = ApogeePartyHealthBars_ClientCapabilities.GetClientInfo
 ApogeePartyHealthBars_ClientCapabilities.GetClientInfo = function()

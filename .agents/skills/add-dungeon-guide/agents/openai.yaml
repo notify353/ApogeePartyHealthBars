@@ -1,0 +1,7 @@
+interface:
+  display_name: "Add Dungeon Guide"
+  short_description: "Research and add production-quality dungeon guides"
+  default_prompt: "Use $add-dungeon-guide to research and implement a complete Apogee guide for a new dungeon."
+
+policy:
+  allow_implicit_invocation: true

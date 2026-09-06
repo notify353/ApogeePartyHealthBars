@@ -88,21 +88,12 @@ mob("bazilThredd", 1716, "Bazil Thredd", "circle", 110,
     "Pull or control his Defias first, top the tank before the stun, and interrupt or mitigate support effects.",
     "Humanoid", "Boss control is unreliable; use interrupts and mitigation while the tank is stunned.", {}, true)
 
-local function overviewMap()
-    return {
-        texture = "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\Stockades.png",
-        width = 2048, height = 2048,
-        caption = "Gold route — dashed alternate — orange optional; numbers show boss order",
-        description = "Complete Stockade overview with the central cell block, variable boss cells, west-first Dextren route, central backtrack, and eastern Hamhock and Bazil wing.",
-    }
-end
-
 Catalog.RegisterGuide({
     key = "stockades", name = "The Stockade", instanceIds = { 34 },
     clientFlavors = { classicEra = true, tbcAnniversary = true }, mobs = mobs,
     sections = {
         {
-            key = "mainHall", name = "Main Hall & Cell Sweep", map = overviewMap(),
+            key = "mainHall", name = "Main Hall & Cell Sweep",
             route = {
                 "Enter through the Stockade portal in Stormwind's Mage Quarter; Horde groups face a dangerous city approach before the instance.",
                 "Descend the ramp, wait for the hall patrol, and pull the first pack back toward the entrance instead of fighting beside cell doors.",
@@ -120,7 +111,7 @@ Catalog.RegisterGuide({
             },
         },
         {
-            key = "westernWing", name = "Western Wing", map = overviewMap(),
+            key = "westernWing", name = "Western Wing",
             route = {
                 "Turn left at the main junction and pull the entrance inmates back into the cleared main hall.",
                 "Clear both sides of the western corridor methodically, using the last cleared room as recovery space between linked cell pulls.",
@@ -134,7 +125,7 @@ Catalog.RegisterGuide({
             },
         },
         {
-            key = "easternWing", name = "Eastern Wing", map = overviewMap(),
+            key = "easternWing", name = "Eastern Wing",
             route = {
                 "From the central junction, take the eastern corridor and intercept its wandering Insurgent before descending into the cell packs.",
                 "Continue checking rooms for Kam or Bruegal if neither appeared earlier, and keep every low-health runner inside cleared space.",

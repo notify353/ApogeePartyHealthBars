@@ -100,12 +100,7 @@ Catalog.RegisterGuide({
     key = "scarletMonastery", name = "Scarlet Monastery", instanceIds = { 189 },
     clientFlavors = { classicEra = true, tbcAnniversary = true }, mobs = mobs,
     sections = {
-        { key = "graveyard", name = "Graveyard", map = {
-            texture = "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ScarletMonasteryGraveyard.png",
-            width = 2048, height = 2048,
-            caption = "Gold route — dashed alternate — orange optional; numbers show boss order",
-            description = "The original Classic Graveyard plan: torture chamber, outdoor crypt sweep, rare-spawn checks, two-level tomb, and Bloodmage Thalnos.",
-        }, route = {
+        { key = "graveyard", name = "Graveyard", route = {
             "Enter through the far-left portal, clear the torture room around Vishas, then continue into the graveyard without leaving runners behind.",
             "Check each isolated Unfettered Spirit spawn while crossing the graveyard; it can be replaced by Azshir, Fallen Champion, or Ironspine.",
             "Clear the crypt approach before Bloodmage Thalnos so fear or close-range magic cannot chain another undead pack.",
@@ -113,12 +108,7 @@ Catalog.RegisterGuide({
             { title = "Undead control", guidance = "Shackle or Turn one dangerous undead when the pull is larger than the group can safely stabilize." },
             { title = "Rare bosses", guidance = "Circle identifies each Graveyard rare; treat the encounter as a single-target mechanics check rather than a kill-order problem." },
         } },
-        { key = "library", name = "Library", map = {
-            texture = "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ScarletMonasteryLibrary.png",
-            width = 2048, height = 2048,
-            caption = "Gold route — dashed alternate — orange optional; numbers show boss order",
-            description = "The original Classic Library plan: entry hall, Huntsman's Cloister, optional Loksey room, Gallery of Treasures, Athenaeum, and Doan's study.",
-        }, route = {
+        { key = "library", name = "Library", route = {
             "Enter through the far-right portal and pull ranged Scarlet packs around corners; stop every low-health runner before it reaches the next room.",
             "Clear Loksey's side room for his optional encounter, then return to the main hall and continue through the Athenaeum.",
             "Spread around Doan, retreat before Detonation, then loot the Scarlet Key from the strongbox behind him for Armory and Cathedral.",
@@ -126,12 +116,7 @@ Catalog.RegisterGuide({
             { title = "Chaplain plus Diviner", guidance = "Skull and interrupt the Chaplain first, then make the Diviner the next focus. Control either caster only when reliable CC is safer than a fast kill." },
             { title = "Loksey's hounds", guidance = "Control one Tracking Hound when needed, establish threat on the others, kill the uncontrolled hounds, then finish Loksey. Skip control when the group can safely cleave." },
         } },
-        { key = "armory", name = "Armory", map = {
-            texture = "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ScarletMonasteryArmory.png",
-            width = 2048, height = 2048,
-            caption = "Gold route — dashed alternate — orange optional; numbers show boss order",
-            description = "The original Classic Armory plan: keyed entry, training ground, offset armory halls, final gallery, and Herod's circular Hall of Champions.",
-        }, route = {
+        { key = "armory", name = "Armory", route = {
             "Use the Scarlet Key on the right locked door, then pull the long corridor in small groups toward cleared ground.",
             "Line-of-sight Evokers and Conjurors around corners and stop runners before they reach the next formation or patrol.",
             "Clear Herod's complete hall, fight him away from the doorway, avoid Whirlwind, then gather the non-elite Trainees after he dies.",
@@ -139,13 +124,7 @@ Catalog.RegisterGuide({
             { title = "Caster pull", guidance = "Line-of-sight Evokers and Conjurors. Keep elemental pets on the tank while the group removes their owner." },
             { title = "Runner exception", guidance = "A fleeing humanoid near another pack becomes the immediate control target even when its baseline entry says cleanup." },
         } },
-        { key = "cathedral", name = "Cathedral", map = {
-            texture = "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ScarletMonasteryCathedral.png",
-            width = 2048,
-            height = 2048,
-            caption = "Gold main route — dashed alternate — orange optional Fairbanks; zoom for detail",
-            description = "The original Classic floor plan: long keyed-entry hallway, stepped gardens and T-shaped water feature, narrow nave and required interior clear, altar-side rooms, rear altar chamber, and optional Fairbanks.",
-        }, route = {
+        { key = "cathedral", name = "Cathedral", route = {
             "Use the Scarlet Key on the left locked door, enter together, and keep the doorway behind the group as safe reset space.",
             "Clear straight to the lower fountain, then take one side toward the stairs: left by default or right when patrol timing is safer. Skip the unused half.",
             "Repeat the one-side clear at the upper fountain, pulling every caster and runner back onto cleared ground and stopping runners before they reach another pack.",

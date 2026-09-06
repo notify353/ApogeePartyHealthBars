@@ -182,21 +182,12 @@ mob("zerillis", 10082, "Zerillis", "circle", 300,
     "Wait for a safe patrol position, pull behind cover, and keep Zerillis in melee range until the fight ends.",
     "Humanoid", "Boss control is unreliable; use line of sight, dispels, and focused damage.", {}, true)
 
-local function overviewMap()
-    return {
-        texture = "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ZulFarrak.png",
-        width = 2048, height = 2048,
-        caption = "Gold route — dashed alternate — orange optional; numbers show boss order",
-        description = "Complete Zul'Farrak overview from the entrance through Antu'sul, the scarab and graveyard wings, pyramid event, sacred pool, and chief's terrace.",
-    }
-end
-
 Catalog.RegisterGuide({
     key = "zulFarrak", name = "Zul'Farrak", instanceIds = { 209 },
     clientFlavors = { classicEra = true, tbcAnniversary = true }, mobs = mobs,
     sections = {
         {
-            key = "entranceAntusul", name = "Entrance & Antu'sul", map = overviewMap(),
+            key = "entranceAntusul", name = "Entrance & Antu'sul",
             route = {
                 "Enter through the southern gate, clear the first patrols into safe ground, and use walls to stack Shadowcasters, Witch Doctors, and Shadowhunters on the tank.",
                 "At the central fork, take the eastern passage and check the early patrol route for rare Sandarr Dunereaver without chasing him into another group.",
@@ -214,7 +205,7 @@ Catalog.RegisterGuide({
             },
         },
         {
-            key = "thekaZumrah", name = "Theka & Zum'rah", map = overviewMap(),
+            key = "thekaZumrah", name = "Theka & Zum'rah",
             route = {
                 "Enter Theka's scarab court from the east, clear only enough neutral scarabs for working space, and keep area damage away from untouched clusters.",
                 "Defeat Theka, then follow the northern loop toward Zum'rah while isolating plaza patrols and checking for wandering rare Zerillis.",
@@ -233,7 +224,7 @@ Catalog.RegisterGuide({
             },
         },
         {
-            key = "pyramidEvent", name = "Pyramid Event", map = overviewMap(),
+            key = "pyramidEvent", name = "Pyramid Event",
             route = {
                 "Clear every patrol at the pyramid base and both stair approaches, pull the Sandfury Executioner alone, then recover fully before using his cage key.",
                 "Open all cages only when the party is ready, remain near the upper landing, and let Bly's mercenaries help gather the waves climbing both staircases.",
@@ -253,7 +244,7 @@ Catalog.RegisterGuide({
             },
         },
         {
-            key = "sacredPoolChief", name = "Sacred Pool & Chief", map = overviewMap(),
+            key = "sacredPoolChief", name = "Sacred Pool & Chief",
             route = {
                 "Return through the western city loop toward the sacred pool, pulling each caster pack behind cover and separating Sandfury Guardian patrols.",
                 "Clear the complete pool edge, isolate Hydromancer Velratha from her patrol, and loot her before approaching the gong platform.",

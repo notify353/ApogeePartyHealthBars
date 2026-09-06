@@ -6,8 +6,9 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
-- Added a full Zul'Farrak Dungeon Guide with four route chapters, dangerous-trash and boss marking, pyramid-event guidance, optional rares and Gahz'rilla, and a complete route map.
+- Added a full Zul'Farrak Dungeon Guide with four route chapters, dangerous-trash and boss marking, pyramid-event guidance, optional rares, and Gahz'rilla.
 - Corrected Maraudon's Dungeon Board level range from 32-44 to its Classic 45-52 range.
+- Removed Dungeon Book maps, map navigation, and their bundled image assets while preserving every written strategy chapter, automatic target marking, instance detection, and session-only chapter selection.
 
 ## [0.50.0] - 2026-08-30
 

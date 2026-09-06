@@ -1014,19 +1014,10 @@ SlashCmdList.APOGEEPARTYHEALTHBARS("guide")
 assert(ApogeePartyHealthBars_DungeonGuideUI.IsShown(), "Dungeon Guide slash command did not open the Book")
 local guideDungeonDropdown, guideSectionDropdown, guideScroll =
     ApogeePartyHealthBars_DungeonGuideUI.GetNavigationControls()
-local guideMapTexture, guideMapCaption, guideMapPanel =
-    ApogeePartyHealthBars_DungeonGuideUI.GetMapRegions()
-local guideMapButton, guideStrategyButton, guideMarkerLegend =
-    ApogeePartyHealthBars_DungeonGuideUI.GetViewControls()
-local guideFitButton, guideZoomOut, guideZoomLabel, guideZoomIn, guideMapCanvas =
-    ApogeePartyHealthBars_DungeonGuideUI.GetMapControls()
-assert(guideMapTexture:IsShown() and guideMapCaption:IsShown()
-        and guideMapTexture.texture == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ScarletMonasteryGraveyard.png",
-    "Dungeon Book did not open the initial mapped Graveyard chapter")
-assert(ApogeePartyHealthBars_DungeonGuideUI.GetActiveView() == "map"
-        and not guideMapButton:IsEnabled() and guideStrategyButton:IsEnabled()
-        and not guideMarkerLegend:IsShown() and not guideScroll:IsShown(),
-    "mapped initial chapter did not select the dedicated Map view")
+local guideMarkerLegend = ApogeePartyHealthBars_DungeonGuideUI.GetViewControls()
+assert(guideMarkerLegend:IsShown() and guideScroll:IsShown()
+        and ApogeePartyHealthBarsDungeonGuide.body:GetText():find("Scarlet Monastery — Graveyard", 1, true),
+    "Dungeon Book did not open the initial Graveyard strategy chapter")
 assert(guideDungeonDropdown.optionButtons[2]
         and guideDungeonDropdown.optionButtons[2].label:GetText() == "Gnomeregan"
         and guideDungeonDropdown.optionButtons[3]
@@ -1044,39 +1035,16 @@ guideScroll:SetVerticalScroll(240)
 local cathedralChoice = assert(guideSectionDropdown.optionButtons[4],
     "Dungeon Book did not create its Cathedral chapter choice")
 cathedralChoice.scripts.OnClick(cathedralChoice)
-assert(guideMapTexture:IsShown() and guideMapCaption:IsShown()
-        and guideMapTexture.texture == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ScarletMonasteryCathedral.png"
-        and guideMapTexture.width == guideMapTexture.height
-        and guideMapCaption:GetText():find("zoom", 1, true)
-        and guideMapPanel:IsShown() and not guideScroll:IsShown()
-        and ApogeePartyHealthBars_DungeonGuideUI.GetActiveView() == "map"
-        and guideMapCanvas.clipsChildren and guideMapCanvas.mouseWheelEnabled
-        and guideFitButton:IsShown() and guideZoomLabel:GetText() == "100%",
-    "Cathedral did not open its fitted dedicated Map view")
-guideZoomIn.scripts.OnClick()
-assert(guideZoomLabel:GetText() == "125%"
-        and guideZoomOut:IsEnabled() and guideMapTexture.width > guideMapTexture.height - 1,
-    "Cathedral map zoom controls did not advance from Fit")
-guideStrategyButton.scripts.OnClick()
-assert(ApogeePartyHealthBars_DungeonGuideUI.GetActiveView() == "strategy"
-        and guideScroll:IsShown() and not guideMapPanel:IsShown()
-        and guideMarkerLegend:IsShown() and not guideFitButton:IsShown(),
-    "Map and Strategy views did not switch independently")
-guideMapButton.scripts.OnClick()
-assert(guideZoomLabel:GetText() == "125%",
-    "view toggling discarded the Cathedral map's session state")
+assert(guideScroll:GetVerticalScroll() == 0 and guideScroll:IsShown()
+        and ApogeePartyHealthBarsDungeonGuide.body:GetText():find("Scarlet Monastery — Cathedral", 1, true),
+    "Cathedral did not open its strategy chapter")
 guideScroll:SetVerticalScroll(240)
 local armoryChoice = assert(guideSectionDropdown.optionButtons[3],
     "Dungeon Book did not create all four Scarlet Monastery chapter choices")
 armoryChoice.scripts.OnClick(armoryChoice)
 assert(guideScroll:GetVerticalScroll() == 0
-        and guideMapTexture:IsShown() and guideMapCaption:IsShown()
-        and guideMapTexture.texture == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ScarletMonasteryArmory.png"
-        and guideMapButton:IsShown() and not guideMapButton:IsEnabled()
-        and ApogeePartyHealthBars_DungeonGuideUI.GetActiveView() == "map"
-        and guideMapPanel:IsShown() and not guideScroll:IsShown()
-        and guideZoomLabel:GetText() == "100%",
-    "changing to Armory did not load its fitted dedicated Map view")
+        and ApogeePartyHealthBarsDungeonGuide.body:GetText():find("Scarlet Monastery — Armory", 1, true),
+    "changing to Armory did not load its strategy chapter")
 guideDungeonDropdown:Open()
 assert(guideDungeonDropdown.popup:IsShown() and guideDungeonDropdown.dismiss:IsShown(),
     "Dungeon Book guide selector did not open for popup-dismissal regression setup")
@@ -1096,10 +1064,8 @@ currentInstanceId = 70
 ClickMinimapButton(true)
 assert(ApogeePartyHealthBars_DungeonGuideUI.IsShown()
         and guideDungeonDropdown.selectedKey == "uldaman"
-        and guideSectionDropdown.selectedKey == "hallOfKeepers"
-        and guideMapTexture.texture == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\Uldaman.png"
-        and ApogeePartyHealthBars_DungeonGuideUI.GetActiveView() == "map",
-    "Alt-left-click did not open the detected Uldaman map")
+        and guideSectionDropdown.selectedKey == "hallOfKeepers",
+    "Alt-left-click did not open the detected Uldaman guide")
 assert(ApogeePartyHealthBars_S.configMode == configModeBeforeGuideClick,
     "Alt-left-click changed settings mode")
 
@@ -1107,18 +1073,15 @@ currentInstanceId = 90
 ClickMinimapButton(true)
 assert(ApogeePartyHealthBars_DungeonGuideUI.IsShown()
         and guideDungeonDropdown.selectedKey == "gnomeregan"
-        and guideSectionDropdown.selectedKey == "hallOfGears"
-        and guideMapTexture.texture == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\Gnomeregan.png",
+        and guideSectionDropdown.selectedKey == "hallOfGears",
     "Alt-left-click did not refresh an open Book to the newly detected dungeon")
 
 currentInstanceId = 209
 ClickMinimapButton(true)
 assert(ApogeePartyHealthBars_DungeonGuideUI.IsShown()
         and guideDungeonDropdown.selectedKey == "zulFarrak"
-        and guideSectionDropdown.selectedKey == "entranceAntusul"
-        and guideMapTexture.texture == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ZulFarrak.png"
-        and ApogeePartyHealthBars_DungeonGuideUI.GetActiveView() == "map",
-    "Alt-left-click did not open the detected Zul'Farrak map")
+        and guideSectionDropdown.selectedKey == "entranceAntusul",
+    "Alt-left-click did not open the detected Zul'Farrak guide")
 
 currentInstanceId = 999999
 ClickMinimapButton(true)
@@ -1129,9 +1092,8 @@ assert(guideDungeonDropdown.selectedKey == "zulFarrak"
 currentInstanceId = 189
 ClickMinimapButton(true)
 assert(guideDungeonDropdown.selectedKey == "scarletMonastery"
-        and guideSectionDropdown.selectedKey == "armory"
-        and guideMapTexture.texture == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ScarletMonasteryArmory.png",
-    "Scarlet Monastery detection did not restore its last selected wing map")
+        and guideSectionDropdown.selectedKey == "armory",
+    "Scarlet Monastery detection did not restore its last selected chapter")
 
 ApogeePartyHealthBars_DungeonGuideUI.Hide()
 inCombat = true

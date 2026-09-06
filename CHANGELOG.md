@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Removed Dungeon Book maps, map navigation, and their bundled image assets while preserving every written strategy chapter, automatic target marking, instance detection, and session-only chapter selection.
+
 ## [0.50.0] - 2026-08-30
 
 - Added learned Warrior Bloodrage to Threat Control's six default cooldowns, with the longer situational Challenging Shout remaining available as an opt-in.

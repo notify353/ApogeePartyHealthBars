@@ -4,14 +4,10 @@ ApogeePartyHealthBars_DungeonGuideUI = {}
 local UI = ApogeePartyHealthBars_DungeonGuideUI
 
 local D, window, guideDropdown, sectionDropdown
-local toolbar, mapViewButton, strategyViewButton, markerLegend
-local mapPanel, mapCanvas, mapTexture, mapCaption
-local fitButton, zoomOutButton, zoomLabel, zoomInButton
+local toolbar, markerLegend
 local strategyScroll, strategyChild, body, resizeHandle
-local selectedGuideKey, selectedSectionKey, activeView = nil, nil, "strategy"
+local selectedGuideKey, selectedSectionKey
 local selectedSectionByGuide = {}
-local mapState = { zoomIndex = 1, panX = 0, panY = 0 }
-local dragState
 
 local DEFAULT_WIDTH, DEFAULT_HEIGHT = 1000, 720
 local MIN_WIDTH, MIN_HEIGHT = 720, 520
@@ -19,8 +15,6 @@ local SCREEN_MARGIN = 24
 local CONTENT_INSET = 28
 local CONTENT_TOP = 184
 local CONTENT_BOTTOM = 26
-local MAP_CAPTION_HEIGHT = 24
-local ZOOM_LEVELS = { 1, 1.25, 1.5, 2, 3, 4 }
 
 local MARKER_COLORS = {
     skull = "|cffffd34e", cross = "|cffff6666",
@@ -60,46 +54,6 @@ function UI.ClampBookSize(width, height, screenWidth, screenHeight)
     return clamp(finite(width, DEFAULT_WIDTH), MIN_WIDTH, maximumWidth),
         clamp(finite(height, DEFAULT_HEIGHT), MIN_HEIGHT, maximumHeight),
         maximumWidth, maximumHeight
-end
-
-function UI.GetMapFitScale(map, canvasWidth, canvasHeight)
-    if type(map) ~= "table" then return 0 end
-    local mapWidth = finite(map.width, 0)
-    local mapHeight = finite(map.height, 0)
-    canvasWidth = finite(canvasWidth, 0)
-    canvasHeight = finite(canvasHeight, 0)
-    if mapWidth <= 0 or mapHeight <= 0 or canvasWidth <= 0 or canvasHeight <= 0 then
-        return 0
-    end
-    return math.min(canvasWidth / mapWidth, canvasHeight / mapHeight)
-end
-
-function UI.GetMapDisplaySize(map, canvasWidth, canvasHeight, zoomMultiplier)
-    local fitScale = UI.GetMapFitScale(map, canvasWidth, canvasHeight)
-    zoomMultiplier = clamp(finite(zoomMultiplier, 1), ZOOM_LEVELS[1],
-        ZOOM_LEVELS[#ZOOM_LEVELS])
-    return (map and map.width or 0) * fitScale * zoomMultiplier,
-        (map and map.height or 0) * fitScale * zoomMultiplier, fitScale
-end
-
-function UI.ClampMapPan(map, canvasWidth, canvasHeight, zoomMultiplier, panX, panY)
-    local displayWidth, displayHeight = UI.GetMapDisplaySize(
-        map, canvasWidth, canvasHeight, zoomMultiplier)
-    local maximumX = math.max(0, (displayWidth - canvasWidth) / 2)
-    local maximumY = math.max(0, (displayHeight - canvasHeight) / 2)
-    return clamp(finite(panX, 0), -maximumX, maximumX),
-        clamp(finite(panY, 0), -maximumY, maximumY)
-end
-
-function UI.ZoomMapAtPoint(map, canvasWidth, canvasHeight, oldZoom, newZoom,
-        panX, panY, pointX, pointY)
-    oldZoom = clamp(finite(oldZoom, 1), ZOOM_LEVELS[1], ZOOM_LEVELS[#ZOOM_LEVELS])
-    newZoom = clamp(finite(newZoom, 1), ZOOM_LEVELS[1], ZOOM_LEVELS[#ZOOM_LEVELS])
-    local ratio = newZoom / oldZoom
-    pointX, pointY = finite(pointX, 0), finite(pointY, 0)
-    panX = pointX - (pointX - finite(panX, 0)) * ratio
-    panY = pointY - (pointY - finite(panY, 0)) * ratio
-    return UI.ClampMapPan(map, canvasWidth, canvasHeight, newZoom, panX, panY)
 end
 
 function UI.BuildGuideOptions(catalog, flavor)
@@ -188,50 +142,11 @@ local function currentGuide()
     return selectedGuideKey and D.Catalog.GetGuide(selectedGuideKey, flavor()) or nil
 end
 
-local function currentSection(guide)
-    for _, section in ipairs(guide and guide.sections or {}) do
-        if section.key == selectedSectionKey then return section end
-    end
-end
-
 local function screenSize()
     local width = UIParent and UIParent.GetWidth and UIParent:GetWidth() or 0
     local height = UIParent and UIParent.GetHeight and UIParent:GetHeight() or 0
     if width < MIN_WIDTH or height < MIN_HEIGHT then return 1920, 1080 end
     return width, height
-end
-
-local function canvasSize()
-    local width = mapCanvas and mapCanvas.GetWidth and mapCanvas:GetWidth() or 0
-    local height = mapCanvas and mapCanvas.GetHeight and mapCanvas:GetHeight() or 0
-    if width <= 1 then width = math.max(MIN_WIDTH, (window and window:GetWidth() or DEFAULT_WIDTH)) - 64 end
-    if height <= 1 then height = math.max(MIN_HEIGHT, (window and window:GetHeight() or DEFAULT_HEIGHT)) - 250 end
-    return math.max(1, width), math.max(1, height)
-end
-
-local function updateZoomControls()
-    if not zoomLabel then return end
-    zoomLabel:SetText(tostring(math.floor(ZOOM_LEVELS[mapState.zoomIndex] * 100 + 0.5)) .. "%")
-    if mapState.zoomIndex > 1 then zoomOutButton:Enable() else zoomOutButton:Disable() end
-    if mapState.zoomIndex < #ZOOM_LEVELS then zoomInButton:Enable() else zoomInButton:Disable() end
-end
-
-local function updateMapLayout()
-    local section = currentSection(currentGuide())
-    local map = section and section.map
-    if not map or not mapTexture then return end
-    local width, height = canvasSize()
-    local zoom = ZOOM_LEVELS[mapState.zoomIndex]
-    local displayWidth, displayHeight = UI.GetMapDisplaySize(map, width, height, zoom)
-    mapState.panX, mapState.panY = UI.ClampMapPan(
-        map, width, height, zoom, mapState.panX, mapState.panY)
-    mapTexture:SetTexture(map.texture)
-    mapTexture:SetShown(true)
-    mapTexture:SetSize(displayWidth, displayHeight)
-    mapTexture:ClearAllPoints()
-    mapTexture:SetPoint("CENTER", mapCanvas, "CENTER", mapState.panX, mapState.panY)
-    mapCaption:SetText(map.caption)
-    updateZoomControls()
 end
 
 local function renderStrategy()
@@ -248,78 +163,11 @@ local function renderStrategy()
     if strategyScroll.SetVerticalScroll then strategyScroll:SetVerticalScroll(0) end
 end
 
-local function setSelectedButton(button, selected)
-    if not button then return end
-    if selected then
-        UIH.SetButtonStyle(button, "primary")
-        button:Disable()
-    else
-        UIH.SetButtonStyle(button, "neutral")
-        button:Enable()
-    end
-end
-
-local function setView(view)
-    local section = currentSection(currentGuide())
-    local hasMap = section and section.map ~= nil
-    if view == "map" and not hasMap then view = "strategy" end
-    activeView = view == "map" and "map" or "strategy"
-    mapTexture:SetShown(hasMap)
-    mapCaption:SetShown(hasMap)
-    mapPanel:SetShown(activeView == "map")
-    strategyScroll:SetShown(activeView == "strategy")
-    markerLegend:SetShown(activeView == "strategy")
-    fitButton:SetShown(activeView == "map")
-    zoomOutButton:SetShown(activeView == "map")
-    zoomLabel:SetShown(activeView == "map")
-    zoomInButton:SetShown(activeView == "map")
-    if hasMap then
-        setSelectedButton(mapViewButton, activeView == "map")
-    else
-        UIH.SetButtonStyle(mapViewButton, "neutral")
-        mapViewButton:Disable()
-    end
-    setSelectedButton(strategyViewButton, activeView == "strategy")
-    if activeView == "map" then updateMapLayout() else renderStrategy() end
-end
-
-local function resetMapView()
-    mapState.zoomIndex, mapState.panX, mapState.panY = 1, 0, 0
-    updateMapLayout()
-end
-
-local function pointerOffset()
-    if not GetCursorPosition or not mapCanvas or not mapCanvas.GetCenter then return 0, 0 end
-    local cursorX, cursorY = GetCursorPosition()
-    local scale = mapCanvas.GetEffectiveScale and mapCanvas:GetEffectiveScale() or 1
-    local centerX, centerY = mapCanvas:GetCenter()
-    if not centerX or not centerY then return 0, 0 end
-    return cursorX / scale - centerX, cursorY / scale - centerY
-end
-
-local function setZoomIndex(index, pointX, pointY)
-    index = clamp(math.floor(finite(index, 1)), 1, #ZOOM_LEVELS)
-    if index == mapState.zoomIndex then return end
-    local section = currentSection(currentGuide())
-    local map = section and section.map
-    if not map then return end
-    local width, height = canvasSize()
-    pointX, pointY = pointX or 0, pointY or 0
-    mapState.panX, mapState.panY = UI.ZoomMapAtPoint(map, width, height,
-        ZOOM_LEVELS[mapState.zoomIndex], ZOOM_LEVELS[index],
-        mapState.panX, mapState.panY, pointX, pointY)
-    mapState.zoomIndex = index
-    updateMapLayout()
-end
-
 local function selectSection(key)
     selectedSectionKey = key
     if selectedGuideKey and key then selectedSectionByGuide[selectedGuideKey] = key end
     sectionDropdown:SetSelectedKey(key)
-    mapState.zoomIndex, mapState.panX, mapState.panY = 1, 0, 0
     renderStrategy()
-    local section = currentSection(currentGuide())
-    setView(section and section.map and "map" or "strategy")
 end
 
 local function selectGuide(key)
@@ -368,7 +216,6 @@ end
 local function updateResponsiveLayout()
     if not window then return end
     renderStrategy()
-    updateMapLayout()
 end
 
 function UI.Build(deps)
@@ -428,8 +275,6 @@ function UI.Build(deps)
     window:SetScript("OnHide", function()
         if guideDropdown then guideDropdown:Close() end
         if sectionDropdown then sectionDropdown:Close() end
-        dragState = nil
-        if mapCanvas then mapCanvas:SetScript("OnUpdate", nil) end
     end)
 
     local title = window:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
@@ -457,31 +302,10 @@ function UI.Build(deps)
     guideDropdown:SetSelectionCallback(selectGuide)
     sectionDropdown:SetSelectionCallback(selectSection)
 
-    mapViewButton = UIH.CreateButton(toolbar, "Map", 84, 26)
-    mapViewButton:SetPoint("LEFT", toolbar, "LEFT", 6, 0)
-    mapViewButton:SetScript("OnClick", function() setView("map") end)
-    strategyViewButton = UIH.CreateButton(toolbar, "Strategy", 84, 26)
-    strategyViewButton:SetPoint("LEFT", mapViewButton, "RIGHT", 5, 0)
-    strategyViewButton:SetScript("OnClick", function() setView("strategy") end)
-
     markerLegend = toolbar:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    markerLegend:SetPoint("LEFT", strategyViewButton, "RIGHT", 14, 0)
+    markerLegend:SetPoint("LEFT", toolbar, "LEFT", 10, 0)
     markerLegend:SetText("|cffffd34eSKULL|r  First kill   |cffff6666CROSS|r  Second kill   |cffffa040CIRCLE|r  Boss\n|cffb8bec9NO AUTO MARK|r  Manual mechanics, CC, or cleanup")
     window.legend = markerLegend
-
-    fitButton = UIH.CreateButton(toolbar, "Fit", 52, 26)
-    fitButton:SetPoint("RIGHT", toolbar, "RIGHT", -108, 0)
-    fitButton:SetScript("OnClick", resetMapView)
-    zoomOutButton = UIH.CreateButton(toolbar, "−", 28, 26)
-    zoomOutButton:SetPoint("LEFT", fitButton, "RIGHT", 5, 0)
-    zoomOutButton:SetScript("OnClick", function() setZoomIndex(mapState.zoomIndex - 1) end)
-    zoomLabel = toolbar:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    zoomLabel:SetPoint("LEFT", zoomOutButton, "RIGHT", 4, 0)
-    zoomLabel:SetWidth(48)
-    zoomLabel:SetJustifyH("CENTER")
-    zoomInButton = UIH.CreateButton(toolbar, "+", 28, 26)
-    zoomInButton:SetPoint("LEFT", zoomLabel, "RIGHT", 4, 0)
-    zoomInButton:SetScript("OnClick", function() setZoomIndex(mapState.zoomIndex + 1) end)
 
     strategyScroll = CreateFrame("ScrollFrame", nil, window, "UIPanelScrollFrameTemplate")
     strategyScroll:SetPoint("TOPLEFT", window, "TOPLEFT", CONTENT_INSET, -CONTENT_TOP)
@@ -497,54 +321,6 @@ function UI.Build(deps)
     body:SetJustifyV("TOP")
     if body.SetSpacing then body:SetSpacing(4) end
     window.body = body
-
-    mapPanel = CreateFrame("Frame", nil, window)
-    mapPanel:SetPoint("TOPLEFT", window, "TOPLEFT", CONTENT_INSET, -CONTENT_TOP)
-    mapPanel:SetPoint("BOTTOMRIGHT", window, "BOTTOMRIGHT", -CONTENT_INSET, CONTENT_BOTTOM)
-    mapCaption = mapPanel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    mapCaption:SetPoint("TOPLEFT", mapPanel, "TOPLEFT", 2, -2)
-    mapCaption:SetPoint("TOPRIGHT", mapPanel, "TOPRIGHT", -2, -2)
-    mapCaption:SetHeight(MAP_CAPTION_HEIGHT)
-    mapCaption:SetJustifyH("LEFT")
-    mapCaption:SetShown(false)
-    mapCanvas = CreateFrame("Frame", nil, mapPanel)
-    mapCanvas:SetPoint("TOPLEFT", mapPanel, "TOPLEFT", 0, -MAP_CAPTION_HEIGHT)
-    mapCanvas:SetPoint("BOTTOMRIGHT", mapPanel, "BOTTOMRIGHT", 0, 0)
-    if mapCanvas.SetClipsChildren then mapCanvas:SetClipsChildren(true) end
-    mapCanvas:EnableMouse(true)
-    mapCanvas:EnableMouseWheel(true)
-    mapCanvas:RegisterForDrag("LeftButton")
-    mapTexture = mapCanvas:CreateTexture(nil, "ARTWORK")
-    mapTexture:SetShown(false)
-    mapCanvas:SetScript("OnMouseWheel", function(_, delta)
-        local pointX, pointY = pointerOffset()
-        setZoomIndex(mapState.zoomIndex + (delta > 0 and 1 or -1), pointX, pointY)
-    end)
-    mapCanvas:SetScript("OnDragStart", function()
-        if not GetCursorPosition then return end
-        local cursorX, cursorY = GetCursorPosition()
-        dragState = {
-            cursorX = cursorX, cursorY = cursorY,
-            panX = mapState.panX, panY = mapState.panY,
-        }
-        mapCanvas:SetScript("OnUpdate", function()
-            if not dragState then return end
-            local x, y = GetCursorPosition()
-            local scale = mapCanvas.GetEffectiveScale and mapCanvas:GetEffectiveScale() or 1
-            local section = currentSection(currentGuide())
-            local map = section and section.map
-            local width, height = canvasSize()
-            mapState.panX, mapState.panY = UI.ClampMapPan(map, width, height,
-                ZOOM_LEVELS[mapState.zoomIndex],
-                dragState.panX + (x - dragState.cursorX) / scale,
-                dragState.panY + (y - dragState.cursorY) / scale)
-            updateMapLayout()
-        end)
-    end)
-    mapCanvas:SetScript("OnDragStop", function()
-        dragState = nil
-        mapCanvas:SetScript("OnUpdate", nil)
-    end)
 
     resizeHandle = CreateFrame("Button", nil, window)
     resizeHandle:SetSize(22, 22)
@@ -592,18 +368,11 @@ function UI.ResetWindow()
     D.Settings.ResetBookWindow()
     applyWindowBounds()
     restorePosition()
-    resetMapView()
     updateResponsiveLayout()
 end
 
 UI.ResetPosition = UI.ResetWindow
-function UI.SetView(view) if window then setView(view) end end
-function UI.GetActiveView() return activeView end
 function UI.GetWindow() return window end
 -- Read-only diagnostics used by regression tests.
 function UI.GetNavigationControls() return guideDropdown, sectionDropdown, strategyScroll end
-function UI.GetViewControls() return mapViewButton, strategyViewButton, markerLegend end
-function UI.GetMapControls()
-    return fitButton, zoomOutButton, zoomLabel, zoomInButton, mapCanvas
-end
-function UI.GetMapRegions() return mapTexture, mapCaption, mapPanel end
+function UI.GetViewControls() return markerLegend end

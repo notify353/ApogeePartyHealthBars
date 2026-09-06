@@ -6,9 +6,13 @@ local M = ApogeePartyHealthBars_RaidMarkers
 
 local D
 local SUPPORTED_MARKERS = { [2] = true, [7] = true, [8] = true }
+local STAGING_TIMEOUT_SECONDS = 15
 local ownersByMarker = {}
 local markersByGuid = {}
 local suppressedGuids = {}
+local activeGuideKey
+local activeStagingContextKey
+local lastStagingActivityAt
 
 local function IsSupported()
     return (not ClientCapabilities
@@ -21,6 +25,11 @@ local function IsInCombat()
     return InCombatLockdown and InCombatLockdown() == true
 end
 
+local function Now()
+    local value = D and D.Now and D.Now()
+    return tonumber(value) or 0
+end
+
 local function IsLivingHostileTarget()
     return UnitExists and UnitExists("target")
         and UnitCanAttack and UnitCanAttack("player", "target")
@@ -31,28 +40,34 @@ local function ReleaseGuid(guid)
     local markerIndex = guid and markersByGuid[guid]
     if not markerIndex then return nil end
     markersByGuid[guid] = nil
-    if ownersByMarker[markerIndex] == guid then
+    local owner = ownersByMarker[markerIndex]
+    if owner and owner.guid == guid then
         ownersByMarker[markerIndex] = nil
     end
     return markerIndex
 end
 
-local function BindOwner(markerIndex, guid, suppressDisplaced)
+local function BindOwner(markerIndex, guid, source, autoMarkRank, suppressDisplaced)
     if not SUPPORTED_MARKERS[markerIndex] or not guid then return end
 
-    local previousGuid = ownersByMarker[markerIndex]
+    local previousOwner = ownersByMarker[markerIndex]
+    local previousGuid = previousOwner and previousOwner.guid
     if previousGuid and previousGuid ~= guid then
         markersByGuid[previousGuid] = nil
         if suppressDisplaced then suppressedGuids[previousGuid] = true end
     end
 
     local previousMarker = markersByGuid[guid]
-    if previousMarker and previousMarker ~= markerIndex
-        and ownersByMarker[previousMarker] == guid then
-        ownersByMarker[previousMarker] = nil
+    if previousMarker and previousMarker ~= markerIndex then
+        local owner = ownersByMarker[previousMarker]
+        if owner and owner.guid == guid then ownersByMarker[previousMarker] = nil end
     end
 
-    ownersByMarker[markerIndex] = guid
+    ownersByMarker[markerIndex] = {
+        guid = guid,
+        source = source,
+        autoMarkRank = autoMarkRank,
+    }
     markersByGuid[guid] = markerIndex
 end
 
@@ -75,15 +90,33 @@ local function ReconcileCurrentTarget()
     end
 
     if livingHostile and SUPPORTED_MARKERS[observedMarker] then
-        BindOwner(observedMarker, guid, inCombat)
+        local owner = ownersByMarker[observedMarker]
+        if not owner or owner.guid ~= guid then
+            BindOwner(observedMarker, guid, "manual", nil, inCombat)
+        end
     end
     return guid, observedMarker
 end
 
-local function ClearCombatState()
+local function ClearAllState()
     ownersByMarker = {}
     markersByGuid = {}
     suppressedGuids = {}
+    activeGuideKey = nil
+    activeStagingContextKey = nil
+    lastStagingActivityAt = nil
+end
+
+local function ResetAutomaticStaging(preserveGuid)
+    for markerIndex, owner in pairs(ownersByMarker) do
+        if owner.source == "automatic" and owner.guid ~= preserveGuid then
+            markersByGuid[owner.guid] = nil
+            ownersByMarker[markerIndex] = nil
+        end
+    end
+    suppressedGuids = {}
+    activeStagingContextKey = nil
+    lastStagingActivityAt = nil
 end
 
 function M.Initialize(deps)
@@ -92,7 +125,7 @@ function M.Initialize(deps)
             and type(deps.Settings) == "table",
         "RaidMarkers requires Dungeon Guide policy and settings")
     D = deps
-    ClearCombatState()
+    ClearAllState()
 end
 
 function M.EvaluateCurrentTarget()
@@ -102,24 +135,51 @@ function M.EvaluateCurrentTarget()
         return nil
     end
 
-    local guid, observedMarker = ReconcileCurrentTarget()
-    if not guid or observedMarker then return nil end
-
-    local recommendation = D.Policy.GetRecommendationForGuid(guid)
+    local targetGuid = UnitGUID("target")
+    if not targetGuid then return nil end
+    local recommendation = D.Policy.GetRecommendationForGuid(targetGuid)
     local markerIndex = recommendation and recommendation.markerIndex
-    if not SUPPORTED_MARKERS[markerIndex] then return nil end
-
+    local autoMarkRank = recommendation and recommendation.autoMarkRank
+    local eligible = SUPPORTED_MARKERS[markerIndex] and type(autoMarkRank) == "number"
     local inCombat = IsInCombat()
+    local now = not inCombat and Now() or nil
+    if eligible and now and lastStagingActivityAt
+        and now - lastStagingActivityAt >= STAGING_TIMEOUT_SECONDS then
+        ResetAutomaticStaging(targetGuid)
+    end
+    if recommendation and recommendation.guideKey then
+        if activeGuideKey and activeGuideKey ~= recommendation.guideKey then
+            ClearAllState()
+        end
+        activeGuideKey = recommendation.guideKey
+    end
+    local stagingContextKey = recommendation and recommendation.stagingContextKey
+    if eligible and not inCombat and stagingContextKey then
+        if activeStagingContextKey and activeStagingContextKey ~= stagingContextKey then
+            ResetAutomaticStaging()
+        end
+        activeStagingContextKey = stagingContextKey
+    end
+    local guid, observedMarker = ReconcileCurrentTarget()
+    if eligible and now then lastStagingActivityAt = now end
+    if not guid or observedMarker or guid ~= targetGuid or not eligible then return nil end
+
+    local owner = ownersByMarker[markerIndex]
     if inCombat then
         if suppressedGuids[guid] then return nil end
-        local ownerGuid = ownersByMarker[markerIndex]
-        if ownerGuid and ownerGuid ~= guid then return nil end
+        if owner and owner.guid ~= guid then return nil end
+    elseif owner and owner.guid ~= guid then
+        if owner.source ~= "automatic"
+            or type(owner.autoMarkRank) ~= "number"
+            or autoMarkRank >= owner.autoMarkRank then
+            return nil
+        end
     end
 
     SetRaidTarget("target", markerIndex)
     if GetRaidTargetIndex("target") ~= markerIndex then return nil end
 
-    BindOwner(markerIndex, guid, false)
+    BindOwner(markerIndex, guid, "automatic", autoMarkRank, false)
     suppressedGuids[guid] = nil
     return recommendation
 end
@@ -129,7 +189,8 @@ function M.OnCombatStarted()
 end
 
 function M.OnCombatEnded()
-    ClearCombatState()
+    local currentGuid = IsLivingHostileTarget() and UnitGUID and UnitGUID("target") or nil
+    ResetAutomaticStaging(currentGuid)
     return M.EvaluateCurrentTarget()
 end
 

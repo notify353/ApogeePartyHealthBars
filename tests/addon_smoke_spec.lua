@@ -1220,9 +1220,17 @@ assert(ApogeePartyHealthBars_DungeonGuideSettingsPage.GetForm().explanation:GetT
         "CC guidance is manual", 1, true)
         and ApogeePartyHealthBars_DungeonGuideSettingsPage.GetForm().explanation:GetText():find(
             "each observed mark stays", 1, true)
+        and ApogeePartyHealthBars_DungeonGuideSettingsPage.GetForm().explanation:GetText():find(
+            "target cycling stages", 1, true)
+        and ApogeePartyHealthBars_DungeonGuideSettingsPage.GetForm().explanation:GetText():find(
+            "15 seconds", 1, true)
+        and ApogeePartyHealthBars_DungeonGuideSettingsPage.GetForm().explanation:GetText():find(
+            "documented encounter", 1, true)
+        and ApogeePartyHealthBars_DungeonGuideSettingsPage.GetForm().explanation:GetText():find(
+            "never targets or scans", 1, true)
         and not ApogeePartyHealthBars_DungeonGuideSettingsPage.GetForm().explanation:GetText():find(
             "MOON", 1, true),
-    "Dungeon Guide settings did not explain sticky combat marking and manual CC")
+    "Dungeon Guide settings did not explain pre-pull staging, combat locking, or manual CC")
 assert(ApogeePartyHealthBars_MacroData == nil
         and ApogeePartyHealthBars_MacroLibrary == nil
         and ApogeePartyHealthBars_MacroLibrarySettingsPage == nil

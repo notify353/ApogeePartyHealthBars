@@ -72,7 +72,7 @@ line("Audit version: 2026-09-06. Target clients: Classic Era 1.15.9 (build 69547
 line("")
 line("This is the maintenance record for all seven guide packs. It is generated from the validated catalog so every catalog entry is represented. `Old` records the assignment before this audit; `omitted` identifies an enemy added because it can change target order. `Same` means no client-specific marker difference was established. TBC level tuning does not by itself change these recommendations.")
 line("")
-line("The target profile is an ordinary five-player PUG with imperfect interrupts and a mixed composition. Circle is the primary boss or encounter anchor, Skull the normal first kill, Cross the normal second kill, and None a manual-control, positioning, cleave, or cleanup target. `priority` remains Book ordering metadata only.")
+line("The target profile is an ordinary five-player PUG with imperfect interrupts and a mixed composition. Circle is the primary boss or encounter anchor, Skull the normal first kill, Cross the normal second kill, and None a manual-control, positioning, cleave, or cleanup target. `priority` remains Book ordering metadata only; `autoMarkRank` independently controls pre-pull replacement between explicitly targeted candidates for the same icon, with lower values winning. Linked bosses use their shared encounter key, reliable boss adds use `stagingContext`, and ordinary trash uses the guide's general context. Context changes and 15 seconds without another automatically markable target reset only automatic staging; observed manual owners remain protected. No context is inferred by scanning.")
 line("")
 line("## Evidence standard")
 line("")
@@ -94,8 +94,8 @@ for _, guide in ipairs(Catalog.ListGuides("classicEra")) do
     line("")
     line("### " .. guide.name)
     line("")
-    line("| Enemy (NPC ID) | Abilities | Common context | Old → audited | Why / exception | Client | Confidence | Sources |")
-    line("|---|---|---|---|---|---|---|---|")
+    line("| Enemy (NPC ID) | Abilities | Common context | Staging context | Old → audited | Auto rank | Why / exception | Client | Confidence | Sources |")
+    line("|---|---|---|---|---|---:|---|---|---|---|")
     local mobContexts = contexts(guide)
     local emitted = {}
     for _, section in ipairs(guide.sections) do
@@ -105,9 +105,13 @@ for _, guide in ipairs(Catalog.ListGuides("classicEra")) do
                 local mob = guide.mobs[mobKey]
                 local old = oldMarkers[guide.key] and oldMarkers[guide.key][mobKey] or mob.marker
                 local confidence = highConfidence[guide.key] and highConfidence[guide.key][mobKey] and "High" or "Medium"
+                local stagingContext = mob.stagingContext or mob.encounterKey
+                    or (mob.boss and mobKey) or "trash"
                 line("| " .. clean(mob.name) .. " (" .. table.concat(mob.npcIds, ", ") .. ") | "
                     .. clean(join(mob.abilities)) .. " | " .. clean(join(mobContexts[mobKey])) .. " | "
-                    .. clean(old) .. " → " .. clean(mob.marker) .. " | " .. clean(mob.rationale) .. " | Same | "
+                    .. clean(stagingContext) .. " | "
+                    .. clean(old) .. " → " .. clean(mob.marker) .. " | "
+                    .. clean(mob.autoMarkRank or "—") .. " | " .. clean(mob.rationale) .. " | Same | "
                     .. confidence .. " | " .. sourceCodes[guide.key] .. " |")
             end
         end
@@ -130,22 +134,20 @@ line("## In-game acceptance checklist")
 line("")
 line("Run each item on both supported clients with automatic marking enabled, then repeat representative pulls after placing a manual icon.")
 line("")
-line("- Scarlet Monastery: cycle Diviner/Adept/Chaplain before combat; verify Skull/Cross, Mana Burn text, Mograine Circle, Whitemane Skull after activation, and manual-mark preservation.")
-line("- Gnomeregan: verify alarm, mine, bomb, summon, and Walking Bomb switches; Chomper and incidental constructs remain unmarked; test pre-pull icon movement and combat stickiness.")
+line("- Scarlet Monastery: cycle Diviner/Adept/Chaplain before combat; verify Skull/Cross, Mana Burn text, and that Mograine Circle and Whitemane Skull share one encounter context without weakening manual-mark preservation.")
+line("- Gnomeregan: verify alarm, mine, bomb, and summon switches; confirm Ambassador/Servant and Thermaplugg/Walking Bomb share their respective contexts while Chomper and incidental constructs remain unmarked.")
 line("- Stockades: test duplicate prisoners, linked boss rooms, fleeing/fear-sensitive pulls, and that existing manual marks are never overwritten.")
-line("- Razorfen Kraul: target Acolyte, Groundshaker, totems, Jargba, Ramtusk guards, boss summons, and duplicate caster types; confirm dead owners release their icon.")
-line("- Razorfen Downs: test gong waves, defensive trash, Amnennar spectres, summons, and manual removal suppression during the same combat.")
-line("- Uldaman: test Horde Lost Dwarves order, Alliance-friendly behavior, Grimlok's four-unit pack, Sentinel shards, Archaedas waves, and late Warder targeting.")
-line("- Zul'Farrak: test Acolytes in pyramid waves, Sezz'ziz/Nekrum, Bly's optional party, Zum'rah wards/zombies, Gahz'rilla, and Ruuzlu/Ukorz.")
-line("- Cross-client regression: cycle two enemies that share Skull/Cross before pull, enter combat on one, target the other, kill the owner, manually remove the icon, and confirm unsupported/failed API assignments do not claim ownership.")
+line("- Razorfen Kraul: target Acolyte, Groundshaker, totems, Jargba, Ramtusk guards, and duplicate caster types; confirm Aggem/Boar Spirit share one context and dead owners release their icon.")
+line("- Razorfen Downs: test gong waves and defensive trash, then confirm Amnennar/Frost Spectre share one context and manual removal remains suppressed during the same combat.")
+line("- Uldaman: test Horde Lost Dwarves order and Alliance-friendly behavior; confirm Sentinel/Shards and Archaedas/Hallshaper/Guardian/Warder each share their own context without absorbing Grimlok's pack.")
+line("- Zul'Farrak: test Acolytes in pyramid waves and Gahz'rilla; confirm Sezz'ziz/Nekrum, Bly/Murta/Oro, Zum'rah/Ward, and Ruuzlu/Ukorz retain separate correct encounter contexts.")
+line("- Cross-client regression: cycle weaker, stronger, and equal-ranked enemies that share Skull/Cross in both orders; verify linked bosses and documented adds retain one context while another encounter starts fresh, confirm manual owners survive context and timeout resets, wait 15 seconds and verify the next eligible target starts fresh, then test combat locking, death release, manual removal, and unsupported or failed assignments.")
 line("")
 line("## Ranked future ideas (not implemented)")
 line("")
-line("1. Pre-pull target-cycle staging that retains the best observed Skull/Cross/Circle assignments instead of moving one icon repeatedly.")
-line("2. Encounter-aware rules using only mobs the player explicitly targeted, preserving the no-scan design.")
-line("3. Optional Typical PUG, Hardcore, and Cleave priority presets.")
-line("4. Source dates and client-specific evidence metadata for detecting stale guide decisions.")
-line("5. A compact “why this mark” target explanation for players learning unfamiliar pulls.")
+line("1. Optional Typical PUG, Hardcore, and Cleave priority presets.")
+line("2. Source dates and client-specific evidence metadata for detecting stale guide decisions.")
+line("3. A compact “why this mark” target explanation for players learning unfamiliar pulls.")
 line("")
 line("Regenerate after catalog changes with `lua scripts/generate-dungeon-guide-audit.lua`, review source freshness and disputed calls, then commit the script and matrix together.")
 

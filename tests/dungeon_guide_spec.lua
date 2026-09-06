@@ -581,6 +581,21 @@ local expectedMarkers = {
         none = { "scarab", "zulFarrakZombie", "sandfuryCretin", "raven", "servantOfAntusul" },
     },
 }
+local expectedStagingContexts = {
+    gnomeregan = {
+        walkingBomb = "thermaplugg", burningServant = "darkIronAmbassador",
+    },
+    razorfenKraul = { boarSpirit = "aggemThorncurse" },
+    razorfenDowns = { frostSpectre = "amnennar" },
+    uldaman = {
+        obsidianShard = "obsidianSentinel", earthenHallshaper = "archaedas",
+        earthenGuardian = "archaedas", vaultWarder = "archaedas",
+    },
+    zulFarrak = {
+        wardOfZumrah = "zumrah", murtaGrimgut = "sergeantBly",
+        oroEyegouge = "sergeantBly",
+    },
+}
 for _, clientFlavor in ipairs({ "classicEra", "tbcAnniversary" }) do
     for guideKey, markerGroups in pairs(expectedMarkers) do
         local expectedGuide = Catalog.GetGuide(guideKey, clientFlavor)
@@ -591,6 +606,10 @@ for _, clientFlavor in ipairs({ "classicEra", "tbcAnniversary" }) do
                 seen[mobKey] = true
                 assert(expectedGuide.mobs[mobKey] and expectedGuide.mobs[mobKey].marker == marker,
                     clientFlavor .. "/" .. guideKey .. " marker drifted: " .. mobKey)
+                local expectedRank = marker ~= "none"
+                    and expectedGuide.mobs[mobKey].priority or nil
+                assert(expectedGuide.mobs[mobKey].autoMarkRank == expectedRank,
+                    clientFlavor .. "/" .. guideKey .. " auto-mark rank drifted: " .. mobKey)
             end
         end
         for mobKey in pairs(expectedGuide.mobs) do
@@ -598,6 +617,11 @@ for _, clientFlavor in ipairs({ "classicEra", "tbcAnniversary" }) do
         end
         for mobKey in pairs(seen) do
             assert(expectedGuide.mobs[mobKey], clientFlavor .. "/" .. guideKey .. " stale fixture entry: " .. mobKey)
+        end
+        local expectedContexts = expectedStagingContexts[guideKey] or {}
+        for mobKey, mob in pairs(expectedGuide.mobs) do
+            assert(mob.stagingContext == expectedContexts[mobKey],
+                clientFlavor .. "/" .. guideKey .. " staging context drifted: " .. mobKey)
         end
     end
 end
@@ -608,9 +632,12 @@ local fresh = Catalog.GetGuide("scarletMonastery", "classicEra")
 assert(fresh.name == "Scarlet Monastery" and fresh.mobs.scryer.rationale ~= "mutated",
     "catalog callers could mutate reviewed strategy data")
 fresh.mobs.whitemane.encounterKey = "mutated"
+fresh.mobs.whitemane.autoMarkRank = 999
 assert(Catalog.GetGuide("scarletMonastery", "classicEra").mobs.whitemane.encounterKey
-        == "mograineWhitemane",
-    "catalog callers could mutate encounter metadata")
+        == "mograineWhitemane"
+        and Catalog.GetGuide("scarletMonastery", "classicEra").mobs.whitemane.autoMarkRank
+            ~= 999,
+    "catalog callers could mutate encounter or auto-mark metadata")
 for _, registeredGuide in ipairs(Catalog.ListGuides("classicEra")) do
     for mobKey, mobData in pairs(registeredGuide.mobs) do
         if mobData.boss and mobData.marker ~= "circle" then
@@ -652,7 +679,9 @@ assert(Policy.ParseNpcId(scryerGuid) == 4293
     "creature GUID parsing was not localization-safe")
 local recommendation = Policy.GetRecommendationForGuid(scryerGuid)
 assert(recommendation.markerKey == "skull" and recommendation.markerIndex == 8
-        and recommendation.mobName == "Scarlet Scryer",
+        and recommendation.mobName == "Scarlet Scryer"
+        and recommendation.autoMarkRank == 10
+        and recommendation.stagingContextKey == "scarletMonastery/trash",
     "policy did not resolve the reviewed Scryer recommendation")
 local houndRecommendation = Policy.GetRecommendationForGuid(
     "Creature-0-1-189-1-4304-0000000001")
@@ -667,6 +696,14 @@ for npcId, expectedMarker in pairs({ [3977] = { "skull", 8 }, [3976] = { "circle
             and bossRecommendation.markerIndex == expectedMarker[2],
         "Scarlet Monastery boss policy marker drifted for NPC " .. npcId)
 end
+local whitemaneRecommendation = Policy.GetRecommendationForGuid(
+    "Creature-0-1-189-1-3977-0000000002")
+local mograineRecommendation = Policy.GetRecommendationForGuid(
+    "Creature-0-1-189-1-3976-0000000002")
+assert(whitemaneRecommendation.stagingContextKey == "scarletMonastery/mograineWhitemane"
+        and mograineRecommendation.stagingContextKey
+            == whitemaneRecommendation.stagingContextKey,
+    "grouped boss policy did not expose one shared staging context")
 instanceId = 90
 local gnomereganRecommendations = {
     [7849] = { "skull", 8 },
@@ -684,6 +721,14 @@ for npcId, expected in pairs(gnomereganRecommendations) do
             and resolved.markerIndex == expected[2],
         "Gnomeregan marker policy drifted for NPC " .. npcId)
 end
+local servantRecommendation = Policy.GetRecommendationForGuid(
+    "Creature-0-1-90-1-7738-0000000002")
+local ambassadorRecommendation = Policy.GetRecommendationForGuid(
+    "Creature-0-1-90-1-6228-0000000002")
+assert(servantRecommendation.stagingContextKey == "gnomeregan/darkIronAmbassador"
+        and ambassadorRecommendation.stagingContextKey
+            == servantRecommendation.stagingContextKey,
+    "boss add policy did not share its encounter staging context")
 instanceId = 34
 local stockadesRecommendations = {
     [1706] = { "skull", 8 },
@@ -989,9 +1034,10 @@ for _, registeredGuide in ipairs(Catalog.ListGuides("classicEra")) do
     end
 end
 
-local function schemaBoss(id, marker, priority, encounterKey, primaryBoss)
+local function schemaBoss(id, marker, priority, encounterKey, primaryBoss, autoMarkRank)
     return {
         npcIds = { id }, name = "Boss " .. id, marker = marker, priority = priority,
+        autoMarkRank = marker ~= "none" and (autoMarkRank or priority) or nil,
         liveReason = "valid", rationale = "valid", abilities = {}, response = "valid",
         creatureType = "Humanoid", cc = "valid", boss = true,
         encounterKey = encounterKey, primaryBoss = primaryBoss,
@@ -1000,16 +1046,25 @@ end
 local standaloneBossGuide = {
     key = "standalone", name = "Standalone", instanceIds = { 901 },
     clientFlavors = { classicEra = true },
-    mobs = { primary = schemaBoss(901, "circle", 1) },
-    sections = { { key = "one", name = "One", entries = { "primary" } } },
+    mobs = {
+        primary = schemaBoss(901, "circle", 1),
+        companion = {
+            npcIds = { 911 }, name = "Companion", marker = "skull", priority = 2,
+            autoMarkRank = 2, liveReason = "valid", rationale = "valid",
+            abilities = {}, response = "valid", creatureType = "Humanoid",
+            cc = "valid", stagingContext = "primary",
+        },
+    },
+    sections = { { key = "one", name = "One", entries = { "primary", "companion" } } },
 }
-assert(Catalog.ValidateGuide(standaloneBossGuide), "catalog rejected a standalone Circle boss")
+assert(Catalog.ValidateGuide(standaloneBossGuide),
+    "catalog rejected a standalone Circle boss and its staged companion")
 local groupedBossGuide = {
     key = "grouped", name = "Grouped", instanceIds = { 902 },
     clientFlavors = { classicEra = true },
     mobs = {
         primary = schemaBoss(902, "circle", 1, "encounter", true),
-        first = schemaBoss(903, "skull", 2, "encounter", false),
+        first = schemaBoss(903, "skull", 2, "encounter", false, 50),
         second = schemaBoss(904, "cross", 3, "encounter", false),
         cleanup = schemaBoss(905, "none", 4, "encounter", false),
     },
@@ -1017,6 +1072,9 @@ local groupedBossGuide = {
 }
 assert(Catalog.ValidateGuide(groupedBossGuide),
     "catalog rejected Skull, Cross, or unmarked secondary bosses")
+assert(groupedBossGuide.mobs.first.autoMarkRank == 50
+        and groupedBossGuide.mobs.first.priority == 2,
+    "catalog coupled auto-mark precedence to Book ordering")
 local missingPrimaryGuide = {
     key = "missing", name = "Missing", instanceIds = { 903 },
     clientFlavors = { classicEra = true },
@@ -1052,10 +1110,23 @@ local invalidCircleGuide = {
 }
 assert(not pcall(Catalog.ValidateGuide, invalidCircleGuide),
     "catalog accepted Circle on an explicitly secondary boss")
+local mismatchedBossContextGuide = {
+    key = "mismatched", name = "Mismatched", instanceIds = { 907 },
+    clientFlavors = { classicEra = true },
+    mobs = {
+        one = schemaBoss(912, "circle", 1),
+        two = schemaBoss(913, "circle", 2),
+    },
+    sections = { { key = "one", name = "One", entries = { "one", "two" } } },
+}
+mismatchedBossContextGuide.mobs.one.stagingContext = "two"
+assert(not pcall(Catalog.ValidateGuide, mismatchedBossContextGuide),
+    "catalog accepted a boss staged into a different encounter")
 
 local invalid = {
     key = "invalid", name = "Invalid", instanceIds = { 1 }, clientFlavors = { classicEra = true },
     mobs = { one = { npcIds = { 1 }, name = "One", marker = "triangle", priority = 1,
+        autoMarkRank = 1,
         liveReason = "bad", rationale = "bad", abilities = {}, response = "bad",
         creatureType = "Humanoid", cc = "bad" } },
     sections = { { key = "one", name = "One", entries = { "one" } } },
@@ -1075,6 +1146,27 @@ invalid.mobs.one.marker = "skull"
 invalid.mobs.one.liveReason = string.rep("x", Catalog.GetLiveTextLimit() + 1)
 assert(not pcall(Catalog.ValidateGuide, invalid), "catalog accepted oversized live text")
 invalid.mobs.one.liveReason = "valid"
+invalid.mobs.one.autoMarkRank = nil
+assert(not pcall(Catalog.ValidateGuide, invalid),
+    "catalog accepted an automatic marker without an auto-mark rank")
+invalid.mobs.one.autoMarkRank = 0
+assert(not pcall(Catalog.ValidateGuide, invalid),
+    "catalog accepted a non-positive auto-mark rank")
+invalid.mobs.one.autoMarkRank = 1.5
+assert(not pcall(Catalog.ValidateGuide, invalid),
+    "catalog accepted a non-integer auto-mark rank")
+invalid.mobs.one.autoMarkRank = 1
+invalid.mobs.one.marker = "none"
+assert(not pcall(Catalog.ValidateGuide, invalid),
+    "catalog accepted auto-mark rank on No Auto Mark")
+invalid.mobs.one.marker = "skull"
+invalid.mobs.one.stagingContext = false
+assert(not pcall(Catalog.ValidateGuide, invalid),
+    "catalog accepted malformed staging context metadata")
+invalid.mobs.one.stagingContext = "missingEncounter"
+assert(not pcall(Catalog.ValidateGuide, invalid),
+    "catalog accepted a staging context without a boss encounter")
+invalid.mobs.one.stagingContext = nil
 invalid.mobs.two = { npcIds = { 1 }, name = "Two", marker = "none", priority = 2,
     liveReason = "valid", rationale = "valid", abilities = {}, response = "valid",
     creatureType = "Humanoid", cc = "valid" }

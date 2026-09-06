@@ -6,6 +6,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Made pre-pull Dungeon Guide marks stay staged within documented boss and add encounters while the player cycles targets, replacing an icon only for a stronger guide-ranked enemy, preserving manual owners across automatic resets, expiring abandoned staging after 15 seconds, and locking the result through combat.
 - Audited all seven Dungeon Guides for ordinary Classic Era and TBC Anniversary groups: added omitted mana burners and encounter companions, corrected linked-boss kill order, and made Circle identify only the primary boss or encounter anchor.
 - Added a full Zul'Farrak Dungeon Guide with four route chapters, dangerous-trash and boss marking, pyramid-event guidance, optional rares, and Gahz'rilla.
 - Corrected Maraudon's Dungeon Board level range from 32-44 to its Classic 45-52 range.

@@ -33,9 +33,13 @@ function P.GetRecommendationForGuid(guid)
     local mob, mobKey, guide = D.Catalog.FindMob(flavor, instanceId, npcId)
     if not mob then return nil end
     local marker = D.Catalog.GetMarker(mob.marker)
+    local stagingContext = mob.stagingContext or mob.encounterKey
+        or (mob.boss and mobKey) or "trash"
     return {
         guideKey = guide.key, mobKey = mobKey, npcId = npcId, mobName = mob.name,
         markerKey = marker.key, markerLabel = marker.label, markerIndex = marker.index,
-        priority = mob.priority, liveReason = mob.liveReason, boss = mob.boss == true,
+        priority = mob.priority, autoMarkRank = mob.autoMarkRank,
+        stagingContextKey = guide.key .. "/" .. stagingContext,
+        liveReason = mob.liveReason, boss = mob.boss == true,
     }
 end

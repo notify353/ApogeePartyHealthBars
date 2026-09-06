@@ -1,9 +1,10 @@
 local Catalog = ApogeePartyHealthBars_DungeonGuideCatalog
 
 local mobs = {}
-local function mob(key, id, name, marker, priority, live, rationale, abilities, response, creatureType, cc, exceptions, boss, encounterKey, primaryBoss)
+local function mob(key, id, name, marker, priority, live, rationale, abilities, response, creatureType, cc, exceptions, boss, encounterKey, primaryBoss, autoMarkRank)
     mobs[key] = {
         npcIds = { id }, name = name, marker = marker, priority = priority,
+        autoMarkRank = marker ~= "none" and (autoMarkRank or priority) or nil,
         liveReason = live, rationale = rationale, abilities = abilities or {},
         response = response, creatureType = creatureType, cc = cc,
         exceptions = exceptions or {}, boss = boss == true,
@@ -171,6 +172,11 @@ mob("archaedas", 2748, "Archaedas", "circle", 290,
     { "Ground Tremor", "Awaken Earthen Guardians", "Awaken Vault Warder" },
     "Kill Hallshapers, gather the Guardian wave, secure both Warders late, and finish Archaedas once healer threat is safe.",
     "Giant", "Boss control is unreliable; control awakened adds and use mitigation on the boss.", {}, true)
+
+mobs.obsidianShard.stagingContext = "obsidianSentinel"
+mobs.earthenHallshaper.stagingContext = "archaedas"
+mobs.earthenGuardian.stagingContext = "archaedas"
+mobs.vaultWarder.stagingContext = "archaedas"
 
 Catalog.RegisterGuide({
     key = "uldaman", name = "Uldaman", instanceIds = { 70 },

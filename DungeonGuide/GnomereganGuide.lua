@@ -1,9 +1,10 @@
 local Catalog = ApogeePartyHealthBars_DungeonGuideCatalog
 
 local mobs = {}
-local function mob(key, id, name, marker, priority, live, rationale, abilities, response, creatureType, cc, exceptions, boss)
+local function mob(key, id, name, marker, priority, live, rationale, abilities, response, creatureType, cc, exceptions, boss, autoMarkRank)
     mobs[key] = {
         npcIds = { id }, name = name, marker = marker, priority = priority,
+        autoMarkRank = marker ~= "none" and (autoMarkRank or priority) or nil,
         liveReason = live, rationale = rationale, abilities = abilities or {},
         response = response, creatureType = creatureType, cc = cc,
         exceptions = exceptions or {}, boss = boss == true,
@@ -188,6 +189,9 @@ mob("thermaplugg", 7800, "Mekgineer Thermaplugg", "circle", 110,
     { "Knock Away" },
     "Fight near the outer wall, keep knockbacks away from uncleared mobs, and close active bomb chutes.",
     "Mechanical", "Boss control is unreliable; ordinary humanoid control does not work.", {}, true)
+
+mobs.walkingBomb.stagingContext = "thermaplugg"
+mobs.burningServant.stagingContext = "darkIronAmbassador"
 
 Catalog.RegisterGuide({
     key = "gnomeregan", name = "Gnomeregan", instanceIds = { 90 },

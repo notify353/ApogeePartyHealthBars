@@ -1,9 +1,10 @@
 local Catalog = ApogeePartyHealthBars_DungeonGuideCatalog
 
 local mobs = {}
-local function mob(key, id, name, marker, priority, live, rationale, abilities, response, creatureType, cc, exceptions, boss, encounterKey, primaryBoss)
+local function mob(key, id, name, marker, priority, live, rationale, abilities, response, creatureType, cc, exceptions, boss, encounterKey, primaryBoss, autoMarkRank)
     mobs[key] = {
         npcIds = { id }, name = name, marker = marker, priority = priority,
+        autoMarkRank = marker ~= "none" and (autoMarkRank or priority) or nil,
         liveReason = live, rationale = rationale, abilities = abilities or {},
         response = response, creatureType = creatureType, cc = cc,
         exceptions = exceptions or {}, boss = boss == true,
@@ -194,6 +195,10 @@ mob("zerillis", 10082, "Zerillis", "circle", 300,
     { "Frost Shot", "Net", "Shoot" },
     "Wait for a safe patrol position, pull behind cover, and keep Zerillis in melee range until the fight ends.",
     "Humanoid", "Boss control is unreliable; use line of sight, dispels, and focused damage.", {}, true)
+
+mobs.wardOfZumrah.stagingContext = "zumrah"
+mobs.murtaGrimgut.stagingContext = "sergeantBly"
+mobs.oroEyegouge.stagingContext = "sergeantBly"
 
 Catalog.RegisterGuide({
     key = "zulFarrak", name = "Zul'Farrak", instanceIds = { 209 },

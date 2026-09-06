@@ -453,7 +453,11 @@ dungeonGuidePolicy.Initialize({
         return select(8, GetInstanceInfo())
     end,
 })
-M.Initialize({ Policy = dungeonGuidePolicy, Settings = dungeonGuideSettings })
+M.Initialize({
+    Policy = dungeonGuidePolicy,
+    Settings = dungeonGuideSettings,
+    Now = function() return GetTime and GetTime() or 0 end,
+})
 
 local mentionAlerts = ApogeePartyHealthBars_MentionAlerts
 mentionAlerts.Initialize({

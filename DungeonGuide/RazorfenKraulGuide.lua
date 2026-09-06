@@ -1,9 +1,10 @@
 local Catalog = ApogeePartyHealthBars_DungeonGuideCatalog
 
 local mobs = {}
-local function mob(key, id, name, marker, priority, live, rationale, abilities, response, creatureType, cc, exceptions, boss)
+local function mob(key, id, name, marker, priority, live, rationale, abilities, response, creatureType, cc, exceptions, boss, autoMarkRank)
     mobs[key] = {
         npcIds = { id }, name = name, marker = marker, priority = priority,
+        autoMarkRank = marker ~= "none" and (autoMarkRank or priority) or nil,
         liveReason = live, rationale = rationale, abilities = abilities or {},
         response = response, creatureType = creatureType, cc = cc,
         exceptions = exceptions or {}, boss = boss == true,
@@ -192,6 +193,8 @@ mob("charlgaRazorflank", 4421, "Charlga Razorflank", "circle", 270,
     { "Chain Bolt", "Renew", "Purity" },
     "Interrupt from range, pull Charlga onto the lower landing, spread out, and maintain an interrupt order.",
     "Humanoid", "Boss control is unreliable; interrupts are the dependable answer.", {}, true)
+
+mobs.boarSpirit.stagingContext = "aggemThorncurse"
 
 Catalog.RegisterGuide({
     key = "razorfenKraul", name = "Razorfen Kraul", instanceIds = { 47 },

@@ -1,9 +1,10 @@
 local Catalog = ApogeePartyHealthBars_DungeonGuideCatalog
 
 local mobs = {}
-local function mob(key, id, name, marker, priority, live, rationale, abilities, response, creatureType, cc, exceptions, boss)
+local function mob(key, id, name, marker, priority, live, rationale, abilities, response, creatureType, cc, exceptions, boss, autoMarkRank)
     mobs[key] = {
         npcIds = { id }, name = name, marker = marker, priority = priority,
+        autoMarkRank = marker ~= "none" and (autoMarkRank or priority) or nil,
         liveReason = live, rationale = rationale, abilities = abilities or {},
         response = response, creatureType = creatureType, cc = cc,
         exceptions = exceptions or {}, boss = boss == true,
@@ -158,6 +159,8 @@ mob("amnennar", 7358, "Amnennar the Coldbringer", "circle", 260,
     { "Amnennar's Wrath", "Frost Nova", "Frostbolt", "Summon Frost Spectres" },
     "Tank with the hut behind the tank, interrupt Frostbolt, gather spectres, and burn the boss when healing is stable.",
     "Undead", "Boss control is unreliable; use interrupts, positioning, and mitigation.", {}, true)
+
+mobs.frostSpectre.stagingContext = "amnennar"
 
 Catalog.RegisterGuide({
     key = "razorfenDowns", name = "Razorfen Downs", instanceIds = { 129 },

@@ -52,7 +52,7 @@ function P.Create(parent, deps)
     local text = legend:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     text:SetPoint("TOPLEFT", legend, "TOPLEFT", 8, -8); text:SetPoint("RIGHT", legend, "RIGHT", -8, 0)
     text:SetJustifyH("LEFT"); text:SetJustifyV("TOP")
-    text:SetText("Out of combat: SKULL, CROSS, and boss CIRCLE may move as you change targets.\nIn combat: each observed mark stays with its living target until removed.\n\nCC guidance is manual. Existing marks are preserved; the add-on never targets mobs or casts abilities.")
+    text:SetText("Out of combat: target cycling stages SKULL, CROSS, and boss CIRCLE within one documented encounter. Stronger guide targets replace automatic marks; encounter changes or 15 seconds of inactivity start fresh.\nIn combat: each observed mark stays with its living target until removed.\n\nCC guidance is manual. Existing marks are preserved; the add-on never targets or scans mobs.")
     form.explanation = text
     UIH.LayoutForm(form, {
         { frame = enabledRow, height = 38 },

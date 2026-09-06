@@ -63,6 +63,8 @@ local function validateMob(key, mob, ids)
         "invalid guide primary boss flag: " .. key)
     assert(mob.encounterKey == nil or nonblank(mob.encounterKey),
         "invalid guide encounter key: " .. key)
+    assert(mob.stagingContext == nil or nonblank(mob.stagingContext),
+        "invalid guide staging context: " .. key)
     assert(mob.encounterKey == nil or mob.primaryBoss ~= nil,
         "grouped guide boss requires explicit primary flag: " .. key)
     assert(mob.boss or (mob.primaryBoss == nil and mob.encounterKey == nil),
@@ -74,6 +76,15 @@ local function validateMob(key, mob, ids)
     assert(mob.marker ~= "circle" or mob.primaryBoss ~= false,
         "guide Circle marker cannot be secondary: " .. key)
     assert(type(mob.priority) == "number" and mob.priority >= 0, "invalid guide priority: " .. key)
+    if mob.marker == "none" then
+        assert(mob.autoMarkRank == nil,
+            "No Auto Mark guide mob cannot have auto-mark rank: " .. key)
+    else
+        assert(type(mob.autoMarkRank) == "number"
+                and mob.autoMarkRank > 0
+                and mob.autoMarkRank == math.floor(mob.autoMarkRank),
+            "automatic guide marker requires positive integer rank: " .. key)
+    end
     assert(nonblank(mob.liveReason), "guide live reason is required: " .. key)
     assert(#mob.liveReason <= LIVE_TEXT_LIMIT, "guide live reason is too long: " .. key)
     assert(nonblank(mob.rationale), "guide rationale is required: " .. key)
@@ -137,6 +148,14 @@ function C.ValidateGuide(guide)
             local mob = guide.mobs[encounterKey]
             assert(mob and not mob.encounterKey,
                 "guide secondary boss encounter reference is invalid: " .. encounterKey)
+        end
+    end
+    for key, mob in pairs(guide.mobs) do
+        if mob.stagingContext then
+            assert(encounters[mob.stagingContext],
+                "guide staging context must reference a boss encounter: " .. key)
+            assert(not mob.boss or mob.stagingContext == (mob.encounterKey or key),
+                "guide boss staging context must match its encounter: " .. key)
         end
     end
     for _, section in ipairs(guide.sections) do

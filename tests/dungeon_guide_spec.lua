@@ -5,6 +5,7 @@ dofile("DungeonGuide/StockadesGuide.lua")
 dofile("DungeonGuide/RazorfenKraulGuide.lua")
 dofile("DungeonGuide/RazorfenDownsGuide.lua")
 dofile("DungeonGuide/UldamanGuide.lua")
+dofile("DungeonGuide/ZulFarrakGuide.lua")
 dofile("DungeonGuide/DungeonGuidePolicy.lua")
 dofile("DungeonGuide/DungeonGuideSettings.lua")
 dofile("DungeonGuide/DungeonGuideUI.lua")
@@ -18,20 +19,22 @@ local function hasAbility(mob, expected)
 end
 
 local guides = Catalog.ListGuides("classicEra")
-assert(#guides == 6 and guides[1].key == "scarletMonastery"
+assert(#guides == 7 and guides[1].key == "scarletMonastery"
         and guides[2].key == "gnomeregan"
         and guides[3].key == "stockades"
         and guides[4].key == "razorfenKraul"
         and guides[5].key == "razorfenDowns"
-        and guides[6].key == "uldaman",
+        and guides[6].key == "uldaman"
+        and guides[7].key == "zulFarrak",
     "Dungeon Guides were not enumerated in their registered order for Classic Era")
 local tbcGuides = Catalog.ListGuides("tbcAnniversary")
-assert(#tbcGuides == 6 and tbcGuides[1].key == "scarletMonastery"
+assert(#tbcGuides == 7 and tbcGuides[1].key == "scarletMonastery"
         and tbcGuides[2].key == "gnomeregan"
         and tbcGuides[3].key == "stockades"
         and tbcGuides[4].key == "razorfenKraul"
         and tbcGuides[5].key == "razorfenDowns"
-        and tbcGuides[6].key == "uldaman",
+        and tbcGuides[6].key == "uldaman"
+        and tbcGuides[7].key == "zulFarrak",
     "Dungeon Guides were not enumerated in their registered order for TBC Anniversary")
 local guide = guides[1]
 assert(#guide.sections == 4
@@ -69,6 +72,7 @@ local expectedTextures = {
     razorfenKraul = "RazorfenKraul.png",
     razorfenDowns = "RazorfenDowns.png",
     uldaman = "Uldaman.png",
+    zulFarrak = "ZulFarrak.png",
 }
 local mapPrefix = "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\"
 local mappedChapterCount, cathedralMap = 0
@@ -102,7 +106,7 @@ for _, mappedGuide in ipairs(guides) do
         end
     end
 end
-assert(mappedChapterCount == 23, "not every Dungeon Guide chapter received map metadata")
+assert(mappedChapterCount == 27, "not every Dungeon Guide chapter received map metadata")
 assert(cathedralMap
         and cathedralMap.texture == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ScarletMonasteryCathedral.png"
         and cathedralMap.width == 2048 and cathedralMap.height == 2048
@@ -119,11 +123,13 @@ local sourceFiles = {
     "scarlet-monastery-graveyard", "scarlet-monastery-library",
     "scarlet-monastery-armory", "scarlet-monastery-cathedral",
     "gnomeregan", "stockades", "razorfen-kraul", "razorfen-downs", "uldaman",
+    "zul-farrak",
 }
 local pngFiles = {
     "ScarletMonasteryGraveyard", "ScarletMonasteryLibrary",
     "ScarletMonasteryArmory", "ScarletMonasteryCathedral",
     "Gnomeregan", "Stockades", "RazorfenKraul", "RazorfenDowns", "Uldaman",
+    "ZulFarrak",
 }
 for _, filename in ipairs(sourceFiles) do
     local file = assert(io.open("assets/dungeon-maps/" .. filename .. ".svg", "rb"),
@@ -526,6 +532,92 @@ local freshUldaman = Catalog.GetGuide("uldaman", "classicEra")
 assert(freshUldaman.sections[1].route[1] ~= "mutated"
         and freshUldaman.mobs.shadowforgeDarkcaster.name == "Shadowforge Darkcaster",
     "catalog callers could mutate Uldaman strategy data")
+
+local zulFarrak = Catalog.GetGuide("zulFarrak", "classicEra")
+assert(zulFarrak and #zulFarrak.sections == 4
+        and zulFarrak.sections[1].key == "entranceAntusul"
+        and zulFarrak.sections[2].key == "thekaZumrah"
+        and zulFarrak.sections[3].key == "pyramidEvent"
+        and zulFarrak.sections[4].key == "sacredPoolChief",
+    "Zul'Farrak did not preserve its four-chapter full-clear order")
+local zulFarrakRoute = table.concat({
+    table.concat(zulFarrak.sections[1].route, " "),
+    table.concat(zulFarrak.sections[2].route, " "),
+    table.concat(zulFarrak.sections[3].route, " "),
+    table.concat(zulFarrak.sections[4].route, " "),
+}, " ")
+assert(zulFarrakRoute:find("Antu'sul", 1, true)
+        and zulFarrakRoute:find("shallow graves", 1, true)
+        and zulFarrakRoute:find("Sandfury Executioner", 1, true)
+        and zulFarrakRoute:find("Nekrum and Sezz'ziz", 1, true)
+        and zulFarrakRoute:find("Weegli Blastfuse", 1, true)
+        and zulFarrakRoute:find("Mallet of Zul'Farrak", 1, true)
+        and zulFarrakRoute:find("Ruuzlu first", 1, true),
+    "Zul'Farrak route omitted graveyard, pyramid, Mallet, or final-chief guidance")
+assert(Catalog.GetGuideForInstance("classicEra", 209).key == "zulFarrak"
+        and Catalog.GetGuideForInstance("tbcAnniversary", 209).key == "zulFarrak"
+        and Catalog.GetGuideForInstance("unsupported", 209) == nil
+        and Catalog.GetGuideForInstance("classicEra", 1209) == nil,
+    "Zul'Farrak client or instance gating drifted")
+local zulFarrakIds = {
+    [5648] = "sandfuryShadowcaster", [5649] = "sandfuryBloodDrinker",
+    [5650] = "sandfuryWitchDoctor", [7246] = "sandfuryShadowhunter",
+    [7247] = "sandfurySoulEater", [7267] = "ukorz",
+    [7268] = "sandfuryGuardian", [7269] = "scarab",
+    [7271] = "zumrah", [7272] = "theka", [7273] = "gahzrilla",
+    [7274] = "sandfuryExecutioner", [7275] = "sezzziz",
+    [7286] = "zulFarrakZombie", [7604] = "sergeantBly",
+    [7606] = "oroEyegouge", [7608] = "murtaGrimgut",
+    [7785] = "wardOfZumrah", [7789] = "sandfuryCretin",
+    [7795] = "velratha", [7796] = "nekrum", [7797] = "ruuzlu",
+    [8127] = "antusul", [8156] = "servantOfAntusul",
+    [10080] = "sandarr", [10081] = "dustwraith", [10082] = "zerillis",
+}
+for npcId, expectedKey in pairs(zulFarrakIds) do
+    local zulFarrakMob, mobKey = Catalog.FindMob("classicEra", 209, npcId)
+    assert(mobKey == expectedKey and zulFarrakMob and zulFarrakMob.rationale:match("%S")
+            and zulFarrakMob.cc:match("%S")
+            and #zulFarrakMob.liveReason <= Catalog.GetLiveTextLimit(),
+        "missing, mismatched, or incomplete Zul'Farrak NPC: " .. npcId)
+    local tbcZulFarrakMob, tbcMobKey = Catalog.FindMob("tbcAnniversary", 209, npcId)
+    assert(tbcMobKey == expectedKey and tbcZulFarrakMob,
+        "missing or mismatched TBC Anniversary Zul'Farrak NPC: " .. npcId)
+end
+assert(Catalog.FindMob("classicEra", 209, 999999) == nil
+        and Catalog.FindMob("classicEra", 70, 7246) == nil
+        and Catalog.FindMob("unsupported", 209, 7246) == nil,
+    "Zul'Farrak NPC advice escaped its catalog boundaries")
+local zulFarrakBossKeys = {
+    "sandfuryExecutioner", "nekrum", "sezzziz", "antusul", "theka",
+    "zumrah", "sergeantBly", "velratha", "gahzrilla", "ruuzlu", "ukorz",
+    "sandarr", "dustwraith", "zerillis",
+}
+for _, bossKey in ipairs(zulFarrakBossKeys) do
+    local boss = zulFarrak.mobs[bossKey]
+    assert(boss and boss.boss and boss.marker == "circle",
+        "Zul'Farrak boss coverage or Circle classification drifted: " .. bossKey)
+end
+assert(hasAbility(zulFarrak.mobs.sandfuryShadowhunter, "Hex")
+        and hasAbility(zulFarrak.mobs.sandfuryWitchDoctor, "Healing Ward")
+        and hasAbility(zulFarrak.mobs.sandfurySoulEater, "Dark Offering")
+        and hasAbility(zulFarrak.mobs.antusul, "Earthgrab Totem")
+        and hasAbility(zulFarrak.mobs.theka, "Theka Transform")
+        and hasAbility(zulFarrak.mobs.zumrah, "Shadow Bolt Volley")
+        and hasAbility(zulFarrak.mobs.sezzziz, "Psychic Scream")
+        and hasAbility(zulFarrak.mobs.gahzrilla, "Gahz'rilla Slam")
+        and zulFarrak.mobs.sandfuryShadowhunter.marker == "skull"
+        and zulFarrak.mobs.sandfuryBloodDrinker.marker == "cross"
+        and zulFarrak.mobs.scarab.marker == "none"
+        and zulFarrak.mobs.gahzrilla.exceptions[1]:find("Mallet", 1, true)
+        and zulFarrak.mobs.sergeantBly.exceptions[1]:find("Divino%-matic Rod"),
+    "Zul'Farrak mechanics, markers, Mallet, or optional betrayal guidance drifted")
+local mutatedZulFarrak = Catalog.GetGuide("zulFarrak", "classicEra")
+mutatedZulFarrak.sections[1].route[1] = "mutated"
+mutatedZulFarrak.mobs.sandfuryShadowhunter.name = "mutated"
+local freshZulFarrak = Catalog.GetGuide("zulFarrak", "classicEra")
+assert(freshZulFarrak.sections[1].route[1] ~= "mutated"
+        and freshZulFarrak.mobs.sandfuryShadowhunter.name == "Sandfury Shadowhunter",
+    "catalog callers could mutate Zul'Farrak strategy data")
 assert(Catalog.GetMarker("skull").index == 8 and Catalog.GetMarker("cross").index == 7
         and Catalog.GetMarker("moon") == nil and Catalog.GetMarker("circle").index == 2
         and Catalog.GetMarker("none").index == nil
@@ -686,6 +778,26 @@ for npcId, expected in pairs(uldamanRecommendations) do
             and resolved.markerIndex == expected[2],
         "Uldaman marker policy drifted for NPC " .. npcId)
 end
+instanceId = 209
+local zulFarrakRecommendations = {
+    [7246] = { "skull", 8 },
+    [5650] = { "skull", 8 },
+    [5649] = { "cross", 7 },
+    [7268] = { "cross", 7 },
+    [7269] = { "none", nil },
+    [7789] = { "none", nil },
+    [8127] = { "circle", 2 },
+    [7273] = { "circle", 2 },
+    [7267] = { "circle", 2 },
+    [10082] = { "circle", 2 },
+}
+for npcId, expected in pairs(zulFarrakRecommendations) do
+    local resolved = Policy.GetRecommendationForGuid(
+        "Creature-0-1-209-1-" .. npcId .. "-0000000001")
+    assert(resolved and resolved.markerKey == expected[1]
+            and resolved.markerIndex == expected[2],
+        "Zul'Farrak marker policy drifted for NPC " .. npcId)
+end
 instanceId = 999
 assert(Policy.GetRecommendationForGuid(scryerGuid) == nil, "unsupported instance leaked advice")
 instanceId, flavor = 189, "unsupported"
@@ -836,6 +948,31 @@ assert(uldamanCrafters:find("Altar sequence", 1, true)
         and uldamanCrafters:find("Healer protection", 1, true)
         and uldamanCrafters:find("Vault Warder", 1, true),
     "Uldaman final chapter omitted altar, add-wave, or healer-protection guidance")
+local zulFarrakEntrance = UI.BuildChapterText(freshZulFarrak, "entranceAntusul", Catalog)
+assert(zulFarrakEntrance:find("ROUTE", 1, true)
+        and zulFarrakEntrance:find("Sandfury Shadowhunter", 1, true)
+        and zulFarrakEntrance:find("Caster corners", 1, true)
+        and zulFarrakEntrance:find("Antu'sul pull", 1, true),
+    "Zul'Farrak entrance chapter omitted caster, route, or Antu'sul guidance")
+local zulFarrakGraveyard = UI.BuildChapterText(freshZulFarrak, "thekaZumrah", Catalog)
+assert(zulFarrakGraveyard:find("Scarab restraint", 1, true)
+        and zulFarrakGraveyard:find("Shallow graves", 1, true)
+        and zulFarrakGraveyard:find("Ward of Zum'rah", 1, true)
+        and zulFarrakGraveyard:find("Dustwraith", 1, true),
+    "Zul'Farrak graveyard chapter omitted scarab, grave, ward, or rare guidance")
+local zulFarrakPyramid = UI.BuildChapterText(freshZulFarrak, "pyramidEvent", Catalog)
+assert(zulFarrakPyramid:find("Sandfury Executioner", 1, true)
+        and zulFarrakPyramid:find("Keep Weegli alive", 1, true)
+        and zulFarrakPyramid:find("Nekrum Gutchewer", 1, true)
+        and zulFarrakPyramid:find("Optional betrayal", 1, true),
+    "Zul'Farrak pyramid chapter omitted event, boss, demolition, or betrayal guidance")
+local zulFarrakChief = UI.BuildChapterText(freshZulFarrak, "sacredPoolChief", Catalog)
+assert(zulFarrakChief:find("Mallet check", 1, true)
+        and zulFarrakChief:find("Hydromancer Velratha", 1, true)
+        and zulFarrakChief:find("Gahz'rilla Slam", 1, true)
+        and zulFarrakChief:find("Ruuzlu", 1, true)
+        and zulFarrakChief:find("Berserker Stance", 1, true),
+    "Zul'Farrak final chapter omitted Mallet, pool, knock-up, or chief guidance")
 assert(UI.BuildChapterText(gnomeregan, "missing", Catalog)
         == "Choose a chapter to read its guide.",
     "Dungeon Book empty-state terminology was not chapter-generic")

@@ -54,7 +54,7 @@ Settings page construction, `ProfileStore`/profile migration internals, and Dung
 - `DungeonBoardFeed`: display-only three-entry chat/guild opportunity feed with 30-second lifetime, final-five-second fade, material-change deduplication, guild emphasis, and throttled optional sound
 - `DungeonBoardUI`: beginner-facing request explanations, full-name and level-range presentation, labeled original slang, plain-language role controls, an opaque high-contrast top-level panel, adaptive compact request cards, manual official refresh state, source/member presentation, highlighted guild requests, dungeon-first catalog grouping, and age refresh
 - `DungeonBoardEvents`: authoritative chat/guild payload adaptation plus Group Finder result/failure/update routing and login initialization
-- `DungeonGuideCatalog`, `ScarletMonasteryGuide`, `GnomereganGuide`, `StockadesGuide`, `RazorfenKraulGuide`, `RazorfenDownsGuide`: validated immutable dungeon/chapter/mob strategy specification keyed by client flavor, instance ID, and NPC ID, with bounded route guidance, semantic markers, live reasons, full rationale, responses, creature-type CC, exceptions, and conditional pack rules
+- `DungeonGuideCatalog` and the dungeon strategy packs from `ScarletMonasteryGuide` through `ZulFarrakGuide`: validated immutable dungeon/chapter/mob strategy specification keyed by client flavor, instance ID, and NPC ID, with bounded route guidance, semantic markers, live reasons, full rationale, responses, creature-type CC, exceptions, and conditional pack rules
 - `DungeonGuidePolicy`: pure creature-GUID parsing, instance/flavor gating, NPC resolution, and compact current-target recommendation generation
 - `DungeonGuideSettings`: profile-owned automatic-marking toggle plus Dungeon Book position and size; chapter, Map/Strategy view, zoom, and pan remain session-only
 - `DungeonGuideUI`, `DungeonGuideSettingsPage`: scalable read-only Book rendering and Dungeon settings access without editable strategy fields or hover-only explanations
@@ -135,7 +135,7 @@ The data and pure-policy chain loads as `DungeonBoardCatalog` → `DungeonBoardA
 
 ## Dungeon Guide TOC Order
 
-The reviewed data chain loads as `DungeonGuideCatalog` → strategy packs such as `ScarletMonasteryGuide`, `GnomereganGuide`, `StockadesGuide`, `RazorfenKraulGuide`, and `RazorfenDownsGuide` → `DungeonGuidePolicy`. After shared UI primitives and saved settings are available, `DungeonGuideSettings` → `DungeonGuideUI` load. `RaidMarkers` consumes the policy and setting from the final composition root, while the existing lifecycle target-change path invokes it. Adding another dungeon is data-only: register a guide, chapters, optional bounded route steps, NPC records, and pack rules without modifying the Book or marker controller.
+The reviewed data chain loads as `DungeonGuideCatalog` → strategy packs from `ScarletMonasteryGuide` through `ZulFarrakGuide` → `DungeonGuidePolicy`. After shared UI primitives and saved settings are available, `DungeonGuideSettings` → `DungeonGuideUI` load. `RaidMarkers` consumes the policy and setting from the final composition root, while the existing lifecycle target-change path invokes it. Adding another dungeon is data-only: register a guide, chapters, optional bounded route steps, NPC records, and pack rules without modifying the Book or marker controller.
 
 ## Invariants
 

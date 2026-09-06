@@ -96,7 +96,7 @@ do
     allClassicKeys[#allClassicKeys + 1] = dungeon.key
 end
 local level37Window = Eligibility.GetLevelWindow(37, 5, 5)
-local expectedLevel37Keys = "GNO,RFK,SMG,SML,SMA,SMC,RFD,ULD,MAR"
+local expectedLevel37Keys = "GNO,RFK,SMG,SML,SMA,SMC,RFD,ULD"
 for _, source in ipairs({ "channel", "blizzard" }) do
     local entry = {
         source = source,

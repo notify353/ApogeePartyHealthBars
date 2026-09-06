@@ -507,6 +507,8 @@ assert(tocLoadOrder["DungeonGuide/DungeonGuideCatalog.lua"]
     and tocLoadOrder["DungeonGuide/RazorfenDownsGuide.lua"]
         < tocLoadOrder["DungeonGuide/UldamanGuide.lua"]
     and tocLoadOrder["DungeonGuide/UldamanGuide.lua"]
+        < tocLoadOrder["DungeonGuide/ZulFarrakGuide.lua"]
+    and tocLoadOrder["DungeonGuide/ZulFarrakGuide.lua"]
         < tocLoadOrder["DungeonGuide/DungeonGuidePolicy.lua"],
     "Dungeon Guide packs loaded outside their registered policy order")
 assert(type(ApogeePartyHealthBars_DungeonGuideUI.Toggle) == "function"
@@ -1034,8 +1036,10 @@ assert(guideDungeonDropdown.optionButtons[2]
         and guideDungeonDropdown.optionButtons[5]
         and guideDungeonDropdown.optionButtons[5].label:GetText() == "Razorfen Downs"
         and guideDungeonDropdown.optionButtons[6]
-        and guideDungeonDropdown.optionButtons[6].label:GetText() == "Uldaman",
-    "Dungeon Book did not expose all six strategy packs in registered order")
+        and guideDungeonDropdown.optionButtons[6].label:GetText() == "Uldaman"
+        and guideDungeonDropdown.optionButtons[7]
+        and guideDungeonDropdown.optionButtons[7].label:GetText() == "Zul'Farrak",
+    "Dungeon Book did not expose all seven strategy packs in registered order")
 guideScroll:SetVerticalScroll(240)
 local cathedralChoice = assert(guideSectionDropdown.optionButtons[4],
     "Dungeon Book did not create its Cathedral chapter choice")
@@ -1107,10 +1111,19 @@ assert(ApogeePartyHealthBars_DungeonGuideUI.IsShown()
         and guideMapTexture.texture == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\Gnomeregan.png",
     "Alt-left-click did not refresh an open Book to the newly detected dungeon")
 
+currentInstanceId = 209
+ClickMinimapButton(true)
+assert(ApogeePartyHealthBars_DungeonGuideUI.IsShown()
+        and guideDungeonDropdown.selectedKey == "zulFarrak"
+        and guideSectionDropdown.selectedKey == "entranceAntusul"
+        and guideMapTexture.texture == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\DungeonGuide\\ZulFarrak.png"
+        and ApogeePartyHealthBars_DungeonGuideUI.GetActiveView() == "map",
+    "Alt-left-click did not open the detected Zul'Farrak map")
+
 currentInstanceId = 999999
 ClickMinimapButton(true)
-assert(guideDungeonDropdown.selectedKey == "gnomeregan"
-        and guideSectionDropdown.selectedKey == "hallOfGears",
+assert(guideDungeonDropdown.selectedKey == "zulFarrak"
+        and guideSectionDropdown.selectedKey == "entranceAntusul",
     "unsupported instance detection discarded the last selected guide and chapter")
 
 currentInstanceId = 189

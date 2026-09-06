@@ -11,6 +11,20 @@ local expectedTbcOnly = {
     "SL", "SH", "BM", "SV", "MECH", "BOT", "ARC", "MGT",
 }
 
+local expectedLevelRanges = {
+    RFC = { 15, 20 }, WC = { 17, 25 }, DM = { 17, 26 }, SFK = { 18, 26 },
+    BFD = { 20, 30 }, STK = { 22, 30 }, GNO = { 24, 34 }, RFK = { 30, 40 },
+    SMG = { 26, 36 }, SML = { 29, 39 }, SMA = { 34, 42 }, SMC = { 37, 45 },
+    RFD = { 40, 50 }, ULD = { 37, 45 }, ZF = { 44, 54 }, MAR = { 45, 52 },
+    ST = { 50, 60 }, BRD = { 49, 61 }, DME = { 54, 60 }, DMW = { 57, 60 },
+    DMN = { 58, 60 }, STR = { 58, 60 }, SCH = { 58, 60 }, LBRS = { 57, 60 },
+    UBRS = { 58, 60 }, RAMPS = { 59, 67 }, BF = { 61, 68 }, SP = { 62, 69 },
+    UB = { 63, 70 }, MT = { 64, 71 }, CRYPTS = { 65, 72 }, OHB = { 66, 73 },
+    SETH = { 67, 73 }, SL = { 69, 75 }, SH = { 69, 75 }, BM = { 69, 75 },
+    SV = { 69, 75 }, MECH = { 70, 75 }, BOT = { 70, 75 }, ARC = { 70, 75 },
+    MGT = { 68, 75 },
+}
+
 local function assertKeyList(actual, expected, label)
     assert(#actual == #expected,
         label .. " count changed: expected " .. #expected .. ", got " .. #actual)
@@ -44,6 +58,13 @@ for _, definition in ipairs(tbc) do
     assert(type(definition.minLevel) == "number" and type(definition.maxLevel) == "number"
         and definition.minLevel <= definition.maxLevel,
         definition.key .. " has invalid level range")
+    local expectedRange = expectedLevelRanges[definition.key]
+    assert(expectedRange and definition.minLevel == expectedRange[1]
+        and definition.maxLevel == expectedRange[2],
+        definition.key .. " level range changed: expected "
+            .. tostring(expectedRange and expectedRange[1]) .. "-"
+            .. tostring(expectedRange and expectedRange[2]) .. ", got "
+            .. tostring(definition.minLevel) .. "-" .. tostring(definition.maxLevel))
     assert(definition.maxPlayers == 5 or definition.key == "UBRS"
         and definition.maxPlayers == 10,
         definition.key .. " has invalid group size")

@@ -38,7 +38,7 @@ local definitions = {
         aliases = {
             "zf", "zul farrak", "zulfarrak", "zulfarak", "zulfa", "zulf",
         } },
-    { key = "MAR", name = "Maraudon", chatLabel = "Mara", expansion = "classicEra", minLevel = 32, maxLevel = 44,
+    { key = "MAR", name = "Maraudon", chatLabel = "Mara", expansion = "classicEra", minLevel = 45, maxLevel = 52,
         aliases = {
             "mar", "mara", "maraudon", "mauradon", "mauro", "maurodon", "princessrun",
             "maraudin", "maura", "marau", "mauraudon",

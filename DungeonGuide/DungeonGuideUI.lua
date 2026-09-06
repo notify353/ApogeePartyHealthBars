@@ -92,7 +92,7 @@ function UI.BuildChapterText(guide, sectionKey, catalog, includeLegend)
     if includeLegend ~= false then
         lines[#lines + 1] = "MARKER LEGEND"
         lines[#lines + 1] = "SKULL — automatic first kill    CROSS — automatic second kill"
-        lines[#lines + 1] = "CIRCLE — automatic boss    NO AUTO MARK — manual choice, mechanics, CC, or cleanup"
+        lines[#lines + 1] = "CIRCLE — primary boss / encounter anchor    NO AUTO MARK — manual choice, mechanics, CC, or cleanup"
         lines[#lines + 1] = ""
     end
     lines[#lines + 1] = GOLD .. escape(guide.name .. " — " .. section.name) .. RESET
@@ -282,7 +282,7 @@ function UI.Build(deps)
     title:SetText("Dungeon Guide")
     local subtitle = window:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -2)
-    subtitle:SetText("Read-only strategy — automatic marks are limited to kill and boss targets")
+    subtitle:SetText("Read-only strategy — automatic marks show kill order and encounter anchors")
     window.subtitle = subtitle
     local close = UIH.CreateButton(window, "Close", 82, 26)
     close:SetPoint("TOPRIGHT", window, "TOPRIGHT", -14, -11)
@@ -304,7 +304,7 @@ function UI.Build(deps)
 
     markerLegend = toolbar:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     markerLegend:SetPoint("LEFT", toolbar, "LEFT", 10, 0)
-    markerLegend:SetText("|cffffd34eSKULL|r  First kill   |cffff6666CROSS|r  Second kill   |cffffa040CIRCLE|r  Boss\n|cffb8bec9NO AUTO MARK|r  Manual mechanics, CC, or cleanup")
+    markerLegend:SetText("|cffffd34eSKULL|r  First kill   |cffff6666CROSS|r  Second kill   |cffffa040CIRCLE|r  Primary boss / encounter anchor\n|cffb8bec9NO AUTO MARK|r  Manual mechanics, CC, or cleanup")
     window.legend = markerLegend
 
     strategyScroll = CreateFrame("ScrollFrame", nil, window, "UIPanelScrollFrameTemplate")

@@ -7,6 +7,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 ## [Unreleased]
 
 - Added a full Maraudon Dungeon Guide with five route chapters, purple and orange entrance guidance, quest events, dangerous plant and slime pulls, the Scepter shortcut, all bosses and summons, and automatic target marking.
+- Excluded hostile totems and wards from Threat Control's aggro monitor so they no longer consume enemy rows or affect nameplate coverage.
 - Made pre-pull Dungeon Guide marks stay staged within documented boss and add encounters while the player cycles targets, replacing an icon only for a stronger guide-ranked enemy, preserving manual owners across automatic resets, expiring abandoned staging after 15 seconds, and locking the result through combat.
 - Audited all eight Dungeon Guides for ordinary Classic Era and TBC Anniversary groups: added omitted mana burners and encounter companions, corrected linked-boss kill order, and made Circle identify only the primary boss or encounter anchor.
 - Added a full Zul'Farrak Dungeon Guide with four route chapters, dangerous-trash and boss marking, pyramid-event guidance, optional rares, and Gahz'rilla.

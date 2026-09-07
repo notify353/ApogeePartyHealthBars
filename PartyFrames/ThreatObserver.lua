@@ -5,6 +5,7 @@ ApogeePartyHealthBars_ThreatObserver = {}
 local O = ApogeePartyHealthBars_ThreatObserver
 
 local STALE_SECONDS = 2
+local TOTEM_CREATURE_TYPE_ID = 11
 local nameplateUnits = {}
 local history = {}
 local nowFn = function() return GetTime and GetTime() or 0 end
@@ -41,10 +42,17 @@ local function DeepCopy(value, seen)
     return result
 end
 
+local function IsTotem(unit)
+    if not UnitCreatureType then return false end
+    local _, creatureTypeID = UnitCreatureType(unit)
+    return creatureTypeID == TOTEM_CREATURE_TYPE_ID
+end
+
 local function IsHostileLiving(unit)
     return UnitExists and UnitExists(unit)
         and UnitCanAttack and UnitCanAttack("player", unit)
         and not (UnitIsDeadOrGhost and UnitIsDeadOrGhost(unit))
+        and not IsTotem(unit)
 end
 
 function O.GetThreatDetails(mobUnit, activeChallengers, assumeValidMob)
@@ -280,7 +288,8 @@ function O.Refresh()
             local guid = UnitGUID and UnitGUID(unit)
             local isDead = UnitIsDeadOrGhost and UnitIsDeadOrGhost(unit)
             local isHostile = UnitCanAttack and UnitCanAttack("player", unit)
-            if guid and (isDead or not isHostile) then
+            local isTotem = guid and isHostile and not isDead and IsTotem(unit)
+            if guid and (isDead or not isHostile or isTotem) then
                 resolvedGuids[guid] = true
             elseif guid and isHostile and not isDead then
                 if nameplateUnits[unit] then visibleNameplates = visibleNameplates + 1 end

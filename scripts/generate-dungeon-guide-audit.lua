@@ -9,6 +9,7 @@ for _, path in ipairs({
     "DungeonGuide/RazorfenDownsGuide.lua",
     "DungeonGuide/UldamanGuide.lua",
     "DungeonGuide/ZulFarrakGuide.lua",
+    "DungeonGuide/MaraudonGuide.lua",
 }) do
     dofile(path)
 end
@@ -22,6 +23,22 @@ local oldMarkers = {
         sandfuryAcolyte = "omitted", raven = "omitted",
         nekrum = "circle", ruuzlu = "circle",
     },
+    maraudon = {
+        corruptor = "omitted", poisonSprite = "omitted", deeprotTangler = "omitted",
+        deeprotStomper = "omitted", barbedLasher = "omitted", constrictorVine = "omitted",
+        noxxiousEssence = "omitted", spewedLarva = "omitted", celebrianDryad = "omitted",
+        sisterOfCelebras = "omitted", cavernShambler = "omitted", cavernLurker = "omitted",
+        noxxionSpawn = "omitted", subterraneanDiemetradon = "omitted",
+        theradrimGuardian = "omitted", primordialBehemoth = "omitted",
+        putridusSatyr = "omitted", putridusTrickster = "omitted",
+        putridusShadowstalker = "omitted", vileLarva = "omitted",
+        noxxiousScion = "omitted", creepingSludge = "omitted", noxiousSlime = "omitted",
+        deepBorer = "omitted", stolidSnapjaw = "omitted", corruptForceOfNature = "omitted",
+        theradrimShardling = "omitted", thessalaHydra = "omitted",
+        lordVyletongue = "omitted", noxxion = "omitted", razorlash = "omitted",
+        meshlok = "omitted", celebras = "omitted", tinkererGizlock = "omitted",
+        landslide = "omitted", princessTheradras = "omitted", rotgrip = "omitted",
+    },
 }
 local highConfidence = {
     scarletMonastery = { adept = true, diviner = true, chaplain = true, whitemane = true, mograine = true },
@@ -30,6 +47,13 @@ local highConfidence = {
     zulFarrak = {
         sandfuryAcolyte = true, sezzziz = true, nekrum = true,
         raven = true, ruuzlu = true, ukorz = true,
+    },
+    maraudon = {
+        barbedLasher = true, constrictorVine = true, creepingSludge = true,
+        noxiousSlime = true, noxxionSpawn = true, subterraneanDiemetradon = true,
+        corruptForceOfNature = true, theradrimShardling = true,
+        lordVyletongue = true, noxxion = true, celebras = true,
+        landslide = true, princessTheradras = true,
     },
 }
 local sourceCodes = {
@@ -40,6 +64,7 @@ local sourceCodes = {
     razorfenDowns = "RFD-M, RFD-WH, RFD-WT",
     uldaman = "UL-M, UL-WH, UL-IV",
     zulFarrak = "ZF-M, ZF-WH, ZF-BG",
+    maraudon = "MAR-M, MAR-WH, MAR-IV, MAR-BG",
 }
 
 local function clean(value)
@@ -70,7 +95,7 @@ line("# Dungeon Guide Marker Evidence Matrix")
 line("")
 line("Audit version: 2026-09-06. Target clients: Classic Era 1.15.9 (build 69547, interface 11509) and TBC Anniversary 2.5.6 (build 69546, interface 20506).")
 line("")
-line("This is the maintenance record for all seven guide packs. It is generated from the validated catalog so every catalog entry is represented. `Old` records the assignment before this audit; `omitted` identifies an enemy added because it can change target order. `Same` means no client-specific marker difference was established. TBC level tuning does not by itself change these recommendations.")
+line("This is the maintenance record for all eight guide packs. It is generated from the validated catalog so every catalog entry is represented. `Old` records the assignment before this audit; `omitted` identifies an enemy added because it can change target order. `Same` means no client-specific marker difference was established. TBC level tuning does not by itself change these recommendations.")
 line("")
 line("The target profile is an ordinary five-player PUG with imperfect interrupts and a mixed composition. Circle is the primary boss or encounter anchor, Skull the normal first kill, Cross the normal second kill, and None a manual-control, positioning, cleave, or cleanup target. `priority` remains Book ordering metadata only; `autoMarkRank` independently controls pre-pull replacement between explicitly targeted candidates for the same icon, with lower values winning. Linked bosses use their shared encounter key, reliable boss adds use `stagingContext`, and ordinary trash uses the guide's general context. Context changes and 15 seconds without another automatically markable target reset only automatic staging; observed manual owners remain protected. No context is inferred by scanning.")
 line("")
@@ -87,6 +112,7 @@ line("- RFK-M: [Razorfen Kraul](https://warcraft.wiki.gg/wiki/Razorfen_Kraul), i
 line("- RFD-M: [Razorfen Downs](https://warcraft.wiki.gg/wiki/Razorfen_Downs); RFD-WH: [Wowhead Classic strategy](https://www.wowhead.com/classic/guide/razorfen-downs-dungeon-strategy-wow-classic); RFD-WT: [Warcraft Tavern Classic guide](https://www.warcrafttavern.com/wow-classic/guides/razorfen-downs/).")
 line("- UL-M: [Uldaman](https://warcraft.wiki.gg/wiki/Uldaman), including [Stonevault Geomancer](https://warcraft.wiki.gg/wiki/Stonevault_Geomancer); UL-WH: [Wowhead Classic strategy](https://www.wowhead.com/classic/guide/uldaman-dungeon-strategy-wow-classic); UL-IV: [Icy Veins Classic guide](https://www.icy-veins.com/wow-classic/uldaman-dungeon-guide).")
 line("- ZF-M: [Zul'Farrak](https://warcraft.wiki.gg/wiki/Zul_Farrak), including [Sandfury Acolyte](https://warcraft.wiki.gg/wiki/Sandfury_Acolyte); ZF-WH: [Wowhead Classic strategy](https://www.wowhead.com/classic/guide/zulfarrak-dungeon-strategy-wow-classic); ZF-BG: [BradyGames original strategy PDF](https://ptgmedia.pearsoncmg.com/imprint_downloads/brady/wow/zulfarrak/zulfarrak_lr.pdf).")
+line("- MAR-M: [Maraudon](https://warcraft.wiki.gg/wiki/Maraudon), including the original encounter roster; MAR-WH: [Wowhead Classic strategy](https://www.wowhead.com/classic/guide/maraudon-dungeon-strategy-wow-classic); MAR-IV: [Icy Veins Classic hub](https://www.icy-veins.com/wow-classic/maraudon-dungeon-guides-hub); MAR-BG: [BradyGames original strategy PDF](https://ptgmedia.pearsoncmg.com/imprint_downloads/brady/wow/maraudon/maraudon_lr.pdf).")
 line("")
 line("## Complete catalog matrix")
 
@@ -129,6 +155,9 @@ line("- Lost Dwarves: Eric is the Circle anchor and first focus, Olaf is Cross, 
 line("- Sezz'ziz/Nekrum: Sezz'ziz is the Circle anchor and first focus because healing and fear are the decisive PUG risks; Nekrum is Cross.")
 line("- Bly's party: Murta is Skull, Oro Cross, Raven unmarked, and Bly Circle. The marks apply only after the optional betrayal.")
 line("- Ukorz/Ruuzlu: Ukorz remains the encounter Circle while Ruuzlu is Skull for the documented first burn.")
+line("- Maraudon plant packs: Barbed Lasher is Skull and Constrictor Vine Cross because Thorn Volley and Thrash make the Lasher the documented greater threat.")
+line("- Maraudon slimes: Creeping Sludge and linked Noxious Slime remain unmarked because safe kiting and staggered poison-cloud deaths matter more than a static focus target.")
+line("- Maraudon boss adds: Noxxion's Spawn is a Skull switch in Noxxion's context; renewable Celebras treants and despawning Landslide Shardlings remain unmarked.")
 line("")
 line("## In-game acceptance checklist")
 line("")
@@ -141,6 +170,7 @@ line("- Razorfen Kraul: target Acolyte, Groundshaker, totems, Jargba, Ramtusk gu
 line("- Razorfen Downs: test gong waves and defensive trash, then confirm Amnennar/Frost Spectre share one context and manual removal remains suppressed during the same combat.")
 line("- Uldaman: test Horde Lost Dwarves order and Alliance-friendly behavior; confirm Sentinel/Shards and Archaedas/Hallshaper/Guardian/Warder each share their own context without absorbing Grimlok's pack.")
 line("- Zul'Farrak: test Acolytes in pyramid waves and Gahz'rilla; confirm Sezz'ziz/Nekrum, Bly/Murta/Oro, Zum'rah/Ward, and Ruuzlu/Ukorz retain separate correct encounter contexts.")
+line("- Maraudon: test purple and orange entrances, quest plant spawns, duplicate Lashers and Diemetradons, slime kiting, Noxxion split phases, Celebras treants, Landslide Shardlings, Princess positioning, and optional bosses.")
 line("- Cross-client regression: cycle weaker, stronger, and equal-ranked enemies that share Skull/Cross in both orders; verify linked bosses and documented adds retain one context while another encounter starts fresh, confirm manual owners survive context and timeout resets, wait 15 seconds and verify the next eligible target starts fresh, then test combat locking, death release, manual removal, and unsupported or failed assignments.")
 line("")
 line("## Ranked future ideas (not implemented)")

@@ -25,6 +25,7 @@ DungeonGuide/RazorfenKraulGuide.lua
 DungeonGuide/RazorfenDownsGuide.lua
 DungeonGuide/UldamanGuide.lua
 DungeonGuide/ZulFarrakGuide.lua
+DungeonGuide/MaraudonGuide.lua
 DungeonGuide/DungeonGuidePolicy.lua
 DungeonBoard/DungeonBoardActivityData.lua
 DungeonBoard/DungeonBoardClassifier.lua

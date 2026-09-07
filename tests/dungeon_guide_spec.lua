@@ -6,6 +6,7 @@ dofile("DungeonGuide/RazorfenKraulGuide.lua")
 dofile("DungeonGuide/RazorfenDownsGuide.lua")
 dofile("DungeonGuide/UldamanGuide.lua")
 dofile("DungeonGuide/ZulFarrakGuide.lua")
+dofile("DungeonGuide/MaraudonGuide.lua")
 dofile("DungeonGuide/DungeonGuidePolicy.lua")
 dofile("DungeonGuide/DungeonGuideSettings.lua")
 dofile("DungeonGuide/DungeonGuideUI.lua")
@@ -19,22 +20,24 @@ local function hasAbility(mob, expected)
 end
 
 local guides = Catalog.ListGuides("classicEra")
-assert(#guides == 7 and guides[1].key == "scarletMonastery"
+assert(#guides == 8 and guides[1].key == "scarletMonastery"
         and guides[2].key == "gnomeregan"
         and guides[3].key == "stockades"
         and guides[4].key == "razorfenKraul"
         and guides[5].key == "razorfenDowns"
         and guides[6].key == "uldaman"
-        and guides[7].key == "zulFarrak",
+        and guides[7].key == "zulFarrak"
+        and guides[8].key == "maraudon",
     "Dungeon Guides were not enumerated in their registered order for Classic Era")
 local tbcGuides = Catalog.ListGuides("tbcAnniversary")
-assert(#tbcGuides == 7 and tbcGuides[1].key == "scarletMonastery"
+assert(#tbcGuides == 8 and tbcGuides[1].key == "scarletMonastery"
         and tbcGuides[2].key == "gnomeregan"
         and tbcGuides[3].key == "stockades"
         and tbcGuides[4].key == "razorfenKraul"
         and tbcGuides[5].key == "razorfenDowns"
         and tbcGuides[6].key == "uldaman"
-        and tbcGuides[7].key == "zulFarrak",
+        and tbcGuides[7].key == "zulFarrak"
+        and tbcGuides[8].key == "maraudon",
     "Dungeon Guides were not enumerated in their registered order for TBC Anniversary")
 local guide = guides[1]
 assert(#guide.sections == 4
@@ -532,6 +535,103 @@ local freshZulFarrak = Catalog.GetGuide("zulFarrak", "classicEra")
 assert(freshZulFarrak.sections[1].route[1] ~= "mutated"
         and freshZulFarrak.mobs.sandfuryShadowhunter.name == "Sandfury Shadowhunter",
     "catalog callers could mutate Zul'Farrak strategy data")
+
+local maraudon = Catalog.GetGuide("maraudon", "classicEra")
+assert(maraudon and #maraudon.sections == 5
+        and maraudon.sections[1].key == "wickedGrotto"
+        and maraudon.sections[2].key == "foulsporeCavern"
+        and maraudon.sections[3].key == "poisonFalls"
+        and maraudon.sections[4].key == "earthSongFalls"
+        and maraudon.sections[5].key == "zaetarsGrave",
+    "Maraudon did not preserve its five-chapter quest-friendly full-clear order")
+local maraudonRoute = table.concat({
+    table.concat(maraudon.sections[1].route, " "),
+    table.concat(maraudon.sections[2].route, " "),
+    table.concat(maraudon.sections[3].route, " "),
+    table.concat(maraudon.sections[4].route, " "),
+    table.concat(maraudon.sections[5].route, " "),
+}, " ")
+assert(maraudonRoute:find("purple crystals", 1, true)
+        and maraudonRoute:find("orange crystals", 1, true)
+        and maraudonRoute:find("Larva Spewer", 1, true)
+        and maraudonRoute:find("Scepter ritual", 1, true)
+        and maraudonRoute:find("Tinkerer Gizlock", 1, true)
+        and maraudonRoute:find("Landslide", 1, true)
+        and maraudonRoute:find("Princess Theradras", 1, true)
+        and maraudonRoute:find("Rotgrip", 1, true),
+    "Maraudon route omitted an entrance, shortcut, detour, or final-boss step")
+assert(Catalog.GetGuideForInstance("classicEra", 349).key == "maraudon"
+        and Catalog.GetGuideForInstance("tbcAnniversary", 349).key == "maraudon"
+        and Catalog.GetGuideForInstance("unsupported", 349) == nil
+        and Catalog.GetGuideForInstance("classicEra", 2100) == nil,
+    "Maraudon client or instance gating drifted")
+local maraudonIds = {
+    [11783] = "theradrimShardling", [11784] = "theradrimGuardian",
+    [11787] = "deepBorer", [11790] = "putridusSatyr",
+    [11791] = "putridusTrickster", [11792] = "putridusShadowstalker",
+    [11793] = "celebrianDryad", [11794] = "sisterOfCelebras",
+    [12201] = "princessTheradras", [12203] = "landslide",
+    [12206] = "primordialBehemoth", [12207] = "thessalaHydra",
+    [12216] = "poisonSprite", [12217] = "corruptor", [12218] = "vileLarva",
+    [12219] = "barbedLasher", [12220] = "constrictorVine",
+    [12221] = "noxiousSlime", [12222] = "creepingSludge",
+    [12223] = "cavernLurker", [12224] = "cavernShambler",
+    [12225] = "celebras", [12236] = "lordVyletongue", [12237] = "meshlok",
+    [12258] = "razorlash", [13141] = "deeprotStomper",
+    [13142] = "deeprotTangler", [13282] = "noxxion",
+    [13323] = "subterraneanDiemetradon", [13456] = "noxxionSpawn",
+    [13533] = "spewedLarva", [13596] = "rotgrip", [13599] = "stolidSnapjaw",
+    [13601] = "tinkererGizlock", [13696] = "noxxiousScion",
+    [13736] = "noxxiousEssence", [13743] = "corruptForceOfNature",
+}
+for npcId, expectedKey in pairs(maraudonIds) do
+    local maraudonMob, mobKey = Catalog.FindMob("classicEra", 349, npcId)
+    assert(mobKey == expectedKey and maraudonMob and maraudonMob.rationale:match("%S")
+            and maraudonMob.cc:match("%S")
+            and #maraudonMob.liveReason <= Catalog.GetLiveTextLimit(),
+        "missing, mismatched, or incomplete Maraudon NPC: " .. npcId)
+    local tbcMaraudonMob, tbcMobKey = Catalog.FindMob("tbcAnniversary", 349, npcId)
+    assert(tbcMobKey == expectedKey and tbcMaraudonMob,
+        "missing or mismatched TBC Anniversary Maraudon NPC: " .. npcId)
+end
+assert(Catalog.FindMob("classicEra", 349, 999999) == nil
+        and Catalog.FindMob("classicEra", 209, 12219) == nil
+        and Catalog.FindMob("unsupported", 349, 12219) == nil,
+    "Maraudon NPC advice escaped its catalog boundaries")
+local maraudonBossKeys = {
+    "lordVyletongue", "noxxion", "razorlash", "meshlok", "celebras",
+    "tinkererGizlock", "landslide", "princessTheradras", "rotgrip",
+}
+for _, bossKey in ipairs(maraudonBossKeys) do
+    local boss = maraudon.mobs[bossKey]
+    assert(boss and boss.boss and boss.marker == "circle",
+        "Maraudon boss coverage or Circle policy drifted: " .. bossKey)
+end
+assert(hasAbility(maraudon.mobs.barbedLasher, "Thorn Volley")
+        and hasAbility(maraudon.mobs.celebrianDryad, "Dispel Magic")
+        and hasAbility(maraudon.mobs.cavernShambler, "Wild Regeneration")
+        and hasAbility(maraudon.mobs.subterraneanDiemetradon, "Sonic Burst")
+        and hasAbility(maraudon.mobs.noxxion, "Summon Noxxion Spawn")
+        and hasAbility(maraudon.mobs.celebras, "Twisted Tranquility")
+        and hasAbility(maraudon.mobs.landslide, "Summon Theradrim Shardlings")
+        and hasAbility(maraudon.mobs.princessTheradras, "Repulsive Gaze")
+        and maraudon.mobs.barbedLasher.marker == "skull"
+        and maraudon.mobs.constrictorVine.marker == "cross"
+        and maraudon.mobs.creepingSludge.marker == "none"
+        and maraudon.mobs.noxiousSlime.marker == "none"
+        and maraudon.mobs.noxxionSpawn.marker == "skull"
+        and maraudon.mobs.noxxionSpawn.stagingContext == "noxxion"
+        and maraudon.mobs.corruptForceOfNature.marker == "none"
+        and maraudon.mobs.theradrimShardling.marker == "none"
+        and maraudon.mobs.noxxiousEssence.exceptions[1]:find("quest vial", 1, true),
+    "Maraudon mechanics, markers, summon contexts, or quest guidance drifted")
+local mutatedMaraudon = Catalog.GetGuide("maraudon", "classicEra")
+mutatedMaraudon.sections[1].route[1] = "mutated"
+mutatedMaraudon.mobs.barbedLasher.name = "mutated"
+local freshMaraudon = Catalog.GetGuide("maraudon", "classicEra")
+assert(freshMaraudon.sections[1].route[1] ~= "mutated"
+        and freshMaraudon.mobs.barbedLasher.name == "Barbed Lasher",
+    "catalog callers could mutate Maraudon strategy data")
 assert(Catalog.GetMarker("skull").index == 8 and Catalog.GetMarker("cross").index == 7
         and Catalog.GetMarker("moon") == nil and Catalog.GetMarker("circle").index == 2
         and Catalog.GetMarker("none").index == nil
@@ -580,6 +680,12 @@ local expectedMarkers = {
         circle = { "sandfuryExecutioner", "sezzziz", "antusul", "theka", "zumrah", "sergeantBly", "velratha", "gahzrilla", "ukorz", "sandarr", "dustwraith", "zerillis" },
         none = { "scarab", "zulFarrakZombie", "sandfuryCretin", "raven", "servantOfAntusul" },
     },
+    maraudon = {
+        skull = { "corruptor", "deeprotTangler", "barbedLasher", "noxxiousEssence", "celebrianDryad", "cavernShambler", "noxxionSpawn", "subterraneanDiemetradon", "primordialBehemoth" },
+        cross = { "poisonSprite", "deeprotStomper", "constrictorVine", "spewedLarva", "sisterOfCelebras", "cavernLurker", "theradrimGuardian" },
+        circle = { "lordVyletongue", "noxxion", "razorlash", "meshlok", "celebras", "tinkererGizlock", "landslide", "princessTheradras", "rotgrip" },
+        none = { "putridusSatyr", "putridusTrickster", "putridusShadowstalker", "vileLarva", "noxxiousScion", "creepingSludge", "noxiousSlime", "deepBorer", "stolidSnapjaw", "corruptForceOfNature", "theradrimShardling", "thessalaHydra" },
+    },
 }
 local expectedStagingContexts = {
     gnomeregan = {
@@ -595,6 +701,7 @@ local expectedStagingContexts = {
         wardOfZumrah = "zumrah", murtaGrimgut = "sergeantBly",
         oroEyegouge = "sergeantBly",
     },
+    maraudon = { noxxionSpawn = "noxxion" },
 }
 for _, clientFlavor in ipairs({ "classicEra", "tbcAnniversary" }) do
     for guideKey, markerGroups in pairs(expectedMarkers) do
@@ -825,6 +932,32 @@ for npcId, expected in pairs(zulFarrakRecommendations) do
             and resolved.markerIndex == expected[2],
         "Zul'Farrak marker policy drifted for NPC " .. npcId)
 end
+instanceId = 349
+local maraudonRecommendations = {
+    [12219] = { "skull", 8 },
+    [12220] = { "cross", 7 },
+    [12222] = { "none", nil },
+    [13323] = { "skull", 8 },
+    [13456] = { "skull", 8 },
+    [13743] = { "none", nil },
+    [11783] = { "none", nil },
+    [12201] = { "circle", 2 },
+}
+for npcId, expected in pairs(maraudonRecommendations) do
+    local resolved = Policy.GetRecommendationForGuid(
+        "Creature-0-1-349-1-" .. npcId .. "-0000000001")
+    assert(resolved and resolved.markerKey == expected[1]
+            and resolved.markerIndex == expected[2],
+        "Maraudon marker policy drifted for NPC " .. npcId)
+end
+local noxxionRecommendation = Policy.GetRecommendationForGuid(
+    "Creature-0-1-349-1-13282-0000000001")
+local noxxionSpawnRecommendation = Policy.GetRecommendationForGuid(
+    "Creature-0-1-349-1-13456-0000000001")
+assert(noxxionRecommendation.stagingContextKey == "maraudon/noxxion"
+        and noxxionSpawnRecommendation.stagingContextKey
+            == noxxionRecommendation.stagingContextKey,
+    "Noxxion and its Spawn did not share one staging context")
 instanceId = 999
 assert(Policy.GetRecommendationForGuid(scryerGuid) == nil, "unsupported instance leaked advice")
 instanceId, flavor = 189, "unsupported"
@@ -985,6 +1118,35 @@ assert(zulFarrakChief:find("Mallet check", 1, true)
         and zulFarrakChief:find("Ruuzlu", 1, true)
         and zulFarrakChief:find("Berserker Stance", 1, true),
     "Zul'Farrak final chapter omitted Mallet, pool, knock-up, or chief guidance")
+local maraudonWickedGrotto = UI.BuildChapterText(freshMaraudon, "wickedGrotto", Catalog)
+assert(maraudonWickedGrotto:find("ROUTE", 1, true)
+        and maraudonWickedGrotto:find("Corruptor", 1, true)
+        and maraudonWickedGrotto:find("Stealth patrols", 1, true)
+        and maraudonWickedGrotto:find("Lord Vyletongue  |cffffc15b[BOSS]|r", 1, true),
+    "Maraudon purple chapter omitted route, patrol, priority, or boss guidance")
+local maraudonFoulspore = UI.BuildChapterText(freshMaraudon, "foulsporeCavern", Catalog)
+assert(maraudonFoulspore:find("Barbed Lasher", 1, true)
+        and maraudonFoulspore:find("Larva Spewer", 1, true)
+        and maraudonFoulspore:find("Noxxion's Spawn", 1, true)
+        and maraudonFoulspore:find("Quest plants", 1, true),
+    "Maraudon orange chapter omitted plant, spewer, split-phase, or quest guidance")
+local maraudonPoisonFalls = UI.BuildChapterText(freshMaraudon, "poisonFalls", Catalog)
+assert(maraudonPoisonFalls:find("Sludge kite", 1, true)
+        and maraudonPoisonFalls:find("Meshlok the Harvester", 1, true)
+        and maraudonPoisonFalls:find("Celebras adds", 1, true)
+        and maraudonPoisonFalls:find("Scepter ritual", 1, true),
+    "Maraudon Poison Falls chapter omitted slime, rare, summon, or Scepter guidance")
+local maraudonEarthSong = UI.BuildChapterText(freshMaraudon, "earthSongFalls", Catalog)
+assert(maraudonEarthSong:find("Linked dinosaurs", 1, true)
+        and maraudonEarthSong:find("Subterranean Diemetradon", 1, true)
+        and maraudonEarthSong:find("Tinkerer Gizlock", 1, true),
+    "Maraudon Earth Song Falls chapter omitted linked-pack or detour guidance")
+local maraudonZaetarsGrave = UI.BuildChapterText(freshMaraudon, "zaetarsGrave", Catalog)
+assert(maraudonZaetarsGrave:find("Landslide summons", 1, true)
+        and maraudonZaetarsGrave:find("Princess position", 1, true)
+        and maraudonZaetarsGrave:find("Neutral turtles", 1, true)
+        and maraudonZaetarsGrave:find("Rotgrip  |cffffc15b[BOSS]|r", 1, true),
+    "Maraudon final chapter omitted Landslide, Princess, turtle, or Rotgrip guidance")
 assert(UI.BuildChapterText(gnomeregan, "missing", Catalog)
         == "Choose a chapter to read its guide.",
     "Dungeon Book empty-state terminology was not chapter-generic")

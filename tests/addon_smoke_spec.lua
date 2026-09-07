@@ -509,6 +509,8 @@ assert(tocLoadOrder["DungeonGuide/DungeonGuideCatalog.lua"]
     and tocLoadOrder["DungeonGuide/UldamanGuide.lua"]
         < tocLoadOrder["DungeonGuide/ZulFarrakGuide.lua"]
     and tocLoadOrder["DungeonGuide/ZulFarrakGuide.lua"]
+        < tocLoadOrder["DungeonGuide/MaraudonGuide.lua"]
+    and tocLoadOrder["DungeonGuide/MaraudonGuide.lua"]
         < tocLoadOrder["DungeonGuide/DungeonGuidePolicy.lua"],
     "Dungeon Guide packs loaded outside their registered policy order")
 assert(type(ApogeePartyHealthBars_DungeonGuideUI.Toggle) == "function"
@@ -1029,8 +1031,10 @@ assert(guideDungeonDropdown.optionButtons[2]
         and guideDungeonDropdown.optionButtons[6]
         and guideDungeonDropdown.optionButtons[6].label:GetText() == "Uldaman"
         and guideDungeonDropdown.optionButtons[7]
-        and guideDungeonDropdown.optionButtons[7].label:GetText() == "Zul'Farrak",
-    "Dungeon Book did not expose all seven strategy packs in registered order")
+        and guideDungeonDropdown.optionButtons[7].label:GetText() == "Zul'Farrak"
+        and guideDungeonDropdown.optionButtons[8]
+        and guideDungeonDropdown.optionButtons[8].label:GetText() == "Maraudon",
+    "Dungeon Book did not expose all eight strategy packs in registered order")
 guideScroll:SetVerticalScroll(240)
 local cathedralChoice = assert(guideSectionDropdown.optionButtons[4],
     "Dungeon Book did not create its Cathedral chapter choice")
@@ -1083,10 +1087,17 @@ assert(ApogeePartyHealthBars_DungeonGuideUI.IsShown()
         and guideSectionDropdown.selectedKey == "entranceAntusul",
     "Alt-left-click did not open the detected Zul'Farrak guide")
 
+currentInstanceId = 349
+ClickMinimapButton(true)
+assert(ApogeePartyHealthBars_DungeonGuideUI.IsShown()
+        and guideDungeonDropdown.selectedKey == "maraudon"
+        and guideSectionDropdown.selectedKey == "wickedGrotto",
+    "Alt-left-click did not open the detected Maraudon guide")
+
 currentInstanceId = 999999
 ClickMinimapButton(true)
-assert(guideDungeonDropdown.selectedKey == "zulFarrak"
-        and guideSectionDropdown.selectedKey == "entranceAntusul",
+assert(guideDungeonDropdown.selectedKey == "maraudon"
+        and guideSectionDropdown.selectedKey == "wickedGrotto",
     "unsupported instance detection discarded the last selected guide and chapter")
 
 currentInstanceId = 189

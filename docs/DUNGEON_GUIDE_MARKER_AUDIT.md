@@ -2,7 +2,7 @@
 
 Audit version: 2026-09-06. Target clients: Classic Era 1.15.9 (build 69547, interface 11509) and TBC Anniversary 2.5.6 (build 69546, interface 20506).
 
-This is the maintenance record for all seven guide packs. It is generated from the validated catalog so every catalog entry is represented. `Old` records the assignment before this audit; `omitted` identifies an enemy added because it can change target order. `Same` means no client-specific marker difference was established. TBC level tuning does not by itself change these recommendations.
+This is the maintenance record for all eight guide packs. It is generated from the validated catalog so every catalog entry is represented. `Old` records the assignment before this audit; `omitted` identifies an enemy added because it can change target order. `Same` means no client-specific marker difference was established. TBC level tuning does not by itself change these recommendations.
 
 The target profile is an ordinary five-player PUG with imperfect interrupts and a mixed composition. Circle is the primary boss or encounter anchor, Skull the normal first kill, Cross the normal second kill, and None a manual-control, positioning, cleave, or cleanup target. `priority` remains Book ordering metadata only; `autoMarkRank` independently controls pre-pull replacement between explicitly targeted candidates for the same icon, with lower values winning. Linked bosses use their shared encounter key, reliable boss adds use `stagingContext`, and ordinary trash uses the guide's general context. Context changes and 15 seconds without another automatically markable target reset only automatic staging; observed manual owners remain protected. No context is inferred by scanning.
 
@@ -19,6 +19,7 @@ Mechanics were checked against version-appropriate Classic databases and dungeon
 - RFD-M: [Razorfen Downs](https://warcraft.wiki.gg/wiki/Razorfen_Downs); RFD-WH: [Wowhead Classic strategy](https://www.wowhead.com/classic/guide/razorfen-downs-dungeon-strategy-wow-classic); RFD-WT: [Warcraft Tavern Classic guide](https://www.warcrafttavern.com/wow-classic/guides/razorfen-downs/).
 - UL-M: [Uldaman](https://warcraft.wiki.gg/wiki/Uldaman), including [Stonevault Geomancer](https://warcraft.wiki.gg/wiki/Stonevault_Geomancer); UL-WH: [Wowhead Classic strategy](https://www.wowhead.com/classic/guide/uldaman-dungeon-strategy-wow-classic); UL-IV: [Icy Veins Classic guide](https://www.icy-veins.com/wow-classic/uldaman-dungeon-guide).
 - ZF-M: [Zul'Farrak](https://warcraft.wiki.gg/wiki/Zul_Farrak), including [Sandfury Acolyte](https://warcraft.wiki.gg/wiki/Sandfury_Acolyte); ZF-WH: [Wowhead Classic strategy](https://www.wowhead.com/classic/guide/zulfarrak-dungeon-strategy-wow-classic); ZF-BG: [BradyGames original strategy PDF](https://ptgmedia.pearsoncmg.com/imprint_downloads/brady/wow/zulfarrak/zulfarrak_lr.pdf).
+- MAR-M: [Maraudon](https://warcraft.wiki.gg/wiki/Maraudon), including the original encounter roster; MAR-WH: [Wowhead Classic strategy](https://www.wowhead.com/classic/guide/maraudon-dungeon-strategy-wow-classic); MAR-IV: [Icy Veins Classic hub](https://www.icy-veins.com/wow-classic/maraudon-dungeon-guides-hub); MAR-BG: [BradyGames original strategy PDF](https://ptgmedia.pearsoncmg.com/imprint_downloads/brady/wow/maraudon/maraudon_lr.pdf).
 
 ## Complete catalog matrix
 
@@ -241,6 +242,48 @@ Mechanics were checked against version-appropriate Classic databases and dungeon
 | Ruuzlu (7797) | Cleave, Execute | Sacred Pool & Chief | ukorzRuuzlu | circle → skull | 260 | Ruuzlu begins beside Ukorz and adds cleave and execute pressure throughout the final encounter if left alive. | Same | High | ZF-M, ZF-WH, ZF-BG |
 | Chief Ukorz Sandscalp (7267) | Cleave, Berserker Stance | Sacred Pool & Chief | ukorzRuuzlu | circle → circle | 270 | Cleave punishes players in front, and Berserker Stance increases Ukorz's damage as the final fight progresses. | Same | High | ZF-M, ZF-WH, ZF-BG |
 
+### Maraudon
+
+| Enemy (NPC ID) | Abilities | Common context | Staging context | Old → audited | Auto rank | Why / exception | Client | Confidence | Sources |
+|---|---|---|---|---|---:|---|---|---|---|
+| Corruptor (12217) | Noxious Catalyst, Corruption | Wicked Grotto | trash | omitted → skull | 10 | Its ranged corruption effects add poison pressure while durable Putridus demons occupy the tank. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Poison Sprite (12216) | Poison Bolt | Wicked Grotto | trash | omitted → cross | 20 | Poison Bolt adds avoidable ranged damage, but the Corruptor's multiple effects are the safer first focus. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Deeprot Tangler (13142) | Entangling Roots | Wicked Grotto | trash | omitted → skull | 30 | Entangling Roots can pin the tank or a rescuer while the Tangler moves onto a vulnerable party member. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Deeprot Stomper (13141) | War Stomp | Wicked Grotto | trash | omitted → cross | 40 | War Stomp can interrupt nearby healing, but it is more predictable than a Tangler leaving the tank. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Putridus Satyr (11790) | Gouge, Sinister Strike, Putrid Breath | Wicked Grotto | trash | omitted → none | — | Its Gouge and Putrid Breath matter, but ranged Corruptors and Poison Sprites are the safer first kills in mixed packs. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Putridus Trickster (11791) | Thrash, Poison, Putrid Breath | Wicked Grotto | trash | omitted → none | — | Thrash and poison pressure are dangerous on the tank, but its correct order depends on which ranged enemies join the pull. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Putridus Shadowstalker (11792) | Stealth, Evasion, Hamstring, Putrid Breath | Wicked Grotto | trash | omitted → none | — | Its surprise patrol timing matters more than a fixed kill position, and Evasion can make focused physical damage inefficient. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Lord Vyletongue (12236) | Shot, Multi-Shot, Smoke Bomb, Blink | Wicked Grotto | lordVyletongue | omitted → circle | 300 | His linked Shadowstalkers add pressure, but killing the mobile boss first removes Multi-Shot and repeated repositioning. | Same | High | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Barbed Lasher (12219) | Thorn Volley, Thrash, Entangling Roots | Foulspore Cavern | trash | omitted → skull | 50 | Thrash and Thorn Volley make the Lasher the lethal anchor in pulls with several Constrictor Vines. | Same | High | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Constrictor Vine (12220) | Entangling Roots | Foulspore Cavern | trash | omitted → cross | 60 | Entangling Roots can separate the tank from the pull, but the Lasher's knockdown and extra attacks are more urgent. | Same | High | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Noxxious Essence (13736) | Noxious Catalyst, Corruption | Foulspore Cavern | trash | omitted → skull | 70 | The elite Essence is the required target when a Filled Cerulean Vial triggers the Vyletongue Corruption event. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Spewed Larva (13533) | Noxious Catalyst | Foulspore Cavern | trash | omitted → cross | 80 | The elite larva keeps returning while the nearby Larva Spewer remains active and can join the Noxxion pull. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Celebrian Dryad (11793) | Throw, Slowing Poison, Dispel Magic | Foulspore Cavern, Poison Falls | trash | omitted → skull | 90 | Fast dryad patrols can add to another pull, and Dispel Magic removes useful protection while Slowing Poison hinders recovery. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Sister of Celebras (11794) | Throw, Strike | Foulspore Cavern, Poison Falls | trash | omitted → cross | 100 | She adds ranged physical pressure to the fast Poison Falls patrol but lacks the Dryad's dispel and slowing poison. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Noxxion's Spawn (13456) | None documented | Foulspore Cavern | noxxion | omitted → skull | 130 | Noxxion remains absent until all five Spawn die, so leaving one alive only extends poison pressure and the phase. | Same | High | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Vile Larva (12218) | Larva Goo | Foulspore Cavern | trash | omitted → none | — | Linked larva are numerous but fragile, so a single-target mark would distract from gathering and measured area damage. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Noxxious Scion (13696) | Noxious Catalyst | Foulspore Cavern | trash | omitted → none | — | Several non-elite Scions accompany the required Noxxious Essence and are best gathered rather than individually focused. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Noxxion (13282) | Toxic Volley, Uppercut, Summon Noxxion Spawn | Foulspore Cavern | noxxion | omitted → circle | 310 | Toxic Volley pressures the whole party, and Noxxion cannot be attacked while divided into five Spawn. | Same | High | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Razorlash (12258) | Cleave, Puncture | Foulspore Cavern | razorlash | omitted → circle | 320 | Puncture creates sustained tank damage while Cleave punishes players who stand near the boss's front. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Cavern Shambler (12224) | Wild Regeneration, Knockdown | Poison Falls | trash | omitted → skull | 110 | Wild Regeneration prolongs the pull while its area knockdown can interrupt the healer and loosen control. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Cavern Lurker (12223) | Knockdown | Poison Falls | trash | omitted → cross | 120 | Its knockdown can interrupt one player, but it lacks the Shambler's area control and self-healing. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Creeping Sludge (12222) | Poison Shock | Poison Falls | trash | omitted → none | — | Linked Sludges hit extremely hard but move slowly, so standing to focus a marked target is less safe than coordinated kiting. | Same | High | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Noxious Slime (12221) | None documented | Poison Falls | trash | omitted → none | — | Killing linked Slimes together can stack their death clouds, so spacing and movement are safer than a universal focus mark. | Same | High | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Stolid Snapjaw (13599) | None documented | Poison Falls | trash | omitted → none | — | The turtles near Celebras and Princess are not part of the pull unless attacked, so marking one would invite an avoidable add. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Corrupt Force of Nature (13743) | None documented | Poison Falls | trash | omitted → none | — | Celebras continually replaces fallen treants, so switching damage to each summon prolongs the encounter. | Same | High | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Meshlok the Harvester (12237) | War Stomp, Earth Shock, Harvester Strike | Poison Falls | meshlok | omitted → circle | 330 | Meshlok resembles nearby shamblers, while War Stomp and Earth Shock can interrupt recovery if the group stacks. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Celebras the Cursed (12225) | Wrath, Entangling Roots, Twisted Tranquility, Corrupt Force of Nature | Poison Falls | celebras | omitted → circle | 340 | Wrath and Twisted Tranquility pressure the party while defeated Corrupt Forces are continually replaced. | Same | High | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Subterranean Diemetradon (13323) | Sonic Burst | Earth Song Falls | trash | omitted → skull | 140 | Linked packs repeatedly silence nearby players, disabling healing, taunts, and interrupts if allowed to surround the group. | Same | High | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Theradrim Guardian (11784) | Knockdown | Earth Song Falls | trash | omitted → cross | 150 | Guardian patrols can add unexpectedly and split into Shardlings, but a Diemetradon's silence is the first priority. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Deep Borer (11787) | None documented | Earth Song Falls | trash | omitted → none | — | Deep Borers arrive in linked groups on the long waterfall path and are routine area-damage cleanup. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Theradrim Shardling (11783) | Strike | Earth Song Falls, Zaetar's Grave | trash | omitted → none | — | Shardlings trail patrols or appear when a Guardian dies, but individual marks do not improve their area-damage cleanup. | Same | High | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Thessala Hydra (12207) | Thrash, Water Jet | Earth Song Falls, Zaetar's Grave | trash | omitted → none | — | Water Jet can interrupt and throw players into another beast, so safe facing and pull location matter more than kill order. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Tinkerer Gizlock (13601) | Goblin Dragon Gun, Shoot, Bomb | Earth Song Falls | tinkererGizlock | omitted → circle | 350 | Goblin Dragon Gun and Bomb punish a stacked group, while Shoot lets Gizlock pressure players from range. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Primordial Behemoth (12206) | Trample, Boulder | Zaetar's Grave | trash | omitted → skull | 160 | Pairs on the Princess approach combine high armor and damage, while Boulder can pressure a distant party member. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Landslide (12203) | Trample, Knock Away, Summon Theradrim Shardlings | Zaetar's Grave | landslide | omitted → circle | 360 | Knock Away can scatter the party, while summoned Shardlings stun nearby players but disappear when Landslide dies. | Same | High | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Princess Theradras (12201) | Dust Field, Repulsive Gaze, Boulder | Zaetar's Grave | princessTheradras | omitted → circle | 370 | Repulsive Gaze can remove the tank while Dust Field knocks players across a dangerous cavern and disrupts threat. | Same | High | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+| Rotgrip (13596) | Puncture, Fatal Bite | Zaetar's Grave | rotgrip | omitted → circle | 380 | Puncture steadily lowers the tank while Fatal Bite can finish a player whose health is allowed to fall. | Same | Medium | MAR-M, MAR-WH, MAR-IV, MAR-BG |
+
 ## Disputed and context-dependent calls
 
 - Scarlet Library: Diviner is Skull because Mana Burn threatens the healer's finite recovery budget; Adept and Chaplain are Cross. Reverse or control one when the healer has no mana bar.
@@ -251,6 +294,9 @@ Mechanics were checked against version-appropriate Classic databases and dungeon
 - Sezz'ziz/Nekrum: Sezz'ziz is the Circle anchor and first focus because healing and fear are the decisive PUG risks; Nekrum is Cross.
 - Bly's party: Murta is Skull, Oro Cross, Raven unmarked, and Bly Circle. The marks apply only after the optional betrayal.
 - Ukorz/Ruuzlu: Ukorz remains the encounter Circle while Ruuzlu is Skull for the documented first burn.
+- Maraudon plant packs: Barbed Lasher is Skull and Constrictor Vine Cross because Thorn Volley and Thrash make the Lasher the documented greater threat.
+- Maraudon slimes: Creeping Sludge and linked Noxious Slime remain unmarked because safe kiting and staggered poison-cloud deaths matter more than a static focus target.
+- Maraudon boss adds: Noxxion's Spawn is a Skull switch in Noxxion's context; renewable Celebras treants and despawning Landslide Shardlings remain unmarked.
 
 ## In-game acceptance checklist
 
@@ -263,6 +309,7 @@ Run each item on both supported clients with automatic marking enabled, then rep
 - Razorfen Downs: test gong waves and defensive trash, then confirm Amnennar/Frost Spectre share one context and manual removal remains suppressed during the same combat.
 - Uldaman: test Horde Lost Dwarves order and Alliance-friendly behavior; confirm Sentinel/Shards and Archaedas/Hallshaper/Guardian/Warder each share their own context without absorbing Grimlok's pack.
 - Zul'Farrak: test Acolytes in pyramid waves and Gahz'rilla; confirm Sezz'ziz/Nekrum, Bly/Murta/Oro, Zum'rah/Ward, and Ruuzlu/Ukorz retain separate correct encounter contexts.
+- Maraudon: test purple and orange entrances, quest plant spawns, duplicate Lashers and Diemetradons, slime kiting, Noxxion split phases, Celebras treants, Landslide Shardlings, Princess positioning, and optional bosses.
 - Cross-client regression: cycle weaker, stronger, and equal-ranked enemies that share Skull/Cross in both orders; verify linked bosses and documented adds retain one context while another encounter starts fresh, confirm manual owners survive context and timeout resets, wait 15 seconds and verify the next eligible target starts fresh, then test combat locking, death release, manual removal, and unsupported or failed assignments.
 
 ## Ranked future ideas (not implemented)

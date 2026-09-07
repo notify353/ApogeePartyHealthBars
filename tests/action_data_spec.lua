@@ -43,12 +43,19 @@ assert(staleItem.itemName == "Linen Bandage", "localized item name was not refre
 local clone = actions.Clone({
     kind = "spell", spellId = 2061, spellName = "Flash Heal(Rank 7)",
     macroText = "/cast Something Else", soundKey = "toast",
-    equipmentSetName = "Healing",
+    weaponSetName = "Healing",
 })
 assert(clone.kind == "spell" and clone.spellName == "Flash Heal(Rank 7)"
     and clone.macroText == nil and clone.soundKey == nil
-    and clone.equipmentSetName == "Healing",
+    and clone.weaponSetName == "Healing",
     "action identity clone retained execution-specific fields")
+
+local legacy = actions.Normalize({
+    kind = "spell", spellId = 2061, spellName = "Flash Heal(Rank 7)",
+    equipmentSetName = "Legacy Gear",
+})
+assert(legacy and legacy.weaponSetName == nil and legacy.equipmentSetName == nil,
+    "legacy equipment-set attachment was not discarded")
 assert(actions.Normalize({}) == nil and actions.CreateItem(0, "Invalid") == nil,
     "invalid action identity was accepted")
 assert(actions.Normalize({ kind = "macro", name = "Not a Spell" }) == nil,

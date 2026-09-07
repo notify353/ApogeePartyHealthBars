@@ -196,19 +196,19 @@ function Store.Create(D)
         return true, "Applied " .. (Actions.GetName(M.GetEntries()[slot]) or "Shortcut") .. "."
     end
 
-    function M.SetEquipmentSet(slot, name)
+    function M.SetWeaponSet(slot, name)
         if InCombatLockdown and InCombatLockdown() then
-            return false, "Leave combat before changing an action loadout."
+            return false, "Leave combat before changing an action weapon set."
         end
-        local ok, message = Actions.SetEquipmentSet(
+        local ok, message = Actions.SetWeaponSet(
             M.GetEntries() and M.GetEntries()[slot], name)
         if not ok then return false, message end
         D.Refresh()
         return true, message
     end
 
-    function M.GetEquipmentSet(slot)
-        return Actions.GetEquipmentSetName(M.GetEntries() and M.GetEntries()[slot])
+    function M.GetWeaponSet(slot)
+        return Actions.GetWeaponSetName(M.GetEntries() and M.GetEntries()[slot])
     end
 
     function M.ResetMacro(slot)
@@ -243,4 +243,3 @@ function Store.Create(D)
 
     return M
 end
-

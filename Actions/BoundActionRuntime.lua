@@ -634,20 +634,20 @@ function Factory.Create(options)
         return true, "Applied " .. slotById[slotId].label .. "."
     end
 
-    function W.SetSlotEquipmentSet(layoutKey, slotId, name)
+    function W.SetSlotWeaponSet(layoutKey, slotId, name)
         if InCombatLockdown and InCombatLockdown() then
-            return false, "Leave combat before changing an action loadout."
+            return false, "Leave combat before changing an action weapon set."
         end
         if not W.CanEditLayout(layoutKey) then return false, "That layout cannot be edited." end
         local entry = W.GetSlot(layoutKey, slotId)
-        local ok, message = Actions.SetEquipmentSet(entry, name)
+        local ok, message = Actions.SetWeaponSet(entry, name)
         if not ok then return false, message end
         W.RefreshSecureActions()
         return true, message
     end
 
-    function W.GetSlotEquipmentSet(layoutKey, slotId)
-        return Actions.GetEquipmentSetName(W.GetSlot(layoutKey, slotId))
+    function W.GetSlotWeaponSet(layoutKey, slotId)
+        return Actions.GetWeaponSetName(W.GetSlot(layoutKey, slotId))
     end
 
     function W.GetMacro(layoutKey, slotId)

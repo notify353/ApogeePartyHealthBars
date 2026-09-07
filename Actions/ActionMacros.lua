@@ -1,6 +1,6 @@
 local Sounds = ApogeePartyHealthBars_Sounds
 local Data = ApogeePartyHealthBars_ActionData
-local EquipmentSets = ApogeePartyHealthBars_EquipmentSets
+local WeaponSets = ApogeePartyHealthBars_WeaponSets
 local Items = ApogeePartyHealthBars_ShortcutItems
 
 ApogeePartyHealthBars_ActionMacros = {}
@@ -372,8 +372,8 @@ function A.ValidateMacro(entry, body)
     if #body > A.MAX_BODY_BYTES then
         return false, "Macro exceeds " .. A.MAX_BODY_BYTES .. " bytes."
     end
-    if EquipmentSets and EquipmentSets.ValidateRuntime then
-        local runtimeValid, runtimeMessage = EquipmentSets.ValidateRuntime(normalized, body)
+    if WeaponSets and WeaponSets.ValidateRuntime then
+        local runtimeValid, runtimeMessage = WeaponSets.ValidateRuntime(normalized, body)
         if not runtimeValid then return false, runtimeMessage end
     end
     return true
@@ -390,35 +390,35 @@ function A.IsCustomized(entry)
     return normalized.macroText ~= A.BuildDefaultMacro(normalized)
 end
 
-function A.GetEquipmentSetName(entry)
+function A.GetWeaponSetName(entry)
     local normalized = A.Normalize(entry)
-    return normalized and normalized.equipmentSetName or nil
+    return normalized and normalized.weaponSetName or nil
 end
 
-function A.SetEquipmentSet(entry, name)
+function A.SetWeaponSet(entry, name)
     local normalized = A.Normalize(entry)
     if not normalized or type(entry) ~= "table" then
         return false, "Choose an action first."
     end
-    if not EquipmentSets or not EquipmentSets.SetEntryLoadout then
-        return false, "Equipment loadouts are unavailable."
+    if not WeaponSets or not WeaponSets.SetEntryWeaponSet then
+        return false, "Weapon sets are unavailable."
     end
-    return EquipmentSets.SetEntryLoadout(entry, name)
+    return WeaponSets.SetEntryWeaponSet(entry, name)
 end
 
 function A.BuildRuntimeMacro(entry)
     local normalized = A.Normalize(entry)
     if not normalized then return nil end
-    if EquipmentSets and EquipmentSets.ComposeRuntime then
-        return EquipmentSets.ComposeRuntime(normalized, normalized.macroText)
+    if WeaponSets and WeaponSets.ComposeRuntime then
+        return WeaponSets.ComposeRuntime(normalized, normalized.macroText)
     end
-    if EquipmentSets and EquipmentSets.Compose then
-        return EquipmentSets.Compose(normalized, normalized.macroText)
+    if WeaponSets and WeaponSets.Compose then
+        return WeaponSets.Compose(normalized, normalized.macroText)
     end
     return normalized.macroText
 end
 
-function A.GetEquipmentPrefixBytes(entry)
-    return EquipmentSets and EquipmentSets.GetPrefixBytes
-        and EquipmentSets.GetPrefixBytes(A.Normalize(entry)) or 0
+function A.GetWeaponPrefixBytes(entry)
+    return WeaponSets and WeaponSets.GetPrefixBytes
+        and WeaponSets.GetPrefixBytes(A.Normalize(entry)) or 0
 end

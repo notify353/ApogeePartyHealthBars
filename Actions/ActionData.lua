@@ -11,9 +11,9 @@ local function validName(value)
     return type(value) == "string" and value:find("%S") and value or nil
 end
 
-local function copyEquipmentSetName(source, target)
-    local name = type(source) == "table" and validName(source.equipmentSetName) or nil
-    if name then target.equipmentSetName = name end
+local function copyWeaponSetName(source, target)
+    local name = type(source) == "table" and validName(source.weaponSetName) or nil
+    if name then target.weaponSetName = name end
     return target
 end
 
@@ -62,13 +62,13 @@ function A.Normalize(entry)
     if isItem then
         local normalized = A.CreateItem(
             validId(entry.itemId), validName(entry.itemName) or validName(entry.name))
-        return normalized and copyEquipmentSetName(entry, normalized) or nil
+        return normalized and copyWeaponSetName(entry, normalized) or nil
     end
 
     local normalized = A.CreateSpell(
         validId(entry.spellId) or validId(entry.displaySpellId) or validId(entry.id),
         validName(entry.spellName) or validName(entry.displaySpellName) or validName(entry.name))
-    return normalized and copyEquipmentSetName(entry, normalized) or nil
+    return normalized and copyWeaponSetName(entry, normalized) or nil
 end
 
 function A.Clone(entry)
@@ -80,7 +80,7 @@ function A.Clone(entry)
     else
         clone = A.CreateSpell(normalized.spellId, normalized.spellName)
     end
-    return copyEquipmentSetName(normalized, clone)
+    return copyWeaponSetName(normalized, clone)
 end
 
 function A.GetName(entry)

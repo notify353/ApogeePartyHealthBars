@@ -6,7 +6,7 @@ local SC = ApogeePartyHealthBars_ShortcutBarSettingsPage
 local KC = ApogeePartyHealthBars_KeyboardSettingsPage
 local WC = ApogeePartyHealthBars_MouseWheelSettingsPage
 local BC = ApogeePartyHealthBars_MouseButtonsSettingsPage
-local LC = ApogeePartyHealthBars_LoadoutsSettingsPage
+local WSC = ApogeePartyHealthBars_WeaponSetsSettingsPage
 local PC = ApogeePartyHealthBars_ProfilesSettingsPage
 local ThreatControlPage = ApogeePartyHealthBars_ThreatControlSettingsPage
 local DGC = ApogeePartyHealthBars_DungeonGuideSettingsPage
@@ -21,7 +21,7 @@ local D
 local configPanel, profileLabel, pageDropdown, pageTitle, pageSummary
 local profilesPage, coreSettingsPagesFrame, threatControlPage, partyFrameClicksPage, shortcutBarPage
 local dungeonGuidePage
-local keyboardPage, mouseWheelPage, mouseButtonsPage, loadoutsPage
+local keyboardPage, mouseWheelPage, mouseButtonsPage, weaponSetsPage
 local pages, groups, allFrames = {}, {}, {}
 local pageOrder, groupOrder = {}, { "frames", "actions", "reminders", "dungeon", "manage" }
 local PAGE_BODY_TOP = 44
@@ -267,7 +267,7 @@ function UI.Build(deps)
     keyboardPage = KC.Create(configPanel, D)
     mouseWheelPage = WC.Create(configPanel, D)
     mouseButtonsPage = BC.Create(configPanel, D)
-    loadoutsPage = LC.Create(configPanel, D)
+    weaponSetsPage = WSC.Create(configPanel, D)
 
     local groupLabels = {
         frames = "Frames",
@@ -351,10 +351,10 @@ function UI.Build(deps)
         summary = "Manage, export, and import character profiles.",
     })
     RegisterPage({
-        key = "loadouts", group = "manage", label = "Loadouts",
-        frame = loadoutsPage, refresh = LC.Refresh, hint = LC.GetForm().hint, layout = LC.GetForm(),
-        featureKey = "equipmentLoadouts",
-        summary = "Capture equipment and attach loadouts to actions.",
+        key = "weapons", group = "manage", label = "Weapons",
+        frame = weaponSetsPage, refresh = WSC.Refresh, hint = WSC.GetForm().hint, layout = WSC.GetForm(),
+        featureKey = "weaponSets",
+        summary = "Save Main Hand and Off Hand sets and attach them to actions.",
     })
     RegisterPage({
         key = "maintenance", group = "manage", label = "Maintenance",
@@ -403,8 +403,8 @@ function UI.Build(deps)
     UI.RefreshKeyboardPage = KC.Refresh
     UI.RefreshMouseWheelPage = WC.Refresh
     UI.RefreshMouseButtonsPage = BC.Refresh
-    UI.RefreshLoadoutsPage = LC.Refresh
-    UI.RefreshLoadoutsFromInventory = LC.RefreshFromInventory
+    UI.RefreshWeaponSetsPage = WSC.Refresh
+    UI.RefreshWeaponSetsFromInventory = WSC.RefreshFromInventory
     UI.RefreshProfilePanel = PC.Refresh
     UI.RegisterPage = RegisterPage
     UI.ActivatePage = ActivatePage

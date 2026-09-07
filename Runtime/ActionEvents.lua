@@ -19,7 +19,7 @@ function A.Register(eventRouter, deps)
         T.Refresh(false); W.Refresh(); K.Refresh(); B.Refresh()
     end
 
-    local function RefreshEquipmentLoadouts()
+    local function RefreshWeaponSets()
         T.RefreshSecureActions()
         W.RefreshSecureActions()
         K.RefreshSecureActions()
@@ -29,7 +29,7 @@ function A.Register(eventRouter, deps)
         if ui.RefreshKeyboardPage then ui.RefreshKeyboardPage() end
         if ui.RefreshMouseWheelPage then ui.RefreshMouseWheelPage() end
         if ui.RefreshMouseButtonsPage then ui.RefreshMouseButtonsPage() end
-        if ui.RefreshLoadoutsPage then ui.RefreshLoadoutsPage() end
+        if ui.RefreshWeaponSetsPage then ui.RefreshWeaponSetsPage() end
     end
 
     local function ProtectedRefreshManualActionCooldowns()
@@ -143,10 +143,10 @@ function A.Register(eventRouter, deps)
                 if ui.RefreshKeyboardPage then ui.RefreshKeyboardPage() end
                 if ui.RefreshMouseWheelPage then ui.RefreshMouseWheelPage() end
                 if ui.RefreshMouseButtonsPage then ui.RefreshMouseButtonsPage() end
-                if ui.RefreshLoadoutsFromInventory then
-                    ui.RefreshLoadoutsFromInventory()
-                elseif ui.RefreshLoadoutsPage then
-                    ui.RefreshLoadoutsPage()
+                if ui.RefreshWeaponSetsFromInventory then
+                    ui.RefreshWeaponSetsFromInventory()
+                elseif ui.RefreshWeaponSetsPage then
+                    ui.RefreshWeaponSetsPage()
                 end
             end
         end)
@@ -197,8 +197,8 @@ function A.Register(eventRouter, deps)
         if ui.RefreshPartyFrameClicksPage then ui.RefreshPartyFrameClicksPage() end
     end)
 
-    eventRouter.RegisterOptional("EQUIPMENT_SETS_CHANGED", "EquipmentLoadouts", function()
-        RefreshEquipmentLoadouts()
+    eventRouter.RegisterOptional("EQUIPMENT_SETS_CHANGED", "WeaponSets", function()
+        RefreshWeaponSets()
     end)
 
     eventRouter.RegisterOptional("UNIT_PET", "PlayerPetActions", function(_, unit)

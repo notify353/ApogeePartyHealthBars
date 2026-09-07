@@ -1,7 +1,7 @@
 ApogeePartyHealthBars_C = {
     PROFILE_STORE_VERSION = 3,
-    PROFILE_PAYLOAD_VERSION = 4,
-    SAVED_VARIABLES_VERSION = 9,
+    PROFILE_PAYLOAD_VERSION = 5,
+    SAVED_VARIABLES_VERSION = 10,
 }
 ApogeePartyHealthBars_S = {}
 ApogeePartyHealthBars_Effects = {
@@ -95,7 +95,7 @@ ApogeePartyHealthBars_Effects = {
         if settings.threatAwarenessRelPoint == nil then settings.threatAwarenessRelPoint = "CENTER" end
         if settings.threatAwarenessX == nil then settings.threatAwarenessX = 0 end
         if settings.threatAwarenessY == nil then settings.threatAwarenessY = 40 end
-        settings.schemaVersion = 9
+        settings.schemaVersion = 10
         actions.bindings = type(actions.bindings) == "table" and actions.bindings or {}
         local legacyShortcuts = type(actions.trackedSpells) == "table" and actions.trackedSpells or nil
         if type(actions.shortcuts) ~= "table"
@@ -492,20 +492,33 @@ store.Initialize(legacyAccount, secondWarriorCharacter, "WARRIOR", "Bolderbear -
 assert(#store.List() == profileCountBeforeReload and store.GetActiveId() == "p2",
     "character migration was not idempotent")
 
-store.Get("p2").payload.actions.shortcuts[1].equipmentSetName = "Shield"
+store.Get("p2").payload.actions.shortcuts[1].weaponSetName = "Shield"
 store.Get("p3").payload.actions.keyboardActions = {
     profiles = { [1] = { layouts = { base = { slots = {
-        ["1"] = { equipmentSetName = "shield" },
+        ["1"] = { weaponSetName = "shield" },
     } } } } },
 }
-assert(store.CountEquipmentSetReferences("Shield") == 2,
-    "cross-profile loadout references were not counted")
-assert(store.RenameEquipmentSetReferences("Shield", "Tank") == 2
-        and store.CountEquipmentSetReferences("Tank") == 2,
-    "cross-profile loadout references were not renamed")
-assert(store.ClearEquipmentSetReferences("Tank") == 2
-        and store.CountEquipmentSetReferences("Tank") == 0,
-    "cross-profile loadout references were not cleared")
+assert(store.CountWeaponSetReferences("Shield") == 2,
+    "cross-profile weapon-set references were not counted")
+assert(store.ClearWeaponSetReferences("Shield") == 2
+        and store.CountWeaponSetReferences("Shield") == 0,
+    "cross-profile weapon-set references were not cleared")
+
+local legacyAttachment = store.NormalizePayload({
+    schemaVersion = 4,
+    actions = { shortcuts = {
+        { kind = "spell", spellId = 100, spellName = "Charge",
+            macroText = "/use Charge", soundKey = "none",
+            equipmentSetName = "Old Tank Gear" },
+    } },
+})
+local migratedAction = legacyAttachment.actions.shortcuts[1]
+assert(migratedAction.spellName == "Charge"
+        and migratedAction.macroText == "/use Charge"
+        and migratedAction.soundKey == "none"
+        and migratedAction.equipmentSetName == nil
+        and migratedAction.weaponSetName == nil,
+    "legacy equipment attachment was not discarded without disturbing its action")
 
 local missingLegacyCharacter = { profileStateVersion = 1, activeProfileId = "p9" }
 local missingLegacyProfile = store.Initialize(
@@ -587,7 +600,7 @@ local ok = pcall(store.Initialize, futureAccount, {}, "PRIEST", "Future - Realm"
 assert(not ok and futureAccount.profileStore.schemaVersion == 2,
     "future legacy account profile-store schema was silently accepted or mutated")
 
-local futurePayload = { schemaVersion = 5, settings = {}, actions = {} }
+local futurePayload = { schemaVersion = 6, settings = {}, actions = {} }
 assert(not pcall(store.NormalizePayload, futurePayload),
     "future profile payload schema was silently downgraded")
 

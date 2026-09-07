@@ -207,6 +207,17 @@ local function stripBoundActionRuntime(actions)
     end
 end
 
+local function stripLegacyEquipmentSetNames(value, seen)
+    if type(value) ~= "table" then return end
+    seen = seen or {}
+    if seen[value] then return end
+    seen[value] = true
+    value.equipmentSetName = nil
+    for _, child in pairs(value) do
+        if type(child) == "table" then stripLegacyEquipmentSetNames(child, seen) end
+    end
+end
+
 local function normalizePayload(payload)
     payload = type(payload) == "table" and payload or {}
     local payloadVersion = tonumber(payload.schemaVersion) or 0
@@ -217,6 +228,7 @@ local function normalizePayload(payload)
         deepCopy(payload.settings or payload.account or {}), RENAMED_SETTINGS_FIELDS)
     local actionsSource = migrateRenamedFields(
         deepCopy(payload.actions or payload.character or {}), RENAMED_ACTION_FIELDS)
+    stripLegacyEquipmentSetNames(actionsSource)
     local result = {
         schemaVersion = C.PROFILE_PAYLOAD_VERSION,
         settings = copyKeys(settingsSource, SETTINGS_KEYS, SETTINGS_TYPES),
@@ -649,32 +661,32 @@ function Store.NormalizePayload(payload) return normalizePayload(payload) end
 function Store.DeepCopy(value) return deepCopy(value) end
 function Store.ValidateName(name, exceptId) return validateName(name, exceptId, classToken) end
 
-local function visitEquipmentSetReferences(value, callback, seen)
+local function visitWeaponSetReferences(value, callback, seen)
     if type(value) ~= "table" then return end
     seen = seen or {}
     if seen[value] then return end
     seen[value] = true
-    if type(value.equipmentSetName) == "string" and value.equipmentSetName ~= "" then
+    if type(value.weaponSetName) == "string" and value.weaponSetName ~= "" then
         callback(value)
     end
     for _, nested in pairs(value) do
         if type(nested) == "table" then
-            visitEquipmentSetReferences(nested, callback, seen)
+            visitWeaponSetReferences(nested, callback, seen)
         end
     end
 end
 
-local function sameEquipmentSetName(left, right)
+local function sameWeaponSetName(left, right)
     return type(left) == "string" and type(right) == "string"
         and string.lower(left) == string.lower(right)
 end
 
-function Store.CountEquipmentSetReferences(name)
+function Store.CountWeaponSetReferences(name)
     local count = 0
     if not store or type(name) ~= "string" then return count end
     for _, profile in pairs(store.profiles) do
-        visitEquipmentSetReferences(profile.payload and profile.payload.actions, function(entry)
-            if sameEquipmentSetName(entry.equipmentSetName, name) then
+        visitWeaponSetReferences(profile.payload and profile.payload.actions, function(entry)
+            if sameWeaponSetName(entry.weaponSetName, name) then
                 count = count + 1
             end
         end)
@@ -682,34 +694,14 @@ function Store.CountEquipmentSetReferences(name)
     return count
 end
 
-function Store.RenameEquipmentSetReferences(oldName, newName)
-    if not store or type(oldName) ~= "string" or type(newName) ~= "string" then return 0 end
-    local count = 0
-    for _, profile in pairs(store.profiles) do
-        local profileCount = 0
-        visitEquipmentSetReferences(profile.payload and profile.payload.actions, function(entry)
-            if sameEquipmentSetName(entry.equipmentSetName, oldName) then
-                entry.equipmentSetName = newName
-                count = count + 1
-                profileCount = profileCount + 1
-            end
-        end)
-        if profileCount > 0 then
-            profile.author = author
-            profile.modifiedAt = time and time() or 0
-        end
-    end
-    return count
-end
-
-function Store.ClearEquipmentSetReferences(name)
+function Store.ClearWeaponSetReferences(name)
     if not store or type(name) ~= "string" then return 0 end
     local count = 0
     for _, profile in pairs(store.profiles) do
         local profileCount = 0
-        visitEquipmentSetReferences(profile.payload and profile.payload.actions, function(entry)
-            if sameEquipmentSetName(entry.equipmentSetName, name) then
-                entry.equipmentSetName = nil
+        visitWeaponSetReferences(profile.payload and profile.payload.actions, function(entry)
+            if sameWeaponSetName(entry.weaponSetName, name) then
+                entry.weaponSetName = nil
                 count = count + 1
                 profileCount = profileCount + 1
             end

@@ -11,6 +11,10 @@ local tokens = {
     nameplate1 = { guid = "B", name = "Restless Hound", hostile = true, target = "player" },
     nameplate2 = { guid = "C", name = "Loose Marauder", hostile = true, target = "party1", marker = 8 },
     nameplate3 = { guid = "D", name = "Pack Enforcer", hostile = true, target = "player" },
+    focus = { guid = "E", name = "Enemy Totem", hostile = true,
+        target = "player", creatureTypeId = 11 },
+    nameplate4 = { guid = "E", name = "Enemy Totem", hostile = true,
+        target = "player", creatureTypeId = 11 },
 }
 tokens.target.cast = { name = "Fireball", startTime = 9, endTime = 12,
     notInterruptible = false, isChannel = false }
@@ -24,20 +28,30 @@ tokens.party2targettarget = tokens.player
 tokens.nameplate1target = tokens.player
 tokens.nameplate2target = tokens.party1
 tokens.nameplate3target = tokens.player
+tokens.focustarget = tokens.player
+tokens.nameplate4target = tokens.player
 
 local threat = {
     A = { player = { true, 3, 100 }, party1 = { false, 1, 60 } },
     B = { player = { true, 3, 100 }, party2 = { false, 1, 85 } },
     C = { player = { false, 1, 50 }, party1 = { true, 3, 100 } },
     D = { player = { true, 3, 100 }, party2 = { false, 2, 95 } },
+    E = { player = { true, 3, 100 } },
 }
 local threatQueryCount = 0
 local auraScanCount = 0
+local unitValueQueryCount = 0
 
 function UnitExists(unit) return tokens[unit] ~= nil end
 function UnitCanAttack(_, unit) return tokens[unit] and tokens[unit].hostile == true end
 function UnitIsDeadOrGhost(unit) return tokens[unit] and tokens[unit].dead == true end
 function UnitGUID(unit) return tokens[unit] and tokens[unit].guid end
+function UnitCreatureType(unit)
+    local entry = tokens[unit]
+    local creatureTypeId = entry and entry.creatureTypeId or 7
+    return creatureTypeId == 11 and "Localized Totem" or "Localized Humanoid",
+        creatureTypeId
+end
 function UnitName(unit)
     local entry = tokens[unit]
     return entry and entry.name
@@ -72,6 +86,9 @@ local playerDebuffs = {
         { name = "Low fallback", icon = 700, spellId = 700, applications = 1 },
         { name = "Middle fallback", icon = 800, spellId = 800, applications = 1 },
     },
+    focus = {
+        { name = "Ignored debuff", icon = 1000, spellId = 1000, applications = 1 },
+    },
 }
 observer.Initialize({
     Now = function() return now end,
@@ -91,14 +108,19 @@ observer.Initialize({
         return { playerAuras = playerDebuffs[unit] or {} }
     end },
     UnitAPI = { GetHealth = function(unit)
+        unitValueQueryCount = unitValueQueryCount + 1
         local entry = tokens[unit]
         return entry and entry.health or 0, entry and entry.healthMaximum or 1, entry ~= nil
-    end, GetCast = function(unit) return tokens[unit] and tokens[unit].cast end,
+    end, GetCast = function(unit)
+        unitValueQueryCount = unitValueQueryCount + 1
+        return tokens[unit] and tokens[unit].cast
+    end,
         GetGUID = function(unit) return tokens[unit] and tokens[unit].guid end },
 })
 observer.OnNamePlateAdded("nameplate1")
 observer.OnNamePlateAdded("nameplate2")
 observer.OnNamePlateAdded("nameplate3")
+observer.OnNamePlateAdded("nameplate4")
 
 local first = observer.Refresh()
 assert(first.total == 4 and not first.limitedCoverage
@@ -106,8 +128,8 @@ assert(first.total == 4 and not first.limitedCoverage
         and first.counts.critical == 1 and first.counts.lost == 1
         and first.lostTransitions == nil,
     "observer did not deduplicate and classify the observable pack")
-assert(threatQueryCount == 12 and auraScanCount == 4,
-    "observer performed duplicate threat or aura work for aliased mobs")
+assert(threatQueryCount == 12 and auraScanCount == 4 and unitValueQueryCount == 8,
+    "observer performed duplicate or totem threat, aura, health, or cast work")
 observer.Refresh()
 assert(threatQueryCount == 24 and auraScanCount == 4,
     "observer did not reuse stable per-mob debuff layouts")
@@ -165,6 +187,14 @@ assert(lostA and lostA.control == -30,
 assert(lost.lostTransitions == nil and observer.Refresh().lostTransitions == nil,
     "observer retained sound-only lost-transition state")
 
+tokens.target.creatureTypeId, tokens.party1target.creatureTypeId = 11, 11
+local filteredTotem = observer.Refresh()
+for _, enemy in ipairs(filteredTotem.enemies) do
+    assert(enemy.guid ~= "A", "newly identified totem remained as a stale threat loss")
+end
+tokens.target.creatureTypeId, tokens.party1target.creatureTypeId = nil, nil
+observer.Refresh()
+
 threat.A.player = nil
 local missingPlayer = observer.Refresh()
 local missingPlayerA
@@ -200,6 +230,6 @@ tokens.nameplate1target, tokens.nameplate2target, tokens.nameplate3target = nil,
 now = 15.2
 local limited = observer.Refresh()
 assert(limited.limitedCoverage and limited.total == 1 and limited.enemies[1].guid == "B",
-    "party-target fallback or reduced-coverage state was not preserved")
+    "totem-only nameplates affected party-target fallback or reduced coverage")
 
 print("PASS multi-enemy threat observer")

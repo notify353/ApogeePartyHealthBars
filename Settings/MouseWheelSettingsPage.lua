@@ -37,8 +37,8 @@ local function openMacroEditor(slotId)
         actionName = ApogeePartyHealthBars_ActionMacros.GetName(entry),
         macroText = W.GetMacro(layoutKey, slotId),
         resetText = W.ResetMacro(layoutKey, slotId),
-        prefixBytes = Actions.GetEquipmentPrefixBytes
-            and Actions.GetEquipmentPrefixBytes(entry) or 0,
+        prefixBytes = Actions.GetWeaponPrefixBytes
+            and Actions.GetWeaponPrefixBytes(entry) or 0,
         onSave = function(body) return W.ApplyMacro(layoutKey, slotId, body) end,
         onSaved = function(message) setStatus(message, true); WC.Refresh() end,
     })
@@ -72,8 +72,8 @@ function WC.Refresh(assignedSlot)
             name = name or "Empty",
             detail = (DISPLAY_LABELS[slotId] or slotId) .. " — " .. kindLabel,
             soundKey = entry and W.GetSlotSoundKey(layoutKey, slotId),
-            equipmentSetName = entry and W.GetSlotEquipmentSet
-                and W.GetSlotEquipmentSet(layoutKey, slotId),
+            weaponSetName = entry and W.GetSlotWeaponSet
+                and W.GetSlotWeaponSet(layoutKey, slotId),
             macroCustomized = entry and W.IsMacroCustomized(layoutKey, slotId),
             canMoveUp = entry ~= nil and index > 1,
             canMoveDown = entry ~= nil and index < #order,
@@ -119,9 +119,9 @@ function WC.Create(parent, deps)
             W.PreviewSound(layoutKey, boundSlotId)
             WC.Refresh()
         end)
-        if row.gear then
-            row.gear:SetSelectionCallback(function(setName)
-                local ok, message = W.SetSlotEquipmentSet(
+        if row.weapon then
+            row.weapon:SetSelectionCallback(function(setName)
+                local ok, message = W.SetSlotWeaponSet(
                     selectedLayout(), boundSlotId, setName)
                 setStatus(message, ok)
                 WC.Refresh()

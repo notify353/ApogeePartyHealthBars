@@ -16,7 +16,7 @@ for ownership and discoverability, not automatic loading.
 | Maintained harmful/helpful target auras | Target Effects |
 | Selected learned class/pet cooldowns | Ability Cooldowns |
 | Configured footer actions | Shortcut Bar |
-| Character-wide native equipment sets | Loadouts |
+| Character-wide native Main Hand/Off Hand sets | Weapon Sets |
 
 Legacy saved-field names appear only inside migration boundaries and migration
 fixtures. Do not reuse them for new APIs, variables, files, or documentation.
@@ -25,7 +25,7 @@ fixtures. Do not reuse them for new APIs, variables, files, or documentation.
 
 - `Core/`: constants, session state, capabilities, player context, API adapters,
   shared effects, sounds, and event routing.
-- `Actions/`: shared action models and UI components, native equipment-loadout
+- `Actions/`: shared action models and UI components, native weapon-set
   composition, binding ownership, Party Frame Clicks, Shortcut Bar, Macro
   Library, Keyboard, Mouse Wheel, and Mouse Buttons.
 - `PartyFrames/`: secure unit frames, health/power rendering, layout, auras,

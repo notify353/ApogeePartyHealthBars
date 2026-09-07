@@ -114,21 +114,19 @@ local CAPABILITIES = {
         end,
     },
     equipmentSets = {
-        reason = "This client does not provide native equipment loadouts.",
+        reason = "This client does not provide native weapon sets.",
         detect = function()
             return C_EquipmentSet
                 and isFunction(C_EquipmentSet.CanUseEquipmentSets)
                 and isFunction(C_EquipmentSet.GetEquipmentSetIDs)
                 and isFunction(C_EquipmentSet.GetNumEquipmentSets)
                 and isFunction(C_EquipmentSet.GetEquipmentSetInfo)
-                and isFunction(C_EquipmentSet.GetItemIDs)
                 and isFunction(C_EquipmentSet.GetIgnoredSlots)
                 and isFunction(C_EquipmentSet.EquipmentSetContainsLockedItems)
                 and isFunction(C_EquipmentSet.ClearIgnoredSlotsForSave)
                 and isFunction(C_EquipmentSet.IgnoreSlotForSave)
                 and isFunction(C_EquipmentSet.CreateEquipmentSet)
                 and isFunction(C_EquipmentSet.SaveEquipmentSet)
-                and isFunction(C_EquipmentSet.ModifyEquipmentSet)
                 and isFunction(C_EquipmentSet.DeleteEquipmentSet)
                 and isFunction(C_EquipmentSet.UseEquipmentSet)
                 and isFunction(GetInventoryItemTexture)
@@ -228,7 +226,7 @@ local FEATURES = {
     raidMarkers = { label = "Automatic dungeon marking", requires = { "raidMarkers" } },
     spellAssignment = { label = "Spellbook assignment", requires = { "spellbook" } },
     itemAssignment = { label = "Item assignment", requires = { "items" } },
-    equipmentLoadouts = { label = "Equipment loadouts", requires = { "equipmentSets" } },
+    weaponSets = { label = "Weapon sets", requires = { "equipmentSets" } },
     boundActions = { label = "Keyboard, Mouse Wheel, and Mouse Buttons", requires = { "bindings" } },
     multiSpecLayouts = { label = "Per-specialization layouts", requires = { "specialization" } },
     formLayouts = { label = "Form and stance layouts", requires = { "forms" } },

@@ -111,8 +111,8 @@ local ui = {
     RefreshMouseWheelPage = function() record("ui-wheel") end,
     RefreshMouseButtonsPage = function() record("ui-buttons") end,
     RefreshPartyFrameClicksPage = function() record("ui-healing") end,
-    RefreshLoadoutsPage = function() record("ui-loadouts") end,
-    RefreshLoadoutsFromInventory = function() record("ui-loadouts-inventory") end,
+    RefreshWeaponSetsPage = function() record("ui-weapons") end,
+    RefreshWeaponSetsFromInventory = function() record("ui-weapons-inventory") end,
 }
 
 local optional = {}
@@ -182,7 +182,7 @@ assert(optional.SPELL_UPDATE_COOLDOWN.owner == "ShortcutBar"
         and optional.UNIT_FLAGS.owner == "ShortcutBarTarget"
         and optional.BAG_UPDATE_DELAYED.owner == "ShortcutItems"
         and optional.GET_ITEM_INFO_RECEIVED.owner == "ShortcutItemInfo"
-        and optional.EQUIPMENT_SETS_CHANGED.owner == "EquipmentLoadouts"
+        and optional.EQUIPMENT_SETS_CHANGED.owner == "WeaponSets"
         and optional.UNIT_PET.owner == "PlayerPetActions"
         and optional.PET_BAR_UPDATE.owner == "PlayerPetActions"
         and optional.PET_BAR_UPDATE_COOLDOWN.owner == "PlayerPetActionState"
@@ -264,14 +264,14 @@ expect({
     "shortcut-refresh:false", "wheel-refresh", "keys-refresh", "buttons-refresh",
     "consumable-refresh:false",
     "shortcut-secure", "wheel-secure", "keys-secure", "buttons-secure",
-    "ui-shortcuts", "ui-keys", "ui-wheel", "ui-buttons", "ui-loadouts-inventory",
+    "ui-shortcuts", "ui-keys", "ui-wheel", "ui-buttons", "ui-weapons-inventory",
 }, "equipment inventory changes did not rebuild every secure action")
 
 reset()
 dispatch("EQUIPMENT_SETS_CHANGED")
 expect({
     "shortcut-secure", "wheel-secure", "keys-secure", "buttons-secure",
-    "ui-shortcuts", "ui-keys", "ui-wheel", "ui-buttons", "ui-loadouts",
+    "ui-shortcuts", "ui-keys", "ui-wheel", "ui-buttons", "ui-weapons",
 }, "native equipment-set changes did not rebuild every secure action")
 
 reset()

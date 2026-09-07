@@ -43,8 +43,8 @@ local function openMacroEditor(slotId)
         actionName = Actions.GetName(entry),
         macroText = K.GetMacro(layoutKey, slotId),
         resetText = K.ResetMacro(layoutKey, slotId),
-        prefixBytes = Actions.GetEquipmentPrefixBytes
-            and Actions.GetEquipmentPrefixBytes(entry) or 0,
+        prefixBytes = Actions.GetWeaponPrefixBytes
+            and Actions.GetWeaponPrefixBytes(entry) or 0,
         onSave = function(body) return K.ApplyMacro(layoutKey, slotId, body) end,
         onSaved = function(message) setStatus(message, true); KC.Refresh() end,
     })
@@ -88,8 +88,8 @@ function KC.Refresh(assignedSlot)
             name = name or "Empty",
             detail = (definition and definition.label or slotId) .. " — " .. kindLabel,
             soundKey = entry and K.GetSlotSoundKey(layoutKey, slotId),
-            equipmentSetName = entry and K.GetSlotEquipmentSet
-                and K.GetSlotEquipmentSet(layoutKey, slotId),
+            weaponSetName = entry and K.GetSlotWeaponSet
+                and K.GetSlotWeaponSet(layoutKey, slotId),
             macroCustomized = entry and K.IsMacroCustomized(layoutKey, slotId),
             canMoveUp = entry ~= nil and index > 1,
             canMoveDown = entry ~= nil and index < #order,
@@ -138,9 +138,9 @@ function KC.Create(parent, deps)
             K.PreviewSound(layoutKey, boundSlotId)
             KC.Refresh()
         end)
-        if row.gear then
-            row.gear:SetSelectionCallback(function(setName)
-                local ok, message = K.SetSlotEquipmentSet(
+        if row.weapon then
+            row.weapon:SetSelectionCallback(function(setName)
+                local ok, message = K.SetSlotWeaponSet(
                     selectedLayout(), boundSlotId, setName)
                 setStatus(message, ok)
                 KC.Refresh()

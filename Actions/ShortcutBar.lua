@@ -899,12 +899,12 @@ function T.ApplyMacro(slot, body)
     return store.ApplyMacro(slot, body)
 end
 
-function T.SetSlotEquipmentSet(slot, name)
-    return store.SetEquipmentSet(slot, name)
+function T.SetSlotWeaponSet(slot, name)
+    return store.SetWeaponSet(slot, name)
 end
 
-function T.GetSlotEquipmentSet(slot)
-    return store.GetEquipmentSet(slot)
+function T.GetSlotWeaponSet(slot)
+    return store.GetWeaponSet(slot)
 end
 
 function T.ResetMacro(slot)

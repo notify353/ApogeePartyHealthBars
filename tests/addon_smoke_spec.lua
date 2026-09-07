@@ -325,24 +325,15 @@ for line in io.lines("ApogeePartyHealthBars.toc") do
         dofile(line)
     end
 end
-local createLoadoutName, renameLoadoutName =
-    ApogeePartyHealthBars_LoadoutsSettingsPage.GetNameEdits()
-createLoadoutName:SetText("New Shield Set")
-renameLoadoutName:SetText("Rename Draft")
-ApogeePartyHealthBars_LoadoutsSettingsPage.RefreshFromInventory()
-assert(createLoadoutName:GetText() == "New Shield Set"
-        and renameLoadoutName:GetText() == "Rename Draft",
-    "inventory refresh discarded an unsaved loadout draft")
-local _, weaponsOnlyButton =
-    ApogeePartyHealthBars_LoadoutsSettingsPage.GetPresetButtons()
-weaponsOnlyButton.scripts.OnClick()
-local includedLoadoutSlots =
-    ApogeePartyHealthBars_LoadoutsSettingsPage.GetIncludedSlots()
-assert(not includedLoadoutSlots[1]
-        and includedLoadoutSlots[16]
-        and includedLoadoutSlots[17]
-        and includedLoadoutSlots[18],
-    "Weapons Only preset did not select exactly the weapon slots")
+local weaponSetName = ApogeePartyHealthBars_WeaponSetsSettingsPage.GetNameEdit()
+weaponSetName:SetText("New Shield Set")
+ApogeePartyHealthBars_WeaponSetsSettingsPage.RefreshFromInventory()
+assert(weaponSetName:GetText() == "New Shield Set",
+    "inventory refresh discarded an unsaved weapon-set name")
+local saveWeaponSet, equipWeaponSet, updateWeaponSet, deleteWeaponSet =
+    ApogeePartyHealthBars_WeaponSetsSettingsPage.GetButtons()
+assert(saveWeaponSet and equipWeaponSet and updateWeaponSet and deleteWeaponSet,
+    "Weapons settings did not expose the compact save/equip/update/delete workflow")
 assert(tocLoadOrder["Core/Sounds.lua"] < tocLoadOrder["Actions/MouseWheel/MouseWheelActions.lua"],
     "wheel runtime loaded before its shared sounds dependency")
 assert(tocLoadOrder["Actions/ActionData.lua"]
@@ -1172,7 +1163,7 @@ assert(table.concat(ApogeePartyHealthBars_SettingsUI.groupOrder, ",")
     "settings groups did not follow the compact task order")
     assert(table.concat(ApogeePartyHealthBars_SettingsUI.pageOrder, ",")
         == "frames,partyFrameClicks,shortcuts,keyboard,mouseWheel,mouseButtons,"
-            .. "healthChat,buffsCleanse,threatControl,dungeon,dungeonGuide,profiles,loadouts,maintenance",
+            .. "healthChat,buffsCleanse,threatControl,dungeon,dungeonGuide,profiles,weapons,maintenance",
     "settings pages did not retain every configuration workflow")
 assert(ApogeePartyHealthBars_SettingsUI.pages.targetEffects == nil
         and ApogeePartyHealthBars_SettingsUI.pages.threatControl.label == "Threat Control"

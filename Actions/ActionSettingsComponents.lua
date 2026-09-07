@@ -1,10 +1,10 @@
 local C = ApogeePartyHealthBars_C
 local UIH = ApogeePartyHealthBars_UIHelpers
 local Actions = ApogeePartyHealthBars_ActionMacros
-local EquipmentSets = ApogeePartyHealthBars_EquipmentSets or {
-    NONE_KEY = "\001no-loadout",
+local WeaponSets = ApogeePartyHealthBars_WeaponSets or {
+    NONE_KEY = "\001no-weapon-set",
     GetOptions = function()
-        return { { key = "\001no-loadout", label = "No loadout" } }
+        return { { key = "\001no-weapon-set", label = "No weapon set" } }
     end,
 }
 
@@ -34,7 +34,7 @@ local function refreshEditorState()
     local maximum = math.max(0, Actions.MAX_BODY_BYTES - reserved)
     local valid = body:find("%S") ~= nil and #body <= maximum
     byteCount:SetText(#body .. " / " .. maximum .. " action bytes"
-        .. (reserved > 0 and ("; " .. reserved .. " gear") or ""))
+        .. (reserved > 0 and ("; " .. reserved .. " weapon set") or ""))
     byteCount:SetTextColor(valid and 0.62 or 1, valid and 0.62 or 0.25, valid and 0.64 or 0.25)
     UIH.SetButtonEnabled(saveButton, valid)
 end
@@ -63,7 +63,7 @@ function AC.CreateActionRow(parent, width, options)
     options = options or {}
     local showSound = options.showSound ~= false
     local showMacro = options.showMacro ~= false
-    local showGear = options.showGear ~= false and showMacro
+    local showWeapon = options.showWeapon ~= false and showMacro
     local row = CreateFrame("Button", nil, parent)
     row:SetSize(width or C.CONFIG_CONTENT_W, LIST_ROW_H)
     local bg = row:CreateTexture(nil, "BACKGROUND")
@@ -97,10 +97,10 @@ function AC.CreateActionRow(parent, width, options)
     local macro = UIH.CreateButton(row, "Macro", 46, 20)
     macro:SetShown(showMacro)
     if showMacro then macro:SetPoint("RIGHT", previous, "LEFT", -2, 0); previous = macro end
-    local gear = UIH.CreateDropdown(row, 46, 20, 190)
-    gear:SetArrowShown(false)
-    gear:SetShown(showGear)
-    if showGear then gear:SetPoint("RIGHT", previous, "LEFT", -2, 0); previous = gear end
+    local weapon = UIH.CreateDropdown(row, 54, 20, 190)
+    weapon:SetArrowShown(false)
+    weapon:SetShown(showWeapon)
+    if showWeapon then weapon:SetPoint("RIGHT", previous, "LEFT", -2, 0); previous = weapon end
     local sound = UIH.CreateDropdown(row, 50, 20, 150)
     sound:SetArrowShown(false)
     sound:SetShown(showSound)
@@ -113,7 +113,7 @@ function AC.CreateActionRow(parent, width, options)
         return marker
     end
     sound.stateMarker = createStateMarker(sound)
-    gear.stateMarker = createStateMarker(gear)
+    weapon.stateMarker = createStateMarker(weapon)
     macro.stateMarker = createStateMarker(macro)
     if showSound then
         UIH.SetTooltip(sound, "Ready sound",
@@ -129,9 +129,9 @@ function AC.CreateActionRow(parent, width, options)
         UIH.SetTooltip(macro, "Edit macro",
             "Review or customize the macro text used by this action.")
     end
-    if showGear then
-        UIH.SetTooltip(gear, "Equipment loadout",
-            "Choose a native equipment loadout to run before this action.")
+    if showWeapon then
+        UIH.SetTooltip(weapon, "Weapon set",
+            "Choose a Main Hand and Off Hand set to equip before this action.")
     end
     local primary = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     primary:SetPoint("TOPLEFT", iconSlot, "TOPRIGHT", 6, 0)
@@ -151,9 +151,9 @@ function AC.CreateActionRow(parent, width, options)
     row.dropAccent = dropAccent
     row.iconOutline, row.iconFill = iconOutline, iconFill
     row.primary, row.secondary = primary, secondary
-    row.sound, row.gear, row.macro, row.up, row.down, row.clear =
-        sound, gear, macro, up, down, clear
-    row.showSound, row.showGear, row.showMacro = showSound, showGear, showMacro
+    row.sound, row.weapon, row.macro, row.up, row.down, row.clear =
+        sound, weapon, macro, up, down, clear
+    row.showSound, row.showWeapon, row.showMacro = showSound, showWeapon, showMacro
     return row
 end
 
@@ -184,12 +184,12 @@ function AC.SetActionRowState(row, options)
     else
         row.primary:SetTextColor(0.43, 0.43, 0.45)
     end
-    local selectedLoadout = active and options.equipmentSetName or nil
-    local loadoutMissing = selectedLoadout and EquipmentSets.Resolve
-        and not EquipmentSets.Resolve(selectedLoadout)
+    local selectedWeaponSet = active and options.weaponSetName or nil
+    local weaponSetUnavailable = selectedWeaponSet and WeaponSets.Resolve
+        and not WeaponSets.Resolve(selectedWeaponSet)
     row.secondary:SetText((options.detail or "Empty")
-        .. (selectedLoadout and (" · Gear: " .. selectedLoadout
-            .. (loadoutMissing and " (missing)" or "")) or ""))
+        .. (selectedWeaponSet and (" · Weapons: " .. selectedWeaponSet
+            .. (weaponSetUnavailable and " (unavailable)" or "")) or ""))
     local soundKey = active and (options.soundKey or "none") or "none"
     row.sound:SetSelectedKey(soundKey)
     local soundLabel = selectedOptionLabel(row.sound, soundKey, "None")
@@ -200,21 +200,21 @@ function AC.SetActionRowState(row, options)
             "Choose the sound played when this action becomes ready.")
     end
     if row.showSound and active then row.sound:Enable() else row.sound:Disable() end
-    if row.showGear then
-        local selectedName = selectedLoadout
-        if row.gear.SetOptions then
-            row.gear:SetOptions(EquipmentSets.GetOptions(selectedName))
+    if row.showWeapon then
+        local selectedName = selectedWeaponSet
+        if row.weapon.SetOptions then
+            row.weapon:SetOptions(WeaponSets.GetOptions(selectedName))
         end
-        row.gear:SetSelectedKey(selectedName or EquipmentSets.NONE_KEY)
-        row.gear.label:SetText("Gear")
-        row.gear.stateMarker:SetShown(selectedName ~= nil)
-        UIH.SetTooltip(row.gear,
-            selectedName and ("Equipment loadout: " .. selectedName) or "Equipment loadout",
+        row.weapon:SetSelectedKey(selectedName or WeaponSets.NONE_KEY)
+        row.weapon.label:SetText("Weapon")
+        row.weapon.stateMarker:SetShown(selectedName ~= nil)
+        UIH.SetTooltip(row.weapon,
+            selectedName and ("Weapon set: " .. selectedName) or "Weapon set",
             selectedName
-                and ((loadoutMissing and "This native loadout is missing. " or "")
-                    .. "Runs before the saved action macro.")
-                or "No loadout. The saved action macro runs unchanged.")
-        if active then row.gear:Enable() else row.gear:Disable() end
+                and ((weaponSetUnavailable and "This weapon set is unavailable. " or "")
+                    .. "Equips Main Hand and Off Hand before the saved action macro.")
+                or "No weapon set. The saved action macro runs unchanged.")
+        if active then row.weapon:Enable() else row.weapon:Disable() end
     end
     UIH.SetButtonEnabled(row.macro, row.showMacro and active)
     UIH.SetButtonEnabled(row.clear, active)

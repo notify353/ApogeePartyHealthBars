@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+## [0.51.0] - 2026-09-13
+
 - Fixed newly saved weapon sets sometimes being published by WoW before their ignored slots were finalized, leaving the set hidden from Apogee; creation now verifies and repairs the native set on the next frame, and entering the name of an incompatible existing set offers an explicit two-click conversion.
 - Replaced general equipment loadouts with a focused Main Hand and Off Hand weapon-set workflow: Manage → Weapons now provides simple save, equip, update, and delete controls; action rows use a compact Weapon picker; armor and Ranged/Relic slots are never included; and legacy all-gear action attachments are discarded without changing their spells, items, macros, sounds, or bindings.
 - Added a full Maraudon Dungeon Guide with five route chapters, purple and orange entrance guidance, quest events, dangerous plant and slime pulls, the Scepter shortcut, all bosses and summons, and automatic target marking.

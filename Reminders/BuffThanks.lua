@@ -31,6 +31,8 @@ local suppressBuffsUntil = 0
 local function saved() return S.sv or {} end
 local function now() return D and D.Now and D.Now() or 0 end
 local function isSupported()
+    local ownership = ApogeePartyHealthBars_EssentialsOwnership
+    if ownership and ownership.IsSuspended() then return false end
     return not D or not D.ClientCapabilities
         or D.ClientCapabilities.IsFeatureAvailable("buffThanks")
 end
@@ -339,6 +341,8 @@ function Thanks.Expire(timestamp)
 end
 
 function Thanks.PerformGesture(guid, token)
+    local ownership = ApogeePartyHealthBars_EssentialsOwnership
+    if ownership and ownership.IsSuspended() then return false end
     local entry = findEntry(guid)
     local valid = false
     for _, gesture in ipairs(GESTURES) do
@@ -444,7 +448,8 @@ function Thanks.Initialize(deps)
 end
 
 function Thanks.SetUnlocked(value)
-    unlocked = value == true
+    local ownership = ApogeePartyHealthBars_EssentialsOwnership
+    unlocked = value == true and not (ownership and ownership.IsSuspended())
     if frame then
         frame:EnableMouse(unlocked)
         if unlocked then frame:RegisterForDrag("LeftButton") else frame:RegisterForDrag() end

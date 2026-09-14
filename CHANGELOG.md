@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Cooperate with ApogeeEssentials ownership protocol v1: defer the four overlapping features until startup settles, preserve preferences, and mark controls managed while Essentials owns them.
+
 - Remove the multi-enemy Threat Control HUD, maintained-effect and ability-cooldown lanes, and their settings page. Use Apogee Tank for these features; party-frame threat and automatic marking remain.
 
 ## [0.51.0] - 2026-09-13

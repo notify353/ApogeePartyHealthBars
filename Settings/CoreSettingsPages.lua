@@ -47,7 +47,15 @@ local SUPPORT_FEATURE_BY_SETTING = {
     buffThanksEnabled = "buffThanks",
 }
 
+local MANAGED_SETTINGS = { combatUIAutoHide=true, hideUIErrors=true,
+    mentionAlertsEnabled=true, mentionHighlightEnabled=true, mentionSoundKey=true,
+    buffThanksEnabled=true }
+
 local function GetSettingSupport(svKey)
+    local ownership = ApogeePartyHealthBars_EssentialsOwnership
+    if MANAGED_SETTINGS[svKey] and ownership and ownership.IsSuspended() then
+        return false, "Managed by ApogeeEssentials. Configure this feature in its AddOns category."
+    end
     if svKey == "cleanseWatchEnabled" and D and D.CleanseWatch then
         return D.CleanseWatch.HasCapability(), D.CleanseWatch.GetUnavailableReason()
     end
@@ -58,7 +66,7 @@ local function GetSettingSupport(svKey)
 end
 
 local function ApplySettingSupport(entry)
-    if not SUPPORT_FEATURE_BY_SETTING[entry.svKey]
+    if not MANAGED_SETTINGS[entry.svKey] and not SUPPORT_FEATURE_BY_SETTING[entry.svKey]
         and entry.svKey ~= "cleanseWatchEnabled" then return true end
     local supported, reason = GetSettingSupport(entry.svKey)
     local frame = entry.frame
@@ -394,6 +402,10 @@ local function Layout()
         entries[#entries + 1] = { frame = positionsSection, height = 16, gap = 10 }
         entries[#entries + 1] = { frame = cleanseResetRow, height = 32 }
         entries[#entries + 1] = { frame = buffThanksResetRow, height = 32 }
+        local available, reason = GetSettingSupport("buffThanksEnabled")
+        if UIH.SetControlAvailability then
+            UIH.SetControlAvailability(buffThanksResetRow, resetButtons.buffThanks, available, reason)
+        end
     elseif activePage == "dungeon" then
         entries[#entries + 1] = { frame = dungeonBoardSection, height = 16, gap = 9 }
         addSetting("dungeonBoardRole")
@@ -811,6 +823,8 @@ function G.Create(parent, deps)
         buffThanksResetRow, "Reset Position", 126, 22)
     resetButtons.buffThanks:SetPoint("RIGHT", buffThanksResetRow, "RIGHT", -5, 0)
     resetButtons.buffThanks:SetScript("OnClick", function()
+        local ownership = ApogeePartyHealthBars_EssentialsOwnership
+        if ownership and ownership.IsSuspended() then return end
         D.BuffThanks.ResetPosition()
         D.BuffThanks.Refresh()
     end)

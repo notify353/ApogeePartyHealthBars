@@ -119,6 +119,7 @@ Settings/WeaponSetsSettingsPage.lua
 Settings/ProfilesSettingsPage.lua
 Settings/DungeonGuideSettingsPage.lua
 Settings/SettingsUI.lua
+Integrations/EssentialsOwnership.lua
 Runtime/LifecycleEvents.lua
 Runtime/UnitEvents.lua
 Runtime/ActionEvents.lua

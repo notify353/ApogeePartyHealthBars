@@ -44,6 +44,8 @@ function L.Register(eventRouter, deps)
     local function HandleEvent(event, isInitialLogin, isReloadingUi)
         local ok, err = pcall(function()
             if event == "PLAYER_LOGIN" then
+                local ownership = ApogeePartyHealthBars_EssentialsOwnership
+                if ownership then ownership.Resolve() end
                 if type(ApogeePartyHealthCharSV) ~= "table" then
                     ApogeePartyHealthCharSV = {}
                 end

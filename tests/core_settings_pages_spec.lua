@@ -567,3 +567,16 @@ assert(ApogeePartyHealthBars_S == nil,
     "CoreSettingsPages unexpectedly depended on shared session state")
 
 print("PASS General configuration")
+
+ApogeePartyHealthBars_EssentialsOwnership = { IsSuspended = function() return true end }
+for pageKey, keys in pairs({ frames={"combatUIAutoHide", "hideUIErrors"},
+    healthChat={"mentionAlertsEnabled", "mentionHighlightEnabled", "mentionSoundKey"},
+    buffsCleanse={"buffThanksEnabled"} }) do
+    config.SetPage(pageKey)
+    for _, key in ipairs(keys) do
+        local row = config.GetRow(key)
+        assert(not (row.check or row.value):IsEnabled(), key .. " was not managed")
+        assert(row.unavailableReason:find("Managed by ApogeeEssentials", 1, true))
+    end
+end
+print("PASS Essentials managed settings controls and explanation")

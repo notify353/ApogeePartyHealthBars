@@ -24,7 +24,11 @@ function R.Register(eventRouter, deps)
     ActionEvents.Register(eventRouter, deps)
     if DungeonBoardEvents then DungeonBoardEvents.Register(eventRouter, deps) end
     if CleanseEvents then CleanseEvents.Register(eventRouter, deps) end
-    if BuffThanksEvents then BuffThanksEvents.Register(eventRouter, deps) end
+    if BuffThanksEvents then
+        local function registerThanks() BuffThanksEvents.Register(eventRouter, deps) end
+        local ownership = ApogeePartyHealthBars_EssentialsOwnership
+        if ownership then ownership.WhenLocal(registerThanks) else registerThanks() end
+    end
     if MentionAlerts then MentionAlerts.Register(eventRouter) end
     GroupHelperEvents.Register(eventRouter, deps)
 end

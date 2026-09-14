@@ -102,13 +102,13 @@ for _, event in ipairs({
     "UNIT_SPELLCAST_CHANNEL_STOP", "UNIT_SPELLCAST_INTERRUPTIBLE",
     "UNIT_SPELLCAST_NOT_INTERRUPTIBLE",
 }) do
-    assert(optionalHasOwner(event, "ThreatAwareness"),
+    assert(not optionalHasOwner(event, "ThreatAwareness"),
         "Threat Control cast event changed registration: " .. event)
 end
 assert(optionalHasOwner("RAID_TARGET_UPDATE", "RaidMarkers")
         and optionalHasOwner("UNIT_DIED", "RaidMarkers")
-        and optionalHasOwner("NAME_PLATE_UNIT_ADDED", "ThreatAwareness")
-        and optionalHasOwner("NAME_PLATE_UNIT_REMOVED", "ThreatAwareness"),
+        and not optionalHasOwner("NAME_PLATE_UNIT_ADDED", "ThreatAwareness")
+        and not optionalHasOwner("NAME_PLATE_UNIT_REMOVED", "ThreatAwareness"),
     "visual event owners changed")
 
 dispatch("RAID_TARGET_UPDATE")
@@ -123,7 +123,7 @@ expect({ "invalidate:party1", "invalidate:target", "shield:party1", "layout" },
 
 reset()
 dispatch("UNIT_AURA", "other")
-expect({ "invalidate:other", "observer-aura:other", "awareness:nil" },
+expect({  },
     "observed enemy aura change did not refresh Threat Control debuffs")
 
 reset()
@@ -133,7 +133,7 @@ expect({ "invalidate:party1", "invalidate:target", "shield:party1", "values:targ
     "absorb alias invalidation or values request changed")
 reset()
 dispatch("UNIT_ABSORB_AMOUNT_CHANGED", "player")
-expect({ "invalidate:player", "shield:player", "awareness-player", "values:player" },
+expect({ "invalidate:player", "shield:player", "values:player" },
     "player absorb change did not refresh Threat Control")
 
 reset()
@@ -141,40 +141,38 @@ dispatch("UNIT_HEALTH", "party1")
 expect({ "values:nil" }, "health aliases no longer coalesced into an all-row update")
 reset()
 dispatch("UNIT_HEALTH", "other")
-expect({ "awareness-unit:other" }, "observed enemy health did not refresh Threat Control")
+expect({  }, "observed enemy health did not refresh Threat Control")
 reset()
-dispatch("UNIT_SPELLCAST_START", "other")
-dispatch("UNIT_SPELLCAST_CHANNEL_UPDATE", "other")
-dispatch("UNIT_SPELLCAST_INTERRUPTED", "party1")
-expect({ "awareness-unit:other", "awareness-unit:other" },
+
+expect({  },
     "observed enemy casts did not refresh Threat Control")
 reset()
 dispatch("UNIT_HEAL_PREDICTION", "other")
 expect({}, "untracked heal prediction triggered an update")
 reset()
 dispatch("UNIT_HEALTH", "player")
-expect({ "awareness-player", "values:nil" }, "player health did not refresh Threat Control")
+expect({ "values:nil" }, "player health did not refresh Threat Control")
 
 reset()
 dispatch("UNIT_DISPLAYPOWER", "player")
-expect({ "shortcut:false", "awareness-player", "layout" }, "player display-power handling changed")
+expect({ "shortcut:false", "layout" }, "player display-power handling changed")
 reset()
 dispatch("UNIT_DISPLAYPOWER", "party1")
 expect({ "layout" }, "adaptive party display-power handling changed")
 
 reset()
 dispatch("UNIT_MAXPOWER", "player")
-expect({ "shortcut:false", "awareness-player", "layout" }, "player max-power layout handling changed")
+expect({ "shortcut:false", "layout" }, "player max-power layout handling changed")
 reset()
 dispatch("UNIT_POWER_UPDATE", "player")
-expect({ "shortcut:false", "awareness-player", "values:player" }, "player power update handling changed")
+expect({ "shortcut:false", "values:player" }, "player power update handling changed")
 
 reset()
 dispatch("UNIT_CONNECTION", "party1")
 expect({ "layout" }, "connection changes stopped requesting layout")
 reset()
 dispatch("UNIT_CONNECTION", "player")
-expect({ "awareness-player", "layout" }, "player connection did not refresh Threat Control")
+expect({ "layout" }, "player connection did not refresh Threat Control")
 reset()
 dispatch("UNIT_TARGET", "party1")
 dispatch("UNIT_TARGET", "target")
@@ -182,12 +180,7 @@ dispatch("UNIT_TARGET", "other")
 expect({ "layout", "layout" }, "unit-target filtering changed")
 
 reset()
-dispatch("NAME_PLATE_UNIT_ADDED", "nameplate7")
-dispatch("NAME_PLATE_UNIT_REMOVED", "nameplate7")
-expect({
-    "plate+:nameplate7", "awareness:nil",
-    "plate-:nameplate7", "awareness:nil",
-}, "nameplate lifecycle did not remain exclusive to Threat Awareness")
+assert(not optional.NAME_PLATE_UNIT_ADDED and not optional.NAME_PLATE_UNIT_REMOVED)
 
 reset()
 deps.ResolvePanelUnit = function() error("expected unit failure") end

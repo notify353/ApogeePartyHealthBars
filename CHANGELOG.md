@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Remove the multi-enemy Threat Control HUD, maintained-effect and ability-cooldown lanes, and their settings page. Use Apogee Tank for these features; party-frame threat and automatic marking remain.
+
 ## [0.51.0] - 2026-09-13
 
 - Fixed newly saved weapon sets sometimes being published by WoW before their ignored slots were finalized, leaving the set hidden from Apogee; creation now verifies and repairs the native set on the next frame, and entering the name of an incompatible existing set offers an explicit two-click conversion.

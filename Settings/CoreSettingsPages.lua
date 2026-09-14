@@ -43,7 +43,6 @@ local SUPPORT_FEATURE_BY_SETTING = {
     rangeCheckEnabled = "rangeFade",
     threatEnabled = "threat",
     threatPercentEnabled = "threat",
-    threatAwarenessEnabled = "threat",
     hotEnabled = "hotTracking",
     buffThanksEnabled = "buffThanks",
 }
@@ -655,7 +654,7 @@ function G.Create(parent, deps)
         "IsHotTrackKnown", "IsPartyBuffKnown", "IsSavedFeatureEnabled",
         "IsSelfBuffKnown", "Print", "RequestConfigRefresh", "SetAddonEnabled",
         "SetHotTrackEnabled", "SetSavedFeature", "SetSelfBuffPreference", "Sounds",
-        "SyncVisualTicker", "Threat", "ThreatAwareness", "ConsumableBar", "DungeonBoardSettings",
+        "SyncVisualTicker", "Threat", "ConsumableBar", "DungeonBoardSettings",
         "UIErrorSuppressor",
         "CleanseWatch", "BuffThanks", "GroupHelperRuntime", "PartyFramePreview",
     }) do

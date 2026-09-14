@@ -1,7 +1,6 @@
 dofile("Core/Namespace.lua")
 dofile("Bootstrap/ActionComposition.lua")
 dofile("Bootstrap/PartyFrameComposition.lua")
-dofile("Bootstrap/AuxiliaryComposition.lua")
 dofile("Bootstrap/SettingsComposition.lua")
 dofile("Bootstrap/EventRegistration.lua")
 
@@ -46,15 +45,7 @@ ApogeePartyHealthBars.Bootstrap.PartyFrameComposition.RegisterSecureReconciler({
     end,
 }, function() end)
 
-ApogeePartyHealthBars.Bootstrap.AuxiliaryComposition.Initialize({
-    ThreatObserver = { Initialize = function() called("observer") end },
-    ThreatObserverDependencies = {},
-    ThreatAwareness = {
-        Initialize = function() called("awareness") end,
-        Build = function() called("awareness-build") end,
-    },
-    ThreatAwarenessDependencies = {},
-})
+
 
 local controller = {
     Initialize = function() called("settings-controller") end,
@@ -99,8 +90,8 @@ assert(board == 1 and guide == 1 and messages == 1,
     "slash command routing changed during bootstrap extraction")
 
 assert(table.concat(calls, ",") == table.concat({
-    "actions", "clicks", "layout", "reconciler", "observer", "awareness",
-    "awareness-build", "settings-controller", "settings-ui", "runtime-events",
+    "actions", "clicks", "layout", "reconciler",
+    "settings-controller", "settings-ui", "runtime-events",
     "health-alerts",
 }, ","), "bootstrap composition order changed: " .. table.concat(calls, ","))
 

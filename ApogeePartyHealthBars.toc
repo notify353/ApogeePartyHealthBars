@@ -34,8 +34,6 @@ DungeonBoard/DungeonBoardRuntime.lua
 DungeonBoard/DungeonBoardGroupFinder.lua
 DungeonBoard/DungeonBoardActions.lua
 Core/PlayerContext.lua
-Reminders/TargetEffects/TargetEffectData.lua
-Reminders/AbilityCooldowns/CooldownData.lua
 PartyFrames/CrowdControl.lua
 Actions/MouseWheel/MouseWheelData.lua
 Actions/Keyboard/KeyboardData.lua
@@ -93,11 +91,6 @@ Core/PlayerSpells.lua
 Reminders/CleanseWatch.lua
 PartyFrames/ThreatObserver.lua
 PartyFrames/Threat.lua
-PartyFrames/ThreatAwareness.lua
-Reminders/TargetEffects/TargetEffectHud.lua
-Reminders/TargetEffects/TargetEffectTracker.lua
-Reminders/AbilityCooldowns/CooldownHud.lua
-Reminders/AbilityCooldowns/CooldownTracker.lua
 Reminders/BuffReminders.lua
 PartyFrames/PlayerUtility.lua
 PartyFrames/ShieldTracker.lua
@@ -124,15 +117,12 @@ Settings/MouseWheelSettingsPage.lua
 Settings/MouseButtonsSettingsPage.lua
 Settings/WeaponSetsSettingsPage.lua
 Settings/ProfilesSettingsPage.lua
-Settings/ThreatControlSettingsPage.lua
 Settings/DungeonGuideSettingsPage.lua
 Settings/SettingsUI.lua
 Runtime/LifecycleEvents.lua
 Runtime/UnitEvents.lua
 Runtime/ActionEvents.lua
 Runtime/ActionAssignmentEvents.lua
-Runtime/TargetEffectEvents.lua
-Runtime/CooldownEvents.lua
 Runtime/DungeonBoardEvents.lua
 Runtime/CleanseEvents.lua
 Runtime/BuffThanksEvents.lua
@@ -140,7 +130,6 @@ Runtime/GroupHelperEvents.lua
 Runtime/RuntimeEvents.lua
 Bootstrap/ActionComposition.lua
 Bootstrap/PartyFrameComposition.lua
-Bootstrap/AuxiliaryComposition.lua
 Bootstrap/SettingsComposition.lua
 Bootstrap/EventRegistration.lua
 ApogeePartyHealthBars.lua

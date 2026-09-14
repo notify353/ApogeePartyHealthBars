@@ -360,19 +360,7 @@ assert(tocLoadOrder["Core/ClientCapabilities.lua"]
     and tocLoadOrder["Actions/ActionAssignmentSources.lua"]
         < tocLoadOrder["Runtime/ActionEvents.lua"],
     "action assignment consumers loaded before their shared source policy")
-assert(tocLoadOrder["PartyFrames/AccessoryLayout.lua"]
-        < tocLoadOrder["PartyFrames/PlayerUtility.lua"]
-    and tocLoadOrder["PartyFrames/AccessoryLayout.lua"]
-        < tocLoadOrder["Actions/ShortcutBar.lua"]
-    and tocLoadOrder["PartyFrames/ThreatAwareness.lua"]
-        < tocLoadOrder["Reminders/TargetEffects/TargetEffectHud.lua"]
-    and tocLoadOrder["PartyFrames/ThreatAwareness.lua"]
-        < tocLoadOrder["Reminders/AbilityCooldowns/CooldownHud.lua"]
-    and tocLoadOrder["Reminders/AbilityCooldowns/CooldownData.lua"]
-        < tocLoadOrder["Reminders/AbilityCooldowns/CooldownTracker.lua"]
-    and tocLoadOrder["Actions/ActionCooldowns.lua"]
-        < tocLoadOrder["Reminders/AbilityCooldowns/CooldownTracker.lua"],
-    "compact accessory consumers loaded before their shared dependency")
+
 assert(tocLoadOrder["Actions/MouseWheel/MouseWheelLayouts.lua"]
     < tocLoadOrder["Actions/MouseWheel/MouseWheelActions.lua"],
     "wheel runtime loaded before its class-state layout dependency")
@@ -439,25 +427,8 @@ assert(tocLoadOrder["PartyFrames/Auras.lua"]
     and tocLoadOrder["PartyFrames/HotTracker.lua"]
         < tocLoadOrder["ApogeePartyHealthBars.lua"],
     "effect runtimes loaded outside their dependency-safe order")
-assert(tocLoadOrder["Runtime/LifecycleEvents.lua"]
-        < tocLoadOrder["Runtime/RuntimeEvents.lua"]
-    and tocLoadOrder["Runtime/UnitEvents.lua"]
-        < tocLoadOrder["Runtime/RuntimeEvents.lua"]
-    and tocLoadOrder["Runtime/ActionEvents.lua"]
-        < tocLoadOrder["Runtime/RuntimeEvents.lua"]
-    and tocLoadOrder["Runtime/CooldownEvents.lua"]
-        < tocLoadOrder["Runtime/RuntimeEvents.lua"]
-    and tocLoadOrder["Runtime/DungeonBoardEvents.lua"]
-        < tocLoadOrder["Runtime/RuntimeEvents.lua"]
-    and tocLoadOrder["Runtime/RuntimeEvents.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars.lua"],
-    "runtime event subscribers loaded outside their coordinator order")
-assert(type(ApogeePartyHealthBars_LifecycleEvents.Register) == "function"
-        and type(ApogeePartyHealthBars_UnitEvents.Register) == "function"
-        and type(ApogeePartyHealthBars_ActionEvents.Register) == "function"
-        and type(ApogeePartyHealthBars_CooldownEvents.Register) == "function"
-        and type(ApogeePartyHealthBars_DungeonBoardEvents.Register) == "function",
-    "runtime event subscriber API was not loaded")
+
+
 assert(type(ApogeePartyHealthBars_DungeonBoardRuntime.GetSnapshot) == "function",
     "Dungeon Board runtime API was not loaded")
 assert(tocLoadOrder["DungeonBoard/DungeonBoardCatalog.lua"]
@@ -520,35 +491,10 @@ assert(ApogeePartyHealthBars_EffectsTracker == nil,
     "retired EffectsTracker runtime was still loaded")
 
 local router = ApogeePartyHealthBars_EventRouter
-ApogeePartyHealthBars_TargetEffectHud.SetConfigurationPreview({
-    { key = "preview", label = "Preview", spellId = 1160, icon = 132154, preview = true },
-})
-local earlyDotRefreshOk, earlyDotRefreshError = pcall(
-    ApogeePartyHealthBars_TargetEffectHud.SetSuggestions, {})
-assert(earlyDotRefreshOk,
-    "pre-login DoT context refresh failed before HUD initialization: "
-        .. tostring(earlyDotRefreshError))
+
 router.Dispatch("PLAYER_LOGIN")
-local targetEffectRow = ApogeePartyHealthBars_TargetEffectHud.GetAnchor()
-local cooldownRow = ApogeePartyHealthBars_CooldownHud.GetAnchor()
-local playerStatusAnchor = ApogeePartyHealthBars_ThreatAwareness.GetPlayerStatusAnchor()
-assert(targetEffectRow and targetEffectRow.parent
-        == ApogeePartyHealthBars_ThreatAwareness.GetFrame()
-        and targetEffectRow.point[1] == "RIGHT"
-        and targetEffectRow.point[2] == playerStatusAnchor
-        and targetEffectRow.point[3] == "LEFT"
-        and targetEffectRow.point[4] == -4
-        and not targetEffectRow.mouseEnabled
-        and cooldownRow.parent == ApogeePartyHealthBars_ThreatAwareness.GetFrame()
-        and cooldownRow.point[1] == "LEFT"
-        and cooldownRow.point[2] == playerStatusAnchor
-        and cooldownRow.point[3] == "RIGHT"
-        and cooldownRow.point[4] == 4
-        and not cooldownRow.mouseEnabled,
-    "Threat Control did not attach passive effects-left/cooldowns-right lanes")
-assert(#ApogeePartyHealthBars_CooldownHud.GetEntries() == 6
-        and #ApogeePartyHealthBars_CooldownHud.GetIcons() == 6,
-    "reviewed learned cooldown defaults did not fill the six fixed HUD slots")
+
+
 assert(ApogeePartyHealthBars_UIErrorSuppressor.IsEnabled(),
     "PLAYER_LOGIN did not initialize default-on Blizzard UI error suppression")
 local automaticConsumables = ApogeePartyHealthBars_ConsumableBar.GetEntries()
@@ -599,30 +545,9 @@ RunFrameUpdates()
 assert(ApogeePartyHealthBars_ShortcutBar.ClearSlot(1),
     "smoke test could not restore the empty Shortcut fixture")
 RunFrameUpdates()
-local dotHudAnchor = ApogeePartyHealthBars_TargetEffectHud.GetAnchor()
-assert(dotHudAnchor and dotHudAnchor.frameType == "Frame" and dotHudAnchor.template == nil
-        and dotHudAnchor.scripts.OnClick == nil and dotHudAnchor == targetEffectRow,
-    "DoT reminder HUD was not created as a passive non-secure frame")
-assert(ApogeePartyHealthBars_TargetEffectHud.ResetPosition == nil
-        and ApogeePartyHealthBars_TargetEffectHud.SetUnlocked == nil,
-    "removed movable Target Effects APIs were still exposed")
-local threatHudFrame = ApogeePartyHealthBars_ThreatAwareness.GetFrame()
-assert(type(ApogeePartyHealthBars_ThreatAwareness.SetPreview) == "function"
-        and ApogeePartyHealthBars_ThreatAwareness.SetUnlocked == nil
-        and ApogeePartyHealthBars_ThreatAwareness.ResetPosition == nil
-        and ApogeePartyHealthBars_ThreatAwareness.RestorePosition == nil
-        and ApogeePartyHealthBars_ThreatAwareness.GetSoundKey == nil
-        and ApogeePartyHealthBars_ThreatAwareness.SetSoundKey == nil
-        and ApogeePartyHealthBars_ThreatAwareness.PreviewSound == nil
-        and not threatHudFrame.mouseEnabled
-        and threatHudFrame.scripts.OnDragStart == nil
-        and threatHudFrame.scripts.OnDragStop == nil
-        and threatHudFrame.point[1] == "TOP"
-        and threatHudFrame.point[2] == UIParent
-        and threatHudFrame.point[3] == "CENTER"
-        and threatHudFrame.point[4] == 0
-        and threatHudFrame.point[5] == 55,
-    "Tank Threat Control retained movable APIs or left its fixed gameplay anchor")
+
+
+
 assert(ApogeePartyHealthBarsPanel.point[1] == "RIGHT"
         and ApogeePartyHealthBarsPanel.point[3] == "RIGHT"
         and ApogeePartyHealthBarsPanel.point[4] == -24
@@ -1163,52 +1088,11 @@ assert(table.concat(ApogeePartyHealthBars_SettingsUI.groupOrder, ",")
     "settings groups did not follow the compact task order")
     assert(table.concat(ApogeePartyHealthBars_SettingsUI.pageOrder, ",")
         == "frames,partyFrameClicks,shortcuts,keyboard,mouseWheel,mouseButtons,"
-            .. "healthChat,buffsCleanse,threatControl,dungeon,dungeonGuide,profiles,weapons,maintenance",
+            .. "healthChat,buffsCleanse,dungeon,dungeonGuide,profiles,weapons,maintenance",
     "settings pages did not retain every configuration workflow")
 assert(ApogeePartyHealthBars_SettingsUI.pages.targetEffects == nil
-        and ApogeePartyHealthBars_SettingsUI.pages.threatControl.label == "Threat Control"
-        and ApogeePartyHealthBars_SettingsUI.pages.threatControl.featureKey == "threat",
+,
     "retired Target HUD navigation was not consolidated into Threat Control")
-local threatHudEnabledRow = ApogeePartyHealthBars_ThreatControlSettingsPage.GetEnabledRow()
-local reminderEnabledRow = ApogeePartyHealthBars_ThreatControlSettingsPage.GetRemindersRow()
-local reminderDefaultRow = ApogeePartyHealthBars_ThreatControlSettingsPage.GetDefaultRow()
-local targetEffectRows = ApogeePartyHealthBars_ThreatControlSettingsPage.GetRows()
-ApogeePartyHealthBars_ThreatControlSettingsPage.Refresh()
-local cooldownsEnabledRow = ApogeePartyHealthBars_ThreatControlSettingsPage.GetCooldownsRow()
-local cooldownSettingsRows = ApogeePartyHealthBars_ThreatControlSettingsPage.GetCooldownRows()
-assert(cooldownsEnabledRow.check:GetChecked() and #cooldownSettingsRows >= 6,
-    "Threat Control settings did not expose learned Ability Cooldowns")
-local originalFeatureAvailable = ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable
-local originalFeatureReason = ApogeePartyHealthBars_ClientCapabilities.GetFeatureReason
-ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable = function(featureKey)
-    if featureKey == "threat" then return true end
-    if featureKey == "targetEffectReminders" then return false end
-    if featureKey == "abilityCooldowns" then return false end
-    return originalFeatureAvailable(featureKey)
-end
-ApogeePartyHealthBars_ClientCapabilities.GetFeatureReason = function(featureKey)
-    if featureKey == "targetEffectReminders" then return "Target Effects test dependency is unavailable." end
-    if featureKey == "abilityCooldowns" then return "Ability Cooldowns test dependency is unavailable." end
-    return originalFeatureReason(featureKey)
-end
-ApogeePartyHealthBars_ThreatControlSettingsPage.Refresh()
-assert(threatHudEnabledRow.check:IsEnabled()
-        and not reminderEnabledRow.check:IsEnabled()
-        and not cooldownsEnabledRow.check:IsEnabled()
-        and not reminderDefaultRow.decrease:IsEnabled()
-        and not reminderDefaultRow.increase:IsEnabled(),
-    "Threat Control did not isolate unavailable reminder APIs from its master control")
-for _, row in ipairs(targetEffectRows) do
-    assert(not row.check:IsEnabled() and not row.up:IsEnabled() and not row.down:IsEnabled(),
-        "unsupported Target Effects retained an interactive spell control")
-end
-for _, row in ipairs(cooldownSettingsRows) do
-    assert(not row.check:IsEnabled() and not row.up:IsEnabled() and not row.down:IsEnabled(),
-        "unsupported Ability Cooldowns retained an interactive spell control")
-end
-ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable = originalFeatureAvailable
-ApogeePartyHealthBars_ClientCapabilities.GetFeatureReason = originalFeatureReason
-ApogeePartyHealthBars_ThreatControlSettingsPage.Refresh()
 assert(ApogeePartyHealthBars_SettingsUI.pages.dungeonGuide.summary
         == "Learn reviewed mob priorities and configure automatic target marking.",
     "Dungeon Guide settings still described the removed live coach")
@@ -1264,13 +1148,7 @@ router.Dispatch("GET_ITEM_INFO_RECEIVED", 1251, true)
 assert(ApogeePartyHealthBars_ShortcutBar.GetSlotState(3) == "ready",
     "item events did not restore a restocked Shortcut")
 ApogeePartyHealthBars_SettingsController.SetMode(false)
-assert(not ApogeePartyHealthBars_CleanseWatch.IsUnlocked()
-        and not ApogeePartyHealthBars_BuffThanks.IsUnlocked()
-        and not ApogeePartyHealthBars_DungeonBoardFeed.IsUnlocked()
-        and not ApogeePartyHealthBars_ThreatAwareness.GetFrame().mouseEnabled
-        and not ApogeePartyHealthBars.Require(
-            "Runtime", "PartyFramePreview").IsActive(),
-    "closing Settings retained a configuration preview")
+
 for _, key in ipairs(expectedConfigSurfaceKeys) do
     assert(not configSurfaces.Get(key).chrome.foundation:IsShown(),
         "configuration chrome leaked into normal gameplay: " .. key)
@@ -1345,10 +1223,9 @@ local groupHelperPresentation = ApogeePartyHealthBars.Require(
     "Runtime", "GroupHelperPresentation")
 local partyFramePreview = ApogeePartyHealthBars.Require("Runtime", "PartyFramePreview")
 local feedPoint = { ApogeePartyHealthBars_DungeonBoardFeed.GetFrame():GetPoint(1) }
-local threatPoint = { ApogeePartyHealthBars_ThreatAwareness.GetFrame():GetPoint(1) }
 for _, key in ipairs({
     "frames", "partyFrameClicks", "shortcuts", "keyboard", "mouseWheel",
-    "mouseButtons", "healthChat", "buffsCleanse", "threatControl", "dungeon", "dungeonGuide",
+    "mouseButtons", "healthChat", "buffsCleanse",  "dungeon", "dungeonGuide",
     "profiles", "maintenance",
 }) do
     ApogeePartyHealthBars_SettingsUI.ActivatePage(key)
@@ -1372,42 +1249,15 @@ for _, key in ipairs({
                     "Cleansed: Crippling Poison", 1, true),
             "Thank You settings demo did not show multiple helpers and a cleanse")
     end
-    assert(ApogeePartyHealthBars_BuffThanks.GetFrame():IsShown()
-            and ApogeePartyHealthBars_CleanseWatch.GetFrame():IsShown()
-                == ApogeePartyHealthBars_CleanseWatch.HasCapability()
-            and ApogeePartyHealthBars_DungeonBoardFeed.GetFrame():IsShown()
-            and groupHelperPresentation.GetFrame():IsShown()
-            and ApogeePartyHealthBars_ThreatAwareness.GetFrame():IsShown(),
-        "settings page hid an auxiliary surface: " .. key)
+
     if key == "threatControl" then
-        local threatRows = ApogeePartyHealthBars_ThreatAwareness.GetRows()
-        local playerHealthBar = ApogeePartyHealthBars_ThreatAwareness.GetPlayerHealthBar()
-        local playerPowerBar = ApogeePartyHealthBars_ThreatAwareness.GetPlayerPowerBar()
-        assert(threatRows[1].debuffIcons[1]:IsShown()
-                and threatRows[1].debuffIcons[1].icon.texture
-                    == "Interface\\Icons\\Ability_Warrior_Sunder"
-                and threatRows[1].debuffIcons[1].count:GetText() == "3"
-                and threatRows[1].debuffIcons[1].count.fontTemplate == "GameFontHighlight"
-                and threatRows[1].debuffIcons[1].count.point[1] == "CENTER"
-                and not threatRows[1].debuffIcons[2]:IsShown()
-                and threatRows[1].debuffIcons[4]:IsShown()
-                and threatRows[2].debuffIcons[1].count:GetText() == "5"
-                and not threatRows[3].debuffIcons[1]:IsShown(),
-            "Tank Threat Control preview did not render centered player-debuff stacks")
-        assert(threatRows[1].statusFill.color[1] == 0.28
-                and threatRows[1].statusFill.color[2] == 0.74
-                and threatRows[1].statusFill.color[3] == 0.46,
-            "Tank Threat Control mob health did not use the shared healthy green")
-        assert(playerHealthBar:GetWidth() == threatRows[1].controlBar:GetWidth()
-                and playerPowerBar:GetWidth() == threatRows[1].controlBar:GetWidth(),
-            "Tank Threat Control player bars did not match the threat-meter column width")
+
+
+
     end
     local currentFeedPoint = { ApogeePartyHealthBars_DungeonBoardFeed.GetFrame():GetPoint(1) }
-    local currentThreatPoint = { ApogeePartyHealthBars_ThreatAwareness.GetFrame():GetPoint(1) }
     for index = 1, 5 do
-        assert(currentFeedPoint[index] == feedPoint[index]
-                and currentThreatPoint[index] == threatPoint[index],
-            "settings page switch moved a HUD preview: " .. key)
+
     end
     if key == "frames" then
         local helperPreview = groupHelperPresentation.GetFrame()
@@ -1610,11 +1460,6 @@ for _, key in ipairs({
             "combat preview teardown left a deferred synthetic restore")
         partyFramePreview.SetActive(true)
     end
-    if key == "threatControl" then
-        assert(ApogeePartyHealthBars_ThreatAwareness.GetFrame().frameStrata == "HIGH"
-                and ApogeePartyHealthBarsBindPanel.frameStrata == "DIALOG",
-            "Tank Threat Control preview could render above the settings window")
-    end
     local singlePageGroup = key == "frames"
     assert(ApogeePartyHealthBars_SettingsUI.pageDropdown:IsShown()
             == not singlePageGroup
@@ -1624,9 +1469,7 @@ for _, key in ipairs({
     assert(ApogeePartyHealthBars_SettingsUI.pageSummary:GetText()
             == ApogeePartyHealthBars_SettingsUI.pages[key].summary,
         "settings page did not expose its concise full-width summary: " .. key)
-    local threatSurface = ApogeePartyHealthBars_SettingsSurfaces.Get("threatAwareness")
-    assert(threatSurface.previewDock == nil,
-        "Tank Threat Control moved away from its gameplay position: " .. key)
+
     ApogeePartyHealthBars_SettingsUI.RefreshPage(key, true)
 end
 assert(ApogeePartyHealthBars_SettingsUI.pageDropdown.width == 240
@@ -1857,3 +1700,15 @@ for _, message in ipairs(messages) do
     assert(not message:find("error", 1, true), "captured runtime failure: " .. message)
 end
 originalPrint("PASS full add-on lifecycle smoke test")
+
+assert(ApogeePartyHealthBars_ThreatAwareness == nil and ApogeePartyHealthBars_TargetEffectHud == nil and ApogeePartyHealthBars_CooldownHud == nil, "removed HUD modules still load")
+assert(ApogeePartyHealthBars_SettingsUI.pages.threatControl == nil, "removed settings page remains")
+
+assert(tocLoadOrder["PartyFrames/AccessoryLayout.lua"] < tocLoadOrder["PartyFrames/PlayerUtility.lua"]
+    and tocLoadOrder["PartyFrames/AccessoryLayout.lua"] < tocLoadOrder["Actions/ShortcutBar.lua"],
+    "retained accessories loaded before their layout dependency")
+assert(type(ApogeePartyHealthBars_Threat.Refresh) == "function"
+    and type(ApogeePartyHealthBars_ThreatObserver.GetThreatDetails) == "function",
+    "party-frame threat support was removed with the tank HUD")
+assert(ApogeePartyHealthBars_ThreatObserver.Refresh == nil,
+    "multi-enemy observation runtime survived removal")

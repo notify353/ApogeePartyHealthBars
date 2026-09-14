@@ -15,7 +15,6 @@ local files = {
     "Runtime/ActionAssignmentEvents.lua",
     "Bootstrap/ActionComposition.lua",
     "Bootstrap/PartyFrameComposition.lua",
-    "Bootstrap/AuxiliaryComposition.lua",
     "Bootstrap/SettingsComposition.lua",
     "Bootstrap/EventRegistration.lua",
 }

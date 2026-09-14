@@ -17,8 +17,6 @@ local CB = ApogeePartyHealthBars_ConsumableBar
 local AH = ApogeePartyHealthBars_ActionHud
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
-local threatObserver = ApogeePartyHealthBars_ThreatObserver
-local threatAwareness = ApogeePartyHealthBars_ThreatAwareness
 local rowGeometry = ApogeePartyHealthBars_RowGeometry
 local visualTicker = ApogeePartyHealthBars_VisualTicker
 local buffReminders = ApogeePartyHealthBars_BuffReminders
@@ -254,8 +252,6 @@ visualTicker.Initialize({
     MouseButtonActions = B,
     ConsumableBar = CB,
     Threat = H,
-    ThreatAwareness = threatAwareness,
-    CooldownTracker = ApogeePartyHealthBars_CooldownTracker,
 })
 local targetChainGUIDs = {}
 
@@ -352,34 +348,6 @@ ApogeePartyHealthBars.Require("Bootstrap", "ActionComposition").Initialize({
 
 
 local configSurfaces = ApogeePartyHealthBars_SettingsSurfaces
-ApogeePartyHealthBars.Require("Bootstrap", "AuxiliaryComposition").Initialize({
-    ThreatObserver = threatObserver,
-    ThreatObserverDependencies = {
-        Now = function() return GetTime and GetTime() or 0 end,
-        Auras = ApogeePartyHealthBars_Auras,
-        DebuffData = ApogeePartyHealthBars_TargetEffectData,
-        GetClassToken = ApogeePartyHealthBars_PlayerContext.GetClassToken,
-        UnitAPI = ApogeePartyHealthBars_UnitAPI,
-    },
-    ThreatAwareness = threatAwareness,
-    ThreatAwarenessDependencies = {
-        Observer = threatObserver,
-        SettingsSurfaces = configSurfaces,
-        Now = function() return GetTime and GetTime() or 0 end,
-        IsInCombat = function()
-            if UnitAffectingCombat then
-                local active = UnitAffectingCombat("player")
-                return active == true or active == 1
-            end
-            return InCombatLockdown and InCombatLockdown() == true
-        end,
-        UnitAPI = ApogeePartyHealthBars_UnitAPI,
-        UnitBar = unitBar,
-        IsSupported = function()
-            return ApogeePartyHealthBars_ClientCapabilities.IsFeatureAvailable("threat")
-        end,
-    },
-})
 local unitFrames = ApogeePartyHealthBars_UnitFrames.Build({
     rows = rows,
     StyleReadableText = StyleReadableText,
@@ -646,7 +614,6 @@ UpdateUI = function()
     end
 
     A.BeginAuraCacheGeneration()
-    threatAwareness.RefreshPlayer()
 
     -- Combat entry must not re-anchor the party panel or any protected overlays.
     -- Values and threat textures are safe to refresh against the geometry that
@@ -693,7 +660,6 @@ updateScheduler.RegisterHandlers({
     FullUpdate = UpdateUI,
     ValuesUpdate = function()
         A.BeginAuraCacheGeneration()
-        threatAwareness.RefreshPlayer()
         UpdateRowValues()
     end,
     IsEnabled = IsEnabled,
@@ -877,14 +843,9 @@ local settingsRuntime = ApogeePartyHealthBars.Require(
     ReleaseBoundActionBindings = ReleaseBoundActionBindings,
     ReconcileBoundActionBindings = ReconcileBoundActionBindings,
     ProfileStore = ApogeePartyHealthBars_ProfileStore,
-    TargetEffectTracker = ApogeePartyHealthBars_TargetEffectTracker,
-    TargetEffectHud = ApogeePartyHealthBars_TargetEffectHud,
-    CooldownTracker = ApogeePartyHealthBars_CooldownTracker,
-    CooldownHud = ApogeePartyHealthBars_CooldownHud,
     DungeonBoardFeed = dungeonBoardFeed,
     CleanseWatch = cleanseWatch,
     BuffThanks = buffThanks,
-    ThreatAwareness = threatAwareness,
     PartyFramePreview = partyFramePreview,
     GroupHelperPresentation = groupHelperPresentation,
     GroupHelperRuntime = groupHelperRuntime,
@@ -922,14 +883,9 @@ local settingsRuntime = ApogeePartyHealthBars.Require(
     AddonVersion              = ApogeePartyHealthBars_ClientCapabilities.GetAddonVersion(
         "ApogeePartyHealthBars"),
     ClientCapabilities       = ApogeePartyHealthBars_ClientCapabilities,
-    TargetEffectTracker               = ApogeePartyHealthBars_TargetEffectTracker,
-    TargetEffectHud                   = ApogeePartyHealthBars_TargetEffectHud,
-    CooldownTracker                   = ApogeePartyHealthBars_CooldownTracker,
-    CooldownHud                       = ApogeePartyHealthBars_CooldownHud,
     DungeonBoardFeed         = dungeonBoardFeed,
     CleanseWatch             = cleanseWatch,
     BuffThanks               = buffThanks,
-    ThreatAwareness          = threatAwareness,
     GroupHelperSettings      = groupHelperSettings,
     GroupHelperRuntime       = groupHelperRuntime,
     PartyFramePreview        = partyFramePreview,
@@ -972,7 +928,6 @@ local settingsRuntime = ApogeePartyHealthBars.Require(
         GroupHelperRuntime           = groupHelperRuntime,
         PartyFramePreview            = partyFramePreview,
         Threat                      = H,
-        ThreatAwareness             = threatAwareness,
         CombatUIFader               = ApogeePartyHealthBars_CombatUIFader,
         UIErrorSuppressor           = ApogeePartyHealthBars_UIErrorSuppressor,
         SyncVisualTicker            = SyncVisualTicker,

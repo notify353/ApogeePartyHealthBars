@@ -11,7 +11,6 @@ local SUPPORT_FEATURE_BY_SETTING = {
     rangeCheckEnabled = "rangeFade",
     threatEnabled = "threat",
     threatPercentEnabled = "threat",
-    threatAwarenessEnabled = "threat",
     hotEnabled = "hotTracking",
 }
 

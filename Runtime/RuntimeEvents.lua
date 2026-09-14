@@ -2,8 +2,6 @@ local LifecycleEvents = ApogeePartyHealthBars_LifecycleEvents
 local UnitEvents = ApogeePartyHealthBars_UnitEvents
 local ActionEvents = ApogeePartyHealthBars_ActionEvents
 local ActionAssignmentEvents = ApogeePartyHealthBars_ActionAssignmentEvents
-local DotEvents = ApogeePartyHealthBars_TargetEffectEvents
-local CooldownEvents = ApogeePartyHealthBars_CooldownEvents
 local DungeonBoardEvents = ApogeePartyHealthBars_DungeonBoardEvents
 local CleanseEvents = ApogeePartyHealthBars_CleanseEvents
 local BuffThanksEvents = ApogeePartyHealthBars_BuffThanksEvents
@@ -24,8 +22,6 @@ function R.Register(eventRouter, deps)
         RefreshAssignmentAffordances = deps.RefreshAssignmentAffordances,
     })
     ActionEvents.Register(eventRouter, deps)
-    if DotEvents then DotEvents.Register(eventRouter, deps) end
-    if CooldownEvents then CooldownEvents.Register(eventRouter, deps) end
     if DungeonBoardEvents then DungeonBoardEvents.Register(eventRouter, deps) end
     if CleanseEvents then CleanseEvents.Register(eventRouter, deps) end
     if BuffThanksEvents then BuffThanksEvents.Register(eventRouter, deps) end

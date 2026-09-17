@@ -325,12 +325,6 @@ function UI.Build(deps)
         summary = "Configure buff and cleansing reminders.",
     })
     RegisterPage({
-        key = "dungeon", group = "dungeon", label = "Dungeon Board",
-        frame = coreSettingsPagesFrame, configure = function() GC.SetPage("dungeon") end,
-        refresh = GC.Refresh, hint = GC.GetForm().hint, layout = GC.GetForm(),
-        summary = "Configure LFG results and alerts.",
-    })
-    RegisterPage({
         key = "dungeonGuide", group = "dungeon", label = "Dungeon Guide",
         frame = dungeonGuidePage, refresh = DGC.Refresh,
         hint = DGC.GetForm().hint, layout = DGC.GetForm(),

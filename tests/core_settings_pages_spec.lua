@@ -101,10 +101,6 @@ local saved = {
     mentionSoundKey = "toast",
     mentionHighlightEnabled = true,
     buffThanksEnabled = true,
-    dungeonBoardFeedEnabled = true,
-    dungeonBoardSoundKey = "none",
-    dungeonBoardLevelsBelow = 10,
-    dungeonBoardLevelsAbove = 3,
     groupHelperEnabled = true,
     hotEnabled = true,
     threatAwarenessEnabled = false,
@@ -123,8 +119,7 @@ local calls = {
     refresh = 0, secure = 0, threat = 0, ticker = 0, hotInit = 0,
     hotTrack = 0, barReset = 0, force = 0, settingsReset = 0,
     minimapReset = 0, factoryReset = 0, soundPreview = 0,
-    lfgAlertsReset = 0, dungeonBoardReset = 0,
-    dungeonSoundPreview = 0, mentionSoundPreview = 0,
+    mentionSoundPreview = 0,
     messages = {}, feedbackClear = 0, consumablesEnabled = nil,
     groupHelperRefresh = 0, previewScenario = "mana",
 }
@@ -180,49 +175,6 @@ local deps = {
         end,
         PreviewSound = function()
             calls.mentionSoundPreview = calls.mentionSoundPreview + 1
-        end,
-    },
-    DungeonBoardSettings = {
-        GetRole = function() return saved.dungeonBoardRole or "healer" end,
-        SetRole = function(role)
-            saved.dungeonBoardRole = role
-            calls.dungeonRole = role
-            return true
-        end,
-        GetFeedEnabled = function() return saved.dungeonBoardFeedEnabled ~= false end,
-        SetFeedEnabled = function(enabled)
-            saved.dungeonBoardFeedEnabled = enabled == true
-            calls.dungeonFeedEnabled = enabled == true
-            return true
-        end,
-        GetSoundKey = function() return saved.dungeonBoardSoundKey end,
-        GetLevelOffsets = function()
-            return saved.dungeonBoardLevelsBelow, saved.dungeonBoardLevelsAbove
-        end,
-        GetLevelOffsetLimits = function() return 0, 60 end,
-        AdjustLevelOffset = function(kind, direction)
-            local key = kind == "below" and "dungeonBoardLevelsBelow"
-                or kind == "above" and "dungeonBoardLevelsAbove" or nil
-            if not key then return false end
-            saved[key] = math.max(0, math.min(60, saved[key] + direction))
-            return true
-        end,
-        SetSoundKey = function(key)
-            saved.dungeonBoardSoundKey = key
-            calls.dungeonSoundKey = key
-        end,
-        PreviewSound = function()
-            calls.dungeonSoundPreview = calls.dungeonSoundPreview + 1
-        end,
-    },
-    DungeonBoardFeed = {
-        ResetPosition = function()
-            calls.lfgAlertsReset = calls.lfgAlertsReset + 1
-        end,
-    },
-    DungeonBoardUI = {
-        ResetPosition = function()
-            calls.dungeonBoardReset = calls.dungeonBoardReset + 1
         end,
     },
     GroupHelperRuntime = {
@@ -341,19 +293,11 @@ assert(config.GetRow("lowHealthSoundKey").value.selectedKey == "alarm_soft"
     "health and chat preferences did not refresh")
 assert(not buffThanksResetRow:IsShown(),
     "Thank You reset row remained visible after leaving Buffs & Cleansing")
-config.SetPage("dungeon")
-assert(config.GetRow("dungeonBoardRole").value.selectedKey == "healer"
-        and config.GetRow("dungeonBoardFeedEnabled").check:GetChecked()
-        and config.GetRow("dungeonBoardSoundKey").value.selectedKey == "none"
-        and config.GetRow("dungeonBoardLevelsBelow").value:GetText() == "10"
-        and config.GetRow("dungeonBoardLevelsAbove").value:GetText() == "3",
-    "Dungeon Board preferences did not refresh")
 config.SetPage("frames")
 assert(config.GetHotRow("renew"):IsShown()
         and not config.GetHotRow("renew").check:GetChecked()
         and not config.GetHotRow("rejuv"):IsShown(),
     "known and disabled HoT rows changed")
-
 local function Click(control, mouseButton)
     assert(control.scripts.OnClick, "missing click handler")
     control.scripts.OnClick(control, mouseButton or "LeftButton")
@@ -406,13 +350,6 @@ assert(calls.previewScenario == "mana"
 assert(preview.channel:GetText() == "PREVIEW GUIDE"
         and preview.text:GetText():find("Fort", 1, true) ~= nil,
     "settings guide was replaced by redundant chat-output feedback")
-
-local dungeonFeed = config.GetRow("dungeonBoardFeedEnabled").check
-dungeonFeed:SetChecked(false)
-Click(dungeonFeed)
-assert(saved.dungeonBoardFeedEnabled == false
-        and calls.dungeonFeedEnabled == false,
-    "LFG Alerts checkbox did not persist its immediate state")
 
 local combatFade = config.GetRow("combatUIAutoHide").check
 combatFade:SetChecked(false)
@@ -483,18 +420,6 @@ assert(calls.soundKey == "alarm_high" and calls.soundPreview == 1,
 config.GetRow("mentionSoundKey").value.onSelect("glass")
 assert(calls.mentionSoundKey == "glass" and calls.mentionSoundPreview == 1,
     "mention sound selection did not persist and preview")
-config.GetRow("dungeonBoardSoundKey").value.onSelect("alarm_soft")
-assert(calls.dungeonSoundKey == "alarm_soft" and calls.dungeonSoundPreview == 1,
-    "Dungeon Board sound selection did not persist and preview")
-config.SetPage("dungeon")
-Click(config.GetRow("dungeonBoardLevelsBelow").decrease)
-Click(config.GetRow("dungeonBoardLevelsAbove").increase)
-config.Refresh()
-assert(saved.dungeonBoardLevelsBelow == 9
-        and saved.dungeonBoardLevelsAbove == 4
-        and config.GetRow("dungeonBoardLevelsBelow").value:GetText() == "9"
-        and config.GetRow("dungeonBoardLevelsAbove").value:GetText() == "4",
-    "Dungeon Board per-profile level controls did not persist or refresh")
 Click(config.GetRow("lowHealthThreshold").decrease)
 assert(calls.thresholdDirection == -1, "threshold decrease control changed direction")
 Click(config.GetRow("selfBuffPreference").value, "RightButton")
@@ -515,10 +440,8 @@ assert(maintenanceSections.Recovery and maintenanceSections["Danger Zone"]
         and resets.factory.apogeeButtonStyle == "danger",
     "Maintenance did not separate restorative and destructive actions")
 Click(resets.bar); Click(resets.settings); Click(resets.minimap)
-Click(resets.lfgAlerts); Click(resets.dungeonBoard)
 assert(calls.barReset == 1 and calls.force == 1 and calls.settingsReset == 1
-        and calls.minimapReset == 1 and calls.lfgAlertsReset == 1
-        and calls.dungeonBoardReset == 1,
+        and calls.minimapReset == 1,
     "General reset controls changed their callbacks")
 Click(resets.prepareDisable)
 assert(calls.addonEnabled == nil

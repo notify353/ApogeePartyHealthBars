@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Removed Dungeon Board and LFG alerts, including recruitment parsing, official Group Finder integration, settings, profile fields, and minimap/slash entry points. Use standalone Apogee Group Alert for group finding (currently Era only); Dungeon Guide and Group Helper remain available.
+
 - Remove the multi-enemy Threat Control HUD, maintained-effect and ability-cooldown lanes, and their settings page. Use Apogee Tank for these features; party-frame threat and automatic marking remain.
 
 ## [0.51.0] - 2026-09-13

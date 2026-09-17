@@ -34,7 +34,6 @@ fixtures. Do not reuse them for new APIs, variables, files, or documentation.
   hostile tokens remain private to the threat domain and never extend fixed
   party-frame topology.
 - `Reminders/`: buff, cleansing, health/chat, Target Effects, and Ability Cooldowns.
-- `DungeonBoard/`: catalog, policy, session runtime, adapters, and presentation.
 - `Profiles/`: character-owned profile storage and portable profile codec.
 - `Settings/`: settings window, controller, surfaces, and settings pages.
 - `Runtime/`: event subscribers and the runtime registration coordinator.

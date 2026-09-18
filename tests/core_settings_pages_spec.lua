@@ -438,3 +438,15 @@ assert(ApogeePartyHealthBars_S == nil,
     "CoreSettingsPages unexpectedly depended on shared session state")
 
 print("PASS General configuration")
+
+ApogeePartyHealthBars_EssentialsOwnership = { IsSuspended = function() return true end }
+for pageKey, keys in pairs({ frames={"combatUIAutoHide", "hideUIErrors"},
+    healthChat={"mentionAlertsEnabled", "mentionHighlightEnabled", "mentionSoundKey"},
+    buffsCleanse={"buffThanksEnabled"} }) do
+    config.SetPage(pageKey)
+    for _, key in ipairs(keys) do
+        local row = config.GetRow(key)
+        assert(row == nil, key .. " returned after feature removal")
+    end
+end
+print("PASS retired Essentials controls stay absent even with legacy ownership marker")

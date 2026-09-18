@@ -6,6 +6,8 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Consolidate feature-removal branches. Their removal supersedes the earlier Essentials ownership handoff; APHB no longer starts those features or needs an ownership protocol.
+
 - Repair startup after missing runtime folders by recovering required modules
   and completing the Essentials feature-removal wiring without restoring retired features.
 - Remove combat UI fading, gameplay-error suppression, name-mention alerts/highlighting, and Thank You prompts and their settings. Use Apogee Essentials for these conveniences; APHB no longer restores them when Essentials is absent. Rename Health & Chat to Low Health. Existing profile data is retained for round trips, but retired settings have no runtime effect.

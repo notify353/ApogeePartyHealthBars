@@ -9,6 +9,7 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 - Repair startup after missing runtime folders by recovering required modules
   and completing the Essentials feature-removal wiring without restoring retired features.
 - Remove combat UI fading, gameplay-error suppression, name-mention alerts/highlighting, and Thank You prompts and their settings. Use Apogee Essentials for these conveniences; APHB no longer restores them when Essentials is absent. Rename Health & Chat to Low Health. Existing profile data is retained for round trips, but retired settings have no runtime effect.
+- Removed Dungeon Board and LFG alerts, including recruitment parsing, official Group Finder integration, settings, profile fields, and minimap/slash entry points. Use standalone Apogee Group Alert for group finding (currently Era only); Dungeon Guide and Group Helper remain available.
 
 - Remove the multi-enemy Threat Control HUD, maintained-effect and ability-cooldown lanes, and their settings page. Use Apogee Tank for these features; party-frame threat and automatic marking remain.
 

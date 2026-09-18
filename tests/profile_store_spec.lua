@@ -61,9 +61,6 @@ ApogeePartyHealthBars_Effects = {
         if settings.automaticConsumablesEnabled == nil then
             settings.automaticConsumablesEnabled = true
         end
-        if settings.dungeonBoardFeedEnabled == nil then
-            settings.dungeonBoardFeedEnabled = true
-        end
         if settings.dungeonGuideAutoMarkEnabled == nil then
             settings.dungeonGuideAutoMarkEnabled = true
         end
@@ -82,13 +79,6 @@ ApogeePartyHealthBars_Effects = {
         end
         if settings.cleanseWatchX == nil then settings.cleanseWatchX = 0 end
         if settings.cleanseWatchY == nil then settings.cleanseWatchY = 0 end
-        local dungeonBoardRole = settings.dungeonBoardRole
-        if dungeonBoardRole ~= "tank" and dungeonBoardRole ~= "healer" then
-            dungeonBoardRole = settings.dungeonBoardMode
-        end
-        settings.dungeonBoardRole =
-            dungeonBoardRole == "tank" and "tank" or "healer"
-        settings.dungeonBoardMode = nil
         if settings.threatAwarenessEnabled == nil then settings.threatAwarenessEnabled = false end
         if settings.threatAwarenessMode == nil then settings.threatAwarenessMode = "radar" end
         if settings.threatAwarenessPoint == nil then settings.threatAwarenessPoint = "CENTER" end
@@ -181,16 +171,12 @@ assert(account.enabled == false and account.profileStore == nil and character.bi
     and character.profileStore and character.profileStore.activeProfileId == active.id,
     "legacy roots were not converted to character-owned profile storage")
 
-active.payload.settings.dungeonBoardRole = "tank"
-active.payload.settings.dungeonBoardFeedEnabled = false
 active.payload.settings.groupHelperEnabled = false
 active.payload.settings.groupHelperX = -88
 local created = assert(store.Create("Clean"))
 assert(created.payload.settings.enabled
         and created.payload.settings.hideUIErrors == true
         and created.payload.settings.automaticConsumablesEnabled == true
-        and created.payload.settings.dungeonBoardRole == "healer"
-        and created.payload.settings.dungeonBoardFeedEnabled == true
         and created.payload.settings.dungeonGuideAutoMarkEnabled == true
         and created.payload.settings.dungeonGuideWidth == 1000
         and created.payload.settings.dungeonGuideHeight == 720
@@ -204,28 +190,24 @@ assert(created.payload.settings.enabled
         and #created.payload.actions.shortcuts == 0,
     "new profile did not start from defaults")
 local duplicate = assert(store.Duplicate(active.id, "Copy"))
-assert(duplicate.payload.settings.dungeonBoardRole == "tank"
-        and duplicate.payload.settings.dungeonBoardFeedEnabled == false
-        and duplicate.payload.settings.groupHelperEnabled == false
+assert(duplicate.payload.settings.groupHelperEnabled == false
         and duplicate.payload.settings.groupHelperX == nil
         and duplicate.payload.settings.hideUIErrors == true,
-    "profile duplication did not retain the Dungeon Board preferences")
+    "profile duplication did not retain Group Helper preferences")
 duplicate.payload.settings.x = 999
 assert(duplicate.payload.actions.shortcuts[1].macroText
         == "/cast [@mouseover,help,nodead] Renew",
     "profile duplication changed custom macro text")
 duplicate.payload.actions.shortcuts[1].macroText = "/cast Duplicate Renew"
-duplicate.payload.settings.dungeonBoardRole = "healer"
 assert(active.payload.settings.x == 42
-        and active.payload.settings.dungeonBoardRole == "tank"
         and active.payload.actions.shortcuts[1].macroText
             == "/cast [@mouseover,help,nodead] Renew",
     "duplicated profile retained aliased settings or macro data")
 assert(store.SetActive(created.id)
-        and ApogeePartyHealthBars_S.sv.dungeonBoardFeedEnabled == true
+        and ApogeePartyHealthBars_S.sv.groupHelperEnabled == true
         and store.SetActive(active.id)
-        and ApogeePartyHealthBars_S.sv.dungeonBoardFeedEnabled == false,
-    "profile switching did not restore each LFG Alerts preference")
+        and ApogeePartyHealthBars_S.sv.groupHelperEnabled == false,
+    "profile switching did not restore each Group Helper preference")
 assert(not store.Create(" copy "), "profile names were not unique case-insensitively")
 assert(not store.Create(string.rep("x", 41)), "oversized profile name was accepted")
 assert(store.Rename(duplicate.id, "Raid"), "profile rename failed")
@@ -252,7 +234,7 @@ local imported = {
 local shared = assert(store.AddImported(imported))
 assert(shared.author == "Author - Realm" and shared.payload.settings.showAllSlots
         and shared.payload.settings.hideUIErrors == false
-        and shared.payload.settings.dungeonBoardFeedEnabled == false
+        and shared.payload.settings.dungeonBoardFeedEnabled == nil
         and shared.payload.settings.dungeonGuideAutoMarkInCombatEnabled == nil
         and shared.payload.actions.shortcuts[1].macroText
             == "/cast [mod:shift] Prayer of Healing",
@@ -385,16 +367,10 @@ assert(sanitized.settings.abilityCooldownsEnabled == false
         and sanitized.settings.abilityCooldownPriority[1] == "shieldWall"
         and sanitized.settings.abilityCooldownPriority[2] == "pummel",
     "Ability Cooldowns portable intent did not survive profile normalization")
-assert(sanitized.settings.dungeonBoardRole == "healer"
-        and sanitized.settings.dungeonBoardMode == nil
-        and sanitized.settings.dungeonBoardFeedEnabled == false
-        and sanitized.settings.dungeonBoardSoundKey == "alarm_soft"
-        and sanitized.settings.dungeonBoardLevelsBelow == 12
-        and sanitized.settings.dungeonBoardLevelsAbove == 4
-        and sanitized.settings.dungeonBoardFeedPoint == "TOP"
-        and sanitized.settings.dungeonBoardFeedX == 18
-        and sanitized.settings.dungeonBoardFeedY == -36,
-    "Dungeon Board profile preferences did not survive normalization")
+for key in pairs(sanitized.settings) do
+    assert(not key:find("dungeonBoard", 1, true),
+        "retired group-finding preference survived profile import")
+end
 assert(sanitized.settings.buffThanksEnabled == false
         and sanitized.settings.buffThanksPoint == "TOP"
         and sanitized.settings.buffThanksRelPoint == "TOP"

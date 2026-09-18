@@ -11,7 +11,6 @@ end
 local function SetConfigurationPreviews(active)
     if D.CleanseWatch then D.CleanseWatch.SetUnlocked(active) end
     if D.BuffThanks then D.BuffThanks.SetUnlocked(active) end
-    if D.DungeonBoardFeed then D.DungeonBoardFeed.SetUnlocked(active) end
     if D.PartyFramePreview then D.PartyFramePreview.SetActive(active) end
 end
 

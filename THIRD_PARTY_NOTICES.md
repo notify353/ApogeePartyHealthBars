@@ -1,6 +1,9 @@
 # Third-Party Notices
 
-## LFG Bulletin Board
+## LFG Bulletin Board (historical attribution)
+
+Dungeon Board and its derived data have been removed from the current addon.
+The following notice is retained as historical attribution for earlier versions.
 
 The English Dungeon Board dungeon aliases, chat-classification vocabulary, and
 Classic/TBC Blizzard activity-ID mapping are derived from LFG Bulletin Board

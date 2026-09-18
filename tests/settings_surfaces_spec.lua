@@ -80,7 +80,7 @@ M.Register("party", party, {
 })
 M.Register("feed", feed, {
     headerHeight = 24,
-    title = "LFG Alerts",
+    title = "Preview HUD",
 })
 local dotChrome = M.Register("dot", dot)
 M.Register("threat", threat, {

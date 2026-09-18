@@ -36,24 +36,13 @@ Secure frames are created and mutated only by their owning action/party-frame co
 
 ## Deferred Structural Work
 
-Settings page construction, `ProfileStore`/profile migration internals, and Dungeon Board/Dungeon Guide UI composition remain intentionally unchanged beyond their bootstrap calls. Split those domains in focused follow-up work after their public contracts and persistence behavior have dedicated characterization tests; do not mix that work into the Actions/bootstrap reorganization.
+Settings page construction, `ProfileStore`/profile migration internals, and Dungeon Guide UI composition remain intentionally unchanged beyond their bootstrap calls. Split those domains in focused follow-up work after their public contracts and persistence behavior have dedicated characterization tests; do not mix that work into the Actions/bootstrap reorganization.
 
 ## Ownership
 
 - `EventRouter`: event frame and isolated subscribers
-- `ChatComposer`: shared chat boundary that preserves editable Dungeon Board whispers and exposes hardware-click-only direct local `/say` for Group Calls
+- `ChatComposer`: chat boundary that exposes hardware-click-only direct local `/say` for Group Calls
 - `ClientCapabilities`: exact-interface `classicEra`/`tbcAnniversary` identity, volatile API-family detection, feature support, metadata fallbacks, and isolated startup diagnostics
-- `DungeonBoardCatalog`: private English Classic Era and TBC Anniversary dungeon definitions, level and heroic requirements, group sizes, aliases, and deterministic client-filtered order; UBRS is the sole board-visible non-five-player exception
-- `DungeonBoardActivityData`: private client-filtered mapping from Blizzard normal/heroic five-player activity IDs to stable catalog keys
-- `DungeonBoardClassifier`: pure recruiting/joining direction, request-intent, explicit needed-role, heroic, dungeon, service-noise, and ambiguous wing classification
-- `DungeonBoardEligibility`: shared exact Tank/Healer role, active-profile level-window, activity-range, five-player, and UBRS-exception policy for the board and LFG Alerts
-- `DungeonBoardRuntime`: unified session-only chat, guild, and Blizzard records; one-record-per-chat-sender replacement; chat expiration; official snapshot replacement; and immutable newest-first reads
-- `DungeonBoardGroupFinder`: optional volatile-API adapter for hardware-click-only Blizzard searches, configured suggested-level-window filtering, result/role ingestion, refresh state, failures, updates, and delists
-- `DungeonBoardActions`: manual player interaction boundary for Chat-origin Who queries and empty native whisper composition without automatically sending or retaining player information
-- `DungeonBoardSettings`: profile-owned watched role, alert sound, level-window offsets, and LFG Alerts position
-- `DungeonBoardFeed`: display-only three-entry chat/guild opportunity feed with 30-second lifetime, final-five-second fade, material-change deduplication, guild emphasis, and throttled optional sound
-- `DungeonBoardUI`: beginner-facing request explanations, full-name and level-range presentation, labeled original slang, plain-language role controls, an opaque high-contrast top-level panel, adaptive compact request cards, manual official refresh state, source/member presentation, highlighted guild requests, dungeon-first catalog grouping, and age refresh
-- `DungeonBoardEvents`: authoritative chat/guild payload adaptation plus Group Finder result/failure/update routing and login initialization
 - `DungeonGuideCatalog` and the dungeon strategy packs from `ScarletMonasteryGuide` through `ZulFarrakGuide`: validated immutable dungeon/chapter/mob strategy specification keyed by client flavor, instance ID, and NPC ID, with bounded route guidance, semantic markers, live reasons, full rationale, responses, creature-type CC, exceptions, and conditional pack rules
 - `DungeonGuidePolicy`: pure creature-GUID parsing, instance/flavor gating, NPC resolution, and compact current-target recommendation generation
 - `DungeonGuideSettings`: profile-owned automatic-marking toggle plus Dungeon Book position and size; chapter selection remains session-only
@@ -121,17 +110,13 @@ Settings page construction, `ProfileStore`/profile migration internals, and Dung
 - `ThreatObserver`: dynamic hostile-token discovery, GUID deduplication, signed player tank-control values, severity ranking, immutable pack snapshots, transition detection, and short last-seen loss retention
 - `ThreatAwareness`: passive fixed-position player health/active-power presentation and five-slot Tank Threat Control view, stable per-pull row reconciliation, rank-aware class debuff columns with deterministic fallback, final-five-second pulses and centered stacks, overflow loss promotion, left/right accessory anchors, and noninteractive configuration preview
 - `BindingStore`, `BindingController`, `PartyFrameClickBindings`: typed Party Frame Click spell/item persistence, adjacent gesture swaps, cursor-based destination assignment, and native unit-targeted secure actions
-- `CoreSettingsPages`: focused Frames, Health & Chat, Buffs & Cleansing, Dungeon Board, and Maintenance pages; feature toggles, HUD display preferences, alert preferences, HoT controls, compact position resets, and destructive reset confirmation
+- `CoreSettingsPages`: focused Frames, Health & Chat, Buffs & Cleansing, and Maintenance pages; feature toggles, HUD display preferences, alert preferences, HoT controls, compact position resets, and destructive reset confirmation
 - `PartyFrameClicksSettingsPage`: fixed-gesture Party Frame Click action rows, inline movement and clearing, display refresh, and right-click clearing compatibility
 - `SettingsUI`, `WeaponSetsSettingsPage`: compact fixed-size settings-window shell, five task-group navigation, contextual page registry, multi-page selectors, single-page headings, native character weapon-set management, Settings-wide preview activation, and cross-page refresh routing
-- `SettingsController`, `MinimapController`: settings-mode, minimap lifecycle, Dungeon Board access, and modifier-safe current-instance Dungeon Book access
+- `SettingsController`, `MinimapController`: settings-mode, minimap lifecycle and modifier-safe current-instance Dungeon Book access
 - `ProfileStore`: character-owned named profiles, read-only account-profile migration, portable payload normalization, stable identity, CRUD/copy/import mutations, and cross-profile equipment-set reference maintenance
 - `ProfileCodec`: native CBOR, Deflate, and URL-safe Base64 profile sharing with versioned metadata and bounded decoding
 - `ProfilesSettingsPage`: compact profile selection, management, and copy sections plus export/import preview and confirmation workflows
-
-## Dungeon Board TOC Order
-
-The data and pure-policy chain loads as `DungeonBoardCatalog` → `DungeonBoardActivityData` → `DungeonBoardClassifier` → `DungeonBoardEligibility` → `DungeonBoardRuntime` → `DungeonBoardGroupFinder` → `DungeonBoardActions`. After shared `UIHelpers` and `Sounds` are available, `DungeonBoardSettings` → `DungeonBoardFeed` → `DungeonBoardUI` load in that order. `DungeonBoardEvents` loads with the other event subscribers, and `ApogeePartyHealthBars.lua` remains the final composition root.
 
 ## Dungeon Guide TOC Order
 
@@ -146,15 +131,7 @@ The reviewed data chain loads as `DungeonGuideCatalog` → strategy packs from `
 - Keep volatile client APIs inside their domain adapters and capability detection; ordinary frame construction and widget methods remain direct.
 - Keep configuration-only chrome and cross-surface stacking inside `SettingsSurfaces`; surfaces may opt out of automatic backing when their native content is sufficient. Feature modules own their content and direct position persistence, configuration must never reposition another surface, and normal gameplay must not retain configuration backing or elevation.
 - Keep Settings at its compact 480×460 footprint and preserve the simultaneous Settings and live party-frame configuration workflow; add configuration depth through grouped pages and scrolling rather than a wider window.
-- Keep every supported configurable HUD preview visible throughout Settings at its normal gameplay position; page navigation changes controls only and never owns preview visibility or positioning. Keep the full Dungeon Board and Dungeon Book independent from this preview lifecycle.
-- Keep Dungeon Board catalog, activity mapping, classification, and eligibility independent from chat events, saved variables, and UI; keep search/result ingestion inside `DungeonBoardGroupFinder`, manual native player interactions inside `DungeonBoardActions`, chat payload knowledge inside the event adapter, and UI reads on immutable runtime snapshots.
-- Give Dungeon Board service/noise classifications precedence over dungeon requests, and preserve unresolved `DM`, Dire Maul, and Scarlet Monastery candidates instead of guessing or duplicating requests.
-- Preserve the original message alongside every plain-language Dungeon Board explanation; presentation may clarify known intent and catalog facts but must not invent an unstated role or resolve ambiguous slang.
-- Call `C_LFGList.Search` only from the board Refresh button's hardware event. Official listings may update the full board but must never enter the real-time LFG Alerts or sound path.
-- Treat mapped Blizzard activity IDs as authoritative structured choices. Place a multi-activity official group under every selected dungeon; it must never enter the chat classifier's ambiguous/clarification presentation or a separate catch-all section.
-- Apply the active profile's inclusive level window to every full-board view, LFG Alert opportunity, and official activity search. A Normal dungeon is eligible when its recommended range overlaps that window; Heroic eligibility still uses the character's actual level requirement. Keep LFG Alerts limited to new, explicit-role chat/guild opportunities for eligible five-player dungeons. UBRS remains visible on the full chat board but is excluded from official searches and alerts.
-- Treat Dungeon Board choices as exact single remaining-role states: Tank excludes requests that also need a Healer, and Healer excludes requests that also need a Tank. Generic and dual-role requests remain hidden while still superseding older chat from the same sender.
-- Persist only the Dungeon Board watched role, sound choice, level-window offsets, and feed position in the active character-owned profile; requests, official results, and notification history remain session-only.
+- Keep every supported configurable HUD preview visible throughout Settings at its normal gameplay position; page navigation changes controls only and never owns preview visibility or positioning. Keep the Dungeon Book independent from this preview lifecycle.
 - Treat basic unit health and frame construction as the required baseline while aura, range, prediction, threat, markers, assignment, bindings, state layouts, and profile sharing degrade independently.
 - Never mutate secure attributes, position, visibility, or mouse state during combat.
 - Keep live action drag-and-drop source detection inside `ActionAssignmentSources`. Use `SpellBookFrame` visibility plus the union of documented `BAG_OPEN`/`BAG_CLOSED` state and Blizzard's exported `IsBagOpen` stock-frame visibility for carried bags; use optional public view-lifecycle callbacks for supported replacement bag UIs (currently Baganator), with `CURSOR_CHANGED` plus an actual item cursor as the final narrow fallback. `BindingController` remains authoritative for carried-item validation. Never replace Spellbook or bag-item handlers, and keep secure cast overlays as the normal-play mouse layer.

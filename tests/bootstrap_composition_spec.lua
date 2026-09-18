@@ -77,16 +77,15 @@ ApogeePartyHealthBars.Bootstrap.EventRegistration.Register({
     },
 })
 
-local board, guide, messages = 0, 0, 0
+local guide, messages = 0, 0
 ApogeePartyHealthBars.Bootstrap.EventRegistration.RegisterSlashCommands({
-    DungeonBoardUI = { Toggle = function() board = board + 1 end },
     DungeonGuideUI = { Toggle = function() guide = guide + 1 end },
     Print = function() messages = messages + 1 end,
 })
 SlashCmdList.APOGEEPARTYHEALTHBARS("board")
 SlashCmdList.APOGEEPARTYHEALTHBARS("guide")
 SlashCmdList.APOGEEPARTYHEALTHBARS("")
-assert(board == 1 and guide == 1 and messages == 1,
+assert(guide == 1 and messages == 2,
     "slash command routing changed during bootstrap extraction")
 
 assert(table.concat(calls, ",") == table.concat({

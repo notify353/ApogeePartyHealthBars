@@ -11,6 +11,7 @@ C_ChatInfo = {
     end,
 }
 
+local registeredEvents = {}
 local frames = {}
 local function widget()
     local object = {
@@ -21,7 +22,7 @@ local function widget()
         SetScript = function(self, name, callback) self.scripts[name] = callback end,
         GetScript = function(self, name) return self.scripts[name] end,
         HookScript = function(self, name, callback) self.scripts[name] = callback end,
-        RegisterEvent = function() end, RegisterForClicks = function() end,
+        RegisterEvent = function(_, event) registeredEvents[event] = true end, RegisterForClicks = function() end,
         RegisterForDrag = function(self, ...)
             self.dragButtons = { ... }
         end,
@@ -429,33 +430,16 @@ assert(tocLoadOrder["PartyFrames/Auras.lua"]
     "effect runtimes loaded outside their dependency-safe order")
 
 
-assert(type(ApogeePartyHealthBars_DungeonBoardRuntime.GetSnapshot) == "function",
-    "Dungeon Board runtime API was not loaded")
-assert(tocLoadOrder["DungeonBoard/DungeonBoardCatalog.lua"]
-        < tocLoadOrder["DungeonBoard/DungeonBoardActivityData.lua"]
-    and tocLoadOrder["DungeonBoard/DungeonBoardActivityData.lua"]
-        < tocLoadOrder["DungeonBoard/DungeonBoardClassifier.lua"]
-    and tocLoadOrder["DungeonBoard/DungeonBoardClassifier.lua"]
-        < tocLoadOrder["DungeonBoard/DungeonBoardEligibility.lua"]
-    and tocLoadOrder["DungeonBoard/DungeonBoardEligibility.lua"]
-        < tocLoadOrder["DungeonBoard/DungeonBoardRuntime.lua"]
-    and tocLoadOrder["DungeonBoard/DungeonBoardRuntime.lua"]
-        < tocLoadOrder["DungeonBoard/DungeonBoardGroupFinder.lua"]
-    and tocLoadOrder["Core/Sounds.lua"]
-        < tocLoadOrder["DungeonBoard/DungeonBoardSettings.lua"]
-    and tocLoadOrder["DungeonBoard/DungeonBoardSettings.lua"]
-        < tocLoadOrder["DungeonBoard/DungeonBoardFeed.lua"]
-    and tocLoadOrder["DungeonBoard/DungeonBoardFeed.lua"]
-        < tocLoadOrder["DungeonBoard/DungeonBoardUI.lua"]
-    and tocLoadOrder["Core/UIHelpers.lua"]
-        < tocLoadOrder["DungeonBoard/DungeonBoardUI.lua"]
-    and tocLoadOrder["DungeonBoard/DungeonBoardUI.lua"]
-        < tocLoadOrder["ApogeePartyHealthBars.lua"],
-    "Dungeon Board UI loaded outside its dependency-safe order")
-assert(type(ApogeePartyHealthBars_DungeonBoardUI.Toggle) == "function"
-        and type(ApogeePartyHealthBars_DungeonBoardGroupFinder.RequestRefresh) == "function"
-        and type(ApogeePartyHealthBars_DungeonBoardFeed.SetUnlocked) == "function",
-    "Dungeon Board focused APIs were not loaded")
+for _, path in ipairs(tocLoadOrder) do
+    assert(not path:find("DungeonBoard", 1, true), "retired group-finding module loaded")
+end
+assert(ApogeePartyHealthBars_DungeonBoardUI == nil
+        and ApogeePartyHealthBars_DungeonBoardFeed == nil
+        and ApogeePartyHealthBarsDungeonBoard == nil,
+    "retired group-finding runtime or window was created")
+for event in pairs(registeredEvents) do
+    assert(not event:find("LFG_LIST_", 1, true), "retired Group Finder event registered")
+end
 assert(tocLoadOrder["DungeonGuide/DungeonGuideCatalog.lua"]
         < tocLoadOrder["DungeonGuide/ScarletMonasteryGuide.lua"]
     and tocLoadOrder["DungeonGuide/ScarletMonasteryGuide.lua"]
@@ -479,8 +463,6 @@ assert(type(ApogeePartyHealthBars_DungeonGuideUI.Toggle) == "function"
         and type(ApogeePartyHealthBars_DungeonGuidePolicy.GetRecommendationForGuid) == "function"
         and type(ApogeePartyHealthBars_RaidMarkers.EvaluateCurrentTarget) == "function",
     "Dungeon Guide focused APIs were not loaded")
-assert(ApogeePartyHealthBarsDungeonBoard.topLevel,
-    "Dungeon Board did not participate in native active-window stacking")
 assert(type(ApogeePartyHealthBars_BuffReminders.RefreshKnownSpells) == "function",
     "buff-reminder runtime did not expose known-spell refresh")
 assert(type(ApogeePartyHealthBars_ShieldTracker.GetRemaining) == "function"
@@ -490,13 +472,20 @@ assert(type(ApogeePartyHealthBars_ShieldTracker.GetRemaining) == "function"
 assert(ApogeePartyHealthBars_EffectsTracker == nil,
     "retired EffectsTracker runtime was still loaded")
 
+for _, name in ipairs({ "CombatUIFader", "UIErrorSuppressor", "MentionAlerts",
+    "BuffThanks", "BuffThanksEvents", "EssentialsOwnership" }) do
+    assert(_G["ApogeePartyHealthBars_" .. name] == nil,
+        "retired Essentials runtime or handshake loaded: " .. name)
+end
 local router = ApogeePartyHealthBars_EventRouter
 
 router.Dispatch("PLAYER_LOGIN")
+for _, key in ipairs({ "combatUIAutoHide", "hideUIErrors", "mentionAlertsEnabled",
+    "mentionSoundKey", "mentionHighlightEnabled", "buffThanksEnabled" }) do
+    assert(ApogeePartyHealthBars_S.sv[key] == nil, "retired feature still seeded: " .. key)
+end
 
 
-assert(ApogeePartyHealthBars_UIErrorSuppressor.IsEnabled(),
-    "PLAYER_LOGIN did not initialize default-on Blizzard UI error suppression")
 local automaticConsumables = ApogeePartyHealthBars_ConsumableBar.GetEntries()
 local automaticConsumableIcons = ApogeePartyHealthBars_ConsumableBar.GetIcons()
 assert(#automaticConsumables == 2
@@ -872,23 +861,10 @@ assert(type(minimapButton.scripts.OnClick) == "function"
         and minimapButton.scripts.PreClick == nil
         and minimapButton.scripts.PostClick == nil,
     "minimap click handler retained secure action delegation")
-assert(not ApogeePartyHealthBars_DungeonBoardUI.IsShown(),
-    "Dungeon Board started visible")
 minimapButton.scripts.OnClick(minimapButton, "MiddleButton")
-assert(ApogeePartyHealthBars_DungeonBoardUI.IsShown(),
-    "middle-click did not open Dungeon Board")
-minimapButton.scripts.OnClick(minimapButton, "MiddleButton")
-assert(not ApogeePartyHealthBars_DungeonBoardUI.IsShown(),
-    "second middle-click did not close Dungeon Board")
-assert(SlashCmdList and type(SlashCmdList.APOGEEPARTYHEALTHBARS) == "function",
-    "Dungeon Board slash command was not registered")
 SlashCmdList.APOGEEPARTYHEALTHBARS("board")
-assert(ApogeePartyHealthBars_DungeonBoardUI.IsShown(),
-    "Dungeon Board slash command did not open the window")
-SlashCmdList.APOGEEPARTYHEALTHBARS("board")
-assert(not ApogeePartyHealthBars_DungeonBoardUI.IsShown(),
-    "Dungeon Board slash command did not close the window")
-assert(not ApogeePartyHealthBars_DungeonGuideUI.IsShown(), "Dungeon Guide started visible")
+assert(not ApogeePartyHealthBars_DungeonGuideUI.IsShown(),
+    "retired board entry points unexpectedly opened Dungeon Guide")
 assert(ApogeePartyHealthBarsDungeonGuide.backdropColor[4] == 1,
     "Dungeon Book did not use its required opaque backdrop")
 assert(ApogeePartyHealthBarsDungeonGuide.foundation.color[4] == 1
@@ -1054,10 +1030,10 @@ assert(key1Icon.keyLabel:IsShown() and keyFIcon.keyLabel:IsShown()
 assert(partyFramesLabel:IsShown() and partyFramesLabel.label.text == "Party Frames",
     "opening settings did not place Party Frames above the first health row")
 local configSurfaces = ApogeePartyHealthBars_SettingsSurfaces
-local expectedConfigSurfaceKeys = { "settings", "party", "feed", "cleanse" }
+local expectedConfigSurfaceKeys = { "settings", "party", "cleanse" }
 for _, key in ipairs(expectedConfigSurfaceKeys) do
     local surface = assert(configSurfaces.Get(key), "missing configuration surface: " .. key)
-    local shouldShowChrome = key == "settings" or key == "feed"
+    local shouldShowChrome = key == "settings"
         or (key == "cleanse" and ApogeePartyHealthBars_CleanseWatch.HasCapability())
     assert(surface.chrome.active == shouldShowChrome
             and surface.chrome.foundation:IsShown() == shouldShowChrome
@@ -1071,9 +1047,7 @@ for _, key in ipairs(expectedConfigSurfaceKeys) do
 end
 assert(configSurfaces.Get("dot") == nil
         and configSurfaces.Get("cleanse").chrome.title == nil
-        and configSurfaces.Get("cleanse").chrome.header == nil
-        and configSurfaces.Get("feed").chrome.title == nil
-        and configSurfaces.Get("feed").chrome.header == nil,
+        and configSurfaces.Get("cleanse").chrome.header == nil,
     "a lean configuration preview recreated header chrome")
 assert(ApogeePartyHealthBars_SettingsUI.factoryResetButton,
     "General settings did not create the factory reset control")
@@ -1088,7 +1062,7 @@ assert(table.concat(ApogeePartyHealthBars_SettingsUI.groupOrder, ",")
     "settings groups did not follow the compact task order")
     assert(table.concat(ApogeePartyHealthBars_SettingsUI.pageOrder, ",")
         == "frames,partyFrameClicks,shortcuts,keyboard,mouseWheel,mouseButtons,"
-            .. "healthChat,buffsCleanse,dungeon,dungeonGuide,profiles,weapons,maintenance",
+            .. "healthChat,buffsCleanse,dungeonGuide,profiles,weapons,maintenance",
     "settings pages did not retain every configuration workflow")
 assert(ApogeePartyHealthBars_SettingsUI.pages.targetEffects == nil
 ,
@@ -1096,6 +1070,9 @@ assert(ApogeePartyHealthBars_SettingsUI.pages.targetEffects == nil
 assert(ApogeePartyHealthBars_SettingsUI.pages.dungeonGuide.summary
         == "Learn reviewed mob priorities and configure automatic target marking.",
     "Dungeon Guide settings still described the removed live coach")
+assert(ApogeePartyHealthBars_SettingsUI.pages.dungeon == nil
+        and configSurfaces.Get("feed") == nil,
+    "retired board settings or alert preview remains")
 local dungeonGuideRows = ApogeePartyHealthBars_DungeonGuideSettingsPage.GetRows()
 local dungeonGuideMasterRow = dungeonGuideRows.autoMark
 ApogeePartyHealthBars_DungeonGuideSettingsPage.Refresh()
@@ -1154,7 +1131,6 @@ for _, key in ipairs(expectedConfigSurfaceKeys) do
         "configuration chrome leaked into normal gameplay: " .. key)
 end
 assert(configSurfaces.Get("settings").frame.frameStrata == "DIALOG"
-        and configSurfaces.Get("feed").frame.frameStrata == "DIALOG"
         and configSurfaces.Get("cleanse").frame.frameStrata == "DIALOG"
         and configSurfaces.Get("party").frame.frameStrata == "MEDIUM",
     "configuration close did not restore runtime surface strata")
@@ -1206,56 +1182,24 @@ ApogeePartyHealthBars_SettingsController.SetMode(true)
 ApogeePartyHealthBars_SettingsUI.ActivatePage("macros")
 assert(ApogeePartyHealthBars_S.activeSettingsPageKey == "frames",
     "retired Macro Library page key did not fall back to Frames")
-ApogeePartyHealthBars_S.sv.buffThanksEnabled = false
-local buffThanksPreviewRow = ApogeePartyHealthBars_BuffThanks.GetRows()[1]
-assert(ApogeePartyHealthBars_BuffThanks.GetFrame().width == 326
-        and buffThanksPreviewRow.gestureButtons[1].width == 20
-        and #buffThanksPreviewRow.gestureButtons == 1
-        and buffThanksPreviewRow.gestureButtons[1].icon.texture
-            == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\ApogeePartyHealthBarsLogo.png"
-        and buffThanksPreviewRow.gestureButtons[1].background == nil
-        and buffThanksPreviewRow.rail ~= nil
-        and buffThanksPreviewRow.summary ~= nil
-        and buffThanksPreviewRow.dismiss == nil
-        and buffThanksPreviewRow.background ~= nil,
-    "Buff Thanks did not use the shaded Threat Awareness HUD treatment")
 local groupHelperPresentation = ApogeePartyHealthBars.Require(
     "Runtime", "GroupHelperPresentation")
 local partyFramePreview = ApogeePartyHealthBars.Require("Runtime", "PartyFramePreview")
-local feedPoint = { ApogeePartyHealthBars_DungeonBoardFeed.GetFrame():GetPoint(1) }
 for _, key in ipairs({
     "frames", "partyFrameClicks", "shortcuts", "keyboard", "mouseWheel",
-    "mouseButtons", "healthChat", "buffsCleanse",  "dungeon", "dungeonGuide",
+    "mouseButtons", "healthChat", "buffsCleanse", "dungeonGuide",
     "profiles", "maintenance",
 }) do
     ApogeePartyHealthBars_SettingsUI.ActivatePage(key)
     assert(ApogeePartyHealthBars_S.activeSettingsPageKey == key, "could not activate settings page: " .. key)
     assert(ApogeePartyHealthBars_CleanseWatch.IsUnlocked()
-            and ApogeePartyHealthBars_BuffThanks.IsUnlocked()
-            and ApogeePartyHealthBars_DungeonBoardFeed.IsUnlocked()
             and partyFramePreview.IsActive(),
         "settings page hid a configuration preview: " .. key)
-    local buffThanksSurface = ApogeePartyHealthBars_SettingsSurfaces.Get("buffThanks")
-    assert(buffThanksSurface.previewDock == nil and buffThanksSurface.automaticChrome == false,
-        "Buff Thanks preview retained LFG-style docking or configuration chrome: " .. key)
-    if key == "buffsCleanse" then
-        local previewRows = ApogeePartyHealthBars_BuffThanks.GetRows()
-        assert(previewRows[1]:IsShown() and previewRows[2]:IsShown()
-                and previewRows[3]:IsShown()
-                and previewRows[2].rail.color[1] == RAID_CLASS_COLORS.DRUID.r
-                and previewRows[2].rail.color[2] == RAID_CLASS_COLORS.DRUID.g
-                and previewRows[2].rail.color[3] == RAID_CLASS_COLORS.DRUID.b
-                and previewRows[2].summary:GetText():find(
-                    "Cleansed: Crippling Poison", 1, true),
-            "Thank You settings demo did not show multiple helpers and a cleanse")
-    end
-
     if key == "threatControl" then
 
 
 
     end
-    local currentFeedPoint = { ApogeePartyHealthBars_DungeonBoardFeed.GetFrame():GetPoint(1) }
     for index = 1, 5 do
 
     end
@@ -1460,7 +1404,7 @@ for _, key in ipairs({
             "combat preview teardown left a deferred synthetic restore")
         partyFramePreview.SetActive(true)
     end
-    local singlePageGroup = key == "frames"
+    local singlePageGroup = key == "frames" or key == "dungeonGuide"
     assert(ApogeePartyHealthBars_SettingsUI.pageDropdown:IsShown()
             == not singlePageGroup
             and ApogeePartyHealthBars_SettingsUI.pageTitle:IsShown()
@@ -1477,8 +1421,6 @@ assert(ApogeePartyHealthBars_SettingsUI.pageDropdown.width == 240
         and ApogeePartyHealthBars_SettingsUI.pageSummary.width
             == ApogeePartyHealthBars_C.CONFIG_CONTENT_W,
     "settings page selector and summary did not use the two-row header geometry")
-ApogeePartyHealthBars_S.sv.buffThanksEnabled = true
-ApogeePartyHealthBars_BuffThanks.Refresh()
 ApogeePartyHealthBars_SettingsUI.ActivatePage("profiles")
 ApogeePartyHealthBars_SettingsUI.RefreshPage("profiles")
 assert(ApogeePartyHealthBars_ProfilesSettingsPage.GetProfileDropdown().selectedKey
@@ -1519,7 +1461,6 @@ ApogeePartyHealthBars_SettingsController.SetMode(false)
 RunFrameUpdates()
 
 assert(type(ApogeePartyHealthBars_S.sv) == "table", "saved variables did not initialize")
-assert(ApogeePartyHealthBars_S.sv.combatUIAutoHide == true, "combat UI fade should default on")
 assert(ApogeePartyHealthBars_S.sv.showAllSlots == true, "all solo slots should default visible")
 assert(ApogeePartyHealthBars_S.sv.actionFeedbackEnabled == true, "action feedback should default on")
 assert(ApogeePartyHealthBars_S.sv.clickableBuffIcons == true, "clickable buff icons should default on")
@@ -1527,12 +1468,6 @@ assert(ApogeePartyHealthBars_S.sv.spellTrackerEnabled == nil, "retired tracker c
 assert(ApogeePartyHealthBars_S.sv.spellTrackerSoundsEnabled == nil, "retired tracker sounds checkbox state persisted")
 assert(ApogeePartyHealthBars_S.sv.lowHealthSoundEnabled == nil, "retired low-health checkbox state persisted")
 assert(ApogeePartyHealthBars_S.sv.lowHealthSoundKey == "focus", "low-health sound choice should default to Focus")
-assert(ApogeePartyHealthBars_S.sv.dungeonBoardRole == "healer"
-        and ApogeePartyHealthBars_S.sv.dungeonBoardMode == nil
-        and ApogeePartyHealthBars_S.sv.dungeonBoardFeedEnabled == true
-        and ApogeePartyHealthBars_S.sv.dungeonBoardLevelsBelow == 10
-        and ApogeePartyHealthBars_S.sv.dungeonBoardLevelsAbove == 3,
-    "Dungeon Board should default to Healer with feed alerts and its standard level window")
 assert(ApogeePartyHealthBars_S.sv.dungeonGuideAutoMarkEnabled == true,
     "automatic Dungeon Guide marking should default on")
 assert(ApogeePartyHealthBars_S.sv.groupHelperEnabled == true
@@ -1564,8 +1499,6 @@ local existingPreferences = {
     lowHealthSoundKey = "alarm_bell",
     lowHealthThreshold = 65,
     threatAwarenessSoundKey = "alarm_soft",
-    dungeonBoardMode = "tank",
-    dungeonBoardFeedEnabled = false,
 }
 ApogeePartyHealthBars_Effects.InitializeSavedVariables(existingPreferences, {})
 assert(existingPreferences.combatUIAutoHide == true, "saved combat UI fade preference was overwritten")
@@ -1576,31 +1509,23 @@ assert(existingPreferences.lowHealthSoundKey == "alarm_bell", "saved low-health 
 assert(existingPreferences.lowHealthThreshold == 65, "saved low-health threshold was overwritten")
 assert(existingPreferences.threatAwarenessSoundKey == nil,
     "retired Tank Threat Control sound preference was not removed")
-assert(existingPreferences.dungeonBoardRole == "tank"
-        and existingPreferences.dungeonBoardMode == nil
-        and existingPreferences.dungeonBoardFeedEnabled == false,
-    "legacy Tank mode or saved LFG Alerts preference was not migrated correctly")
-local removedDungeonRolePreferences = { dungeonBoardMode = "both" }
-ApogeePartyHealthBars_Effects.InitializeSavedVariables(removedDungeonRolePreferences, {})
-assert(removedDungeonRolePreferences.dungeonBoardRole == "healer"
-        and removedDungeonRolePreferences.dungeonBoardMode == nil,
-    "removed Dungeon Board mode did not migrate to the Healer fallback")
-assert(removedDungeonRolePreferences.cleanseWatchPoint == "TOPRIGHT"
-        and removedDungeonRolePreferences.cleanseWatchRelPoint == "TOPRIGHT"
-        and removedDungeonRolePreferences.cleanseWatchX == 0
-        and removedDungeonRolePreferences.cleanseWatchY == 0,
+local cleanPreferences = { dungeonBoardRole = "tank", dungeonBoardFeedEnabled = true }
+ApogeePartyHealthBars_Effects.InitializeSavedVariables(cleanPreferences, {})
+for key in pairs(cleanPreferences) do
+    assert(not key:find("dungeonBoard", 1, true), "retired group-finding preference survived")
+end
+assert(cleanPreferences.cleanseWatchPoint == "TOPRIGHT"
+        and cleanPreferences.cleanseWatchRelPoint == "TOPRIGHT"
+        and cleanPreferences.cleanseWatchX == 0
+        and cleanPreferences.cleanseWatchY == 0,
     "new saved variables did not default Cleanse Watch to the top-right")
 local fractionalDotPreferences = {
     targetEffectRefreshThreshold = 4.6,
-    dungeonBoardLevelsBelow = -2,
-    dungeonBoardLevelsAbove = 90,
     abilityCooldownOverrides = { pummel = false, invalid = "yes", [4] = true },
     abilityCooldownPriority = { "pummel", "shieldWall", "pummel", 4 },
 }
 ApogeePartyHealthBars_Effects.InitializeSavedVariables(fractionalDotPreferences, {})
 assert(fractionalDotPreferences.targetEffectRefreshThreshold == 5
-        and fractionalDotPreferences.dungeonBoardLevelsBelow == 0
-        and fractionalDotPreferences.dungeonBoardLevelsAbove == 60
         and fractionalDotPreferences.abilityCooldownOverrides.pummel == false
         and fractionalDotPreferences.abilityCooldownOverrides.invalid == nil
         and fractionalDotPreferences.abilityCooldownOverrides[4] == nil

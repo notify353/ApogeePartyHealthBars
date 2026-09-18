@@ -35,7 +35,7 @@ local groupHelperPresentation = ApogeePartyHealthBars.Require(
     "Runtime", "GroupHelperPresentation")
 local partyFramePreview = ApogeePartyHealthBars.Require("Runtime", "PartyFramePreview")
 
-local panel, configUI, minimapController, dungeonBoardUI, dungeonGuideUI
+local panel, configUI, minimapController, dungeonGuideUI
 local rows = {}
 
 local UpdateUI
@@ -395,27 +395,17 @@ partyFramePreview.Initialize({
     end,
 })
 
-local function GetDungeonBoardClientFlavor()
+local function GetDungeonGuideClientFlavor()
     local info = ApogeePartyHealthBars_ClientCapabilities.GetClientInfo()
     return info and info.flavor or "unsupported"
 end
-
-local function GetDungeonBoardPlayerLevel()
-    return tonumber(UnitLevel and UnitLevel("player")) or 0
-end
-
-local dungeonBoardSettings = ApogeePartyHealthBars_DungeonBoardSettings
-dungeonBoardSettings.Initialize({
-    GetSavedVariables = function() return S.sv end,
-    Sounds = ApogeePartyHealthBars_Sounds,
-})
 
 local dungeonGuideSettings = ApogeePartyHealthBars_DungeonGuideSettings
 dungeonGuideSettings.Initialize({ GetSavedVariables = function() return S.sv end })
 local dungeonGuidePolicy = ApogeePartyHealthBars_DungeonGuidePolicy
 dungeonGuidePolicy.Initialize({
     Catalog = ApogeePartyHealthBars_DungeonGuideCatalog,
-    GetClientFlavor = GetDungeonBoardClientFlavor,
+    GetClientFlavor = GetDungeonGuideClientFlavor,
     GetInstanceId = function()
         if not GetInstanceInfo then return nil end
         return select(8, GetInstanceInfo())
@@ -427,61 +417,6 @@ M.Initialize({
     Now = function() return GetTime and GetTime() or 0 end,
 })
 
-local mentionAlerts = ApogeePartyHealthBars_MentionAlerts
-mentionAlerts.Initialize({
-    GetSavedVariables = function() return S.sv end,
-    GetPlayerName = function() return UnitName and UnitName("player") end,
-    GetPlayerGUID = function() return UnitGUID and UnitGUID("player") end,
-    Sounds = ApogeePartyHealthBars_Sounds,
-})
-
-local dungeonBoardGroupFinder = ApogeePartyHealthBars_DungeonBoardGroupFinder
-dungeonBoardGroupFinder.Initialize({
-    Runtime = ApogeePartyHealthBars_DungeonBoardRuntime,
-    ActivityData = ApogeePartyHealthBars_DungeonBoardActivityData,
-    Catalog = ApogeePartyHealthBars_DungeonBoardCatalog,
-    ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities,
-    Settings = dungeonBoardSettings,
-    API = {
-        Search = function(...) return C_LFGList.Search(...) end,
-        GetSearchResults = function() return C_LFGList.GetSearchResults() end,
-        GetSearchResultInfo = function(resultID)
-            return C_LFGList.GetSearchResultInfo(resultID)
-        end,
-        GetSearchResultMemberCounts = function(resultID)
-            return C_LFGList.GetSearchResultMemberCounts(resultID)
-        end,
-        GetActivityInfoTable = function(activityID)
-            return C_LFGList.GetActivityInfoTable(activityID)
-        end,
-        CanPlayerUsePremadeGroup = function()
-            return C_LFGInfo.CanPlayerUsePremadeGroup()
-        end,
-    },
-    GetClientFlavor = GetDungeonBoardClientFlavor,
-    GetPlayerLevel = GetDungeonBoardPlayerLevel,
-    Now = function() return GetTime() end,
-    HookSearch = function(callback)
-        hooksecurefunc(C_LFGList, "Search", callback)
-    end,
-})
-
-local dungeonBoardActions = ApogeePartyHealthBars_DungeonBoardActions
-
-local dungeonBoardFeed = ApogeePartyHealthBars_DungeonBoardFeed
-dungeonBoardFeed.Initialize({
-    Runtime = ApogeePartyHealthBars_DungeonBoardRuntime,
-    Settings = dungeonBoardSettings,
-    Eligibility = ApogeePartyHealthBars_DungeonBoardEligibility,
-    Catalog = ApogeePartyHealthBars_DungeonBoardCatalog,
-    Sounds = ApogeePartyHealthBars_Sounds,
-    Helpers = ApogeePartyHealthBars_UIHelpers,
-    SettingsSurfaces = configSurfaces,
-    Actions = ApogeePartyHealthBars_DungeonBoardActions,
-    GetPlayerLevel = GetDungeonBoardPlayerLevel,
-    Now = function() return GetTime() end,
-})
-dungeonBoardFeed.Build()
 
 local cleanseWatch = ApogeePartyHealthBars_CleanseWatch
 cleanseWatch.Initialize({
@@ -493,15 +428,6 @@ cleanseWatch.Initialize({
     Now = function() return GetTime() end,
 })
 cleanseWatch.Build()
-
-local buffThanks = ApogeePartyHealthBars_BuffThanks
-buffThanks.Initialize({
-    Auras = A,
-    ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities,
-    SettingsSurfaces = configSurfaces,
-    Now = function() return GetTime and GetTime() or 0 end,
-})
-buffThanks.Build()
 
 groupHelperSettings.Initialize({
     GetSavedVariables = function() return S.sv end,
@@ -529,24 +455,11 @@ groupHelperRuntime.Initialize({
     Print = Print,
 })
 
-dungeonBoardUI = ApogeePartyHealthBars_DungeonBoardUI.Build({
-    Runtime = ApogeePartyHealthBars_DungeonBoardRuntime,
-    Catalog = ApogeePartyHealthBars_DungeonBoardCatalog,
-    Eligibility = ApogeePartyHealthBars_DungeonBoardEligibility,
-    Settings = dungeonBoardSettings,
-    GroupFinder = dungeonBoardGroupFinder,
-    Actions = dungeonBoardActions,
-    GetClientFlavor = GetDungeonBoardClientFlavor,
-    GetPlayerLevel = GetDungeonBoardPlayerLevel,
-    Now = function() return GetTime() end,
-    ApplyBackdrop = ApplyBackdrop,
-    Print = Print,
-})
 dungeonGuideUI = ApogeePartyHealthBars_DungeonGuideUI.Build({
     Catalog = ApogeePartyHealthBars_DungeonGuideCatalog,
     Policy = dungeonGuidePolicy,
     Settings = dungeonGuideSettings,
-    GetClientFlavor = GetDungeonBoardClientFlavor,
+    GetClientFlavor = GetDungeonGuideClientFlavor,
     ApplyBackdrop = ApplyBackdrop,
 })
 playerUtility.Attach(rows[1].primary, {
@@ -783,7 +696,6 @@ minimapController.Initialize({
     IsEnabled = IsEnabled,
     SetAddonEnabled = function(enabled) SetAddonEnabled(enabled) end,
     SetConfigMode = function(active) SetConfigMode(active) end,
-    ToggleDungeonBoard = dungeonBoardUI.Toggle,
     ShowDungeonGuide = dungeonGuideUI.Show,
 })
 EnsureMinimapButton = minimapController.Ensure
@@ -792,7 +704,6 @@ local ApplyDefaultMinimapPosition = minimapController.ResetPosition
 
 ApogeePartyHealthBars.Require("Bootstrap", "EventRegistration")
     .RegisterSlashCommands({
-        DungeonBoardUI = dungeonBoardUI,
         DungeonGuideUI = dungeonGuideUI,
         Print = Print,
     })
@@ -843,9 +754,7 @@ local settingsRuntime = ApogeePartyHealthBars.Require(
     ReleaseBoundActionBindings = ReleaseBoundActionBindings,
     ReconcileBoundActionBindings = ReconcileBoundActionBindings,
     ProfileStore = ApogeePartyHealthBars_ProfileStore,
-    DungeonBoardFeed = dungeonBoardFeed,
     CleanseWatch = cleanseWatch,
-    BuffThanks = buffThanks,
     PartyFramePreview = partyFramePreview,
     GroupHelperPresentation = groupHelperPresentation,
     GroupHelperRuntime = groupHelperRuntime,
@@ -883,9 +792,7 @@ local settingsRuntime = ApogeePartyHealthBars.Require(
     AddonVersion              = ApogeePartyHealthBars_ClientCapabilities.GetAddonVersion(
         "ApogeePartyHealthBars"),
     ClientCapabilities       = ApogeePartyHealthBars_ClientCapabilities,
-    DungeonBoardFeed         = dungeonBoardFeed,
     CleanseWatch             = cleanseWatch,
-    BuffThanks               = buffThanks,
     GroupHelperSettings      = groupHelperSettings,
     GroupHelperRuntime       = groupHelperRuntime,
     PartyFramePreview        = partyFramePreview,
@@ -919,17 +826,10 @@ local settingsRuntime = ApogeePartyHealthBars.Require(
         GetSavedVariables           = function() return S.sv end,
         Sounds                      = ApogeePartyHealthBars_Sounds,
         HealthAlerts                = ApogeePartyHealthBars_HealthAlerts,
-        MentionAlerts               = mentionAlerts,
-        DungeonBoardSettings        = dungeonBoardSettings,
-        DungeonBoardFeed            = dungeonBoardFeed,
-        DungeonBoardUI              = dungeonBoardUI,
         CleanseWatch                 = cleanseWatch,
-        BuffThanks                   = buffThanks,
         GroupHelperRuntime           = groupHelperRuntime,
         PartyFramePreview            = partyFramePreview,
         Threat                      = H,
-        CombatUIFader               = ApogeePartyHealthBars_CombatUIFader,
-        UIErrorSuppressor           = ApogeePartyHealthBars_UIErrorSuppressor,
         SyncVisualTicker            = SyncVisualTicker,
         ClientCapabilities          = ApogeePartyHealthBars_ClientCapabilities,
         },

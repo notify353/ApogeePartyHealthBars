@@ -313,22 +313,16 @@ function UI.Build(deps)
         summary = "Assign Mouse 3–5 outside Apogee frames.",
     })
     RegisterPage({
-        key = "healthChat", group = "reminders", label = "Health & Chat",
+        key = "healthChat", group = "reminders", label = "Low Health",
         frame = coreSettingsPagesFrame, configure = function() GC.SetPage("healthChat") end,
         refresh = GC.Refresh, hint = GC.GetForm().hint, layout = GC.GetForm(),
-        summary = "Configure low-health and name-mention alerts.",
+        summary = "Configure low-health alerts.",
     })
     RegisterPage({
         key = "buffsCleanse", group = "reminders", label = "Buffs & Cleansing",
         frame = coreSettingsPagesFrame, configure = function() GC.SetPage("buffsCleanse") end,
         refresh = GC.Refresh, hint = GC.GetForm().hint, layout = GC.GetForm(),
         summary = "Configure buff and cleansing reminders.",
-    })
-    RegisterPage({
-        key = "dungeon", group = "dungeon", label = "Dungeon Board",
-        frame = coreSettingsPagesFrame, configure = function() GC.SetPage("dungeon") end,
-        refresh = GC.Refresh, hint = GC.GetForm().hint, layout = GC.GetForm(),
-        summary = "Configure LFG results and alerts.",
     })
     RegisterPage({
         key = "dungeonGuide", group = "dungeon", label = "Dungeon Guide",

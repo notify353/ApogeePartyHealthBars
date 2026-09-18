@@ -12,12 +12,12 @@ local generalRowsByKey = {}
 local hotRows = {}
 local hotRowsByKey = {}
 local resetButtons = {}
-local behaviorSection, alertsSection, lowHealthSection, nameMentionsSection
-local dungeonBoardSection, displaySection, hudDisplaysSection
+local behaviorSection, alertsSection, lowHealthSection
+local displaySection, hudDisplaysSection
 local hotSection, compatibilitySection
 local positionsSection, recoverySection, dangerSection
 local resetPartyFramesRow, resetSettingsRow, resetMinimapRow
-local cleanseResetRow, buffThanksResetRow, lfgAlertsResetRow, dungeonBoardResetRow
+local cleanseResetRow
 local compatibilityRow, compatibilityLabel, prepareDisableRow, factoryRow
 local previewControls = { buttons = {} }
 local prepareDisableArmed, prepareDisableToken = false, 0
@@ -27,9 +27,8 @@ local activePage = "frames"
 
 local PAGE_HINTS = {
     frames = "Choose party-frame behavior, details, and nearby HUD displays.",
-    healthChat = "Configure low-health and name-mention alerts.",
+    healthChat = "Configure low-health alerts.",
     buffsCleanse = "Configure buff and cleansing reminders; samples remain visible and draggable while this page is open.",
-    dungeon = "Configure LFG results and alerts.",
     maintenance = "Restore bindings or reset this character.",
 }
 
@@ -44,7 +43,6 @@ local SUPPORT_FEATURE_BY_SETTING = {
     threatEnabled = "threat",
     threatPercentEnabled = "threat",
     hotEnabled = "hotTracking",
-    buffThanksEnabled = "buffThanks",
 }
 
 local function GetSettingSupport(svKey)
@@ -203,12 +201,11 @@ local function Layout()
     for _, entry in ipairs(generalRows) do entry.frame:Hide() end
     for _, entry in ipairs(hotRows) do entry.row:Hide() end
     for _, frame in ipairs({
-        behaviorSection, alertsSection, lowHealthSection, nameMentionsSection,
-        dungeonBoardSection, displaySection, previewControls.section,
+        behaviorSection, alertsSection, lowHealthSection,
+        displaySection, previewControls.section,
         hudDisplaysSection, hotSection, compatibilitySection, positionsSection, dangerSection,
         recoverySection, resetPartyFramesRow, resetSettingsRow, resetMinimapRow,
-        cleanseResetRow, buffThanksResetRow,
-        lfgAlertsResetRow, dungeonBoardResetRow,
+        cleanseResetRow,
         compatibilityRow, prepareDisableRow, factoryRow,
         previewControls.scenarioRow, previewControls.actionRow,
     }) do
@@ -229,34 +226,6 @@ local function Layout()
                 row.frame.value.label:SetText(currentLabel .. "  |cff777777(click to change)|r")
             elseif row.svKey == "lowHealthSoundKey" then
                 row.frame.value:SetSelectedKey(D.HealthAlerts.GetSoundKey())
-            elseif row.svKey == "mentionSoundKey" then
-                row.frame.value:SetSelectedKey(D.MentionAlerts.GetSoundKey())
-            elseif row.svKey == "dungeonBoardFeedEnabled" then
-                SetCheckboxChecked(
-                    row.frame.check, D.DungeonBoardSettings.GetFeedEnabled())
-            elseif row.svKey == "dungeonBoardRole" then
-                row.frame.value:SetSelectedKey(D.DungeonBoardSettings.GetRole())
-            elseif row.svKey == "dungeonBoardSoundKey" then
-                row.frame.value:SetSelectedKey(D.DungeonBoardSettings.GetSoundKey())
-            elseif row.svKey == "dungeonBoardLevelsBelow"
-                or row.svKey == "dungeonBoardLevelsAbove"
-            then
-                local levelsBelow, levelsAbove = D.DungeonBoardSettings.GetLevelOffsets()
-                local value = row.svKey == "dungeonBoardLevelsBelow"
-                    and levelsBelow or levelsAbove
-                local minOffset, maxOffset =
-                    D.DungeonBoardSettings.GetLevelOffsetLimits()
-                row.frame.value:SetText(tostring(value))
-                if value > minOffset then
-                    row.frame.decrease:Enable()
-                else
-                    row.frame.decrease:Disable()
-                end
-                if value < maxOffset then
-                    row.frame.increase:Enable()
-                else
-                    row.frame.increase:Disable()
-                end
             elseif row.svKey == "lowHealthThreshold" then
                 local threshold = D.HealthAlerts.GetThreshold()
                 row.frame.value:SetText(threshold .. "%")
@@ -311,8 +280,6 @@ local function Layout()
     if activePage == "frames" then
         entries[#entries + 1] = { frame = behaviorSection, height = 16, gap = 9 }
         addSetting("showAllSlots")
-        addSetting("combatUIAutoHide")
-        addSetting("hideUIErrors")
         entries[#entries + 1] = { frame = previewControls.section, height = 16, gap = 10 }
         addSetting("groupHelperEnabled")
         entries[#entries + 1] = { frame = previewControls.scenarioRow, height = 58 }
@@ -379,31 +346,15 @@ local function Layout()
         entries[#entries + 1] = { frame = lowHealthSection, height = 16, gap = 9 }
         addSetting("lowHealthThreshold")
         addSetting("lowHealthSoundKey")
-        entries[#entries + 1] = { frame = nameMentionsSection, height = 16, gap = 10 }
-        addSetting("mentionAlertsEnabled")
-        addSetting("mentionSoundKey")
-        addSetting("mentionHighlightEnabled")
     elseif activePage == "buffsCleanse" then
         entries[#entries + 1] = { frame = alertsSection, height = 16, gap = 9 }
         addSetting("cleanseWatchEnabled")
-        addSetting("buffThanksEnabled")
         addSetting("partyBuffEnabled")
         addSetting("selfBuffEnabled")
         addSetting("selfBuffPreference")
         addSetting("clickableBuffIcons")
         entries[#entries + 1] = { frame = positionsSection, height = 16, gap = 10 }
         entries[#entries + 1] = { frame = cleanseResetRow, height = 32 }
-        entries[#entries + 1] = { frame = buffThanksResetRow, height = 32 }
-    elseif activePage == "dungeon" then
-        entries[#entries + 1] = { frame = dungeonBoardSection, height = 16, gap = 9 }
-        addSetting("dungeonBoardRole")
-        addSetting("dungeonBoardFeedEnabled")
-        addSetting("dungeonBoardSoundKey")
-        addSetting("dungeonBoardLevelsBelow")
-        addSetting("dungeonBoardLevelsAbove")
-        entries[#entries + 1] = { frame = positionsSection, height = 16, gap = 10 }
-        entries[#entries + 1] = { frame = lfgAlertsResetRow, height = 32 }
-        entries[#entries + 1] = { frame = dungeonBoardResetRow, height = 32 }
     else
         entries[#entries + 1] = {
             frame = compatibilitySection, height = 16, gap = 9,
@@ -436,42 +387,6 @@ local function AddCheckbox(label, svKey, onChange)
         D.SetSavedFeature(svKey, checked, onChange)
         D.RequestConfigRefresh()
     end)
-end
-
-local function AddDungeonBoardFeedPreference()
-    local frame = CreateCheckboxRow(
-        form.content, "Show looking-for-group alerts", 0)
-    AddGeneralRow(frame, "dungeonBoardFeedEnabled")
-    frame.check:SetScript("OnClick", function(self)
-        if refreshing then return end
-        D.DungeonBoardSettings.SetFeedEnabled(self:GetChecked())
-        D.RequestConfigRefresh()
-    end)
-end
-
-local function AddDungeonBoardRolePreference()
-    local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
-    local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    label:SetPoint("LEFT", frame, "LEFT", 8, 0)
-    label:SetWidth(155)
-    label:SetJustifyH("LEFT")
-    label:SetText("Watch for groups needing")
-
-    local value = UIH.CreateDropdown(frame, 220, 22)
-    value:SetOptions({
-        { key = "healer", label = "Healer" },
-        { key = "tank", label = "Tank" },
-    })
-    value:SetPoint("RIGHT", frame, "RIGHT", -5, 0)
-    value:SetSelectionCallback(function(role)
-        if refreshing then return end
-        D.DungeonBoardSettings.SetRole(role)
-        D.RequestConfigRefresh()
-    end)
-
-    frame.value = value
-    frame.label = label
-    AddGeneralRow(frame, "dungeonBoardRole")
 end
 
 local function AddSelfBuffPreference()
@@ -526,86 +441,6 @@ local function AddLowHealthSoundPreference()
     AddGeneralRow(frame, "lowHealthSoundKey")
 end
 
-local function AddMentionSoundPreference()
-    local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
-    local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    label:SetPoint("LEFT", frame, "LEFT", 8, 0)
-    label:SetWidth(155)
-    label:SetJustifyH("LEFT")
-    label:SetText("Name mention sound")
-
-    local value = UIH.CreateDropdown(frame, 220, 22)
-    value:SetOptions(D.Sounds.GetOptions(true))
-    value:SetArrowShown(false)
-    value:SetPoint("RIGHT", frame, "RIGHT", -5, 0)
-    value:SetSelectionCallback(function(soundKey)
-        if refreshing then return end
-        D.MentionAlerts.SetSoundKey(soundKey)
-        D.MentionAlerts.PreviewSound()
-        D.RequestConfigRefresh()
-    end)
-
-    frame.value = value
-    AddGeneralRow(frame, "mentionSoundKey")
-end
-
-local function AddDungeonBoardSoundPreference()
-    local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
-    local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    label:SetPoint("LEFT", frame, "LEFT", 8, 0)
-    label:SetWidth(155)
-    label:SetJustifyH("LEFT")
-    label:SetText("Dungeon Board sound")
-
-    local value = UIH.CreateDropdown(frame, 220, 22)
-    value:SetOptions(D.Sounds.GetOptions(true))
-    value:SetArrowShown(false)
-    value:SetPoint("RIGHT", frame, "RIGHT", -5, 0)
-    value:SetSelectionCallback(function(soundKey)
-        if refreshing then return end
-        D.DungeonBoardSettings.SetSoundKey(soundKey)
-        D.DungeonBoardSettings.PreviewSound()
-        D.RequestConfigRefresh()
-    end)
-
-    frame.value = value
-    AddGeneralRow(frame, "dungeonBoardSoundKey")
-end
-
-local function AddDungeonBoardLevelOffsetPreference(svKey, labelText, kind)
-    local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
-    local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    label:SetPoint("LEFT", frame, "LEFT", 8, 0)
-    label:SetWidth(190)
-    label:SetJustifyH("LEFT")
-    label:SetText(labelText)
-
-    local increase = UIH.CreateButton(frame, "+1", 44, 22)
-    increase:SetPoint("RIGHT", frame, "RIGHT", -5, 0)
-    increase:SetScript("OnClick", function()
-        if refreshing then return end
-        D.DungeonBoardSettings.AdjustLevelOffset(kind, 1)
-        D.RequestConfigRefresh()
-    end)
-
-    local value = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    value:SetPoint("RIGHT", increase, "LEFT", -4, 0)
-    value:SetWidth(44)
-    value:SetJustifyH("CENTER")
-
-    local decrease = UIH.CreateButton(frame, "-1", 44, 22)
-    decrease:SetPoint("RIGHT", value, "LEFT", -4, 0)
-    decrease:SetScript("OnClick", function()
-        if refreshing then return end
-        D.DungeonBoardSettings.AdjustLevelOffset(kind, -1)
-        D.RequestConfigRefresh()
-    end)
-
-    frame.decrease = decrease
-    frame.value = value
-    frame.increase = increase
-    AddGeneralRow(frame, svKey)
-end
 
 local function AddLowHealthThresholdPreference()
     local frame = UIH.CreateFormRow(form.content, form.rowWidth, 32)
@@ -647,16 +482,15 @@ function G.Create(parent, deps)
     assert(type(deps) == "table", "CoreSettingsPages requires dependencies")
     for _, key in ipairs({
         "ApplyAllSecureBindings", "ActionHud", "ApplyDefaultConfigPosition",
-        "ApplyDefaultMinimapPosition", "ApplyDefaultPosition", "CombatUIFader",
+        "ApplyDefaultMinimapPosition", "ApplyDefaultPosition",
         "FactoryReset", "ForceRefresh", "GetSavedVariables",
         "GetSelfBuffPreferenceKey", "GetSelfBuffPreferenceOptions",
-        "HasKnownBuffReminder", "HealthAlerts", "MentionAlerts", "InitHotSpells", "IsHotEnabled",
+        "HasKnownBuffReminder", "HealthAlerts", "InitHotSpells", "IsHotEnabled",
         "IsHotTrackKnown", "IsPartyBuffKnown", "IsSavedFeatureEnabled",
         "IsSelfBuffKnown", "Print", "RequestConfigRefresh", "SetAddonEnabled",
         "SetHotTrackEnabled", "SetSavedFeature", "SetSelfBuffPreference", "Sounds",
-        "SyncVisualTicker", "Threat", "ConsumableBar", "DungeonBoardSettings",
-        "UIErrorSuppressor",
-        "CleanseWatch", "BuffThanks", "GroupHelperRuntime", "PartyFramePreview",
+        "SyncVisualTicker", "Threat", "ConsumableBar",
+        "CleanseWatch", "GroupHelperRuntime", "PartyFramePreview",
     }) do
         assert(deps[key] ~= nil, "CoreSettingsPages missing dependency: " .. key)
     end
@@ -675,8 +509,6 @@ function G.Create(parent, deps)
         form.content, form.rowWidth, "Dungeon leadership")
     alertsSection = UIH.CreateFormSection(form.content, form.rowWidth, "Alerts and reminders")
     lowHealthSection = UIH.CreateFormSection(form.content, form.rowWidth, "Low Health")
-    nameMentionsSection = UIH.CreateFormSection(form.content, form.rowWidth, "Name Mentions")
-    dungeonBoardSection = UIH.CreateFormSection(form.content, form.rowWidth, "Dungeon Board")
     displaySection = UIH.CreateFormSection(form.content, form.rowWidth, "Frame details")
     hudDisplaysSection = UIH.CreateFormSection(form.content, form.rowWidth, "HUD displays")
     hotSection = UIH.CreateFormSection(form.content, form.rowWidth, "Tracked heal-over-time effects")
@@ -689,14 +521,6 @@ function G.Create(parent, deps)
     if dangerSection.rule then dangerSection.rule:SetColorTexture(0.62, 0.16, 0.14, 0.85) end
 
     AddCheckbox("Show all 5 party frames while solo", "showAllSlots")
-    AddCheckbox("Fade selected Blizzard HUD elements in combat", "combatUIAutoHide", function()
-        local saved = D.GetSavedVariables()
-        D.CombatUIFader.ApplyEnabledState(saved and saved.combatUIAutoHide)
-    end)
-    AddCheckbox("Hide Blizzard UI error messages", "hideUIErrors", function()
-        local saved = D.GetSavedVariables()
-        D.UIErrorSuppressor.ApplyEnabledState(saved and saved.hideUIErrors)
-    end)
     AddCheckbox("Show brief action feedback text", "actionFeedbackEnabled", function()
         D.ActionHud.Clear()
     end)
@@ -709,23 +533,9 @@ function G.Create(parent, deps)
     end)
     AddLowHealthThresholdPreference()
     AddLowHealthSoundPreference()
-    AddCheckbox("Alert when chat mentions my character", "mentionAlertsEnabled")
-    AddMentionSoundPreference()
-    AddCheckbox("Highlight my character name in chat", "mentionHighlightEnabled")
     AddCheckbox("Show Cleanse Watch for removable party debuffs", "cleanseWatchEnabled", function()
         D.CleanseWatch.RefreshCapabilities()
     end)
-    AddCheckbox("Enable Thank You prompts for lasting buffs and player cleanses",
-        "buffThanksEnabled", function()
-            D.BuffThanks.Refresh()
-        end)
-    AddDungeonBoardRolePreference()
-    AddDungeonBoardFeedPreference()
-    AddDungeonBoardSoundPreference()
-    AddDungeonBoardLevelOffsetPreference(
-        "dungeonBoardLevelsBelow", "Levels below your character", "below")
-    AddDungeonBoardLevelOffsetPreference(
-        "dungeonBoardLevelsAbove", "Levels above your character", "above")
     AddCheckbox("Show missing party-buff reminders", "partyBuffEnabled")
     AddCheckbox("Show missing self-buff or aura reminder", "selfBuffEnabled")
     AddSelfBuffPreference()
@@ -802,38 +612,6 @@ function G.Create(parent, deps)
         D.CleanseWatch.Refresh()
     end)
 
-    buffThanksResetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
-    local buffThanksResetLabel = buffThanksResetRow:CreateFontString(
-        nil, "ARTWORK", "GameFontHighlightSmall")
-    buffThanksResetLabel:SetPoint("LEFT", buffThanksResetRow, "LEFT", 8, 0)
-    buffThanksResetLabel:SetText("Thank You prompts")
-    resetButtons.buffThanks = UIH.CreateButton(
-        buffThanksResetRow, "Reset Position", 126, 22)
-    resetButtons.buffThanks:SetPoint("RIGHT", buffThanksResetRow, "RIGHT", -5, 0)
-    resetButtons.buffThanks:SetScript("OnClick", function()
-        D.BuffThanks.ResetPosition()
-        D.BuffThanks.Refresh()
-    end)
-
-    lfgAlertsResetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
-    local lfgAlertsResetLabel = lfgAlertsResetRow:CreateFontString(
-        nil, "ARTWORK", "GameFontHighlightSmall")
-    lfgAlertsResetLabel:SetPoint("LEFT", lfgAlertsResetRow, "LEFT", 8, 0)
-    lfgAlertsResetLabel:SetText("LFG Alerts")
-    resetButtons.lfgAlerts = UIH.CreateButton(
-        lfgAlertsResetRow, "Reset Position", 126, 22)
-    resetButtons.lfgAlerts:SetPoint("RIGHT", lfgAlertsResetRow, "RIGHT", -5, 0)
-    resetButtons.lfgAlerts:SetScript("OnClick", D.DungeonBoardFeed.ResetPosition)
-
-    dungeonBoardResetRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
-    local dungeonBoardResetLabel = dungeonBoardResetRow:CreateFontString(
-        nil, "ARTWORK", "GameFontHighlightSmall")
-    dungeonBoardResetLabel:SetPoint("LEFT", dungeonBoardResetRow, "LEFT", 8, 0)
-    dungeonBoardResetLabel:SetText("Dungeon Board")
-    resetButtons.dungeonBoard = UIH.CreateButton(
-        dungeonBoardResetRow, "Reset Position", 126, 22)
-    resetButtons.dungeonBoard:SetPoint("RIGHT", dungeonBoardResetRow, "RIGHT", -5, 0)
-    resetButtons.dungeonBoard:SetScript("OnClick", D.DungeonBoardUI.ResetPosition)
 
     prepareDisableRow = UIH.CreateFormRow(form.content, form.rowWidth, 32)
     local prepareDisableLabel = prepareDisableRow:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
@@ -923,9 +701,6 @@ function G.GetResetButtons()
         bar = resetButtons.bar,
         settings = resetButtons.settings,
         minimap = resetButtons.minimap,
-        buffThanks = resetButtons.buffThanks,
-        lfgAlerts = resetButtons.lfgAlerts,
-        dungeonBoard = resetButtons.dungeonBoard,
         prepareDisable = resetButtons.prepareDisable,
         factory = resetButtons.factory,
     }

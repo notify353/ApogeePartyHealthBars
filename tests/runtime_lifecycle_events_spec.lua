@@ -56,14 +56,6 @@ ApogeePartyHealthBars_Threat = { Refresh = function() record("threat") end }
 ApogeePartyHealthBars_SecureFrames = {
     FlushDeferredUpdates = function() record("secure-flush") end,
 }
-ApogeePartyHealthBars_CombatUIFader = {
-    Initialize = function(enabled) record("fader-init:" .. tostring(enabled)) end,
-    OnCombatStart = function() record("fader-combat-start") end,
-    OnCombatEnd = function() record("fader-combat-end") end,
-}
-ApogeePartyHealthBars_UIErrorSuppressor = {
-    Initialize = function(enabled) record("ui-errors-init:" .. tostring(enabled)) end,
-}
 ApogeePartyHealthBars_BindingStore = {
     Initialize = function() record("binding-store") end,
 }
@@ -153,7 +145,7 @@ ApogeePartyHealthSV = { enabled = true, combatUIAutoHide = true, hideUIErrors = 
 ApogeePartyHealthCharSV = {}
 dispatch("PLAYER_LOGIN")
 expect({
-    "saved-variables", "binding-store", "fader-init:true", "ui-errors-init:true",
+    "saved-variables", "binding-store",
     "class-bindings", "shortcut-init",
     "wheel-init", "keys-init", "buttons-init", "consumable-init", "bindings-claim", "player-spells", "restore-position", "update-header",
     "minimap", "shield-seed", "force-refresh",
@@ -168,14 +160,14 @@ reset()
 ApogeePartyHealthBars_S.configMode = true
 dispatch("PLAYER_REGEN_DISABLED")
 expect({
-    "fader-combat-start", "raid-combat-start", "wheel-combat-start", "keys-combat-start", "buttons-combat-start",
+    "raid-combat-start", "wheel-combat-start", "keys-combat-start", "buttons-combat-start",
     "print:config closed - combat started.", "config-mode:false", "force-refresh",
 }, "combat-entry order changed")
 
 reset()
 dispatch("PLAYER_REGEN_ENABLED")
 expect({
-    "fader-combat-end", "raid-combat-end", "secure-flush", "shortcut-secure", "wheel-combat-end",
+    "raid-combat-end", "secure-flush", "shortcut-secure", "wheel-combat-end",
     "keys-combat-end", "buttons-combat-end", "consumable-combat-end",
     "bindings-reconcile", "threat", "force-refresh",
 }, "combat-exit order changed")

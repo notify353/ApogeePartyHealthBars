@@ -9,8 +9,6 @@ local E = ApogeePartyHealthBars_Effects
 
 local FEATURE_DEFAULTS = {
     enabled = true,
-    combatUIAutoHide = true,
-    hideUIErrors = true,
     showAllSlots = true,
     actionFeedbackEnabled = true,
     automaticConsumablesEnabled = true,
@@ -24,14 +22,6 @@ local FEATURE_DEFAULTS = {
     hotEnabled = true,
     lowHealthSoundKey = C.LOW_HEALTH_DEFAULT_SOUND,
     lowHealthThreshold = C.LOW_HEALTH_DEFAULT_THRESHOLD,
-    mentionAlertsEnabled = true,
-    mentionSoundKey = "toast",
-    mentionHighlightEnabled = true,
-    buffThanksEnabled = true,
-    buffThanksPoint = "TOP",
-    buffThanksRelPoint = "TOP",
-    buffThanksX = 0,
-    buffThanksY = -120,
     cleanseWatchEnabled = true,
     cleanseWatchPoint = "TOPRIGHT",
     cleanseWatchRelPoint = "TOPRIGHT",
@@ -48,19 +38,6 @@ local FEATURE_DEFAULTS = {
     targetEffectRemindersEnabled = true,
     targetEffectRefreshThreshold = 3,
     abilityCooldownsEnabled = true,
-    dungeonBoardRole = "healer",
-    dungeonBoardFeedEnabled = true,
-    dungeonBoardSoundKey = "none",
-    dungeonBoardLevelsBelow = 10,
-    dungeonBoardLevelsAbove = 3,
-    dungeonBoardFeedPoint = "CENTER",
-    dungeonBoardFeedRelPoint = "CENTER",
-    dungeonBoardFeedX = 0,
-    dungeonBoardFeedY = 0,
-    dungeonBoardPoint = "TOP",
-    dungeonBoardRelPoint = "TOP",
-    dungeonBoardX = 0,
-    dungeonBoardY = -20,
     dungeonGuideAutoMarkEnabled = true,
     dungeonGuidePoint = "CENTER",
     dungeonGuideRelPoint = "CENTER",
@@ -76,18 +53,6 @@ local function NormalizeDotThreshold(value, fallback)
     if not value or value ~= value then value = fallback end
     value = math.max(0, math.min(30, value))
     return math.floor(value + 0.5)
-end
-
-local function NormalizeDungeonBoardLevelOffset(value, fallback)
-    value = tonumber(value)
-    if not value or value ~= value then value = fallback end
-    value = math.max(0, math.min(60, value))
-    return math.floor(value + 0.5)
-end
-
-local function NormalizeDungeonBoardRole(value)
-    if value == "tank" then return "tank" end
-    return "healer"
 end
 
 local function NormalizeDungeonGuideDimension(value, fallback, minimum, maximum)
@@ -129,7 +94,22 @@ function E.InitializeSavedVariables(saved, characterSaved)
     local version = tonumber(saved.schemaVersion) or 0
     MigrateRenamedFields(saved, RENAMED_SETTINGS_FIELDS)
     MigrateRenamedFields(characterSaved, RENAMED_ACTION_FIELDS)
+    -- Retired group-finding preferences must not survive profile normalization.
     for _, key in ipairs({
+        "dungeonBoardRole",
+        "dungeonBoardMode",
+        "dungeonBoardFeedEnabled",
+        "dungeonBoardSoundKey",
+        "dungeonBoardLevelsBelow",
+        "dungeonBoardLevelsAbove",
+        "dungeonBoardFeedPoint",
+        "dungeonBoardFeedRelPoint",
+        "dungeonBoardFeedX",
+        "dungeonBoardFeedY",
+        "dungeonBoardPoint",
+        "dungeonBoardRelPoint",
+        "dungeonBoardX",
+        "dungeonBoardY",
         "targetHudPoint", "targetHudRelPoint", "targetHudX", "targetHudY",
         "targetEffectHudPoint", "targetEffectHudRelPoint", "targetEffectHudX", "targetEffectHudY",
         "dotHudPoint", "dotHudRelPoint", "dotHudX", "dotHudY",
@@ -165,12 +145,6 @@ function E.InitializeSavedVariables(saved, characterSaved)
     saved.spellTrackerEnabled = nil
     saved.spellTrackerSoundsEnabled = nil
     saved.dungeonGuideCoachEnabled = nil
-    local dungeonBoardRole = saved.dungeonBoardRole
-    if dungeonBoardRole ~= "tank" and dungeonBoardRole ~= "healer" then
-        dungeonBoardRole = saved.dungeonBoardMode
-    end
-    saved.dungeonBoardRole = NormalizeDungeonBoardRole(dungeonBoardRole)
-    saved.dungeonBoardMode = nil
     saved.threatAwarenessMode = NormalizeThreatAwarenessMode(saved.threatAwarenessMode)
     saved.dungeonGuideWidth = NormalizeDungeonGuideDimension(
         saved.dungeonGuideWidth, FEATURE_DEFAULTS.dungeonGuideWidth, 720, 3840)
@@ -195,10 +169,6 @@ function E.InitializeSavedVariables(saved, characterSaved)
     if type(saved.abilityCooldownOverrides) ~= "table" then saved.abilityCooldownOverrides = {} end
     if type(saved.abilityCooldownPriority) ~= "table" then saved.abilityCooldownPriority = {} end
     saved.targetEffectRefreshThreshold = NormalizeDotThreshold(saved.targetEffectRefreshThreshold, 3)
-    saved.dungeonBoardLevelsBelow = NormalizeDungeonBoardLevelOffset(
-        saved.dungeonBoardLevelsBelow, 10)
-    saved.dungeonBoardLevelsAbove = NormalizeDungeonBoardLevelOffset(
-        saved.dungeonBoardLevelsAbove, 3)
     for key, value in pairs(saved.targetEffectDisabled) do
         if type(key) ~= "string" or value ~= true then saved.targetEffectDisabled[key] = nil end
     end

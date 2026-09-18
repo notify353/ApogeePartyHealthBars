@@ -16,7 +16,6 @@ Reminders/CleanseData.lua
 Reminders/GroupHelperData.lua
 Reminders/GroupHelperPolicy.lua
 Reminders/GroupHelperSettings.lua
-DungeonBoard/DungeonBoardCatalog.lua
 DungeonGuide/DungeonGuideCatalog.lua
 DungeonGuide/ScarletMonasteryGuide.lua
 DungeonGuide/GnomereganGuide.lua
@@ -27,12 +26,6 @@ DungeonGuide/UldamanGuide.lua
 DungeonGuide/ZulFarrakGuide.lua
 DungeonGuide/MaraudonGuide.lua
 DungeonGuide/DungeonGuidePolicy.lua
-DungeonBoard/DungeonBoardActivityData.lua
-DungeonBoard/DungeonBoardClassifier.lua
-DungeonBoard/DungeonBoardEligibility.lua
-DungeonBoard/DungeonBoardRuntime.lua
-DungeonBoard/DungeonBoardGroupFinder.lua
-DungeonBoard/DungeonBoardActions.lua
 Core/PlayerContext.lua
 PartyFrames/CrowdControl.lua
 Actions/MouseWheel/MouseWheelData.lua
@@ -41,18 +34,12 @@ Actions/MouseButtons/MouseButtonData.lua
 Core/UnitTopology.lua
 Core/UnitAPI.lua
 Core/UIHelpers.lua
-Core/UIErrorSuppressor.lua
 Settings/SettingsSurfaces.lua
 PartyFrames/AccessoryLayout.lua
 Core/EventRouter.lua
 PartyFrames/SecureFrames.lua
 Core/Sounds.lua
-Reminders/MentionAlerts.lua
-Reminders/BuffThanks.lua
-DungeonBoard/DungeonBoardSettings.lua
 DungeonGuide/DungeonGuideSettings.lua
-DungeonBoard/DungeonBoardFeed.lua
-DungeonBoard/DungeonBoardUI.lua
 DungeonGuide/DungeonGuideUI.lua
 Actions/ActionCooldowns.lua
 Actions/ActionAssignmentSources.lua
@@ -78,7 +65,6 @@ Actions/MouseButtons/MouseButtonLayouts.lua
 Actions/MouseWheel/MouseWheelActions.lua
 Actions/Keyboard/KeyboardActions.lua
 Actions/MouseButtons/MouseButtonActions.lua
-PartyFrames/CombatUIFader.lua
 Core/Effects.lua
 Profiles/ProfileCodec.lua
 Profiles/ProfileStore.lua
@@ -123,9 +109,7 @@ Runtime/LifecycleEvents.lua
 Runtime/UnitEvents.lua
 Runtime/ActionEvents.lua
 Runtime/ActionAssignmentEvents.lua
-Runtime/DungeonBoardEvents.lua
 Runtime/CleanseEvents.lua
-Runtime/BuffThanksEvents.lua
 Runtime/GroupHelperEvents.lua
 Runtime/RuntimeEvents.lua
 Bootstrap/ActionComposition.lua

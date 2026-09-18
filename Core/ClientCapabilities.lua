@@ -201,19 +201,6 @@ local CAPABILITIES = {
                 and Enum.Base64Variant.StandardUrlSafe ~= nil
         end,
     },
-    groupFinderListings = {
-        reason = "Official Group Finder listings are unavailable on this client.",
-        detect = function()
-            return C_LFGList
-                and isFunction(C_LFGList.Search)
-                and isFunction(C_LFGList.GetSearchResults)
-                and isFunction(C_LFGList.GetSearchResultInfo)
-                and isFunction(C_LFGList.GetSearchResultMemberCounts)
-                and isFunction(C_LFGList.GetActivityInfoTable)
-                and C_LFGInfo
-                and isFunction(C_LFGInfo.CanPlayerUsePremadeGroup)
-        end,
-    },
 }
 
 local FEATURES = {
@@ -231,17 +218,7 @@ local FEATURES = {
     multiSpecLayouts = { label = "Per-specialization layouts", requires = { "specialization" } },
     formLayouts = { label = "Form and stance layouts", requires = { "forms" } },
     combatLogTracking = { label = "Combat-log tracking", requires = { "combatLog" } },
-    buffThanks = {
-        label = "Thank You prompts",
-        requires = {
-            "auras", "combatLog", "combatLogSourceIdentity", "directedEmotes",
-        },
-    },
     profileSharing = { label = "Profile import and export", requires = { "profileSharing" } },
-    dungeonBoardOfficialListings = {
-        label = "Dungeon Board official listings",
-        requires = { "groupFinderListings" },
-    },
     targetEffectReminders = {
         label = "Target Effects reminders",
         requires = { "harmfulAuras", "spellbook", "dotActionState" },

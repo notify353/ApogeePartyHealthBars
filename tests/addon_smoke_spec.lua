@@ -490,13 +490,20 @@ assert(type(ApogeePartyHealthBars_ShieldTracker.GetRemaining) == "function"
 assert(ApogeePartyHealthBars_EffectsTracker == nil,
     "retired EffectsTracker runtime was still loaded")
 
+for _, name in ipairs({ "CombatUIFader", "UIErrorSuppressor", "MentionAlerts",
+    "BuffThanks", "BuffThanksEvents", "EssentialsOwnership" }) do
+    assert(_G["ApogeePartyHealthBars_" .. name] == nil,
+        "retired Essentials runtime or handshake loaded: " .. name)
+end
 local router = ApogeePartyHealthBars_EventRouter
 
 router.Dispatch("PLAYER_LOGIN")
+for _, key in ipairs({ "combatUIAutoHide", "hideUIErrors", "mentionAlertsEnabled",
+    "mentionSoundKey", "mentionHighlightEnabled", "buffThanksEnabled" }) do
+    assert(ApogeePartyHealthBars_S.sv[key] == nil, "retired feature still seeded: " .. key)
+end
 
 
-assert(ApogeePartyHealthBars_UIErrorSuppressor.IsEnabled(),
-    "PLAYER_LOGIN did not initialize default-on Blizzard UI error suppression")
 local automaticConsumables = ApogeePartyHealthBars_ConsumableBar.GetEntries()
 local automaticConsumableIcons = ApogeePartyHealthBars_ConsumableBar.GetIcons()
 assert(#automaticConsumables == 2
@@ -1206,19 +1213,6 @@ ApogeePartyHealthBars_SettingsController.SetMode(true)
 ApogeePartyHealthBars_SettingsUI.ActivatePage("macros")
 assert(ApogeePartyHealthBars_S.activeSettingsPageKey == "frames",
     "retired Macro Library page key did not fall back to Frames")
-ApogeePartyHealthBars_S.sv.buffThanksEnabled = false
-local buffThanksPreviewRow = ApogeePartyHealthBars_BuffThanks.GetRows()[1]
-assert(ApogeePartyHealthBars_BuffThanks.GetFrame().width == 326
-        and buffThanksPreviewRow.gestureButtons[1].width == 20
-        and #buffThanksPreviewRow.gestureButtons == 1
-        and buffThanksPreviewRow.gestureButtons[1].icon.texture
-            == "Interface\\AddOns\\ApogeePartyHealthBars\\Media\\Textures\\ApogeePartyHealthBarsLogo.png"
-        and buffThanksPreviewRow.gestureButtons[1].background == nil
-        and buffThanksPreviewRow.rail ~= nil
-        and buffThanksPreviewRow.summary ~= nil
-        and buffThanksPreviewRow.dismiss == nil
-        and buffThanksPreviewRow.background ~= nil,
-    "Buff Thanks did not use the shaded Threat Awareness HUD treatment")
 local groupHelperPresentation = ApogeePartyHealthBars.Require(
     "Runtime", "GroupHelperPresentation")
 local partyFramePreview = ApogeePartyHealthBars.Require("Runtime", "PartyFramePreview")
@@ -1231,25 +1225,9 @@ for _, key in ipairs({
     ApogeePartyHealthBars_SettingsUI.ActivatePage(key)
     assert(ApogeePartyHealthBars_S.activeSettingsPageKey == key, "could not activate settings page: " .. key)
     assert(ApogeePartyHealthBars_CleanseWatch.IsUnlocked()
-            and ApogeePartyHealthBars_BuffThanks.IsUnlocked()
             and ApogeePartyHealthBars_DungeonBoardFeed.IsUnlocked()
             and partyFramePreview.IsActive(),
         "settings page hid a configuration preview: " .. key)
-    local buffThanksSurface = ApogeePartyHealthBars_SettingsSurfaces.Get("buffThanks")
-    assert(buffThanksSurface.previewDock == nil and buffThanksSurface.automaticChrome == false,
-        "Buff Thanks preview retained LFG-style docking or configuration chrome: " .. key)
-    if key == "buffsCleanse" then
-        local previewRows = ApogeePartyHealthBars_BuffThanks.GetRows()
-        assert(previewRows[1]:IsShown() and previewRows[2]:IsShown()
-                and previewRows[3]:IsShown()
-                and previewRows[2].rail.color[1] == RAID_CLASS_COLORS.DRUID.r
-                and previewRows[2].rail.color[2] == RAID_CLASS_COLORS.DRUID.g
-                and previewRows[2].rail.color[3] == RAID_CLASS_COLORS.DRUID.b
-                and previewRows[2].summary:GetText():find(
-                    "Cleansed: Crippling Poison", 1, true),
-            "Thank You settings demo did not show multiple helpers and a cleanse")
-    end
-
     if key == "threatControl" then
 
 
@@ -1477,8 +1455,6 @@ assert(ApogeePartyHealthBars_SettingsUI.pageDropdown.width == 240
         and ApogeePartyHealthBars_SettingsUI.pageSummary.width
             == ApogeePartyHealthBars_C.CONFIG_CONTENT_W,
     "settings page selector and summary did not use the two-row header geometry")
-ApogeePartyHealthBars_S.sv.buffThanksEnabled = true
-ApogeePartyHealthBars_BuffThanks.Refresh()
 ApogeePartyHealthBars_SettingsUI.ActivatePage("profiles")
 ApogeePartyHealthBars_SettingsUI.RefreshPage("profiles")
 assert(ApogeePartyHealthBars_ProfilesSettingsPage.GetProfileDropdown().selectedKey
@@ -1519,7 +1495,6 @@ ApogeePartyHealthBars_SettingsController.SetMode(false)
 RunFrameUpdates()
 
 assert(type(ApogeePartyHealthBars_S.sv) == "table", "saved variables did not initialize")
-assert(ApogeePartyHealthBars_S.sv.combatUIAutoHide == true, "combat UI fade should default on")
 assert(ApogeePartyHealthBars_S.sv.showAllSlots == true, "all solo slots should default visible")
 assert(ApogeePartyHealthBars_S.sv.actionFeedbackEnabled == true, "action feedback should default on")
 assert(ApogeePartyHealthBars_S.sv.clickableBuffIcons == true, "clickable buff icons should default on")

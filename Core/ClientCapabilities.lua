@@ -231,12 +231,6 @@ local FEATURES = {
     multiSpecLayouts = { label = "Per-specialization layouts", requires = { "specialization" } },
     formLayouts = { label = "Form and stance layouts", requires = { "forms" } },
     combatLogTracking = { label = "Combat-log tracking", requires = { "combatLog" } },
-    buffThanks = {
-        label = "Thank You prompts",
-        requires = {
-            "auras", "combatLog", "combatLogSourceIdentity", "directedEmotes",
-        },
-    },
     profileSharing = { label = "Profile import and export", requires = { "profileSharing" } },
     dungeonBoardOfficialListings = {
         label = "Dungeon Board official listings",

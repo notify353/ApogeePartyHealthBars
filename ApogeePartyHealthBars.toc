@@ -41,14 +41,11 @@ Actions/MouseButtons/MouseButtonData.lua
 Core/UnitTopology.lua
 Core/UnitAPI.lua
 Core/UIHelpers.lua
-Core/UIErrorSuppressor.lua
 Settings/SettingsSurfaces.lua
 PartyFrames/AccessoryLayout.lua
 Core/EventRouter.lua
 PartyFrames/SecureFrames.lua
 Core/Sounds.lua
-Reminders/MentionAlerts.lua
-Reminders/BuffThanks.lua
 DungeonBoard/DungeonBoardSettings.lua
 DungeonGuide/DungeonGuideSettings.lua
 DungeonBoard/DungeonBoardFeed.lua
@@ -78,7 +75,6 @@ Actions/MouseButtons/MouseButtonLayouts.lua
 Actions/MouseWheel/MouseWheelActions.lua
 Actions/Keyboard/KeyboardActions.lua
 Actions/MouseButtons/MouseButtonActions.lua
-PartyFrames/CombatUIFader.lua
 Core/Effects.lua
 Profiles/ProfileCodec.lua
 Profiles/ProfileStore.lua
@@ -125,7 +121,6 @@ Runtime/ActionEvents.lua
 Runtime/ActionAssignmentEvents.lua
 Runtime/DungeonBoardEvents.lua
 Runtime/CleanseEvents.lua
-Runtime/BuffThanksEvents.lua
 Runtime/GroupHelperEvents.lua
 Runtime/RuntimeEvents.lua
 Bootstrap/ActionComposition.lua

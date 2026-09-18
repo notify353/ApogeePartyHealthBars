@@ -150,12 +150,6 @@ local deps = {
     ApplyDefaultConfigPosition = function() calls.settingsReset = calls.settingsReset + 1 end,
     ApplyDefaultMinimapPosition = function() calls.minimapReset = calls.minimapReset + 1 end,
     ApplyDefaultPosition = function() calls.barReset = calls.barReset + 1 end,
-    CombatUIFader = {
-        ApplyEnabledState = function(enabled) calls.fadeState = enabled end,
-    },
-    UIErrorSuppressor = {
-        ApplyEnabledState = function(enabled) calls.uiErrorsState = enabled end,
-    },
     ConsumableBar = {
         SetEnabled = function(enabled) calls.consumablesEnabled = enabled == true end,
     },
@@ -171,16 +165,6 @@ local deps = {
         PreviewSound = function() calls.soundPreview = calls.soundPreview + 1 end,
         GetThreshold = function() return threshold end,
         AdjustThreshold = function(direction) calls.thresholdDirection = direction end,
-    },
-    MentionAlerts = {
-        GetSoundKey = function() return saved.mentionSoundKey end,
-        SetSoundKey = function(key)
-            saved.mentionSoundKey = key
-            calls.mentionSoundKey = key
-        end,
-        PreviewSound = function()
-            calls.mentionSoundPreview = calls.mentionSoundPreview + 1
-        end,
     },
     DungeonBoardSettings = {
         GetRole = function() return saved.dungeonBoardRole or "healer" end,
@@ -282,10 +266,6 @@ local deps = {
         ResetPosition = function() calls.cleanseReset = (calls.cleanseReset or 0) + 1 end,
         Refresh = function() calls.cleansePanel = (calls.cleansePanel or 0) + 1 end,
     },
-    BuffThanks = {
-        Refresh = function() calls.buffThanksRefresh = (calls.buffThanksRefresh or 0) + 1 end,
-        ResetPosition = function() calls.buffThanksReset = (calls.buffThanksReset or 0) + 1 end,
-    },
     ClientCapabilities = clientCapabilities,
 }
 
@@ -306,8 +286,6 @@ assert(config.GetPage() == "frames"
     "Frames did not use the shared focused-page hierarchy")
 
 assert(config.GetRow("showAllSlots").check:GetChecked() == false
-        and config.GetRow("combatUIAutoHide").check:GetChecked() == true
-        and config.GetRow("hideUIErrors").check:GetChecked() == true
         and config.GetRow("groupHelperEnabled").check:GetChecked() == true
         and config.GetRow("showUnitTargets").label:GetText()
             == "Show each party member's target"
@@ -319,28 +297,25 @@ assert(config.GetRow("threatAwarenessEnabled") == nil
     "core settings retained controls owned by the consolidated Threat Control page")
 assert(config.GetRow("enabled") == nil,
     "General still exposed the redundant add-on enable checkbox")
+for _, key in ipairs({ "combatUIAutoHide", "hideUIErrors", "mentionAlertsEnabled",
+    "mentionSoundKey", "mentionHighlightEnabled", "buffThanksEnabled" }) do
+    assert(config.GetRow(key) == nil, "retired Essentials control remains: " .. key)
+end
+assert(config.GetResetButtons().buffThanks == nil, "retired Thanks reset remains")
 config.SetPage("buffsCleanse")
-local buffThanksResetRow = config.GetForm().entries[#config.GetForm().entries].frame
 assert(config.GetRow("partyBuffEnabled"):IsShown()
-        and config.GetRow("buffThanksEnabled"):IsShown()
-        and config.GetRow("buffThanksEnabled").check:GetChecked()
-        and config.GetRow("buffThanksEnabled").label:GetText()
-            == "Enable Thank You prompts for lasting buffs and player cleanses"
         and not config.GetRow("selfBuffEnabled"):IsShown()
         and config.GetRow("clickableBuffIcons"):IsShown(),
     "known-spell visibility policy changed")
 assert(config.GetRow("selfBuffPreference"):IsShown()
         and config.GetRow("selfBuffPreference").value.label:GetText():find("Inner Fire", 1, true),
     "self-buff preference did not display the active family")
+local cleansePositionRow = config.GetForm().entries[#config.GetForm().entries].frame
 config.SetPage("healthChat")
+assert(not cleansePositionRow:IsShown(), "Cleanse reset leaked onto Low Health page")
 assert(config.GetRow("lowHealthSoundKey").value.selectedKey == "alarm_soft"
-        and config.GetRow("lowHealthThreshold").value:GetText() == "50%"
-        and config.GetRow("mentionAlertsEnabled").check:GetChecked()
-        and config.GetRow("mentionSoundKey").value.selectedKey == "toast"
-        and config.GetRow("mentionHighlightEnabled").check:GetChecked(),
+        and config.GetRow("lowHealthThreshold").value:GetText() == "50%",
     "health and chat preferences did not refresh")
-assert(not buffThanksResetRow:IsShown(),
-    "Thank You reset row remained visible after leaving Buffs & Cleansing")
 config.SetPage("dungeon")
 assert(config.GetRow("dungeonBoardRole").value.selectedKey == "healer"
         and config.GetRow("dungeonBoardFeedEnabled").check:GetChecked()
@@ -358,19 +333,6 @@ local function Click(control, mouseButton)
     assert(control.scripts.OnClick, "missing click handler")
     control.scripts.OnClick(control, mouseButton or "LeftButton")
 end
-
-local buffThanksCheck = config.GetRow("buffThanksEnabled").check
-buffThanksCheck:SetChecked(false)
-Click(buffThanksCheck)
-assert(saved.buffThanksEnabled == false
-        and calls.savedKey == "buffThanksEnabled"
-        and calls.savedEnabled == false
-        and calls.buffThanksRefresh == 1,
-    "Buff Thanks enable checkbox did not disable and refresh the feature")
-
-Click(config.GetResetButtons().buffThanks)
-assert(calls.buffThanksReset == 1 and calls.buffThanksRefresh == 2,
-    "Buff Thanks position reset did not reset and refresh the panel")
 
 local showAll = config.GetRow("showAllSlots").check
 local refreshBeforeShowAll = calls.refresh
@@ -413,18 +375,6 @@ Click(dungeonFeed)
 assert(saved.dungeonBoardFeedEnabled == false
         and calls.dungeonFeedEnabled == false,
     "LFG Alerts checkbox did not persist its immediate state")
-
-local combatFade = config.GetRow("combatUIAutoHide").check
-combatFade:SetChecked(false)
-Click(combatFade)
-assert(calls.fadeState == false,
-    "combat UI setting did not apply its immediate side effect")
-
-local hideUIErrors = config.GetRow("hideUIErrors").check
-hideUIErrors:SetChecked(false)
-Click(hideUIErrors)
-assert(saved.hideUIErrors == false and calls.uiErrorsState == false,
-    "UI error setting did not persist and immediately restore Blizzard errors")
 
 local actionFeedback = config.GetRow("actionFeedbackEnabled").check
 assert(config.GetRow("actionFeedbackEnabled"):IsShown()
@@ -480,9 +430,6 @@ assert(calls.hotTrack == 1 and calls.hotTrackKey == "renew" and calls.hotTrackEn
 config.GetRow("lowHealthSoundKey").value.onSelect("alarm_high")
 assert(calls.soundKey == "alarm_high" and calls.soundPreview == 1,
     "low-health sound selection did not persist and preview")
-config.GetRow("mentionSoundKey").value.onSelect("glass")
-assert(calls.mentionSoundKey == "glass" and calls.mentionSoundPreview == 1,
-    "mention sound selection did not persist and preview")
 config.GetRow("dungeonBoardSoundKey").value.onSelect("alarm_soft")
 assert(calls.dungeonSoundKey == "alarm_soft" and calls.dungeonSoundPreview == 1,
     "Dungeon Board sound selection did not persist and preview")

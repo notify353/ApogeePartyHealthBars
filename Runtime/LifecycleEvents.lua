@@ -8,8 +8,6 @@ local CB = ApogeePartyHealthBars_ConsumableBar
 local M = ApogeePartyHealthBars_RaidMarkers
 local H = ApogeePartyHealthBars_Threat
 local F = ApogeePartyHealthBars_SecureFrames
-local U = ApogeePartyHealthBars_CombatUIFader
-local UIErrorSuppressor = ApogeePartyHealthBars_UIErrorSuppressor
 local ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities
 
 ApogeePartyHealthBars_LifecycleEvents = {}
@@ -68,12 +66,7 @@ function L.Register(eventRouter, deps)
                 end)
                 if not storageReady then error(storageError, 0) end
 
-                RunStep("Combat UI fading", function()
-                    U.Initialize(S.sv and S.sv.combatUIAutoHide)
-                end)
-                RunStep("UI error suppression", function()
-                    UIErrorSuppressor.Initialize(S.sv and S.sv.hideUIErrors)
-                end)
+
                 RunStep("Party Frame Clicks", S.InitializeClassDefaultBindings)
                 RunStep("Shortcuts", T.Initialize)
                 RunStep("Mouse Wheel", W.InitializeSaved)
@@ -115,7 +108,6 @@ function L.Register(eventRouter, deps)
                 end
 
             elseif event == "PLAYER_REGEN_DISABLED" then
-                RunStep("Combat UI fading", U.OnCombatStart)
                 RunStep("Automatic raid marking", M.OnCombatStarted)
                 RunStep("Mouse Wheel", W.OnCombatStarted)
                 RunStep("Keyboard", K.OnCombatStarted)
@@ -127,7 +119,6 @@ function L.Register(eventRouter, deps)
                 RunStep("Combat refresh", deps.ForceRefresh)
 
             elseif event == "PLAYER_REGEN_ENABLED" then
-                RunStep("Combat UI fading", U.OnCombatEnd)
                 RunStep("Automatic raid marking", M.OnCombatEnded)
                 RunStep("Secure frames", F.FlushDeferredUpdates)
                 RunStep("Shortcuts", T.RefreshSecureActions)

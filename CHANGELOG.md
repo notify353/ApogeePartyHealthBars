@@ -6,6 +6,10 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Repair startup after missing runtime folders by recovering required modules
+  and completing the Essentials feature-removal wiring without restoring retired features.
+- Remove combat UI fading, gameplay-error suppression, name-mention alerts/highlighting, and Thank You prompts and their settings. Use Apogee Essentials for these conveniences; APHB no longer restores them when Essentials is absent. Rename Health & Chat to Low Health. Existing profile data is retained for round trips, but retired settings have no runtime effect.
+
 - Remove the multi-enemy Threat Control HUD, maintained-effect and ability-cooldown lanes, and their settings page. Use Apogee Tank for these features; party-frame threat and automatic marking remain.
 
 ## [0.51.0] - 2026-09-13

@@ -427,14 +427,6 @@ M.Initialize({
     Now = function() return GetTime and GetTime() or 0 end,
 })
 
-local mentionAlerts = ApogeePartyHealthBars_MentionAlerts
-mentionAlerts.Initialize({
-    GetSavedVariables = function() return S.sv end,
-    GetPlayerName = function() return UnitName and UnitName("player") end,
-    GetPlayerGUID = function() return UnitGUID and UnitGUID("player") end,
-    Sounds = ApogeePartyHealthBars_Sounds,
-})
-
 local dungeonBoardGroupFinder = ApogeePartyHealthBars_DungeonBoardGroupFinder
 dungeonBoardGroupFinder.Initialize({
     Runtime = ApogeePartyHealthBars_DungeonBoardRuntime,
@@ -493,15 +485,6 @@ cleanseWatch.Initialize({
     Now = function() return GetTime() end,
 })
 cleanseWatch.Build()
-
-local buffThanks = ApogeePartyHealthBars_BuffThanks
-buffThanks.Initialize({
-    Auras = A,
-    ClientCapabilities = ApogeePartyHealthBars_ClientCapabilities,
-    SettingsSurfaces = configSurfaces,
-    Now = function() return GetTime and GetTime() or 0 end,
-})
-buffThanks.Build()
 
 groupHelperSettings.Initialize({
     GetSavedVariables = function() return S.sv end,
@@ -845,7 +828,6 @@ local settingsRuntime = ApogeePartyHealthBars.Require(
     ProfileStore = ApogeePartyHealthBars_ProfileStore,
     DungeonBoardFeed = dungeonBoardFeed,
     CleanseWatch = cleanseWatch,
-    BuffThanks = buffThanks,
     PartyFramePreview = partyFramePreview,
     GroupHelperPresentation = groupHelperPresentation,
     GroupHelperRuntime = groupHelperRuntime,
@@ -885,7 +867,6 @@ local settingsRuntime = ApogeePartyHealthBars.Require(
     ClientCapabilities       = ApogeePartyHealthBars_ClientCapabilities,
     DungeonBoardFeed         = dungeonBoardFeed,
     CleanseWatch             = cleanseWatch,
-    BuffThanks               = buffThanks,
     GroupHelperSettings      = groupHelperSettings,
     GroupHelperRuntime       = groupHelperRuntime,
     PartyFramePreview        = partyFramePreview,
@@ -919,17 +900,13 @@ local settingsRuntime = ApogeePartyHealthBars.Require(
         GetSavedVariables           = function() return S.sv end,
         Sounds                      = ApogeePartyHealthBars_Sounds,
         HealthAlerts                = ApogeePartyHealthBars_HealthAlerts,
-        MentionAlerts               = mentionAlerts,
         DungeonBoardSettings        = dungeonBoardSettings,
         DungeonBoardFeed            = dungeonBoardFeed,
         DungeonBoardUI              = dungeonBoardUI,
         CleanseWatch                 = cleanseWatch,
-        BuffThanks                   = buffThanks,
         GroupHelperRuntime           = groupHelperRuntime,
         PartyFramePreview            = partyFramePreview,
         Threat                      = H,
-        CombatUIFader               = ApogeePartyHealthBars_CombatUIFader,
-        UIErrorSuppressor           = ApogeePartyHealthBars_UIErrorSuppressor,
         SyncVisualTicker            = SyncVisualTicker,
         ClientCapabilities          = ApogeePartyHealthBars_ClientCapabilities,
         },

@@ -44,7 +44,7 @@ jobs:
         run: ./scripts/test-lua.ps1
 
       - name: Build package without publishing
-        uses: BigWigsMods/packager@6d50adb6e8517eefef63f4afb16a6518166a6b28 # v2.5.1
+        uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
         with:
           args: -d -n "{package-name}-{project-version}"
 
@@ -58,7 +58,7 @@ jobs:
           "zip=$($zip.FullName)" >> $env:GITHUB_OUTPUT
 
       - name: Publish the validated package
-        uses: BigWigsMods/packager@6d50adb6e8517eefef63f4afb16a6518166a6b28 # v2.5.1
+        uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
         with:
           args: -n "{package-name}-{project-version}"
         env:

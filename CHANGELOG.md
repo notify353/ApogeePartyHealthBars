@@ -6,6 +6,9 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Name the in-game distribution groups Apogee Forever and Apogee Dev while
+  preserving addon identities, settings and internal family safety modes.
+
 - Remove all legacy APHB gameplay source, assets, feature tests and obsolete skills
   from the active distribution branch; preserve history and verified archive.
 - Replace legacy validation with Forever distribution checks and fail-closed release

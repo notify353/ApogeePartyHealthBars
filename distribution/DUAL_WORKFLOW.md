@@ -65,9 +65,9 @@ inside the backup. It deletes nothing. This is recovery, not the normal mode swi
 
 ## Switch in WoW
 
-For the current character, right-click **Apogee PROD (distribution only)** in
-AddOns and select **Disable Group**, then right-click **Apogee DEV (distribution
-only)** and select **Enable Group**. Reverse those choices for production.
+For the current character, right-click **Apogee Forever** in AddOns and select
+**Disable Group**, then right-click **Apogee Dev** and select **Enable Group**.
+Reverse those choices for production.
 Apply changes and reload the UI. Do not switch by manually calling LoadAddOn,
 especially in combat. Merely toggling the marker checkbox does not toggle children.
 

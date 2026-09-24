@@ -51,7 +51,9 @@ class DualTests(unittest.TestCase):
             for name in names:
                 meta, runtime = d.toc_info(files[name + '/' + name + '.toc'])
                 self.assertEqual(meta['Group'], names[0])
+                self.assertEqual(meta['Category'], 'Apogee Forever' if family == 'PROD' else 'Apogee Dev')
                 if name.startswith(d.MARKER):
+                    self.assertEqual(meta['Title'], 'Apogee Forever' if family == 'PROD' else 'Apogee Dev')
                     self.assertEqual(runtime, []); continue
                 self.assertEqual(runtime[0], dual.GATE_PATH)
                 self.assertEqual(len(runtime), len(set(runtime)))

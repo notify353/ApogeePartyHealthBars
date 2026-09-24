@@ -14,7 +14,8 @@ One immutable source pin per child produces two deterministic packages:
 | DEV | Names ending in Dev, visible DEV labels | Separate stores, no import | Local development |
 
 Both coexist in the same Forever installation. Right-click the appropriate group
-in WoW's AddOns list to enable/disable the family, then reload. A marker checkbox
+in WoW's AddOns list (**Apogee Forever** or **Apogee Dev**) to enable/disable the
+family, then reload. A marker checkbox
 alone does not toggle children. PROD wins mixed selections. Missing/malformed
 safety data fails closed. Each package has six roots: marker plus five children.
 

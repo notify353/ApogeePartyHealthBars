@@ -13,6 +13,7 @@ import distribution as d
 LOCK = d.ROOT / 'distribution/candidate.lock.json'
 GATE = d.ROOT / 'distribution/FamilyGate.lua'
 GATE_PATH = '__Distribution/FamilyGate.lua'
+FAMILY_TITLES = {'PROD': 'Apogee Forever', 'DEV': 'Apogee Dev'}
 LABELS = {'ApogeeHeals': 'Apogee Heals', 'ApogeeKeybinds': 'Apogee Keybinds',
           'ApogeeGroupAlert': 'Apogee Group Alert', 'ApogeeEssentials': 'Apogee Essentials',
           'ApogeeTank': 'Apogee Tank'}
@@ -114,7 +115,7 @@ def family_files(lock, sources_root, family):
         meta, runtime = d.toc_info(source[old + '/' + child['toc']])
         d.require(all(p.endswith('.lua') for p in runtime), 'Only audited direct Lua TOCs supported')
         meta.update({'Title': LABELS[old] + (' DEV' if family == 'DEV' else ''),
-                     'Group': marker, 'Category': 'Apogee ' + family,
+                     'Group': marker, 'Category': FAMILY_TITLES[family],
                      'X-Apogee-Family': family, 'X-Apogee-Family-Schema': '1'})
         if family == 'DEV':
             meta = {k: v for k, v in meta.items() if not k.startswith(('X-Curse', 'X-Wago', 'X-WoWI'))}
@@ -138,7 +139,7 @@ def family_files(lock, sources_root, family):
             else:
                 output[target] = data
     marker_meta, _ = d.toc_info(source[d.MARKER + '/' + d.MARKER + '.toc'])
-    marker_meta.update(Title='Apogee ' + family + ' (distribution only)', Group=marker, Category='Apogee ' + family)
+    marker_meta.update(Title=FAMILY_TITLES[family], Group=marker, Category=FAMILY_TITLES[family])
     marker_meta.update({'X-Apogee-Family': family, 'X-Apogee-Family-Schema': '1'})
     if family == 'DEV':
         marker_meta.pop('X-Curse-Project-ID', None)

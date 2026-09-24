@@ -1,195 +1,30 @@
-# Apogee Party Health Bars
-
-Compact five-player healing frames for World of Warcraft Classic Era and Burning Crusade Classic Anniversary.
-
-## Features
-
-- Player and party health, power, shields, incoming heals, HoTs, and threat
-- Selectable sound and threshold when the player or a party member drops low on health
-- Movable, clickable Cleanse Watch for removable party Magic, Curse, Disease, and Poison effects
-- Uniform player, party, and immediate-target healing bars
-- Secure spell/item click-casting and clickable buff reminders
-- Player Shortcut Bar for spells, abilities, bandages, food, potions, and other usable items
-- Optional automatic 2×6 consumable HUD populated from carried bags
-- A fixed 15-key action cluster for `1`–`5`, `Q/E/R/T`, `F/G`, and `Z/X/C/V`
-- Editable Mouse Wheel actions for six fixed modifier gestures
-- Contextual Middle/Button 4/Button 5 Party Frame Clicks plus nine combat assignments
-- Missing party-buff and self-buff reminders, including targeted Divine Spirit reminders for Priests, Mages, and Druids
-- Movable minimap button and grouped, page-based settings
-- Default-on compact party-frame companion for drink checks, cross-class missing-buff indicators, one-click local Group Calls, and combat threat
-- Read-only Dungeon Guide plus default-on automatic current-target raid marking
-
-Combat UI fading, gameplay-error suppression, name-mention alerts/highlighting, and Thank You prompts now belong to standalone Apogee Essentials. They are no longer provided or configured here, even when Essentials is disabled or unsupported. Essentials currently supports Classic Era only; APHB continues to support Era and Anniversary.
-
-Dungeon Board and LFG alerts now belong to standalone Apogee Group Alert. APHB no longer collects recruitment messages, queries Group Finder, or provides group-finding windows, sounds, settings, or minimap shortcuts. This removal applies to both Era and Anniversary; Group Alert currently supports Era only. Dungeon Guide and the party-frame Group Helper remain available.
-
-## Install
-
-Use [CurseForge](https://www.curseforge.com/wow/addons/apogee-party-health-bars) or download the packaged ZIP from [GitHub Releases](https://github.com/notify353/ApogeePartyHealthBars/releases).
-
-Do not use GitHub's **Code -> Download ZIP** archive. A valid installation has this path:
-
-```text
-Interface/AddOns/ApogeePartyHealthBars/ApogeePartyHealthBars.toc
-```
-
-## Use
-
-Left-click the minimap button to open settings. Alt-left-click opens the Dungeon Book and, when the current instance is supported, selects that dungeon's map. The defaults place settings just left of center and party bars at the upper-right; moved positions are preserved per profile. Under Actions → Party Frame Clicks, open the Spellbook yourself and drag a healing or cleansing spell—or drag a usable item from an open bag—onto the click you want to assign. Bag items also support WoW's native click-to-pick-up flow: click the item, then click its destination. Party Frame Clicks uses native secure spell and item actions so the action targets the party unit whose health bar you click. Use the arrow controls to swap an assignment with the adjacent fixed click gesture, and Clear to remove it; right-click clearing remains available as a shortcut.
-
-Cleanse Watch discovers the character's learned player and pet cleansing spells and remains invisible until a removable effect appears. Active effects are grouped into Magic, Curse, Disease, and Poison sections with one shortest-remaining effect per type expanded to show its icon, name, stacks, remaining time, affected members, and complete Blizzard description. Additional distinct effects are counted in the type label. Only affected members receive visible cleanse buttons; click a name to cast the automatically selected highest learned cleanse rank on that member. Click Ignore on a displayed debuff to suppress that debuff for every party member until the next `/reload`; ignored effects are session-only and never enter profiles or SavedVariables. Open Reminders → Buffs & Cleansing to preview and drag the headerless panel, disable it, or reset its profile-owned position. Classes without a learned supported cleanse keep the preference but do not show the runtime panel.
-
-
-Frames → Party Frames controls a default-on Group Helper in a compact transparent 140px companion column to the left of the existing party panel. In an eligible five-player dungeon and out of combat, living, connected mana users with a recognized helpful drink aura are aligned with their party rows and labeled **DRINKING** with the observed aura’s remaining seconds at any mana percentage. A mana user below 75% is labeled **THIRSTY** when no recognized aura is present, or **DRINK STATUS UNAVAILABLE** when helpful auras cannot be inspected; those fallback rows hide at exactly 75% or higher. Every status hides on death, disconnection, or combat. Missing-buff icons align with the living Priest, Mage, Druid, or Paladin responsible for long-duration group coverage: Fortitude, mana-user Intellect, Mark of the Wild, and recognized Paladin blessings are checked immediately, while Divine Spirit is checked only after that Priest's capability is observed during the dungeon session. Hovering an icon names the buff, shows the missing-member count, and lists each missing party member. Clicking DRINKING or THIRSTY sends `mana up` in `/say`; clicking a missing-buff icon sends `buff up`. For Warriors, Paladins, and Druids, the charge icon above the party frames sends `pulling here` and remains available whenever Group Helper is enabled and the player is out of combat, including while solo or outdoors; other classes do not see it. Messages require a physical click, unavailable chat support leaves the indicators visible but non-clickable, and events never send chat. In combat, Group Helper content hides and the same reserved left-side area shows the enabled per-player threat rail and current-target threat margin.
-
-Group Helper applies recipient-aware coverage: Intellect and Divine Spirit are expected only on party members with an actual mana pool, while Fortitude and Mark cover every living player. Any recognized long-duration Paladin blessing counts as coverage because the appropriate blessing depends on role, talent, and group assignment.
-
-When Unit target bars are enabled, every player and party row reserves one aligned column for its immediate target. Existing units use the same health, adaptive power, shield, incoming-heal, HoT, range, offline, party-buff, and party-frame click behavior as the primary bars. Player-only action HUDs and the compact self-buff reminder remain attached at the player's left edge, while compact crowd-control utilities grow from the current target's left edge.
-
-The standalone Apogee Tank addon now owns the multi-enemy Threat Control HUD, maintained-effect reminders, and ability cooldown display. These modules and their settings are no longer loaded here. Party-frame threat indicators, action cooldowns, buff reminders, and automatic Dungeon Guide marking remain available.
-
-The crowd-control utility lane recognizes active control options for the player's class and current client. Strategic hard control, stuns, roots, interrupts, and silences appear automatically when learned, including available pet actions. Interrupt-capable actions carry a compact `I` badge while readiness, cooldown, range, and validity remain encoded by the normal icon border and state. Movement control and disarms are recognized when assigned to the Shortcut Bar without automatically filling the lane. Traps, totems, ground effects, and caster-centered controls use their native activation behavior instead of requiring a hostile current target. Customized focus or mouseover macros remain clickable but deliberately skip current-target eligibility and range prediction.
-
-Dungeon → Dungeon Guide opens a movable, resizable, opaque, read-only Dungeon Book; `/aphb guide` opens it directly. Alt-left-clicking the minimap button also opens the Book and detects a supported current dungeon; outside a supported dungeon it retains the last selection. Because Scarlet Monastery's four wings share one instance ID, it restores the last wing viewed during the session and defaults to Graveyard. Scarlet Monastery includes all four wings' trash, bosses, rares, and encounter rules. Gnomeregan follows the full front-entrance route through the Hall of Gears and Trogg Caves, Dormitory and Launch Bay, Engineering Labs, and Tinkers' Court, with backtracking, Workshop Key shortcut, alarm, mine, bomb, ledge, and boss guidance. The Stockade teaches a west-first full clear through the main cell block, Dextren Ward's western wing, and the Hamhock and Bazil Thredd eastern wing, including variable bosses, fleeing prisoners, linked cells, and fear safety. Razorfen Kraul covers the Roogug detour, Willix escort and backtrack, high ledges and bridges, totem and caster priorities, rare bosses, Agathelos's ward, and Charlga's hut. Razorfen Downs covers the three-ring gong event, Murder Pens and Belnistrasz defense, Plaguemaw and Scourge Invasion encounters, the Bone Pile, Glutton, and the complete Spiral of Thorns approach to Amnennar. Uldaman follows the full front route through the Hall of the Keepers, Map Chamber, rear entrance, Temple Hall, Stone Vault, and Hall of the Crafters, including the Staff of Prehistoria, Annora detour, linked Earthen pulls, altar sequence, and Archaedas waves. Zul'Farrak follows the full city route through Antu'sul, Theka and Zum'rah, the pyramid prisoner event, sacred pool, and chief's terrace, including caster and disease priorities, rare patrols, Weegli's demolition, the optional Bly betrayal, the Mallet summon for Gahz'rilla, and the Ruuzlu-first final fight. Maraudon covers a quest-friendly full clear through the purple and orange entrances, Wicked Grotto, Foulspore Cavern, Poison Falls, Earth Song Falls, and Zaetar's Grave, including plant and slime pulls, the Larva Spewer, Scepter shortcut, dangerous patrols, boss summons, optional detours, and Princess positioning. Each entry uses a compact standard: marker and name, Why, Plan, one combined Watch/CC line, and an If line only when an exception matters. Route guidance appears before the entries and pack or encounter rules follow them. Chapter navigation is session-only; the Book position and size are stored in the active profile.
-
-Automatic Dungeon Guide marking is on by default and can be disabled under Dungeon → Dungeon Guide. Out of combat, explicitly cycling through cataloged living hostiles stages Skull for the first kill, Cross for the second kill, and Circle for the primary boss or encounter anchor. Each icon stays on its first equal-ranked candidate and moves only when the player targets a stronger guide-ranked candidate for that same icon. Documented linked bosses and boss adds share an encounter context, while unrelated bosses and ordinary trash start separate staging contexts; the guide supplies that relationship without inspecting nearby units. Staging also starts fresh after 15 seconds without targeting another automatically markable guide enemy, when combat completes, or when the active Dungeon Guide changes. Secondary bosses can use Skull, Cross, or No Auto Mark when that better communicates the real encounter order. During combat, each observed Skull, Cross, or Circle stays locked to its living target, and another unmarked target receives its recommendation only when that icon is free. Death releases an icon immediately; a manually removed mark stays off that target for the rest of combat once the removal is observed. Because WoW's marker-update event does not identify the changed unit, removal from an off-target mob is recognized when that mob is targeted again. Crowd-control choices remain manual, entries labeled No Auto Mark receive no marker, and any existing marker is preserved. Automatic staging resets never discard an observed manual owner. The controller never targets, scans a pack, assigns party members, clears markers, or casts, and visible nameplates are not required.
-
-Settings retain their compact 480×460 footprint while every supported configurable HUD remains visible in preview mode at its saved gameplay position. The real five-player panel becomes a WYSIWYG demo with only Out of combat and Combat states. Out of combat is the default and shows drinking and thirsty statuses together with the live provider-row buff layout: Fortitude and observed Divine Spirit beside the Priest, Intellect beside the Mage, and Mark beside the Druid, including compact missing-member count badges. The clickable statuses, buff icons, and charge icon retain their real one-click `/say` behavior in Settings, while the settings guide remains on the selected scenario instead of redundantly echoing chat output. Other secure party-frame actions remain suppressed, and the demo never casts. Switching pages changes only the available controls, while closing Settings restores every HUD to live gameplay behavior. The Dungeon Book remains an independent window. Five task groups—Frames, Actions, Reminders, Dungeon, and Manage—replace the crowded feature-tab row. Groups with multiple pages use a compact page selector for focused workflows such as Party Frame Clicks, Shortcut Bar, Keyboard, Mouse Wheel, Mouse Buttons, Low Health, Buffs & Cleansing, Dungeon Guide, Profiles, Weapons, and Maintenance; single-page groups show a simple page heading instead.
-
-Threat Control is the single fixed player-combat HUD and remains visible whenever enabled, including out of combat and while no enemies are observed. Its player-status edge is anchored independently of enemy count, so compact player health, active power, maintained-effect reminders, and cooldowns never move while threat rows expand downward. The player bars align exactly above the threat-meter column. Missing or expiring maintained effects use the enemy-debuff icon grammar in a right-to-left lane on the bars' left; up to six selected learned class or pet abilities retain fixed positions in a left-to-right cooldown lane on the bars' right. Ready and currently usable abilities stay in full color without a status border, while cooling, unavailable, or resource-starved abilities are dimmed; active cooldowns also use Blizzard's cooldown sweep, centered seconds, and charge counts. The lane is informational and never casts, clicks, pulses, or plays sound. Target Effects discovers learned aura-based damage effects and core maintained debuffs for the current class and client, shows only currently usable effects that are missing or inside the configured reminder timing, and never targets or casts. Damaging effects require the player's own aura; an equal or stronger equivalent maintained debuff from another player counts as covered. Reminders → Threat Control owns HUD enablement, maintained-effect timing and priority, and the cooldown master toggle, selection, and order. Profiles distinguishes the selected profile from the active profile and groups creation, replacement, and sharing into compact sections. Each character owns an independent profile library; profiles are never changed or selected implicitly by another character. A profile contains all feature settings, action assignments, custom macros, sounds, and movable positions. Use Create for addon defaults, Duplicate to branch from an existing setup, or Replace Active to overwrite the active setup while retaining its name. Profile changes are blocked in combat and reload the UI after safely restoring owned Keyboard, Mouse Wheel, and Mouse Buttons bindings.
-
-Export creates a compressed `APHB1:` share string and selects it automatically; press Ctrl+C to copy it. Import is the only way to transfer a profile between characters and previews the profile name, author, addon version, and class. Import as New is the default, while Merge preserves settings absent from the incoming profile and Replace rebuilds the selected profile from the import. Profiles and imports are restricted to the class that created them.
-
-Drag a spell from an open Spellbook or a usable item from an open carried bag directly onto a live Shortcut Bar, Keyboard, Mouse Wheel, or Mouse Buttons HUD position at any time outside combat; the destination remains a normal clickable action while the source is open. Configured Keyboard, Mouse Wheel, and Mouse Buttons actions use Blizzard-style locked-bar editing at any time outside combat: hold Shift over an assigned action to see WoW's move cursor, then left-drag it onto any position in those three live HUDs; Alt-left-click an assigned action to clear it. Occupied destinations swap complete actions, empty destinations receive the moved action, releasing elsewhere cancels, and an unmodified click continues to cast normally. Shortcut Bar and Automatic Consumable actions are not editable this way. An empty Shortcut Bar shows one next-position drop target while an assignment source is open. Party Frame Clicks remain assigned in Settings because the live health bar cannot identify which click gesture you intend. While add-on settings are open, the same sources can be dropped onto any supported HUD position or action row, and bag items also support WoW's native click-to-pick-up flow: click the item, then click its settings destination. Spell drops use the highest learned rank by default; hold Shift while dropping to preserve the selected Spellbook rank. Shortcut Bar, Keyboard, Mouse Wheel, and Mouse Buttons use the same compact action rows; settings exposes one extra empty Shortcut Bar row for adding the next action. Drop directly onto an occupied row to replace it. Shortcut Bar supports up to 12 assignments and displays them six per row in a footer beneath the complete party-health frame. Shortcut Bar rejects duplicate spell and item IDs; Keyboard, Mouse Wheel, and Mouse Buttons permit the same spell or item in multiple positions and across features. Action changes and assignment affordances are blocked in combat.
-
-Manage → Weapons uses WoW's native character-wide equipment sets for Main Hand and Off Hand only. Equip the two hand slots you want, enter a name, and select **Save Weapon Set**; the icon is chosen automatically from Main Hand and then Off Hand. The compact selector provides **Equip**, **Update from Equipped**, and confirmed **Delete** controls. Existing native sets that include armor or Ranged/Relic are left untouched and hidden from Apogee. Entering the exact name of one of those hidden sets offers a separate confirmed **Convert Existing** action that replaces its contents with the currently equipped Main Hand and Off Hand. Each macro-capable action starts with **No weapon set**; use its **Weapon** control to attach one explicitly. The secure action equips that exact two-slot set before running its saved macro in or out of combat. A combat weapon swap can trigger the global cooldown, so the ability may require a second press. Missing or externally broadened sets never block the action and reconnect automatically when a compatible native set with the same name exists again. Profiles and share strings carry only that name, never character-specific set IDs or contents. Party Frame Clicks remains unchanged.
-
-Ordinary spell assignments in Shortcut Bar, Keyboard, Mouse Wheel, and Mouse Buttons start with this generated macro:
-
-```text
-/use Spell Name
-```
-
-The direct default deliberately does not add conditions, retarget, or start attacking, so heals, utility, Stealth, crowd control, and ordinary damage spells retain their normal behavior. WoW's `/use` command invokes a spell when its argument is not an item. Actual channeled spells can use an optional spell-specific `[nochanneling:Spell Name]` condition through the macro editor when preventing self-restarts is worth giving up normal spell queuing.
-
-Reviewed melee combat families instead keep weapon swings active when the assigned ability cannot fire because of resources, stance, range, or cooldown:
-
-```text
-/startattack
-/use Heroic Strike
-```
-
-This policy applies only to reviewed attacks, damaging interrupts, and hostile gap-closers. Close-combat templates use `/startattack` without also changing targets. Warrior shouts, stances, defensive cooldowns, taunts, fears, disarms, and other non-damaging utility remain direct `/use` actions. Shield-required abilities use an unconditional `/use` so an equipment condition cannot silently suppress them; the client still reports when a shield is required. With an attached shield weapon set, a weapon-swap global cooldown can require a second press to use the ability. Reviewed Rogue and Feral Druid attacks, including Feral Charge, use `/startattack [nostealth]` so a failed press cannot waste Stealth or Prowl. Their stealth openers, control, friendly movement, forms, buffs, heals, dispels, taunts, pet commands, caster damage, targetless utility, and ordinary Hunter shots remain direct actions. Items remain direct `/use` actions and never start attacking; reviewed ground-targeted explosives add only a player-placement condition. Party Frame Clicks assignments continue using native unit-targeted actions without generated macros. Queued next-swing abilities use normal `/use`, preserving deliberate queue cancellation; users can add the toggle-locked `!` form through the focused per-action macro editor when desired.
-
-Warrior Charge assignments use one contextual reviewed-melee action: Charge and its exact assigned rank are used out of combat, while the highest learned Hamstring is used in combat. The live HUD follows that choice for its icon, range, usability, and cooldown state. Existing or customized macro text is never rewritten; reassign Charge or use Reset in its macro editor to adopt the generated pairing.
-
-Melee Attack uses only `/startattack`. Reviewed distance actions such as Judgement, plus Auto Shot, wand Shoot, and other client-confirmed ranged auto-attacks, use bare `/targetenemy` instead of starting melee. Repeating ranged attacks additionally use `!Spell Name` so repeated presses cannot toggle them off:
-
-```text
-/targetenemy
-/use !Shoot
-```
-
-Bare `/targetenemy` intentionally selects a nearby enemy on every press, even when another hostile target is already selected. Existing macro text is preserved; assign the action again or use Reset in its macro editor to adopt the latest generated template.
-
-Item assignments in Shortcut Bar, Keyboard, Mouse Wheel, and Mouse Buttons start with the localized item name:
-
-```text
-/use Item Name
-```
-
-Reviewed thrown dynamite, bombs, grenades, and specialty explosives instead target the player's position automatically:
-
-```text
-/use [@player] Explosive Name
-```
-
-One press therefore places the explosive at the player's feet without a second aiming click. Existing saved item macros remain unchanged; reassign the item or use Reset in its macro editor to adopt the player-feet default.
-
-Each compact action row identifies itself as a Spell or Item and has Ready sound, Weapon, Macro, movement, and Clear controls. While the player is in combat, the selected sound and ready pulse occur after an observed non-global cooldown longer than 1.5 seconds finishes and the action has enough power to be used, or when an action recovers from zero charges. If the cooldown finishes before enough Rage, Mana, Energy, or other power is available, feedback waits until the power requirement is met. Leaving combat discards that pending feedback, and a cooldown that finishes outside combat stays silent and does not alert after combat begins. Actions without cooldowns and unrelated changes to range, target, resources, usability, or carried quantity stay silent. Weapon selects an optional Main Hand and Off Hand set without changing the saved action macro. Macro opens a focused editor with Reset, Cancel, Save, and a 255-byte runtime counter; its weapon-set prefix bytes are shown separately and reduce the available action-body limit. Blank or oversized text cannot be saved. Clear removes an action. Clearing a Shortcut Bar row compacts the list, while moving a Keyboard, Mouse Wheel, or Mouse Buttons action swaps its complete trigger, macro, weapon set, and sound payload with the adjacent position.
-
-Party Frame Clicks uses the same scrollable action-row presentation as Shortcut Bar, Keyboard, Mouse Wheel, and Mouse Buttons, but deliberately omits macro and sound controls: its native secure action is what preserves the clicked health-bar unit. Gesture labels remain fixed while `^` and `v` swap complete spell/item assignments between adjacent triggers. The Shortcut Bar and active Keyboard, Mouse Wheel, and Mouse Buttons HUDs show spell range/cooldown state plus item icons, carried quantities, usability, and cooldowns. Depleted items stay assigned in every feature, so they become available automatically when restocked. Item range prediction is intentionally omitted because normal item targeting and custom macros may behave differently.
-
-Frames → Party Frames includes the Automatic Consumables setting. This dedicated two-row, six-column HUD sits to the right of the Shortcut Bar and stays aligned to the party-panel footer's right edge when Unit target bars are enabled or disabled. It shows up to 12 carried consumables without creating empty placeholders or changing the Shortcut Bar. Items already assigned to the active Shortcut Bar, Keyboard, Mouse Wheel, or Mouse Buttons layout are omitted. It scans ordinary carried bags after bag updates and again after `/reload`, deduplicates stacks, and prioritizes potions, bandages, food and drink, elixirs and flasks, scrolls, item enhancements, then reviewed thrown explosives and other usable consumables. Recognized explosives use the same player-feet macro as manual action assignments. Its secure item set remains fixed during combat and catches up after combat ends.
-
-Keyboard uses this fixed action order in settings and the same keyboard-shaped arrangement on the player HUD:
-
-```text
-[1] [2] [3] [4] [5]
-[Q] [E] [R] [T]
-        [F] [G]
-[Z] [X] [C] [V]
-```
-
-Keyboard starts empty and is always active while the add-on is loaded. **Warning:** each add-on load replaces the current WoW bindings for all 15 physical keys, including common movement and UI bindings, even when their action slots are empty. Keyboard follows WoW's active account or character binding set and keeps an independent restoration snapshot for each set it claims. Before disabling the addon in WoW's AddOns manager, use **Restore All** under Manage → Maintenance; it restores each captured binding only while the addon still owns that key. A binding changed elsewhere after startup is left untouched and reported as a conflict. The Keyboard page keeps all 15 destinations visible as scrollable rows with the same inline sound, macro, movement, and Clear controls used by Shortcut Bar and Mouse Wheel. Each talent spec and newly discovered class state starts with an independent empty Keyboard layout.
-
-Mouse Buttons provides nine combat assignments for Middle Button, Mouse Button 4, and Mouse Button 5 with Normal, Shift, and Ctrl modifiers. Its 3×3 HUD sits immediately to the right of Mouse Wheel, extending only the player action footprint while health bars remain 200 pixels wide. Over an Apogee unit frame these physical buttons use their native Party Frame Clicks assignments instead; away from the frames they use the Mouse Buttons combat assignments. Mouse Buttons follows the same permanent binding ownership, conflict protection, profile layouts, macro editing, and Restore All workflow as Keyboard and Mouse Wheel.
-
-The Mouse Wheel page always exposes and reserves its six gestures in ladder order, from Ctrl Up through Ctrl Down, while the add-on is loaded. Empty gestures are intentional no-ops. Each talent spec has an independent Mouse Wheel profile that follows the equipped spec automatically; a newly activated second spec starts empty, while physical key ownership remains character-wide. Keyboard, Mouse Wheel, and Mouse Buttons provide independent empty layouts for native class states: Warrior stances, Druid forms, Priest Shadowform, Rogue Stealth and Vanish, client-reported Shaman Ghost Wolf, and a separate Cat Form — Prowl state. Their pages display the current state and edit only that state's assignments; change stance, form, or stealth through WoW normally before configuring another state. Classes with a valid no-form state also receive Base, while Warriors see only their learned stances. Hunter Aspects, Paladin Auras, arbitrary buffs, and transient encounter overrides do not create layouts. The active layout switches automatically, including during combat. Mouse Wheel actions remain separate from Party Frame Clicks.
-
-When a reviewed spell uniquely requires another directly reachable stance or form, dropping it into the current Keyboard, Mouse Wheel, or Mouse Buttons layout creates a transition placeholder. The button keeps the dropped spell's icon, tooltip, charges, and cooldown, but pressing it changes only to the required state; assign the real spell to that trigger in the destination state's independent layout. Ambiguous multi-stance spells, ordinary Base-only spells, and nested Cat Form — Prowl transitions keep their normal generated macro. Existing macros remain unchanged until the spell is reassigned or its macro is reset.
-
-Keyboard uses a four-row cluster at the left of the player HUD, while Mouse Wheel uses a vertical rail at the far right and Mouse Buttons uses a 3×3 grid beyond it. The Keyboard and Mouse Buttons icon grids bottom-align with Mouse Wheel; the shared feedback line remains below Keyboard and is included in the player action footprint. Configured Shortcut Bar actions are independent of that footprint and render beneath the complete party-health frame.
-
-Frames, Actions, Reminders, and Dungeon keep related choices in focused scrollable pages instead of one long general-settings list. New profiles show all five party frames while solo and use Focus for the low-health alert by default; each choice can be changed without affecting existing profiles. Enabling and disabling the addon belongs to WoW's AddOns manager, so Settings has no redundant enable checkbox. Because Keyboard, Mouse Wheel, and Mouse Buttons own saved inputs, **Restore All** under Manage → Maintenance transactionally restores all 30 inputs before you disable the addon through WoW. **Reset Character** performs the same restoration before replacing only the current character's profiles and settings. If restoration fails, either operation stops without discarding the ownership record.
-
-## Develop
-
-### Set up a development checkout on Windows
-
-The repository is the development copy; cloning or downloading it does not automatically place it in WoW's add-on directory. Keep the repository outside the WoW installation and use the development-link scripts so both clients load the same files you edit.
-
-1. Install at least one supported client—Classic Era or Anniversary—and [Git](https://git-scm.com/download/win).
-2. Clone the repository to a normal development directory:
-
-   ```powershell
-   New-Item -ItemType Directory -Path C:\Dev\WoW -Force
-   Set-Location C:\Dev\WoW
-   git clone https://github.com/notify353/ApogeePartyHealthBars.git
-   Set-Location ApogeePartyHealthBars
-   ```
-
-3. Close both WoW clients. Open PowerShell as Administrator and point every installed supported client at the current checkout:
-
-   ```powershell
-   pwsh ./scripts/set-dev-links.ps1 -Target All
-   ```
-
-   Both clients should use the current workspace unless you are intentionally testing different branches. The setter refuses to run while WoW is open and never replaces a real add-on directory. For a nonstandard installation, pass `-WowRoot`; to deliberately use another worktree, run its copy of the script or pass `-RepoRoot` explicitly.
-
-4. Before each in-game testing session, verify the client-to-workspace mapping:
-
-   ```powershell
-   pwsh ./scripts/check-dev-links.ps1 -Target All
-   ```
-
-   The checker prints the active branch and commit plus each installed client's junction target, and fails when a client points elsewhere. WoW sees repository edits immediately; use `/reload` after ordinary source changes. Secure-frame or initialization changes may require logging out or restarting the client.
-
-### Install development prerequisites and validate
-
-From an elevated PowerShell, install Lua for Windows 5.1.5. Restart PowerShell so the updated `PATH` is available, then run the complete local validation suite from the repository:
-
-```powershell
-winget install --id rjpcomputing.luaforwindows --exact --version 5.1.5.52
-pwsh ./scripts/test-local.ps1
-```
-
-The runner rejects other Lua versions, parses every add-on source file, runs every Lua specification, validates the package and release workflow, builds and inspects a local ZIP, and checks the Git diff for whitespace errors.
-
-The matching local Blizzard interface exports are the primary development references for WoW APIs and interface behavior. Read [docs/WOW_INTERFACE_EXPORT.md](docs/WOW_INTERFACE_EXPORT.md) before API-dependent work. The validation suite fails when an installed supported client is newer than its recorded export and explains how to refresh it.
-
-Internal terminology, folder ownership, module naming, and the settings-page
-contract are documented in [docs/DEVELOPMENT_GUIDE.md](docs/DEVELOPMENT_GUIDE.md).
-Read it before adding a new feature or moving a module between domains.
-
-For the supported-client audit, development install, acceptance matrix, and CurseForge procedure, read [docs/CLASSIC_ERA_SUPPORT.md](docs/CLASSIC_ERA_SUPPORT.md). To update an existing client patch or add another WoW flavor, follow [docs/ADDING_WOW_CLIENT.md](docs/ADDING_WOW_CLIENT.md), then use [docs/PORTING.md](docs/PORTING.md) for the compatibility architecture. The add-on uses capability-driven, domain-owned compatibility boundaries so optional features can degrade independently without overwriting shared profile preferences.
-
-## Compatibility
-
-Supported targets: Classic Era 1.15.9 (interface `11509`) and Burning Crusade Classic Anniversary 2.5.6 (interface `20506`). Retail and other Classic branches are unsupported.
-
-## Support
-
-Report problems on [GitHub](https://github.com/notify353/ApogeePartyHealthBars/issues) with the add-on version, client version, character class, reproduction steps, and complete Lua error.
-
-MIT licensed. See [LICENSE](LICENSE).
+# Apogee distribution
+
+APHB is a **featureless distribution container** for five independent World of
+Warcraft Forever addons: Apogee Heals, Keybinds, Group Alert, Essentials and Tank.
+Its marker has no Lua/XML, settings, saved variables, frames, commands, bindings
+or gameplay. Legacy gameplay is removed from the active branch and preserved in
+a verified external archive and Git history.
+
+One immutable source pin per child produces two deterministic packages:
+
+| Package | Addon identities | Settings | Purpose |
+| --- | --- | --- | --- |
+| PROD | Canonical names | Existing production stores | Future CurseForge package |
+| DEV | Names ending in Dev, visible DEV labels | Separate stores, no import | Local development |
+
+Both coexist in the same Forever installation. Right-click the appropriate group
+in WoW's AddOns list to enable/disable the family, then reload. A marker checkbox
+alone does not toggle children. PROD wins mixed selections. Missing/malformed
+safety data fails closed. Each package has six roots: marker plus five children.
+
+See [build/install/switch workflow](distribution/DUAL_WORKFLOW.md),
+[release gates](RELEASING.md), and [API authority](docs/WOW_INTERFACE_EXPORT.md).
+Canonical full local validation is `pwsh ./scripts/test-local.ps1`.
+
+Current artifacts are local compatibility candidates, not published releases.
+The existing [CurseForge project](https://www.curseforge.com/wow/addons/apogee-party-health-bars)
+(ID1608100) and [GitHub repository](https://github.com/notify353/ApogeePartyHealthBars)
+remain the production distribution identities. Previously published legacy
+releases do not contain this architecture. GitHub source ZIPs are not installable
+packages. Native game and CurseForge acceptance are separate from offline tests.

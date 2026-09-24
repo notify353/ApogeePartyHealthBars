@@ -1,54 +1,31 @@
-# Releasing
+# Distribution releases
 
-Requirements: PowerShell 7, Git, Lua 5.1 with its compiler, and an authenticated GitHub CLI. GitHub Actions is the only publisher.
+The old single-runtime publisher is replaced by a fail-closed release gate. It
+cannot publish a legacy package or an unaccepted local candidate. The project
+remains CurseForge1608100 / notify353/ApogeePartyHealthBars; no registration change.
+Publication is not enabled in this migration phase. Neither dispatch nor tag uploads.
 
-## Development
+Before enabling an Actions-only publisher:
 
-1. Work on a short-lived branch and open a pull request into `main`.
-2. Add user-visible changes under `CHANGELOG.md` -> `Unreleased`.
-3. Run `pwsh ./scripts/check-wow-api-export.ps1`. If the installed client build is newer than the recorded export, follow `docs/WOW_INTERFACE_EXPORT.md` and record the fresh export before continuing.
-4. Run `pwsh ./scripts/test-local.ps1` to execute the WoW API export guard, Lua tests, package checks, workflow-safety check, ZIP validation, and `git diff --check`.
-5. Merge only after CI passes.
+1. Integrate reviewed distribution/child commits through PRs. Make pinned child
+   repositories readable by CI; three were inaccessible to current credentials.
+   Configure least-privilege DISTRIBUTION_READ_TOKEN with owner authorization,
+   then enable APOGEE_DISTRIBUTION_SOURCES_READY. Build CI has read-only permissions.
+2. Complete real Forever startup GUID, group switching/reload, isolated settings,
+   PROD priority, missing/disabled child, secure input and combat/taint acceptance.
+3. Verify actual CurseForge multi-folder ownership/update/removal with approved
+   available releases, clean installs and legacy upgrades, preserving DEV/unknown
+   files. Old unguarded PROD intentionally blocks DEV. Local fixtures are not app tests.
+4. Obtain a fresh authenticated exact 1.60.1 upload version ID for Forever type88568.
+   Type88568 is not an upload ID. No Retail or nearest-version fallback.
+5. Implement/review a publisher submitting the exact verified PROD ZIP bytes to
+   GitHub and CurseForge and checking both hashes. Never publish the marker alone,
+   rerun a differently shaped packager or include DEV. The future packager pin is
+   evidence only, not executed by current builds.
+6. Use stable X.Y.Z metadata/changelog, wait for CI and require explicit user
+   confirmation immediately before the production tag. Never reuse/move tags.
 
-If a client build/interface changed or the supported target set is changing,
-complete [docs/ADDING_WOW_CLIENT.md](docs/ADDING_WOW_CLIENT.md) before release
-preparation. A TOC-only compatibility change is not sufficient.
-
-## Prepare
-
-From clean, synchronized `main`:
-
-```powershell
-pwsh ./scripts/prepare-release.ps1 -Version X.Y.Z
-```
-
-Release preparation validates that the TOC declares exactly Classic Era `11509` and TBC Anniversary `20506`, matching the recorded Blizzard exports. On a machine with either client installed, it also requires every installed supported build and local export to be current.
-
-Push the preparation commit and wait for CI. Then verify the complete checklist in both Classic Era and TBC Anniversary:
-
-- Addon list shows the addon without **out of date**
-- Login and `/reload` without Lua errors
-- Solo and party layouts
-- Entering and leaving combat
-- Healing-tab click assignment
-- Spell tracking, threat, shields, heals, and HoTs
-- Settings, minimap position, persistence, profiles, and macros
-- Secure Healing clicks and Keys/Wheel/Buttons before and during combat
-- Binding backup, conflict handling, Prepare to Disable, and restoration
-
-Record the exact client build used for each pass. A Classic Era pass does not replace the TBC regression pass, and vice versa.
-Use the detailed matrix in [docs/CLASSIC_ERA_SUPPORT.md](docs/CLASSIC_ERA_SUPPORT.md) and create a new dated acceptance record when a supported build changes. Do not prepare a release while any supported-client matrix or pull-request packager validation is incomplete.
-
-## Publish
-
-**Stop for explicit owner approval immediately before publishing.** After approval:
-
-```powershell
-pwsh ./scripts/publish-release.ps1 -Version X.Y.Z -ConfirmProduction
-```
-
-The script pushes the production tag. GitHub Actions validates the exact two-interface TOC, creates one package, publishes identical bytes to GitHub Releases and CurseForge, then attaches a SHA-256 checksum. Verify that CurseForge lists both supported game versions for that file.
-
-Never create or move production tags manually. Never publish or upload assets manually. Fix a bad release with a new patch version. Never expose `CF_API_KEY` or another secret.
-
-A release ZIP must contain exactly one `ApogeePartyHealthBars/` root and pass `scripts/validate-package.ps1`. GitHub's source ZIP is not an installable release.
+prepare-release.ps1 and publish-release.ps1 currently stop before mutation.
+Local-install authority never grants publication. No publishing secrets are used
+by current CI. The verified archive preserves previous release configuration.
+For local build/install/rollback use [DUAL_WORKFLOW.md](distribution/DUAL_WORKFLOW.md).

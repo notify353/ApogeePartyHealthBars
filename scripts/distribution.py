@@ -152,7 +152,8 @@ def collect(lock, sources_root, variant):
     result = {}
     for child in lock['children']:
         repo = Path(sources_root) / child['name']
-        require(git_bytes(repo, 'remote', 'get-url', 'origin').decode().strip() == child['repository'],
+        require(git_bytes(repo, 'remote', 'get-url', 'origin').decode().strip().removesuffix('.git')
+                == child['repository'].removesuffix('.git'),
                 'Source remote identity mismatch')
         tree = source_tree(repo, child['commit'])
         files = {}

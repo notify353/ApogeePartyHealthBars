@@ -1,21 +1,29 @@
 {
-  "schemaVersion": 2,
-  "targets": {
-    "classicEra": {
-      "product": "wow_classic_era",
-      "clientDirectory": "_classic_era_",
-      "clientVersion": "1.15.9.69722",
-      "interface": 11509,
-      "exportedOn": "2026-09-13",
-      "generatedDocumentationPath": "BlizzardInterfaceCode/Interface/AddOns/Blizzard_APIDocumentationGenerated"
+  "clientDirectory": "_classic_beta_",
+  "clientVersion": "1.60.1.70009",
+  "files": [
+    {
+      "path": "Blizzard_APIDocumentationGenerated/AddOnsDocumentation.lua",
+      "sha256": "8535c5ab5e2a2a4f2ad9e14a355a619d4e12fa2b975e28bda01da6eb6580db75"
     },
-    "tbcAnniversary": {
-      "product": "wow_anniversary",
-      "clientDirectory": "_anniversary_",
-      "clientVersion": "2.5.6.69795",
-      "interface": 20506,
-      "exportedOn": "2026-09-13",
-      "generatedDocumentationPath": "BlizzardInterfaceCode/Interface/AddOns/Blizzard_APIDocumentationGenerated"
+    {
+      "path": "Blizzard_APIDocumentationGenerated/AddOnConstantsDocumentation.lua",
+      "sha256": "784ede3513097bf8eba11ca17111ad11d52467ec0846e40b980b2db0c1e3de0c"
+    },
+    {
+      "path": "Blizzard_APIDocumentationGenerated/FrameScriptDocumentation.lua",
+      "sha256": "945c09648a60fe90271ed5fc092608af85774fd24daa615d1410263593de7c2c"
+    },
+    {
+      "path": "Blizzard_APIDocumentationGenerated/UnitDocumentation.lua",
+      "sha256": "d3522cb2e3d04aef04100e41867815dcb2cd0a031c0e90343dcae30942a1deb4"
+    },
+    {
+      "path": "Blizzard_AddOnList/AddonList.lua",
+      "sha256": "3f5a958ccf33b071c629a233f9bcf79e11c447bc982182504f5f02cf45b4a376"
     }
-  }
+  ],
+  "interface": 16001,
+  "product": "wow_classic_beta",
+  "schema": 1
 }

@@ -1,0 +1,112 @@
+# One source, two distributions
+
+The active local workflow is side-by-side PROD and DEV. Earlier prototype and
+migration fixtures remain historical evidence. Neither current artifact is
+published. APHB is a zero-Lua distribution identity with no gameplay or saved
+settings; five independent children supply gameplay.
+
+## Build and validate
+
+Run from `C:/Users/nickm/.codex/worktrees/forever-distribution-prototype/ApogeePartyHealthBars`.
+Canonical APHB main still has the old release system; do not use its release
+scripts for these candidates.
+
+```powershell
+python -B scripts/dual_distribution.py --sources-root C:/Dev/WoW --output C:/Temp/apogee-dual-UNIQUE
+python -B tests/distribution/test_dual.py --sources-root C:/Dev/WoW --artifacts C:/Temp/apogee-tests-UNIQUE
+python -B tests/distribution/test_migration.py --sources-root C:/Dev/WoW --artifacts C:/Temp/apogee-migration-tests-UNIQUE
+```
+
+`candidate.lock.json` pins immutable source commits and explicit file hashes.
+Before future development builds, locally commit the reviewed child candidate on
+its task branch, update only that child's pin/file inventory to reviewed Git
+blobs, and run its checks plus aggregate checks. Never include sibling dirty
+files implicitly. New identity tokens or loader mechanisms need an explicit audit.
+
+The builder emits two deterministic ZIPs from the same pins. PROD retains exact
+source gameplay bodies behind an admission prefix. DEV transforms audited
+identifiers, saves, frames, popup/slash names, asset paths and labels. Manifests
+list every identity edit and source/body hash. Comments, gameplay keys and Blizzard
+names are not blindly renamed. Each artifact has six roots: marker plus children.
+One future CurseForge product/download owns PROD roots, never the six Dev roots.
+DEV TOCs contain no CurseForge project ID.
+
+## Install and recover
+
+Only the central installer writes live folders. Future child changes must not
+copy canonical sources over production. Normal installs are DEV-only:
+
+```powershell
+python -B scripts/install_dual_distribution.py --client-root 'C:/Program Files (x86)/World of Warcraft/_classic_beta_' --sources-root C:/Dev/WoW --artifacts C:/Temp/apogee-dual-UNIQUE --backup C:/Dev/WoW/local-install-backups/apogee-UNIQUE --previous-install C:/Dev/WoW/local-install-backups/PREVIOUS/transaction.json
+```
+
+Omit `--previous-install` only for fresh DEV installs or exact matching files.
+`--inspect-only` validates without writes. Existing output/backup directories are
+refused. `--initial-retrofit` is exclusively the authorized first compatibility
+migration installing both families, not a routine development option.
+
+The installer regenerates expected bytes and verifies the actual aggregate ZIPs.
+It rejects unexpected runtime/asset overwrites, links/junctions and alternate
+child TOCs. Differing documentation remains intact and is recorded in the receipt;
+executable files and required assets match the package exactly. All scoped addon
+files are backed up and byte-verified before writes. Unknown non-loader files
+remain untouched. It does not open, import, copy or modify private SavedVariables;
+only WTF/unrelated-addon filesystem metadata is observed for concurrent changes.
+Enabled preferences remain untouched. The reviewed Forever build must match and
+the game must be closed. The installer never operates WoW.
+
+```powershell
+python -B scripts/migrate_distribution.py rollback --backup C:/Dev/WoW/local-install-backups/apogee-UNIQUE
+```
+
+Rollback checks backup hashes, refuses newly edited candidate files, restores
+overwritten bytes and moves added files outside AddOns into `rollback-added-files`
+inside the backup. It deletes nothing. This is recovery, not the normal mode switch.
+
+## Switch in WoW
+
+For the current character, right-click **Apogee PROD (distribution only)** in
+AddOns and select **Disable Group**, then right-click **Apogee DEV (distribution
+only)** and select **Enable Group**. Reverse those choices for production.
+Apply changes and reload the UI. Do not switch by manually calling LoadAddOn,
+especially in combat. Merely toggling the marker checkbox does not toggle children.
+
+The current Blizzard addon-list implementation supplies these group controls;
+APHB adds no runtime/UI. Group metadata introduces no dependencies. Children remain
+standalone, independently disableable and optional. One download still has
+multiple addon entries, grouped by family.
+
+Any enabled/loaded canonical child at the first decision selects PROD; mixed
+selection leaves all DEV inactive. The session family stays fixed until reload.
+Every Lua chunk checks admission; an opposite guarded family loaded later cannot
+initialize gameplay. Missing API/GUID, restricted values, malformed metadata and
+invalid shared state fail closed. DEV refuses any installed canonical child
+without schema-1 safety metadata, even disabled, and reports inactivity.
+An older CurseForge release overwriting the retrofit therefore blocks DEV until
+a compatible PROD release is installed. Never silently repair PROD on a DEV install.
+
+DEV saves start separately with defaults. There is no automatic import/read of
+production settings; switching back uses the unchanged PROD stores. The lease is
+not saved. Marker metadata is exactly X-Apogee-Distribution-Only=1 and
+X-Apogee-Distribution-Schema=1. Keybinds still rejects legacy/malformed APHB.
+
+## Evidence and limits
+
+Current export 1.60.1.70009 documents C_AddOns.GetAddOnEnableState(name, character),
+GetAddOnMetadata, GetNumAddOns, GetAddOnName and IsAddOnLoaded.
+Blizzard_AddOnList/AddonList.lua uses UnitGUID("player") for current-character
+selection, Group metadata for grouping, right-click SetEnabledAll for groups,
+and ReloadUI after ordinary enable changes. AddOnConstantsDocumentation.lua
+defines None=0, Some=1, All=2. The gate creates no frames, bindings or stores.
+
+Mocked tests do not prove actual GUID availability before addon loading, native
+loader timing, taint, secure input or in-game acceptance. Live checks must cover
+login, both group switches/reloads, separate settings, both enabled selecting
+PROD, inactive diagnostics and combat/input behavior. No game session is automated.
+
+Actual CurseForge app testing requires an approved available compatible release.
+Local ZIP installation is not that test; private/held uploads are not assumed
+accessible. Its FAQ says Modified/Working Copy addons skip auto-updates, so check
+production app status for release testing. DEV stays installed separately.
+Public multi-folder ownership/update/removal, fresh exact upload-version ID and
+publication approval remain gates. No publication workflow or trigger changed.

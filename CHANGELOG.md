@@ -6,6 +6,9 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Add side-by-side PROD/DEV distribution candidates with separate developer settings,
+  family startup safety, deterministic identity transforms, and backup-first local installation.
+
 - Add a build-only Forever distribution prototype with pinned independent addon
   sources and upgrade fixtures; existing gameplay and production releases are unchanged.
 

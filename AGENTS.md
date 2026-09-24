@@ -54,3 +54,8 @@ These instructions apply to every file in this repository.
 - GitHub's **Code -> Download ZIP** archive is source code, not an installable release.
 - A release archive must contain exactly one `ApogeePartyHealthBars/` root and must pass `scripts/validate-package.ps1` before publication.
 - GitHub and CurseForge must receive the same verified package bytes.
+
+## Active local DEV/PROD workflow (owner approved 2026-09-24)
+
+- Future source changes use `distribution/DUAL_WORKFLOW.md` and the single central DEV-only installer. Do not copy child source over canonical PROD folders. DEV settings remain separate, with no automatic production import.
+- The initial production loading-safety retrofit is a one-time authorized exception. Preserve historical source and production release configuration; publishing remains separately approved. Switch families through addon-list groups and reload; never imply native acceptance from mock tests.

@@ -1,5 +1,9 @@
 # Forever aggregate prototype (build only)
 
+**Historical prototype:** the active side-by-side DEV/PROD implementation is
+[DUAL_WORKFLOW.md](DUAL_WORKFLOW.md). This page records the earlier build-only
+experiment; its original artifacts remain preserved.
+
 This directory does not change the installed addon or production workflow.
 The legacy TOC/runtime remain intact. `.pkgmeta` excludes this directory from
 legacy packages. No child depends on APHB and no child source is patched.

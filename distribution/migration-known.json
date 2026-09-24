@@ -1,0 +1,2961 @@
+{
+  "files": {
+    "ApogeeEssentials/.gitattributes": [
+      "08a21185d282b23728b429e506b740453a54f30d69ef75e084df6a2c425ef1f1",
+      "8d75fbed0329d55480242ea79c61cbdd3da312c700298bfba9572b81ec325cc6"
+    ],
+    "ApogeeEssentials/.gitignore": [
+      "63df560cf7159a2b9cdd3c4f68e988ece0738ea791dbdffb1f901ea49f78e2fb",
+      "9f658051d6ff45c2f4fee7db90f2e44f858b108fa8188994262398b850d734c6"
+    ],
+    "ApogeeEssentials/AGENTS.md": [
+      "32dedcd2430b2c1d5cab2f050cf288edcebe017affa58d1c774e33a5f714b370",
+      "3b44037295094cb25a48688992fb99de43aead7b08ff7bfa9454e4737e25b03d",
+      "bb3b29cd62dbcca080925d5f07d1a907920e4671d90572f80da3719eb7243a12",
+      "e668fea43bc2eed516ac4438e7c34d2173683c6d88d86e6e9a879354f6cb6ee8"
+    ],
+    "ApogeeEssentials/ApogeeEssentials.lua": [
+      "8c801133e2fbc349039a0237a500bbff8110c31e8f508aa5ae24980789a9b346",
+      "9a05bec43fb13e8aab936aa3b2940cd098bebf22f944dc32fc39a55bc3561435",
+      "9cf65f5b483dd97ec53fccd03d539b7868f26334f8507b84cb26048af6003c80",
+      "cc95f2bf98f216cc77c7de22d7704cbacc2a6ad4c05c864a47dd57ac11137291"
+    ],
+    "ApogeeEssentials/ApogeeEssentials.toc": [
+      "5640c9a7fdf957f72393670cfcfeb08c4bbef65cbd6a17dea8926728b38f33dd",
+      "6b1de6ee842c7fd002ac665908e347bb13af32b5c9839f3b731997421d873c62",
+      "f29edd1d9b292888df3a725cae8d7493833ea92cf85e8103a652249d61dec5f3",
+      "fa38e0f5f1fadaea6b67e593f19ff969a5c915df2f37ee0c01e54f3f789c8a51"
+    ],
+    "ApogeeEssentials/CHANGELOG.md": [
+      "0542ed026faec64dfb51997e0624732d255ae08a24a2439542a1bd7000fc3b6e",
+      "3865ff4542df945ac57fc58691ea5c04277ef61d813049dffa1ff791978761f6",
+      "3dcbe0e6358a4193d594cfce086cf98680d100071cf2f14dc6eba2e46e1be3af",
+      "6ac44e788bb463b43435e9d5f4cd252fab25ee35df8f8595b4ccf90bac735ee1",
+      "ae685db453bf43ee2bdf7810b00121d2469779fb0d3ac9da760e1f5225be96f9",
+      "cf9b9a30bed33cda912a3c5dbe881b79b8faab3ae68c0338f2ce5b77f55d8f77"
+    ],
+    "ApogeeEssentials/Core/Client.lua": [
+      "1294b10bcf9b728fb2d1741058f83f6d0d5da9fb202cba465f364c3394a19420",
+      "154a2452f42d2d38744e2a7abd6793c1370a3575419a689822ca58133dba1bee",
+      "26e3308dd3e6deab54fb91e5e4583cc8e7d8b468e632038e6fb072f179066650",
+      "3e82f916b6b5fcf4e4a819fb1a30a0c543b3f07679acb5aabe187ad58ca0adb5",
+      "48b90dfa5c4b63e0c8a8c0b7695ff12292f96632c9b1755b8263a0822d7d912e",
+      "ab49b38692832e071a2501d2f58f6ba915cb723b3753253e227ff8d2c4d6d8c7"
+    ],
+    "ApogeeEssentials/Core/LearnedList.lua": [
+      "1f3989d092f2eb983eda15fa72519768396d5e8530129c446488fa7f59cd6b08",
+      "3a5b01fdbbb25931bd0da58f03b223118f4abd9775b8d7d4f1e0d46dc5ad879b",
+      "68123c5ce227513f18d6e062ec8386a3948228409738abf88cfdc5095c650731",
+      "d9d3f0469de9a6187c92ab2848b6964f909d29a09f189839d201f14217bef46e"
+    ],
+    "ApogeeEssentials/Core/Settings.lua": [
+      "58cded535ea778aabd47baa1648b7e1aa50ddc87d5acbeba179cb82b85801ef2",
+      "bc11494fd76ac89d43910e4335ce3907fc3d0dd428e4701dd8823fc15dfdccaf"
+    ],
+    "ApogeeEssentials/Errors/Runtime.lua": [
+      "205550199fd5a7c90a0ce75fe5b1e3909f42d1fc34600e66a120304ed8207963",
+      "799752259ed0cf9249900dd1a52ccbfd5e0b972d7154d5b8f9089eb4ebca06fc"
+    ],
+    "ApogeeEssentials/Errors/Settings.lua": [
+      "1c1a63cfb3e416693edd1e7d5c8408ce9a8a28e39fec6ea6aa17e6292b717c85",
+      "e1089eef13e99f7c9c9b568766e1ec129505bdf06e38422cfe7f8c01ecd213e6"
+    ],
+    "ApogeeEssentials/Fade/Runtime.lua": [
+      "033bafb1b006a4dffb960e79412965e335b5b57e4744744bfc94f0e43b5256a5",
+      "34819976d3b024eec756fdd635e2ad4f80b016e3c28775b337be5908e6f27f10",
+      "712a4e1c2cd63e3f40b952bbb31b938443dcbff844a8554826f7c3de1e15ce4b",
+      "e8f15b8524fd5f66afe448cbf1540f4a61ecbf0b6623c40c45ac27bd79ff1851"
+    ],
+    "ApogeeEssentials/GroupChat/Runtime.lua": [
+      "5ec39f7903850d0e6e93ca8fb55bc5d04465ce208d1de4bb179dc4dc5d07ec5c",
+      "661b41c630f0b889616042300a21ec9cd4e92470218506f01b8f0b49c289f976",
+      "931115f42b5cb935dd728061adefd61febe9ff73ee4c35b30cecd809c3f84568",
+      "ac22f63d8364fa040d5e58c692cb700331a22b5dd54316625d2d2cf57b522947"
+    ],
+    "ApogeeEssentials/LICENSE": [
+      "22c7f01b79be20bd0ab43b1b8ee9896901ad20411e893c97c6eae35734887b3a",
+      "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b"
+    ],
+    "ApogeeEssentials/Media/Textures/ApogeeLogo.png": [
+      "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e"
+    ],
+    "ApogeeEssentials/Mentions/Runtime.lua": [
+      "340e21cac3d50af42d655266d0992e0d2549460439207d8394ed009672e8de24",
+      "5b53c3dcf94a6111c90089ef572796ff1503cb2ebc41a36bd665c38e76791e67",
+      "a8b256b7748e959d090628ff404b5dbbb153eb9c1c094569b7cc44d7466979d8",
+      "b533891704a3a93da425cc75b5841e2a8016c7ba346efefed96bfdb2a0f2d749"
+    ],
+    "ApogeeEssentials/NOTICE.md": [
+      "60dda1459fe759974deebcab4ab89704e3ea4b63358d980315c384895441fe33",
+      "cf76c53fbdba0215d477c0ec1ab4e91bfcb46f6096f52c3988233ecc76958260"
+    ],
+    "ApogeeEssentials/README.md": [
+      "036960de859839f55c52cc6521b8aab53b8a2484b05a95dd5e9a3c7a150e29bf",
+      "048b0204abda15d3b88d8c764a698d06f2566b470beee478200b31b7152bdbe3",
+      "37eefbd245654252c8f766d0e01343dfb101828c45f100dd29c33100045eff94",
+      "7bcb83eec65b3b9118137b5bb1f7563486ee0f155d47c9e9202362f315cb5ec8",
+      "cdda97f18dfd12dc6fc704e6246434fbdf2a734ab4cf096785b34889704380b6",
+      "fb074d23ebf2ba36f3a2ad26d9d94c90ffdf82117deb55fbc50338a3baf656f9"
+    ],
+    "ApogeeEssentials/Thanks/Model.lua": [
+      "6b938496e29444fa3b38b0eb2f9635be4082e6b927635335acd344a52aa40239",
+      "fa1410934b815f389882c4b246c1a5be85ce248001ba4c670b66bb4356512ca1"
+    ],
+    "ApogeeEssentials/Thanks/Runtime.lua": [
+      "1e30d8aa53d69843de13279ba7c5da814a7e90ab22399d1a06c1ba9908786211",
+      "7c4e5a82d49872285b87b398ed7539ed1196c26dadf3754221d2977cd5f7c516"
+    ],
+    "ApogeeEssentials/Thanks/Settings.lua": [
+      "0a08ec442710d476c6c3fa76feb64ef92d74cb0c02b708a7311101fffc968a3b",
+      "85384c278d86cdd9370058746fb00ca17cbb9a55c1aeb879960ba2fa159e6ff8"
+    ],
+    "ApogeeEssentials/Thanks/View.lua": [
+      "2c2275cd4fdbd31bd7fe0c2bdac132d1e17ecff7f95f7d3f8dab6e895a3dcecf",
+      "65ebd7f4ffb99d66173f6231d11fbc44ce2f67b5b2c25f6ca6c6e30a68853082"
+    ],
+    "ApogeeEssentials/docs/ACCEPTANCE.md": [
+      "1e23029f3936e5ff0285e1bbda8accf79b071c015093998504a5b779631b781a",
+      "3c06adced05c267b2430fb5689b819d31a9f3f01e3abfb1a3799704443d32041",
+      "b81fab41461ce914ccbc0f0362cf77abacdc78ad75068000c54c6467d1763138",
+      "cdc8b3c7d9838a13036e28492ae6cde92a8d16f5c39a1677c5268709b8259879"
+    ],
+    "ApogeeEssentials/docs/API_REFERENCE.md": [
+      "46c603081152f5216a3cbfec5c2ea208bfd997434555e1d7a2ad4cba46da021b",
+      "6ec495e4ed078adb5400c8625d04ea7761e5ac4ae311c410594ea0547c257dfd",
+      "a5a3f3c0d92edc6a16d2d46ede12a8e008d342105613b083da83cff28f880c3b",
+      "ab72607039c0db82a4d9639832092394b656ff3334d76074c9d4833aa3a6d9c1",
+      "b675aa37ded93038765c0c529b9ea071afc1c2de32c3ce0a078f53211dc41703",
+      "fefde87bd6b9dabd0054e52712b21948d503c4868bfd2d0ce8aaa94bbcba49bc"
+    ],
+    "ApogeeEssentials/docs/CONSOLIDATION_2026-09-24.md": [
+      "29b2b8f674c598cb05ffd22c90aad31f85418ff32d545bce5635e3a0562a4462",
+      "4cc9abdcaa47700d267ab3d0c4b92ab7470810281f753fc8b7179bca056c532e"
+    ],
+    "ApogeeEssentials/docs/DEEP_REVIEW_2026-09-24.md": [
+      "169ac1ff4b91620c9045c68104f641c1149b32ce0c0fc19008f9801e8a627939",
+      "28ecd785cdf54930cb95f4364c142d78133ce71baeb647d34d270467545ea5b8"
+    ],
+    "ApogeeEssentials/docs/FOREVER_ONLY_2026-09-24.md": [
+      "7fa57e47d236134373346a1f39adeb57da68dfa5126925d9e923f1c6ca65559b",
+      "cac966df26f882d7f6968c4ddb5edbcd1b70a58510c284558f078605a4a0b3ec"
+    ],
+    "ApogeeEssentials/docs/PERFORMANCE_REVIEW_2026-09-24.md": [
+      "984bae26d8465fdb633fe3f1a1271c3df9bb0a5142af99ca1dadd201e5c329f3",
+      "def64a1bbd41e5da79575fbd1206dd0e62fb6a2dd6d4cb6bfe597b08be5da0b1"
+    ],
+    "ApogeeEssentials/docs/wow-api-export.json": [
+      "7f078bec0a1fa06b778572aa19fbbb1c805535d8845e7b09983c0feebe63a5b9",
+      "98112a00db6647a0b6b8977a9f9bb517f7039905272993fb14de0f62c9319be6",
+      "adf015b8bc04d7ec466d35a69064e9873ae2ee0571f166ff5780e78daa0544c5",
+      "ae7b291d80c2604d3d755fe46871be2e38880c62dc19a54d9b53c994d4101e22",
+      "ba655dcfb7270c3496a9c8312c8c383282a803c4851353f2e554a7b450821ce0",
+      "e4293a2a5c55cff795459896d8788488c928393f06457e99f43597f36f3c8006"
+    ],
+    "ApogeeEssentials/docs/wow-api-review-hashes.json": [
+      "2a04987a34b3d9367b3910b10512f6644974a8766a5fe2cb1643454e41cc4aea",
+      "40c891193e8567ab110eb4dc67a2fac12f4729a01cb50f0030a87f3a3daebe21"
+    ],
+    "ApogeeEssentials/scripts/build-package.ps1": [
+      "b929457dad7d080b3470a71336ebd6e35e7f1e22983bd9623ac69508a5502c44",
+      "e7dd4deb2d0576c2809bfd4ba4155d24a46f2e526a9e188d8b9a0d15adab29e7"
+    ],
+    "ApogeeEssentials/scripts/check-wow-api-export.ps1": [
+      "1fd6e639d2061ee0e19c6e2b3908636854f6cf05d06f20eec150ff28bd2cce34",
+      "5d47792fba5c44a617e659adc6cf74205e4b2cf02d63a25f5dcd4802689b091a",
+      "7f964e63ded76b1b1e8afda72e9e55b8ab68d1a5407d74f6e6b55e60c89b7344",
+      "d02082c7c075d935dfd06548c9c10fe627c2986c28bebf1413d4768e555ccee7"
+    ],
+    "ApogeeEssentials/scripts/test-local.ps1": [
+      "0f461b48120916a87fde02a9016881c1c076932db0c032335c2414a93ac84df3",
+      "2f6735a7e67184749d73ae823acf34868c9c3f7653236314dcdc5ef815a25937",
+      "9473cd927f0d3c641dda256935699cf2e8333917fd8ed60e5d0f403c1bb1bbb3",
+      "c1776b446d4a68b376339e2d60dfd83c69f9ab634a6b2abe8967ec646cd57686"
+    ],
+    "ApogeeEssentials/scripts/test-lua.ps1": [
+      "3fb1a8302293346fe65ec5251f3eb1e6e5436f0cf8f890cf4641d6d0f8da3618",
+      "6cc9a15677a72490c4dd26e4d2e9e7be8e33f6eb933abd61eee80e6501ac2532",
+      "85a351cdadd903b789af2f8d3da535c0de9b40014ef1bd22e88eb5f0a6280b54",
+      "d6d4bf0d4027cd92fb0247061df1d961a4b2b3e8e804b2ce6156638f0e7df2b0"
+    ],
+    "ApogeeEssentials/scripts/test-wow-api-export.ps1": [
+      "0120f784dcd87e2c4a1d71036036e884fcd3605be7bfb436bbb8ed8941643e29",
+      "7c56dbb9b9eeaa48cfe7e312eacfc25108cf0b466d39253cbaa722c50dac0926",
+      "90f0424ceb338cfe02c470777b351fc35d86cf9c69e99c87eed7ef129f7b9471",
+      "d0088d45e7ddc4e67b25a8e2d9975f3dfd2f1496b179097f998162c7bb0d09e9",
+      "d1e3fe591b82e46d1e210bc47e8a183446971858449439c45c50fbe2715bb8be",
+      "dc92aec99065cfc358ddac2af116fd3ef35faea62cd462d04b5195feb282a1f1"
+    ],
+    "ApogeeEssentials/scripts/validate-package.ps1": [
+      "03bf839c8ad1fe97b1aa957e32a711ace85859250059056c7ee5b339df7f293f",
+      "1bea201037236183fc04d6a7d08bb6912f002080d45d1f65f55c935b0310ee57",
+      "203b41737ed46933a100e381e33925e49e475982d3cc21383f3ed92a409a9b71",
+      "24e64d57c60651b056ae80484decd921827b4e502549cde9c1598191e478d38d",
+      "26a544d956574843ad0e9e4bb93305ad74ee64bf3620293f0a355379f26e367b",
+      "9a647fb33a855bcf32ae6dc5dfec8abaf2f36b73497193cf767c8ff5c94bb5be"
+    ],
+    "ApogeeEssentials/tests/beta_restrictions_spec.lua": [
+      "03d77562236f189efe04b26ba6bbd81cae46076d68955e604c9dc8a8991b67aa",
+      "7b4d615fef2365cab159ad9a99f751427cd95285583345f44e4a90a6447ab4a9",
+      "b0c4b3ccf4010ae23539c55fc6e68fcc22770748fa927cbffe13adebc994c761",
+      "ccd294edb45cdb5ec884b0810af91c746801844a07f6a18d797125d6ddaad0b4",
+      "e268173c69095c64260e06fca5c4a8e0a49de8e5ba24bb2b4c547bc4fe1f355d",
+      "e45bcda5e630651869a3a6d20ee7b0e24711497cdcd13924060a2780e27e50fb"
+    ],
+    "ApogeeEssentials/tests/beta_startup_spec.lua": [
+      "4301daca56d019e2e91f2efb754a3b5079e0730297ae587855ba5b677428ec5a",
+      "89e1493a310bc250ff63244b44319c87abce6f341f4db5a6485351c88851ebbb",
+      "aa12debdb3b8b165bb6eb078a0f86e77e44836b7ad06a33738dc0d42b0e40c9c",
+      "ad3239b53e70e3878eee57919a67a42d8b4254e2dc5c5cb8fd44fd2ef19171fe",
+      "b46ca4f1d99ad9a3478cdb0287c02e672bc11912cc636c073f368c433f841723",
+      "c96627bf942d6d91b2336438190d4e0fc733484331dd8aecf26a23c98855f273"
+    ],
+    "ApogeeEssentials/tests/blizzard_errors_spec.lua": [
+      "4f99d317bf6d110ac9d302697736baef189de97ca67c8bb42e3683f7624b1b2c",
+      "5ef5e2ad7c84a60a51fa11b5967d13ec9d283a2710c6a64a0bc865d3bffdbec5",
+      "80958ed0ad2dcbfc939998722e461ebc9164f9cc36f2f794a4a75a02bea56696",
+      "b35a007735040579c9eb77abe530fedbbbc2a27affec26bc47311224b133f270"
+    ],
+    "ApogeeEssentials/tests/chat_identity_spec.lua": [
+      "32746dac53f02b70546c6a632e53fd5c6ae7550c92c33c07f4cffa2991d25b2a",
+      "96f4089c36a325c5bb79b9251c3dc6aee426f3b1424a6fbe005a0e3c8d3aba73"
+    ],
+    "ApogeeEssentials/tests/client_persistence_spec.lua": [
+      "1b5f4067c7a72f0d4d7c721e280dca6cf4b2af86fa8c2e2e659be12e68d5f66b",
+      "37465fdc29e6b4702e47a44373640d66a3ec59a6ab5f3dd63c036c69f296bb8d",
+      "826c813ff107c368ddfbc62918af253c60a73c78322cd6c7f5ee1447a339ce84",
+      "905bdc0c49d2ff045e5c837e4d4becb1173620206926dc66713f379ffd503685",
+      "e15295d06a1a799e92ff707f6bae0a0ee4ad1156e33345bec8d3f3232fdbfaae",
+      "edac9215e7aa16a1efbbc87ca5fb85b530d215542f67e111738bbe48aaa68587"
+    ],
+    "ApogeeEssentials/tests/compatibility_spec.lua": [
+      "35022abadc20036d1020213dc9b25e096d3a086a6641399b4f100979e0d46765",
+      "39516d05d51f18c7fb163299f4abfd1a9959ed5ba7eb6394d9529f1b2ec6378a",
+      "67d85ff597a54d19f8cc92c4768d16b0694b798dac2d5d9d23c33355b07d95af",
+      "feaa8030176575adce2c9432df2872969a090a7a6203d72153ecced3bcbf4fdd"
+    ],
+    "ApogeeEssentials/tests/error_settings_spec.lua": [
+      "159019e305e5cfc47bb4bbcd819ca7edf34465823561a3a8be0e6b948d89c026",
+      "3e57c7ad13bbbd2939d7552067245e48354f91a3407820598d8bcc954a8ded71",
+      "9fafc3e7e05e27a777bb986cba372cf1b142073c707dc17c9b8d3f6cdbf2c6b0",
+      "a679118b45e2b949ad088968e3ff734256002175cc2e03e9bed74d8edc3f2bc0"
+    ],
+    "ApogeeEssentials/tests/errors_spec.lua": [
+      "b2a2dfd422af7c0fd5b2d836ed8a02b64c0d5ec5259f3159a4a55872669ca57f",
+      "c4fcea6d806832c7b1322cf3bd01904c77bb314390b0bf783f3f2a33cb238bc3"
+    ],
+    "ApogeeEssentials/tests/fade_spec.lua": [
+      "0c5f514e6e52a223ec91e76a45a619af3f92cea8a73d7d2b98328bda4bccce8c",
+      "195399963653f8b2db2c8ac71522d0a83e26a818b6f7a09a51bf88f7f8083e65",
+      "273c3364c51d84a99686393fddb804fe1069adac82df67a9f57b2c3ccf5a54aa",
+      "28b6e28b63037b94f2d8d0e93a1e25884a0fa9a7d05c7e80bfcd35481822874c"
+    ],
+    "ApogeeEssentials/tests/group_chat_spec.lua": [
+      "7632df01bee80df21884435714c9d5a294e46fbcc62d10f25917b7f9253dc2f5",
+      "f37ea24c09fef5ff0c35554f98ada1df95ac2647fb836e219c6975b71855c6af"
+    ],
+    "ApogeeEssentials/tests/learned_list_performance_spec.lua": [
+      "2a1ec42c28999f5e04326fb594a1e280bf493fccc50ad15648093c43f7bd05c4",
+      "93ed52a89d6a807eef3c4dd996d8b85fdc1171b5fce62a96bb128d9d6e064bb6"
+    ],
+    "ApogeeEssentials/tests/lifecycle_spec.lua": [
+      "274c38886df04090d4adfa6effe81c82a9f7e0a2016d1685f7e7f85c69a20d44",
+      "4a26d2752cd392f8fd19588bb3bcf3aed43c6e22ca1a3bc1876c13e1cbfcc76e",
+      "553945cff60d4c6d72a6b1199cece264597cf3d0e23a04dfb8421809eb886c36",
+      "c842aa6044677e0561f74a59a9ab274b822fabf2d33312c71fbcd74aa3e2ac16"
+    ],
+    "ApogeeEssentials/tests/mentions_spec.lua": [
+      "8cecd9c35fe90108bdd0628c16b9a3db032d6035f2c92c5f68db92cc440d0af0",
+      "b65cb05e488a0f5e49b908fe5c48c7efae8db28352b59bd075585101e19826b5"
+    ],
+    "ApogeeEssentials/tests/mock.lua": [
+      "6b54337066be5f626f697a0c4f4e050b620ead3f6bb483d91206033c2f1d1900",
+      "9ef1c3b4b70fd0073693cb80eba48e86dc3f881cb746271f5f406307e6326652",
+      "b9b073da2d59b3485280ca1b3239e241910c0d38965a999161cc6a48845be7d7",
+      "cce8a096e0842bca57aa3d4984538498c32b4dce5001f5eb40721345cb2df68f"
+    ],
+    "ApogeeEssentials/tests/spellbook_cleanup_spec.lua": [
+      "35f49f0c37d25ac9b7925122b3ce516f59923d02e4c397690164689b2466cecd",
+      "3ea18449d6e0df33f6c9bc8709fc41581b0e700ec42ebc8ccff801b5696fc0ad",
+      "49538e8a371987a55cddad226c1879e08230be649bd4134f1203a6747fc54ecd",
+      "963fd2d12ad0a886cbabb5e2c515511023a3feb3826bc18d7db12ea751b3a467",
+      "9ea60c64a2da9b72dae9db451854bd3dc274b90f188494d95ba361f265160714",
+      "9fa9c5c7c9937d59aee81de7dabd3fce011ee724c93211e74953d5c2c1b8ac11"
+    ],
+    "ApogeeEssentials/tests/startup_refresh_spec.lua": [
+      "1174dd7573304c9c896004a920183116d94cf489b3ad46a8a8234d9af8785fa5",
+      "6101987413b41e70bd6b60f2b4ea37073c3f2ebc376d371d40a7637696a8cd3a"
+    ],
+    "ApogeeEssentials/tests/startup_spec.lua": [
+      "114351cce16ba183252ddfeb269294d053bf6d006b64e5dd176bb99500708227",
+      "439eb0b7bd05d3cb281ea7d725a3c4b9ea91e76f6a7d57cb5e00cc96f3d229b0",
+      "99b23e5b117d9081756d283e9127316bcf0245bcbf674a6337b4db566e237339",
+      "c563100f8174c454bb6d7a3894bb541091bbca671300021f53dfa9bbd92427cd"
+    ],
+    "ApogeeEssentials/tests/thanks_model_spec.lua": [
+      "5e71badc7b1674aca9204239f945a46c52d32deea00c38850018052480728cdf",
+      "b745798f98e3f0e95d63efd6bae9211024b164d17ac7d0ce9a3edce0d11a62ba"
+    ],
+    "ApogeeEssentials/tests/thanks_preferences_spec.lua": [
+      "3f8d7108a78a16429205853dedafb3da2e46cf9ddd3c8159821819fd32101009",
+      "7d9926098c36bd7aca19f6187db4400375e90adb7b900946b61eb4f88928f487",
+      "d1687a6bef35127b17fcadcec35b39f5b4693f6af4c57c1a16f9f57822dc07cd",
+      "fef35152c0d26b38052cb2481f9b5ad55c8198fa4abeaa3186ad1ed1f24d28ee"
+    ],
+    "ApogeeGroupAlert/.gitattributes": [
+      "d60f352d0db1404c70afb4bb8b2ca3fd1c610572aa40720e8a0b7baa7885418c",
+      "d711b6ba64c7208f3059111e2a74a2453348584bef1fec237198ad08befe28b9"
+    ],
+    "ApogeeGroupAlert/.gitignore": [
+      "2a4c1c857ea284a7134286452604f226771e1bb3ce8449c6818e73d2bee10946",
+      "905f7863f9e1ff3578d6dcb2b3e8ff0b278287a9b45d3d273d20b8b2330ac58e"
+    ],
+    "ApogeeGroupAlert/AGENTS.md": [
+      "2516cc5e4d27d0d1bf0b458d69dbbe7f5ba371d0c59199f66ec9471dea76845f",
+      "384f2b890924fe7ff1e064f748dc2fe574bbb38460b95fd13462ddd1ca50b7ae"
+    ],
+    "ApogeeGroupAlert/Alerts/Model.lua": [
+      "67252fcd01083bf17b988189098b621c9eafaf1a11ab9c867a6a3c34b98d9754",
+      "df81521b2ab7b98ae9ab81a416a37066a1e59a1baa8a1de9e795ca9d59a23731"
+    ],
+    "ApogeeGroupAlert/Alerts/View.lua": [
+      "26814f678d1ec19f184e0b78f891d4fc67fec6bee3d0018fdb9e1b200d8e5c11",
+      "7951a05045995145197a45c2937862122de1ef7ae0a836a34586717cc61d01db"
+    ],
+    "ApogeeGroupAlert/ApogeeGroupAlert.lua": [
+      "f1b859baffc56f2d37de86a48610bc39da4965a31323ee1455156f64f0861919",
+      "fdc3cdaa3bcf6ce1f4dd3dd002b244dc03be4168cc77430eae28749d68922cd5"
+    ],
+    "ApogeeGroupAlert/ApogeeGroupAlert.toc": [
+      "8374e660991afb1de5458cd08f0e114b33ea0e7ca10ccce446f40987b7a50384",
+      "bd97bc1fa22291fac8885d26052fd7fa166d77161752c86cc46d2441f5c888e5"
+    ],
+    "ApogeeGroupAlert/CHANGELOG.md": [
+      "acb4ef56d0be739bced84a3537804923b20d684308971192b6dff16bf785e63c",
+      "d6a08fc44251e70d73070759dad3158c67de3c239c47620467880087114e2d68"
+    ],
+    "ApogeeGroupAlert/Core/Client.lua": [
+      "048afda9cfba8da5b45aa535900f2148422a9515b25341f3ac54558fac9241ca",
+      "c569d347bc719c09e6a24482ae58778c895c7ba24eaa448ec6c78f54553f36a5"
+    ],
+    "ApogeeGroupAlert/Core/Text.lua": [
+      "7f5fb45894e8939941f748e38736a4241b9f350d24711dd1f27941b0a8d5e056",
+      "acc322a7745f82d37ba71aadc1fb488b7fcaedd0410841d9b70146c6dc0b5e0a"
+    ],
+    "ApogeeGroupAlert/Core/UI.lua": [
+      "43fc3882af40c0c9d4a13d1fc216c7343f6ecfe6f9d9c9cbacd8232de96721d2",
+      "e221bb5d56e6f9f3fa20bb42f814867e057cf06be7b0016c91f8741f86ec7ddc"
+    ],
+    "ApogeeGroupAlert/Discovery/Dictionary.lua": [
+      "a604b5e56cec56cc133c0fb8258f55ab182d8f3d92dd111b2b6ac6ac3a8eecd0",
+      "a97f9b81353d7b92aaed4d2c16aff75c7d499d623b849a5a7a75153917fc6972"
+    ],
+    "ApogeeGroupAlert/Discovery/Model.lua": [
+      "77d373fdb4c94805ee99d767db2d4c52376b4f06cc5dc34ded6ed2e6a27aea23",
+      "dbe593907054a19c8c3a044a420661c3eda0a5deace9231440e4a88fc8f9b2fd"
+    ],
+    "ApogeeGroupAlert/Groups/InlineRoster.lua": [
+      "0bb0beed6623cac46b1dab5d0220d3b6bba279dffea29277aac66cc30fe9d7d4",
+      "c300b29b68712b143f8465837f7ac605289faa568ade026e00f5954cefc3d1e4"
+    ],
+    "ApogeeGroupAlert/Groups/Model.lua": [
+      "8e6897b2e8db1acbaf036d3fd5b56250b78ce5800db897f934f3ca0fccbc707d",
+      "9671b857dea613fe747010d9bdb26edabbb6573864c22c4d739be86434daec18"
+    ],
+    "ApogeeGroupAlert/Groups/View.lua": [
+      "0c0d221e5abb91cc75c6f444c3043033892f5ab7ff3de148d0132481fe09084d",
+      "5a563fc79cbd926f30045c214d3857c97c9825f0abb089126e82fca68726dd0c"
+    ],
+    "ApogeeGroupAlert/LICENSE": [
+      "22c7f01b79be20bd0ab43b1b8ee9896901ad20411e893c97c6eae35734887b3a",
+      "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b"
+    ],
+    "ApogeeGroupAlert/Matching/Classifier.lua": [
+      "7c6a13d63f5bb9be81d2ca8368154418d634460ec449bc71652b735570ced43c",
+      "e7557b6b130b4b57fa8d43d32c0f43e14e18a3295e83a14f0b8e01a552c2ffb0"
+    ],
+    "ApogeeGroupAlert/Matching/Dungeons.lua": [
+      "b9382b52e2ea56db420da7ef1fe4b4a41bef9818f8d728c1dbfcea9e6e5904a9",
+      "fde59f94497aeedeb69bc1b9923fbfb2e8936bdcf50c23a1f61cad9dfc6e22ba"
+    ],
+    "ApogeeGroupAlert/Matching/Levels.lua": [
+      "265a1158c3081587c484af970b14418721fed0bf4079fb22e852b008f03620a5",
+      "910105e24fa5eeb199187f1171937131c2cb91432440d8fe77b2290ccfe8ee5b"
+    ],
+    "ApogeeGroupAlert/Media/Textures/ApogeeLogo.png": [
+      "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e"
+    ],
+    "ApogeeGroupAlert/README.md": [
+      "ace3cd2d43a8e6347e75c3ea4105d3bf8b1c19e1c04b4db7f3bf93ecfe26b4c2",
+      "f08a80ceaa6a6a0e12f05143d98f5ed800758d2e816b069d3971ab119717f116"
+    ],
+    "ApogeeGroupAlert/Settings/View.lua": [
+      "176d0fed0fe8ba8625d82964b18497cac3bf4e2ffb4b9b12d4b8e32aa8e2b33f",
+      "9bd6540e145c8b4da637e51e1c512e296cf9969146cfb8fd2d610fc6418c260f"
+    ],
+    "ApogeeGroupAlert/THIRD_PARTY_NOTICES.md": [
+      "6c999d3ef098a2ee82642abce8e16d30e82f48495f58529fb56617f0a06486e6",
+      "89b0ed3ff771499db44c63e0449fb2cc8f10057a1e75c03b233b54cc265aa7cd"
+    ],
+    "ApogeeGroupAlert/docs/ACCEPTANCE.md": [
+      "359c17291dfbbe91abb19e9d81f99fa965f40f2934bb637c338dc5695ab15c05",
+      "4c2a8bd2655b0e892fbcf373c5218779a82f811d7536f582de4dbeba12dc5706"
+    ],
+    "ApogeeGroupAlert/docs/API_REFERENCE.md": [
+      "7acad4a05a39c4e3fd3abdaafcee711e6803723a2d3134a970b99b6b391a922d",
+      "a9c7b353ce7cba43858d5f90eb0d5489956623dcd5e90a4c5edec865ebfeb8e0"
+    ],
+    "ApogeeGroupAlert/docs/FOREVER_BETA_PLAN.md": [
+      "8cb2866a0084f2ff0093026cf53a6a900b17c2501999db4e127a73e9840c5cfa",
+      "bbfb2d443c996a497587358693c88d5a2984b333c3da19ce8896cfe08c3f370e"
+    ],
+    "ApogeeGroupAlert/docs/QUALITY_REVIEW.md": [
+      "05ff265744e8cc52eba211241157c8aaee9e6e62c87aa498c47948028f03c215",
+      "1912f4ef245e045e7a748b92105154c22b9ebb9cc462afb26fbef93c708ec987"
+    ],
+    "ApogeeGroupAlert/docs/wow-api-export.json": [
+      "851a1e8d62df64f250b4b77c8b1391e6bb58632a2fb171dba3b1a0815afbdbbc",
+      "b15e121ec254fe79794f10ba5671b837d8aee9ca6b1ee1fb1733a6cd7f317883"
+    ],
+    "ApogeeGroupAlert/scripts/build-package.ps1": [
+      "3dbc0530ba25b498a20c8dcf10bb24e3ff64b0d79e6abd93b1f13c4e98893f36",
+      "bbe7be9579fca22f863150a88087a6630af2485f43bddc48a9830dc5da0550c4"
+    ],
+    "ApogeeGroupAlert/scripts/check-wow-api-export.ps1": [
+      "d5100c0717afd9237b817af2fb618cd7b0245737fb37ade207764f6cb477b1de",
+      "f2dfd3f3d54e1efef71a405acd6e7fd7321c923411e035a6b7da7dcddc656c41"
+    ],
+    "ApogeeGroupAlert/scripts/test-local.ps1": [
+      "1319d12d4592c7478c35b55c9ffaceac4a3f5402a60bd80ef38e969ef4077df8",
+      "a2bcdb3a28eb9bcb9ebb72b240480e5a94b0243ce350dd8fc503426fd2886eaa"
+    ],
+    "ApogeeGroupAlert/scripts/test-lua.ps1": [
+      "0efce815beb997b6a48fb7b841567ac40a94c553d1489dfabe2a4825664619dd",
+      "b0a88e577920caf31a7185995f503a725fbbd3fe42f452e03d77323fecef3610"
+    ],
+    "ApogeeGroupAlert/tests/alerts_spec.lua": [
+      "0ae5cccf3bb11daa6eda43a072e38604577d4adf9f720d7dbd0d3e23f46dc38a",
+      "1c20796a68c7fbd0a06d3030c92f913b05d3788089831f692d685d69a455ea9a"
+    ],
+    "ApogeeGroupAlert/tests/client_spec.lua": [
+      "823ace8d9f72c1de5343d9d7d7834aeb725401036d7454ea0ebc04fbd88d91fb",
+      "c7b8773160d8b679f4e97dc2548ae60c1f1775ce134c6f29785e2c3c2f62cefd"
+    ],
+    "ApogeeGroupAlert/tests/compatibility_spec.lua": [
+      "412ff2adfcddb3bd22520839c292c1b8ab40ff40e141847038c0b5a28814b04e",
+      "de4bc26dae69b2040ebe45570d3ac9dfc435b7b967d24750660b3639d896f211"
+    ],
+    "ApogeeGroupAlert/tests/discovery_noise_spec.lua": [
+      "8c129ec4cfc9d0d0783d2ff2106ba9252a0bdcdd00a22e715b6e3950184b69bb",
+      "f033e57450c49ce4195a4a84f98c0416e67aae874acf70c8d6c5b9017d75e45b"
+    ],
+    "ApogeeGroupAlert/tests/discovery_spec.lua": [
+      "9486300ffd96b632d1e7e22b887aa27d3968aa906593e8120268b25fdc821ac8",
+      "ccbcf32b39ae2bad816db98ba60557250b138b007e02490a4c821aae7472050d"
+    ],
+    "ApogeeGroupAlert/tests/export_whisper_spec.lua": [
+      "afd9e872ad9c01dfb06f96aa530350cbca15b96db44e51dff26f81178cc6fe00",
+      "c0b7550818af18757b068a620691c395ca7667d5a4cbe349d8031bbed9d0221b"
+    ],
+    "ApogeeGroupAlert/tests/forever_spec.lua": [
+      "010e215365d3100f9bcf8cad3a549cae891e17328b77a572ccf49090e7745cfa",
+      "f0547b2a8890bd4b38a10440248f45f21bb28ff36a869ca83a202b9b87dc86d7"
+    ],
+    "ApogeeGroupAlert/tests/group_lifecycle_spec.lua": [
+      "46653127f290a00e4c309ac23e25c493271b7838cac759d9d75bc2985c5b9a0a",
+      "9ee7f5c839f94d7efcc2e83673dc62e3ca06d491e7fe43cf262ca1ab75c3169b"
+    ],
+    "ApogeeGroupAlert/tests/group_view_spec.lua": [
+      "6d9916183afcf7334b8b9a276017bc14550b100b193703fe26c93bc6d6ffc0cc",
+      "a0c09183aa1d8e072eee78a1fb8a00509d834b8f4d8fe392e32cef20b11b29f3"
+    ],
+    "ApogeeGroupAlert/tests/groups_spec.lua": [
+      "57be229b6d5c2b372fcc3f96ce1bf7e79a8fc94649740ddaee5c5e71e2a7a7c9",
+      "b2c7feddcd1cb469ea6c68cd2a574c5b3066db6aabaa2fc958e6133ccf92e331"
+    ],
+    "ApogeeGroupAlert/tests/helpers.lua": [
+      "6ffd8475b38dafa9d8030f62c567f162c3e8c972ae80f506bafb489059dcc7b5",
+      "8e54abec261e908f81200d4fc14595126e5c9051d48429095c291134687412cc"
+    ],
+    "ApogeeGroupAlert/tests/levels_spec.lua": [
+      "27083ee4df6100ef14c664874152a8a3f4b60fb1235c53156aaec35308cff0d2",
+      "a145dc2049bd8994f715019b4fe17791ed17217060ac3fc187e828e04e696b14"
+    ],
+    "ApogeeGroupAlert/tests/matching_spec.lua": [
+      "08d5245dae3e8a8d8192346bf36168a610622a907c5bab0a191f56a43a67319c",
+      "b92872c2ae16498b82c6210016499fb291910dfdb4e24cad5fb6fe01b973730e"
+    ],
+    "ApogeeGroupAlert/tests/mock.lua": [
+      "737556776fc3937463dce69870015a1e5c8707f95df43bf0bc992edffe37c459",
+      "913ba5bdd04d6c719510ebdc583c1f0f5b7bf928118d2df4dee7a3023d219ddc"
+    ],
+    "ApogeeGroupAlert/tests/performance_spec.lua": [
+      "4f184183c806a0680d3ebbd5036ec8c1d7fc5bedebdb9b247437b982668879af",
+      "efbfd5f66abe7c830aa5426605808bc5666c0b0089a47cd37187d70ff8edd6a4"
+    ],
+    "ApogeeGroupAlert/tests/reversible_phrases_spec.lua": [
+      "0c2c47153e5df587f2d154c2f7caf3d7a7d193ef7a5f8b9c95ad9a6646e2eeff",
+      "57620a646651f37b0de05a63b09ac4addb92a47760de489dd7a50e2e25448646"
+    ],
+    "ApogeeGroupAlert/tests/review_regressions_spec.lua": [
+      "0249faa1c34c279bca1874fceeae459254b8c2d84bcb13c5a62e0e2f9398ed8e",
+      "44eb2b9283671b3126a637418eef19e5e94820f01612385b9cdac0c2c7641df4"
+    ],
+    "ApogeeGroupAlert/tests/solo_roles_spec.lua": [
+      "996c073fa62c471ef102de9f51073af4e9063ec7c7d3c740bb4bb98b15a48b34",
+      "d80529e2a0e110063d8e94d5c89fa7c3a994a6b70a3041aefd8d7894d467681f"
+    ],
+    "ApogeeGroupAlert/tests/startup_ui_spec.lua": [
+      "c17e70359d9dc9633ec44baca5edad001a655340b183b5252713dbaa0ae65f2a",
+      "fddd224ddac88bd6bb7cbe3dbd516d8a2f43e19567d705d43a3846ed92e52dc5"
+    ],
+    "ApogeeGroupAlert/tests/unsupported_spec.lua": [
+      "605bc559670ebcb58577f6165e3602d47c3d53d7b7c87b874c524d11880135a5",
+      "b477c0ecf187f0fab5496ea00012657fdd0179c6b3311bac766186571c82dafb"
+    ],
+    "ApogeeHeals/.gitignore": [
+      "48b37d7b5f2dbbb5828441aed841c9e853f78800401e41ca3c1ad6d02aaf6bd7",
+      "dd91708a845aebffee7259d692ea39657c4c3bdeab05e2072623fa4b46ef9f92"
+    ],
+    "ApogeeHeals/AGENTS.md": [
+      "2b9300695c9c6f5748a723e2e0a4ee8c4a13b3bfdf4cc540870b2bf2ad0693b5",
+      "e36bf5a95e632afdf029865e321f1917f387468286b650dac52f1e3ad9495500"
+    ],
+    "ApogeeHeals/ApogeeHeals.lua": [
+      "5f1cfc0820d94e5493e5bf7603bc82fc9ea0b7d40456cd640eb5f3cadf34ff9c",
+      "85c0d39cb749bab22dff41926927531bd88d8f393211bba748fe90bdf4af5730"
+    ],
+    "ApogeeHeals/ApogeeHeals.toc": [
+      "2a1de13c8fe7a4a4c837f2a2bf5287f61ba45d25c2ee80dd8d78ee2c9b0a7232",
+      "8ab5d526f67cac390258510b3df1623e0d9c8e7308d0315d51e3c5f77a867fbf"
+    ],
+    "ApogeeHeals/Bindings/Defaults.lua": [
+      "41f1e240b7302618fa35c7cebf327a3d82f60a4218b73fd2e6d2d8b2f876873a",
+      "e8e4a09365c284308c83db3f552b1c986af35f7b6334cb5946d6f8516d989512"
+    ],
+    "ApogeeHeals/Bindings/Runtime.lua": [
+      "631e1f27dafdcfd3ba4da9db90bedf90ea530c0173b4e16da725c1b6c5d3dc44",
+      "81e890c5659e54a1a7b992ee882454478e34ffdf971ef8bef9ef5cd45fe7c508"
+    ],
+    "ApogeeHeals/Buffs/Runtime.lua": [
+      "1d68e4916a462601ecfd0120a340cc4e3399492f2098676e170e66aa496a1b00",
+      "8a851ba3c0412b45c3588310660dcb1ddbc8900a3e2673b420516dec4e78e7a8"
+    ],
+    "ApogeeHeals/Buffs/View.lua": [
+      "68b0dc62a25ce7ab042ccb7b11cf6cf8a48605e8b2f530ad99a67d15ecf64399",
+      "dadc3e08b6074f9f5fa1919448ce2df5991deb0abacc8d308cf0823ee4b0a48a"
+    ],
+    "ApogeeHeals/CHANGELOG.md": [
+      "4863056afa6d45e756acee2b76ec6ae6995f50e777de15d1904043dbe92aecbd",
+      "95a2364409a1d638947fae692d81a90c16dd98f5754bd6b0e92e156d6622a595"
+    ],
+    "ApogeeHeals/Core/Access.lua": [
+      "4c5378162d3b17b98b1324774121cfda094709a12950db0c57d1731ef3a56127",
+      "7e518d6a5a11f608ca797756f0448e88733b2346821c283812231a47c1ab821e"
+    ],
+    "ApogeeHeals/Core/Client.lua": [
+      "b5c451a88cdbeb16cb4a65d2c9542c3a627f5fa5b78f601cbd3ee3655a5d73aa",
+      "bc76401feacc82f6d6feab6b854f38d0f509343813432770f76d80546df09e72"
+    ],
+    "ApogeeHeals/Core/Storage.lua": [
+      "46d4f819cf71eea72178e74ca99c61f0fb5e5bb94b4188175b6df07b78540323",
+      "cce29226e4639d69078c50988c57e503fd4b541aaf99d61226cf2d0253cb20ba"
+    ],
+    "ApogeeHeals/Core/UnitAPI.lua": [
+      "9de71071f62794235397bcdd5fc73d2a6742b4719090eeb69d7879013e505856",
+      "c7cb09db469dcd61c886e8e2811b6d0d3a161b6bbe9f76181050a3a500d760b0"
+    ],
+    "ApogeeHeals/Drinking/Runtime.lua": [
+      "543b618e9ca2fae971ea5f23beae3a12ab70242299591f43380f8d5968280606",
+      "ddb427b5695cd4da5bbb4cbe52a6d0703a29eb863d5f3d010a59a40b73ff99e5"
+    ],
+    "ApogeeHeals/IncomingHeals/View.lua": [
+      "00a0dcdffe24a60c78a6d5b7301b142d8ec28f3d9afd8ea2afdd99060aa5c7f1",
+      "d7227313f2ce3551b16da6c04d4f10337ba2b6a2fc84a50c3a8df3a524a97e88"
+    ],
+    "ApogeeHeals/LICENSE": [
+      "22c7f01b79be20bd0ab43b1b8ee9896901ad20411e893c97c6eae35734887b3a",
+      "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b"
+    ],
+    "ApogeeHeals/PartyFrames/Preview.lua": [
+      "44d56bf0dd11d64e6657108ba24ab676210b11a4fc20cf7251c8d270c284bea9",
+      "c7c15582f606bbfc2accd790ed9cf4ce5e1a13a01537abc339da287754b83bae"
+    ],
+    "ApogeeHeals/PartyFrames/Runtime.lua": [
+      "9ba8941b005d0e3e8cce9371bf0977920836ddb37f16423bd375d0fde3f366d7",
+      "ae3ddcad28ccd6bb77c304906c4cf51814632d6549837ad194cc3cfc8ba7ea37"
+    ],
+    "ApogeeHeals/PartyFrames/View.lua": [
+      "84e76b93821a52b8d99b723f42f5eb0874825d9d1305e160cf4a5cfb6d7edae5",
+      "863c4f434af3dc7300ce350f7a5f8006bacb668572f5c885708f82288a561388"
+    ],
+    "ApogeeHeals/README.md": [
+      "5f6b27edfdf3bfa23549a3061902d101a1b2c7b2b141a61c80c3aa5a18e5436a",
+      "92c862c7d702e32d12b1cb442da78122bad57b2f2e78714d3109186a177bac8c"
+    ],
+    "ApogeeHeals/UI/BindingEditor.lua": [
+      "66ad644e327e584b9577d6fd51b0acd1bb6a51a13f07b550429c47c1f7890392",
+      "b5925a09c0b08f1edb4d6766ed2c68b573d2034a4af0b173a9d535df4e7232f3"
+    ],
+    "ApogeeHeals/UI/Minimap.lua": [
+      "043a4f929eda7a5bbb55205bc2d17ab3b299f31e35ebb752401c59a556e36e48",
+      "df58c4e96959054d4dc1deb96ed4a64aec086513d1024616c541273e4d3a8260"
+    ],
+    "ApogeeHeals/UI/Settings.lua": [
+      "530b139109fa1bf16a5b06ebd36ab769e5c8c25b17e779caef23a3a7f4a5cab3",
+      "d7b21aef9d948e1497338e6218b9e4e0013eb66ca2d8b5ab8111b086906053fb"
+    ],
+    "ApogeeHeals/UI/Style.lua": [
+      "107b425bd6a7bf4cb562eb8592128245d618ae3180e017cc6162b80e7010ef4f",
+      "1e6eb7e11b864a2e358c90c73de58b5f85ef1c7d5508953e1303b1efba8dc99d"
+    ],
+    "ApogeeHeals/docs/ACCEPTANCE.md": [
+      "7a0a6b0e9a4f6028a86c9c2d3153b14b287aa0751ca46928a5e9556ad5b3a062",
+      "efdab662808d30994385d065808aa11f28693477753e0ad15b82a1421fc2e875"
+    ],
+    "ApogeeHeals/docs/API_REFERENCE.md": [
+      "a3508e85214b3af684d5ed8f466ec31396aef0811a0a9869e6b881c799db53e3",
+      "b60f7b6f515d936c3fc3a0c503c41dec5650e8fc4887f0637ecf0d7c98e3ccf3"
+    ],
+    "ApogeeHeals/docs/HANDOFF.md": [
+      "40bc003d9505ea474efd47bb6942ad9d3a6f4566884fb0b2bfbcdcc1000c2eb2",
+      "b2adf6f1b7ea95652b9960d791f871b89e34beb229c018bfb72fac85ad1fd8b3"
+    ],
+    "ApogeeHeals/docs/PERFORMANCE_REVIEW.md": [
+      "c89940b7612c46264017ba122f22aa7bde53fb09064bcb3079058955831e2f27",
+      "dd3e38ebac21c0c2f8ffe6d264732355e4449c0aab3df55d985626a0e7736761"
+    ],
+    "ApogeeHeals/docs/QUALITY_REVIEW.md": [
+      "6e65c8b6141a5f9ef9ef045ceee99ce39eb8123c35cdad55df1a594531e7c6b7",
+      "e6cf39860a244e48f18c4b8cd72d7ac134b5e0fcf876cb1648037e6e1be3a464"
+    ],
+    "ApogeeHeals/docs/wow-api-export.json": [
+      "b72038771abfad2bd5e79bf2615e654300df073aeca7ad0472393e67c9d2f531",
+      "d8df0155512271c92bcc44871510c4ff8ca5ebf72b90ae79ffb649b0a9711463"
+    ],
+    "ApogeeHeals/scripts/check-wow-api-export.ps1": [
+      "4b53235dd886d1cf1c3385a59c70ebb4a9f7f91ce02040f5773b0f25ea7bf8b3",
+      "8b0e447a7a3ee25cbcf386af8152c7ec85a0a743772f2df88865b682b06d9e5a"
+    ],
+    "ApogeeHeals/scripts/test-local.ps1": [
+      "1430477eaf1c297201ec500a58b39d753834e2a2b00473078ac39c6ee8bb147f",
+      "42993255ba915dab5f905b9efa9428b62a9c3293d5069d3c71263080fdcad9f5"
+    ],
+    "ApogeeHeals/tests/access_spec.lua": [
+      "6f62c1fb6f3e62f1727a6a18dc21b5096d0698059111d02393834f2fc4272dc7",
+      "d22c27eb874f9f001bc0e63a529fac7fa21fecb007df9799007ee4d7f7ba226f"
+    ],
+    "ApogeeHeals/tests/bindings_spec.lua": [
+      "29f1e03472a4b0f43abb5517c90f8410c9bc73935bdc677c2ebbdcc1a1bea553",
+      "eae0335edf68634426a6caf047e2cdbe2660f35a4ec0cc3537be550a1fcb17d3"
+    ],
+    "ApogeeHeals/tests/buffs_spec.lua": [
+      "72044c3a515b6f59bd5bf447fbce10dbd5f92e44abdb5efebdd9bd0b9a81d51d",
+      "76f79a4c70a2acb5e46b6868adaac803f2f97234a727d2945b2b7484b5ddde8c"
+    ],
+    "ApogeeHeals/tests/class_names_spec.lua": [
+      "4885ac6a95f314f5e892e22a5583f68c5719ffee2e738c0b069fbf0c324ce81e",
+      "f06c2887039f9ea6ec357bf041fbb811af5bfa97665ec0e2092bb58a30b351e3"
+    ],
+    "ApogeeHeals/tests/compact_layout_spec.lua": [
+      "6b6aae0420b94269c7044afe580d7df5f86d6b7f32f53d8cbb2e22618f1d143e",
+      "c3dda95512e923419cd4fb90deb81a9027f0fb006be8172a16219d8cd34cf83f"
+    ],
+    "ApogeeHeals/tests/incoming_heals_spec.lua": [
+      "667ff7d14bae9786b1cdfc07618993046c47e7dfdd8416655ee10bc87f5259fb",
+      "d6402ef7c33ebe8fb33ebbcb28abb3f88101f12c8a7cb2fb69605e7013f6bdb4"
+    ],
+    "ApogeeHeals/tests/mock.lua": [
+      "95ac9336e42c6158c09c0eebe87312f10c87f07312811fb2492d51c63bc6a7ec",
+      "f83a7954b6f9122aac1c816ea9a8d96596891f0d43026e4d78abd0af94e36d4a"
+    ],
+    "ApogeeHeals/tests/names_spec.lua": [
+      "4c192c85531ae9366ef6683df814647071b7fd3b5df6c87dddb5e737e77fa697",
+      "ad192a6796dc395cc9ae5a8ef15c001de5fda996500c5ef6f987a5d9923a4c52"
+    ],
+    "ApogeeHeals/tests/native_contract_spec.lua": [
+      "e51691a7e9c5dc5b6ddac88eabb17ebd649a159aea8a980de02a6289b753451f",
+      "f927dd70c4de361d6c7a7d831f77ce8e59e9ed15cd2836e7a855b08c4f322d17"
+    ],
+    "ApogeeHeals/tests/performance_spec.lua": [
+      "a7595c75599e10799b23e83175be3622f0cf1792fb9cfb38bfd9ab736044f455",
+      "c1f9df23de8509188856b385afae41706c71bcf71001aff442d362666a64724e"
+    ],
+    "ApogeeHeals/tests/preview_spec.lua": [
+      "1177bdd359d470356f8f1ff5986e207d3b68fdc42dfd13f6fec9a280eec275b6",
+      "2232710ab603911ee1c140baafb0603e8f5b229d67ff37ef86d2632b56f9620b"
+    ],
+    "ApogeeHeals/tests/prototype_spec.lua": [
+      "6caa9fa6213e4d5c5270ed26d6e728167c8fce30ccc75372dd8b51a8f0d3ddf5",
+      "d432482078b63e3f8fa2556c1181f7417e43b31469be8492ba5f9d92a4b6154e"
+    ],
+    "ApogeeKeybinds/.github/workflows/ci.yml": [
+      "4cc4ca7cd733a22a822e8ce28e53cac25ae18d2cbc5adea2622d50dc671821d4",
+      "b5ac9411c8065b8baed034e065b8c2581e48b6ab4bf6061f2320dd217ada7db4"
+    ],
+    "ApogeeKeybinds/.gitignore": [
+      "63df560cf7159a2b9cdd3c4f68e988ece0738ea791dbdffb1f901ea49f78e2fb",
+      "9f658051d6ff45c2f4fee7db90f2e44f858b108fa8188994262398b850d734c6"
+    ],
+    "ApogeeKeybinds/AGENTS.md": [
+      "75a888500ba3af9bec81e1852355119e2c57820f5a1f02c2310136547f523c65",
+      "87a3300cd4f3e3ab468639eb09ea3d2b156fd418b29f05ab872f62aba4993a27"
+    ],
+    "ApogeeKeybinds/Actions/Compile.lua": [
+      "e973368e0d5c8e97a8c815b45a92ffe6a8e2305ce7c555de9b76d0ee8ad454a8",
+      "fb5522aa3a69ffffc3a194d93d39ebe5ddf1a9605a59a5f3c13d6da1b92a72f1"
+    ],
+    "ApogeeKeybinds/Actions/Defaults.lua": [
+      "463d91747f070b7e83973e25355e63a20828271bd47e78a3ab932cc3074738dc",
+      "bc4b0ba6989e5e73e0036273f213c6998efe9a0e35715cd2dc312597b10fdaa7"
+    ],
+    "ApogeeKeybinds/Actions/Drag.lua": [
+      "7a5cb485fc8856393320216cb19000b6d1bbdf2479f1d93c45d793dd3c09f97c",
+      "b17f11168c13daabe88e26c3e82fcbbc5c4b78701dbb2b820cac7fc3d8caebd5"
+    ],
+    "ApogeeKeybinds/Actions/Identity.lua": [
+      "d2e71d7b30389d50b212a5cc7d0dccbd155ebb3a278637676df6d433a34c1ace",
+      "ee93094bb697842eac92c77b110421ee96755d8271d54362ef130138a374f7b1"
+    ],
+    "ApogeeKeybinds/Actions/Secure.lua": [
+      "1103be65147e79ce0751afb306f81e9c9d20df41cfc5b07f019c51f468d39fc5",
+      "9e55657083dbcfbff57badddc575b46ae1ae4b78ce95be2e7ba794453d6582bc"
+    ],
+    "ApogeeKeybinds/ApogeeKeybinds.lua": [
+      "962e4f8164c7e5b342b7c65633047e669c5add694f5c84fa578564863f91cc7c",
+      "d2c2924580efabbbfd937835d7fda1db1b2ffbc7267decb07e9c503272082193"
+    ],
+    "ApogeeKeybinds/ApogeeKeybinds.toc": [
+      "5dcd4b5f7601b339e8d182e3f34a07db68d4d14438faf0dc46e575a4c5214f92",
+      "f1ff01736be20dd00faf0301cc1a359ca00c8b5b8b14fbc36b9414d01dc5f0cb"
+    ],
+    "ApogeeKeybinds/CHANGELOG.md": [
+      "0e85372a947b2baa39e9097b38f9a8da870ef264330447c67c11a9d38be10d71",
+      "cce0b3016f9b75031407ba5f4c46e03267cdb8dadf0042e8ded63512e0da84e2"
+    ],
+    "ApogeeKeybinds/Core/Client.lua": [
+      "83c2da060103300b9ce2a9bd000564cc4ac75d3fc96f55e15b20535532e217ae",
+      "90a124c032e3eb17365ac1be0cb6d2f6e491a904b398c9de982a606715fdebac"
+    ],
+    "ApogeeKeybinds/Core/Inputs.lua": [
+      "55ea639b20225f5cf5b39b9362edb49932fafb05b34c6fd51d4d6d40487172c5",
+      "908139da24c25b31e72c3498065e1831fa82a2c1f539c4fd7b954620be3063e1"
+    ],
+    "ApogeeKeybinds/Core/States.lua": [
+      "b851a1c46ce579ac2f29111005c4713afcfd68e00ca14f7d532da7a44661c4e3",
+      "d50bce1c35422a810247b51f6303806366d89b63da3d7afdcc12217ca4cb2ad8"
+    ],
+    "ApogeeKeybinds/Core/Storage.lua": [
+      "55e2894bca78b06859206da7409df6175116d18e1017b9ef68dd4668e51f16a4",
+      "aa660cb5e09fb5f8c72f3cb5c5dee1866da23f6dfd72e81066c339fc60faaefb"
+    ],
+    "ApogeeKeybinds/LICENSE": [
+      "22c7f01b79be20bd0ab43b1b8ee9896901ad20411e893c97c6eae35734887b3a",
+      "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b"
+    ],
+    "ApogeeKeybinds/Media/Textures/ApogeeLogo.png": [
+      "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e"
+    ],
+    "ApogeeKeybinds/NOTICE.md": [
+      "332ed0275d28cf223776d20852006aea5e49ff1b4215430e774f8b92338000e1",
+      "f1672e42817d7a61ec552508b4fa2dc9bf6066e97c9e2e9af73f7a4b32020f68"
+    ],
+    "ApogeeKeybinds/README.md": [
+      "a9417bb5e67bf681ff16c5e9bdece21ecf035ef54e9c1828899e942aef36f4f3",
+      "cc028fe1365cdd42442d449c6914671acd94f095193fa1e2c6bfc3349c5aa95c"
+    ],
+    "ApogeeKeybinds/Rules/Bloodrage.lua": [
+      "410aa497c754f9e72053deb5be5678d830c39890126eaeb3eb20879c92c80a5a",
+      "c708b713003383b6da351a9823ff4c59926478c172fd40222fe8da15c3e0c494"
+    ],
+    "ApogeeKeybinds/Rules/Charge.lua": [
+      "8dcb365647d3ac970e8ff1ed12e85dbc82fdcc9d06bdbf12ed32b7d390c044af",
+      "fce93ea0aea85b21fbbf94a742a2e528c96a06b73b1605a9ebfbb169b4092c0a"
+    ],
+    "ApogeeKeybinds/Rules/Explosives.lua": [
+      "6fe8b85ec427786d92a34c4430d76f6bab2c82b9603e009b4a2f14500909c397",
+      "e0ee6146ed300a5b340ec3e04dbe82b5c72fbc42ee92829d4043eb293b84d628"
+    ],
+    "ApogeeKeybinds/Rules/Melee.lua": [
+      "6b8743b1a385d9e6ca983fc256b0eb66c9f3af623e627fa21e41fc659114198f",
+      "b4cecb313806aa0da9602b9d0ff7f6e15e7c3bad63761310a923dc311dbb41a8"
+    ],
+    "ApogeeKeybinds/Rules/Registry.lua": [
+      "e9a4da69db965be76c0eea45f8eacb8b13102c4621c32831a72de572318854cf",
+      "fc87992add5b569bd8594f5f09b62da36e096e841fef3819bc5d3f17dd19bad0"
+    ],
+    "ApogeeKeybinds/Rules/Repeat.lua": [
+      "7b510dcf30912c541dbbc6a1a22149b7c43495799b9921f2abb1635b00357723",
+      "9313d23160f3c7295eac6e74e314a57b066302dd3c013d7d990747829a56a21f"
+    ],
+    "ApogeeKeybinds/Rules/SelfBuffs.lua": [
+      "59dd3ade2c9bed2c6c2bf3897b6f3bb3361cca92a0bf6edaec288d5d7743e5e5",
+      "b1e9563cf0a7d1384af7acc8a360ce12391311d1c399b797b1c65ef83df74ac0"
+    ],
+    "ApogeeKeybinds/Rules/Target.lua": [
+      "39e98013019a4f39253bd95c03a73941d151536ce092a7f47e056910c9680c0f",
+      "e4b726c2ecab1ed4d514ecc1e709828aee2d4dfe995c9c38e98e9a26857c4d51"
+    ],
+    "ApogeeKeybinds/UI/Cooldowns.lua": [
+      "3116fc7d84d0f3affd8459724038a6fa2c900f64f193432731ce4b187224da4e",
+      "7ddb7fb990337bd310d80f59db58f46cab6073a23de0d028a7dc076ae427b000"
+    ],
+    "ApogeeKeybinds/UI/Hud.lua": [
+      "6cd0e114486da135c42d059b4bd098e6e9dabdf84ce0518c8d9f6b3340cc6c8a",
+      "786fb6cec16e7c45ac76579d3f855b5a5c3384d8dd8d16e6b076a5c9d859dc72"
+    ],
+    "ApogeeKeybinds/UI/Minimap.lua": [
+      "2e644150da6258e5d7938b0a5dfcf645e8932fa089c91c039006e2204b2b6db1",
+      "952fa96bbb63698b772686b52c81baabac95c88285061a7324eb361682d7289c"
+    ],
+    "ApogeeKeybinds/UI/Settings.lua": [
+      "416db50846dbe4c2605a1ef99fbd8a42dfe7fa396d1c52cefdc0056fb52d8914",
+      "f445285a8a451a55c9a526359d434bec2f562c5a2b67308db3e2fc3821dab0a6"
+    ],
+    "ApogeeKeybinds/UI/WeaponPanel.lua": [
+      "746cfcda9bfc02a819deb4252fe1a1121c32ff61c2d06c90f12b0c201165c13e",
+      "99aaa10957c3d4fefebcc5e6e0455ea31de71075605143bfb14289f0a018e868"
+    ],
+    "ApogeeKeybinds/UI/Widgets.lua": [
+      "287b13a8c5bd1af598e6557f1ddc8a22318ef1b19b9b9edb4e55f50ed77e6d7e",
+      "82e5fc012764a106a5b3fb055410994bdf13f2b7b963757eacde73060f6567b5"
+    ],
+    "ApogeeKeybinds/Weapons/Loadouts.lua": [
+      "2135550ea5b0b4927ed293533edebda9e5f2e0a383ef4f995982b1d8e500ea3a",
+      "e4cf1a5a9fbf8aa814a89b18026a7a3ff935ba0ffdc8a849e790229186c85ad4"
+    ],
+    "ApogeeKeybinds/common/Actions/Defaults.lua": [
+      "463d91747f070b7e83973e25355e63a20828271bd47e78a3ab932cc3074738dc",
+      "bc4b0ba6989e5e73e0036273f213c6998efe9a0e35715cd2dc312597b10fdaa7"
+    ],
+    "ApogeeKeybinds/common/Rules/SelfBuffs.lua": [
+      "59dd3ade2c9bed2c6c2bf3897b6f3bb3361cca92a0bf6edaec288d5d7743e5e5",
+      "b1e9563cf0a7d1384af7acc8a360ce12391311d1c399b797b1c65ef83df74ac0"
+    ],
+    "ApogeeKeybinds/common/UI/Cooldowns.lua": [
+      "3116fc7d84d0f3affd8459724038a6fa2c900f64f193432731ce4b187224da4e",
+      "7ddb7fb990337bd310d80f59db58f46cab6073a23de0d028a7dc076ae427b000"
+    ],
+    "ApogeeKeybinds/docs/ACCEPTANCE.md": [
+      "71d9a6cddbe25045c1b715fc03092628692fb99e2adcfb7ee1d59fcecde7a273",
+      "c5439fb27bbce4f45aef2b6d6eb50b9529b41c269ec92292b09bfecea1f2d162"
+    ],
+    "ApogeeKeybinds/docs/API_REFERENCE.md": [
+      "05620f3c4fe82e1696952d5a5cdbc8c695ddb45b43742b85d232952fb8efb6d0",
+      "ca708dbfdaab90e67835e5c27c5aa11560173b25b2a1fa0e00e92fb4b12d0523"
+    ],
+    "ApogeeKeybinds/docs/ARCHITECTURE.md": [
+      "39dc124c0688aa86e7cc193f634bf52f59e90aafc42e46f83786dd99b7f4d9d7",
+      "ce46952f6e63604b3cc746628faffacad09b474a17245a5d07c068cc898d4a7f"
+    ],
+    "ApogeeKeybinds/docs/BETA_TESTING.md": [
+      "37d280f3f2dfc76d2263d4e80a40802afc75e11ff19ec45d4a01cfd764ec9847",
+      "fdfb2712788e17f133038fc61438915b577360b4113c0ea87f3e973426678f5f"
+    ],
+    "ApogeeKeybinds/docs/CLOSEOUT.md": [
+      "3a4031dd80bad6a648963fb43a1c340aa3cb7ea361777ed53c5e617f96aef808",
+      "788d6da887cb0ccb3ac51491971d65ad26a05ece1d507bbbb79ba81c1d029cd6"
+    ],
+    "ApogeeKeybinds/docs/CODE_REVIEW.md": [
+      "be0d3341a29615fa290ec935519065f2be7871c2b9915195fd68787a1625d522",
+      "ceeeb47f6d5910c3de34ee616d94695d0de8772e367f058f275ee718dbdf27f0"
+    ],
+    "ApogeeKeybinds/docs/OTHER_COMPUTER.md": [
+      "96a55fcaf5fe0f2b7944e1caccac6a88b112c323dc89699d9f87e423d25e7f11",
+      "aac56345d8bd2eb4b2f8ccbe0d6f4fb9c79248e99f3913ad7dc0aefaac21bd23"
+    ],
+    "ApogeeKeybinds/docs/SHARED_SOURCE.md": [
+      "e26703fdd5e12bb5769b9f625c945f1b936d205508f7ba2ba1a60075a4119f21",
+      "f8761f4e1e3bc0710fde71827beb5363715d83d41d5a485b2741495c4d8e5b0b"
+    ],
+    "ApogeeKeybinds/docs/wow-api-export-beta.json": [
+      "98f540601e99bf4f305e17626ac8f634981bf0be194a863c0d6b17abdb0fcab6",
+      "cfbb9d9cafb4392317611003ac3b1fd8fb29626ef45c5654ca7f2ae916dbfaa3"
+    ],
+    "ApogeeKeybinds/scripts/build-package.ps1": [
+      "05489c6b506dc0e2194cba65a8378fe6369124f2022f43329567edc412f331f5",
+      "d976ed711ee3c425c4bdb6a2b3592e1c0aad3c62072fdeddea2c073074fd6053"
+    ],
+    "ApogeeKeybinds/scripts/check-wow-api-export.ps1": [
+      "3ddcafbfb70c1f28882281d1700661c2eda6b9f5d0e4d2ef02151b8f57f9348f",
+      "89db20b0de1d9650cf26d967914f5ed068c79ad942d6f5e483bb04ca15be0241"
+    ],
+    "ApogeeKeybinds/scripts/sync-default-policy.ps1": [
+      "356e46104e09954ec0002c0a1997303b733e6916aa0a628141eeba7e80511924",
+      "c3a2776998e496951506250439407a6f596ac3abd492ac09d026b4e5153c05ac"
+    ],
+    "ApogeeKeybinds/scripts/test-all.ps1": [
+      "a579168b15e3751097ebf53693378f88c564e8f3e8b9b2ef629074624330e297",
+      "b0a8cabb49b2eb1dfc79ef4ea3c6474c1aad6995b3ea74ad4cd4979353aeb460"
+    ],
+    "ApogeeKeybinds/scripts/test-local.ps1": [
+      "36ad1112c9e3bc619e4c00d58ed20e916b762791d24496c3df12ed14c707a149",
+      "53f8e93bf5d6867df92cb6d679072a710939b7599668c6d6a668f8d16aa23870"
+    ],
+    "ApogeeKeybinds/tests/beta_default_weapons_spec.lua": [
+      "744982f76a998937aee781834f56eef9f6798c99e11281ab91eb541c3113d21e",
+      "f78457c6a3987ce561f50c5f2cbb5f5c82c68a7a7871cc8327204d4bfe599f56"
+    ],
+    "ApogeeKeybinds/tests/beta_defaults_spec.lua": [
+      "8fce072ab8668b3d3f932a2ba7d01c5fa3d6a0141600e7e662a6b56e7eadab0b",
+      "d418e0481e80a17f6f031730d857c862f3515007360d99bda4bb61c7dd5e3319"
+    ],
+    "ApogeeKeybinds/tests/beta_engine_spec.lua": [
+      "34735021f2a88a7d3cf5a47797ef36a077a6454f8acf8f97be2cb7f666db81d2",
+      "780eccc419337c5276f2a97d19565c53faf6451871f6c8d02db7d4e6554842e4"
+    ],
+    "ApogeeKeybinds/tests/beta_native.lua": [
+      "a0f0aef33d87937ebe3ab57827d793b8e765d2ca186560f5c58f388d19526005",
+      "c5797ed2dcc135b13738afdccb641698890897adbccb4928584d85cf91e85949"
+    ],
+    "ApogeeKeybinds/tests/beta_spec.lua": [
+      "35f83ab1881072fb400896bf96214f427ac940523c7f3e75dd8724772e8d05a8",
+      "e4dd9a1e4fa5d217c4c3102b1768c8cb019f99612c810bf3409dd999359a4ff4"
+    ],
+    "ApogeeKeybinds/tests/bloodrage_routing_spec.lua": [
+      "f41f25e5038e4dd30a8f09ff69978150d63898905da81346d016c9fa16854dfb",
+      "fcddf37cc80e334a7f1feeb9727799cabbe63a84526628e541370918c115c79d"
+    ],
+    "ApogeeKeybinds/tests/combat_visibility_spec.lua": [
+      "69f35da986c648798112f7207f8923f6a7f5ba68b7d4088df5047dc37d222517",
+      "cb7ef056da98227d8a979abab9ce5918f0614d5701373a64e0dede694ee283dc"
+    ],
+    "ApogeeKeybinds/tests/compatibility_spec.lua": [
+      "530048082ac5f93465dc7fb7bd5b45238eac1250f72aa035cafa69875fb6feb8",
+      "be6aa307901d9c4108cc814d06801cb76771f70665fc10141a78823715690d3f"
+    ],
+    "ApogeeKeybinds/tests/configuration_default_spec.lua": [
+      "58ae8723253393e137fa70d65c21ec52041d35bc373d5eb7a7188cf83c26892a",
+      "cf5db390e9f3edadd24cda46102556bc08740086ec9565e0d54a72773a771b5d"
+    ],
+    "ApogeeKeybinds/tests/configuration_spec.lua": [
+      "45cdb5f2e5d8aa30afc29da9cdf6555cc4e3de78d58e5015aef424ee6d2ac868",
+      "ac1add1ea4dbff0e355db39d2c1ca67bf4dd1704586afac3a9906794b41f72eb"
+    ],
+    "ApogeeKeybinds/tests/cooldowns_spec.lua": [
+      "134d2c00f5e8b19c8b13aa9ea4345b0e3849c8c0687a3c593d925cf28e89f1c8",
+      "f0fe26bd3acab3d63e3ddf99fb05e7d3992f4e0ca1ada07a7bb59f3d648ad0d9"
+    ],
+    "ApogeeKeybinds/tests/core_spec.lua": [
+      "00f97b5a528df557e12159b0f3eb1dc7fc9ed2f444f58400d03c8ddac533ead9",
+      "5f7ad65f7866e8c49ffbb3d090028de44cbc7ff11dbfff02aa563788bdee7c0f"
+    ],
+    "ApogeeKeybinds/tests/default_visibility_spec.lua": [
+      "99d684706d92281a7078a3ce041028b32784ec4eb07e65f5369a9437d1a64874",
+      "dacd1014650c767e0344e4adf8fcf4078598e45da8635d220c5d48fbac50f67c"
+    ],
+    "ApogeeKeybinds/tests/default_weapon_contract.lua": [
+      "3fd89ff08f5d1ace1b4f8df62551585970c27f8caa64f36be7d80c45012d9a58",
+      "7faedca94993d797b5d5a05125a34b7c34b8c3171114eb6328dac2d65eed6a2b"
+    ],
+    "ApogeeKeybinds/tests/default_weapons_spec.lua": [
+      "49dff9f62c4e29e1b4fc100498b4e2b67cd64dcdaae81c90b4454d864b3847fb",
+      "c400fbab02a63c6ccefb72d5d91db3e52749318823b5434083d7f10b3b514c76"
+    ],
+    "ApogeeKeybinds/tests/drag_spec.lua": [
+      "5b13fce97f3871f53073384c0514aaafaeb1558b080b12db71d7a2226b3db28c",
+      "b9b0c919ab85b092b835368194b95e2dbfa98f21923db9c7b404eb0f69461802"
+    ],
+    "ApogeeKeybinds/tests/empty_defaults_spec.lua": [
+      "cce8ba61680d8f80d835fe0dd5fe5f6bd5a0d585aa48cac9843e88287b252b55",
+      "f35b1040711c80ded83c11fdf93ee8bff1fed8c9455a5255ee383fc737c982bc"
+    ],
+    "ApogeeKeybinds/tests/export_contract_spec.lua": [
+      "9f628ef0a38ee9362e569b6b370bb4890dd9ba27182d4d47d477cc3c4892531f",
+      "ad3124939bd4320e033faa578d7435a6983957103f4b2c492952fe4689700d53"
+    ],
+    "ApogeeKeybinds/tests/hamstring_routing_spec.lua": [
+      "25de33abf4439b60e5f116f8fd73e14b7b33440636f4064814904838ec11ffc7",
+      "d92954b6c8409b96a1af70196cd02501e80ac95470b80c105c782678ee65e211"
+    ],
+    "ApogeeKeybinds/tests/harness_contract_spec.lua": [
+      "0eaccd1e89a0eb6b9cd611fac5dadb678117d6faefe5c5f65c62df8d97534f0b",
+      "242f7a783572bc32c257e22c9b68111caa9595a5ec4b806b1b678e3736acb3ad"
+    ],
+    "ApogeeKeybinds/tests/hud_visibility_spec.lua": [
+      "a58b38abffaf031a47bd80d06f6375ef74a9b32ca4b5af280e19b45cb5ec2ae7",
+      "ee357dcbde419ff1e29457ee1b27ba366353e328482a332a66180ce7498d8e11"
+    ],
+    "ApogeeKeybinds/tests/hud_work_spec.lua": [
+      "1956461ed99e3ca2f936a1e07b9e520b35a97e7562ce9ae6c32af30fa1315eb4",
+      "984bbdec5cb865e45344939ab8de8468e74dc455eaa1f1c8a3f63d970c7f0d01"
+    ],
+    "ApogeeKeybinds/tests/input_feedback_spec.lua": [
+      "412e0c1b56a6869b3e0959117aca7c0e6a2ee2b3b69136c8da24b76bee266251",
+      "564fb2a59fc5f3d70575c3416de87f42edbfbab1f43d6314c1a1c70bf6e14db3"
+    ],
+    "ApogeeKeybinds/tests/invalid_item_spec.lua": [
+      "9f6a58c3ab35b166a7abedf4850240e46b680c83168ecd4767ad1f367de167f7",
+      "a1d8eacb98b4906144e344c9e413d0f7d5d61522940bcd9d0e481b104712a14c"
+    ],
+    "ApogeeKeybinds/tests/macros_spec.lua": [
+      "5b68df4f75dd7c3169131e81efe7d811ac5cce9f8117ea725efb7f330e125329",
+      "7b68bab519182fda5877d66579b912ab90fd9dfb209e0cd7544a54f2a230e92f"
+    ],
+    "ApogeeKeybinds/tests/minimap_spec.lua": [
+      "8978ad84807d8d84eb0803a35087e907f5b62a1d2b6b9a00737b90f3aa49b583",
+      "ede34e9789ea90e95b2b51859d025cdf83ac27007db071b0522dbdc1c839fe80"
+    ],
+    "ApogeeKeybinds/tests/mock.lua": [
+      "2a89a9dd69ecc6d5d625270d65152a5c6b55461b0473af80b80a1de0472e48de",
+      "6350647d665650c8d3330d1ba184c9ef8055763e97d1cf446d49e7aad885597f"
+    ],
+    "ApogeeKeybinds/tests/persistence_lifecycle_spec.lua": [
+      "5a7e955f846cbcb8f94a2ac7cddcff60a57ba35923e10569d474765158bea2e4",
+      "a4f540ed7f7f98934e13e1d123296abb2652504ddf552951df11cda5d36f3bdf"
+    ],
+    "ApogeeKeybinds/tests/queued_spec.lua": [
+      "2f59e74fbe2b77158d8e5bf19785ce41660a8c8cb9981130da76745cdba9dcf1",
+      "e0c95f9bfbc5908362ac4f8654ccb218fdf6bfb591c22a7a6ea21c3c0cc6251f"
+    ],
+    "ApogeeKeybinds/tests/reset_spec.lua": [
+      "061d4766bed439547a7c5af700e85ec35d11c88203075e4539494f246ba316d0",
+      "bcbd1bb28e49e71ffda046c0790ace0fa399228d96a73b568e43d2105cd321fd"
+    ],
+    "ApogeeKeybinds/tests/review_spec.lua": [
+      "a2d5f4a26c61bac3d5bfdf06cbb8d42c1e6d2655928e1f1276943d9391b603ea",
+      "db4fc6ba9ccbf3fcbc6ab0f7d4f30f2160854680158a5568ce496dcd6e88eb44"
+    ],
+    "ApogeeKeybinds/tests/rules_spec.lua": [
+      "04d2ee07d152b6d71db0d83e4fa64b67f6fb42a200d45bb903180c6e335f5872",
+      "5a196ea2ab1154bf020b0900a3bcf25c6e59b3c23ff249c858164860d19bc283"
+    ],
+    "ApogeeKeybinds/tests/saved_assignments_spec.lua": [
+      "691c723165de3c6d85ca5b5ccfd282d6d246b6c3629ea2eaf56827152b1e8f35",
+      "817c7222967f53fb596e2a05c855f96c5a8656a87eeeb936c0fa2fb070496108"
+    ],
+    "ApogeeKeybinds/tests/self_buffs_spec.lua": [
+      "1da21ed0984c88090a9b06519577c417cb6634da83a764005e504f80927319da",
+      "277d247fa711464ceb052b992ac985aeaeda520de382517c75819bee9c4599a8"
+    ],
+    "ApogeeKeybinds/tests/settings_spec.lua": [
+      "b9ce59028c4b8747b3b4b26ae99fbc531f5d14007ba37de2d9d231e1683e4a9d",
+      "ccfa51b51a1265c5ce55920ba2aa2e13ea99d7e3b7d057b1ffc16cf062a9da56"
+    ],
+    "ApogeeKeybinds/tests/settings_unavailable_spec.lua": [
+      "268ca92dfeade0f2827e84aa7d993242ed1a3a55b86fe31f408cd79a7a779518",
+      "9a86fb7b1590e2e4213079409fd5cd6d67d403014141dec4358fe61e39d637ee"
+    ],
+    "ApogeeKeybinds/tests/startup_spec.lua": [
+      "44a6afe0b46f2f56ca96c1e0857f1d6cc8fcf037b8604b4141634e11d9adf843",
+      "9954023aca0246c2e4dbea9e694b645b0ca50a84e4e12d1cd2962271f1b84844"
+    ],
+    "ApogeeKeybinds/tests/states_spec.lua": [
+      "94af9ea7e1515a348ad22023959c5bb1f4e2756d181e3f2c342d0e975a05c3c6",
+      "ee73611e05880fd27b7a30822ba862b485c181fa8a73df9da2db76afe03cedb6"
+    ],
+    "ApogeeKeybinds/tests/weapon_drag_spec.lua": [
+      "b0893fab05934aaa74206e04572da8eb429941bc3eedf941d3c02407797264c3",
+      "ed23965d87b862e5eeef0b16c966158eac152a68153fd244ec0584fa51b5fb9c"
+    ],
+    "ApogeeKeybinds/tests/weapon_loadouts_spec.lua": [
+      "72c150506fbac0652a77f7943ac99a8b972b5bc748e3b68d09c6998f73e8207a",
+      "e8b251ac8d4c9201c2bbfbb686934f60524429196d25459b35ba1fa2ca61bb43"
+    ],
+    "ApogeePartyHealthBars/.agents/skills/add-dungeon-guide/SKILL.md": [
+      "09eb8959cb7aaf487d8ffd46ba274714e0c227081c2a6e8542597d0ae9521898",
+      "5b7daa0e91427656207f097b6652bf8465b5fa61159011bc90abd27a471e2097"
+    ],
+    "ApogeePartyHealthBars/.agents/skills/add-dungeon-guide/agents/openai.yaml": [
+      "08a4ae5c788da76a7b6162c50a9e3147d63b75fe2c355a201151d2d681603311",
+      "4a5d2b4da167133f85b8f0060537f042caa44ea28e5abe7ca03fadfeef82f20d"
+    ],
+    "ApogeePartyHealthBars/.agents/skills/add-dungeon-guide/references/quality-bar.md": [
+      "1e904bfc0e287f4b0ad237bd7d6ef4f514ec9a54fd83792099a6d0d78c56631c",
+      "22e93115acc3ca155df68ee74aabc34aa7e82a2f9c92c03cc27b08ef9117ef12"
+    ],
+    "ApogeePartyHealthBars/.agents/skills/land-changes/SKILL.md": [
+      "0fc5d5c69dfb4ca28ab8ba741c97b7bdb497fc3ad59454dc0fa91811740c7c8d",
+      "d622dc52bcd4f2d34c9c3006dc11f5a219c6a7c06074a9daabe257f00673db1f"
+    ],
+    "ApogeePartyHealthBars/.agents/skills/land-changes/agents/openai.yaml": [
+      "24a17f47b6d24bfad05485c9b06bf78193c9a63f78cd62b98a3437878e3f1f4e",
+      "a71a9c311b9a06d201b2ac8e142ace879da20cd02378a74bb8bed49d1c8c7e98"
+    ],
+    "ApogeePartyHealthBars/.agents/skills/prepare-for-feature/SKILL.md": [
+      "05b39a3638b29a4fac34c3bdf5d907bf3ff1f8e1813d2f58c1c5c240687fde00",
+      "92bbdb94ff270b6e53305ae5d1884b53ad7deeffc2b94b2bca0926aa89425ad8"
+    ],
+    "ApogeePartyHealthBars/.agents/skills/prepare-for-feature/agents/openai.yaml": [
+      "7c748c21828d56c7728c9a449867b79d8682c0c57c90fde20852f56253a7b25f",
+      "d22dd958f96e2de04da4f92c164d07032b53c95ef71b01ecb0457084d1b4c641"
+    ],
+    "ApogeePartyHealthBars/.agents/skills/publish-release/SKILL.md": [
+      "1d857490578c509c7d78c8534439c02577a3ce9fafc4b054d38ca5aee645b0cc",
+      "38d63ff8e4591dcc4d57c71a23060150e5028d019dea370b900ccafee3a0b795"
+    ],
+    "ApogeePartyHealthBars/.agents/skills/publish-release/agents/openai.yaml": [
+      "1fdd96f75af8002715efaee66b24506656b2073b46a339291cdd25516241b210",
+      "4152c4692df58cb14c94baf235b4d782f38ba16dd512d3ae82b22b25c3664a1e"
+    ],
+    "ApogeePartyHealthBars/.agents/skills/sweep-for-bugs/SKILL.md": [
+      "62aae4f93703d3a8bc8f581354cfc2fcb0414fc534838ba733731467a8a02877",
+      "88301969faf6537ca6d10c42be60163d99302ffa7a19c5fbed0f8e6f2fba63bc"
+    ],
+    "ApogeePartyHealthBars/.agents/skills/sweep-for-bugs/agents/openai.yaml": [
+      "39a1c81b7483cc43f1d15fb5525e2730d36533d4da83636f70ab40fc95c137e9",
+      "69bfa460577756146d7d74cc1fc4f7d29ed3a778e8353acf4e43a1620f9bd91b"
+    ],
+    "ApogeePartyHealthBars/.github/dependabot.yml": [
+      "534bf0f1d59181028e8e016e71e5a36c00d98278440593d29d5799be3cbd519b",
+      "71bc30cdbac8b659ad2d80fc0f7b3f491c3061825db27023d33d17363fe24d71"
+    ],
+    "ApogeePartyHealthBars/.github/workflows/lua-validation.yml": [
+      "99ff2e869c3e8d8ce25f825a2068a2a8d3680b49ec354f7892eb7e7a389605b1",
+      "b52b934b2be08945708bf6d3e10c324f16d67b8c72a446f7f046c1708c6168ef"
+    ],
+    "ApogeePartyHealthBars/.github/workflows/release.yml": [
+      "cbdbc61f68b774be182b1c4362894b19dc7511626142edcbcac5483504613be1",
+      "df8b8865153abff3b80264bc7096c63c44a118ce652c830bad1bbb9d3db1abf4"
+    ],
+    "ApogeePartyHealthBars/.gitignore": [
+      "236ff1f2539900eadad7e2507fbd52c1fdc98781342321703800fbbcd7d4933c",
+      "975b85c597dd2b0d7812473b46ce9a302db8d47bcb1a13c585d4d8d1f0c5f829"
+    ],
+    "ApogeePartyHealthBars/.pkgmeta": [
+      "22d6988c4a930afc34bc822f2526b679dabf3055332adb4e12f2023707de681a",
+      "ebd88cd9658878340c4ff08906ce341fa05e85c29b02710208c6dcd17a47d8d1"
+    ],
+    "ApogeePartyHealthBars/AGENTS.md": [
+      "0d90b15e5b6ea9d94379a85d3114c6451efcb3f632c8aa32b33148f650541d87",
+      "a5b4f03cfd8c9a29a9244608ad22c4c4687ac3b091bd13ec6594b80fcd7d9661"
+    ],
+    "ApogeePartyHealthBars/ARCHITECTURE.md": [
+      "48b841c6983cd396305c2d3dab1799871f6fd3811733b29ea85441236edef692",
+      "563c97becc59a335a31d68d1d485cf575ee85e256107c85512723861554b1272",
+      "5f550e08c1e3df8400fbadc513440b2e98f65b4899ea24ddfe4e5c2df72f2299",
+      "a980bb4960c0a7dd637c5cf0b09bea51c3562c4ad0c32c6b31da7e2697d07b54",
+      "e0e6146172621458462034810d9ce7817652490a1ad089274ab661163c977f8b",
+      "eb01773cb0f0a8d4ea551e4683754457aafb65484e8964e0ee5096bb98456e30",
+      "f246843ffebbfc428df32625a85d9cb3f751fbd87d4e97ea25c72d2c44a0ecb3",
+      "f657b2de84be74c7722908baafdbf33fda8a89b225f987d8736ec50d5155b524"
+    ],
+    "ApogeePartyHealthBars/Actions/ActionAssignmentSources.lua": [
+      "0213c5e85bd40d00831829e3811e8f4e06b55a7e842fe7df62ec0a2fdb1b7137",
+      "ba9122bc55af372f7bc530d6e5be93f37ebd9a7b3bc0c0b96e03bb6af9ce0d0f"
+    ],
+    "ApogeePartyHealthBars/Actions/ActionCooldowns.lua": [
+      "0ee98db6ea48ca5bc3d21839da3e72993849835fb94ccd838d6ddd13b1667c25",
+      "2d99bbeed9f1d62cefe6803074daf6a5d95fecbef20848e3875ccbe83ef9bd18",
+      "4a703f746e5fe4efe315d1bb07d4cfd51f3b56deb69647f1cc9549a1fa8341bd",
+      "57bddcefd57bd2847c998549983bac99a2ed5a7983d5fcb835041bf21f7d8c6f"
+    ],
+    "ApogeePartyHealthBars/Actions/ActionCoordinator.lua": [
+      "66028572475792ab83a9ee35841774b83475d5a169a97c9880670c4d25906f35",
+      "de3c71e2d1ea64e780c23062883a16d8f8994b7f907cc4b9e11ca538fe5230bd"
+    ],
+    "ApogeePartyHealthBars/Actions/ActionData.lua": [
+      "271f21a40a73834558b11f652b3d271d1bf9c3e2a1a6a766bea09c823f0d3475",
+      "2eaa8ab4d48f4ec7ac4c53368e425af146def2794e2cca3f204217d99cbd3b71",
+      "33a7ee06a29dcd05744cdbc3258c07991a51224e869f1e03f971119cdafa05b4",
+      "86ab985dfe2e04f2a4b4595b7e41f6072cff61cb4b74c0f468548267ba854436"
+    ],
+    "ApogeePartyHealthBars/Actions/ActionHud.lua": [
+      "2e9b4f077deb48402556114d8d763481cce6321c96c2a740c71ff3d4ab00f7b5",
+      "a35d8ce8e911ab8fa848bb0d9602a437837236f0d7ef2782ab7ea54865f935d0"
+    ],
+    "ApogeePartyHealthBars/Actions/ActionMacros.lua": [
+      "2f4243856d82ecaa4712bc7af4ec64d088010687368872d0ce40dbd334e1b428",
+      "7f4ba91f4b3038db3d876b048a0945e12157627a128d61baaad976845e073c99",
+      "aa4ff49f1ac46b361eb3a5623946e5294dd98e0b7db0f5080214ad6a99921aac",
+      "e086067ba806327612a38261f5a2330261d65062f7b2a493267990442538277d"
+    ],
+    "ApogeePartyHealthBars/Actions/ActionSettingsComponents.lua": [
+      "5d15bce3783a59160d8192229245b89e023a682d385723a51b50ffa7b392df97",
+      "9fbf4d95dd71ca9442e83790907194aec15fc809dd63c75d09db3282379a7e6d",
+      "df83976e643526505366577aa34a168fad6f0d1dafe5f3c64cbfdef578193010",
+      "e6be2d37e0cf9d9d2cb9034eda72a15c395a96a0433ea341983ac7333ba3ab4a"
+    ],
+    "ApogeePartyHealthBars/Actions/BindingController.lua": [
+      "03db19feed1203587e44036f855f05777f0124fd82d397de934109b70dba5953",
+      "1bfb796aebbfd22adb7f5be1bf8b6664bbf8e4b2f721b84a363ab496024f3046"
+    ],
+    "ApogeePartyHealthBars/Actions/BindingStore.lua": [
+      "3b7f591937d625a259b7d77b828dcc75c115d8e516aedb216ee71895ee6b44be",
+      "8f5f8660eba2653465727ca8596c3a9eb6c7421f969c1855adb8fb7f6b93f988"
+    ],
+    "ApogeePartyHealthBars/Actions/BoundActionBindings.lua": [
+      "6dc45cba2789427295abf1a8e8640ca0f6ae794f819f4d15d79235cac62a9384",
+      "f798f22cc806cc93dbd11b115cff45e06f58d6f7dde9d43bfa06f17a982674be"
+    ],
+    "ApogeePartyHealthBars/Actions/BoundActionDragController.lua": [
+      "99935d21228ba5b2a2d0dca9f56b11ba45e5d428aadc284703cc537a22e8f4b8",
+      "bfe5d8fab1681920e5825519076f64f8642ce3c8b8e0db7199184606a9bb0c39"
+    ],
+    "ApogeePartyHealthBars/Actions/BoundActionEvaluator.lua": [
+      "710078acf7f1e51d9dd842ae6346242040d5c0f3f7a7412fba40f2be10b086a1",
+      "e512d50b058b59d0276bc2a26340b93660f90d9f0a910365994c02376cef3443"
+    ],
+    "ApogeePartyHealthBars/Actions/BoundActionLayouts.lua": [
+      "613df3f674ddd44fbf0df3094aeeaf93679ccdcbbc172063c8999e4c34c5179a",
+      "d6b6e2e275ef67460f3fb49976a1c7c504646e30ae25ea00ce8b0ca0bb74722f"
+    ],
+    "ApogeePartyHealthBars/Actions/BoundActionRuntime.lua": [
+      "16f1a11f9ed9a8f65a085b6b32f9faeafc56095ec96577edf60bfc7ff3a2b78c",
+      "2cd8d51996f7136a9e26f4a01f3370f473095a758cdee28fe8e5f9b7c51946b2",
+      "9e8b6b05518a3682a48007830e4a34b3b6f2e210e98095385fad21e570898532",
+      "d91e34b5b67837d7d5e30a04365380c2f9a44744830de5de7a078fde14fc4670"
+    ],
+    "ApogeePartyHealthBars/Actions/BoundActionSecureController.lua": [
+      "7173c1f038a3b396cbab610032c924bf52a7caf2e5a0e201436111aa5e2d6ac9",
+      "7fbf818d5615cf0490b6777d326c43cd7b7e1d099f5e928396e93a5553be0bb7"
+    ],
+    "ApogeePartyHealthBars/Actions/BoundActionView.lua": [
+      "7c36514218f34b887b417f2e2dc1c9c5f08b3fe0e7e6868df4f1be831d598779",
+      "ecf5e930c229d0b799fa409e266ba75a0a1a711f1ddbcd75b1b73d86c1ef7131"
+    ],
+    "ApogeePartyHealthBars/Actions/ConsumableBar.lua": [
+      "549a0e5fec567f2d8ca762377b7f59d46664976824d429b7dea310a1f4618b9a",
+      "d4b609a3f313aa013ad12acc3b8602bdd674a28d5a14b6d1677c3db13933c2fd"
+    ],
+    "ApogeePartyHealthBars/Actions/EquipmentSets.lua": [
+      "17e6f850105f15b7573073f4a17331345a85046dfe8cf20c2f50fa1ebb43e2ee",
+      "647c0408f45625b4b62b168644a8ee75d3a02ef9ee5a4ef0b57ac57133c827c8"
+    ],
+    "ApogeePartyHealthBars/Actions/Keyboard/KeyboardActions.lua": [
+      "6b93603abb62ad0d82ded4b88e66ec0d6ed7f796507893f0acb043b53f05b6c8",
+      "d0975109384e72b4db11c7187de0e0bf707a13e16b7b6bcd8cad30b41160c3fe"
+    ],
+    "ApogeePartyHealthBars/Actions/Keyboard/KeyboardData.lua": [
+      "79512dbc1d2a32fd46423dd4b27530a64d2c805beeea970f3df19bcd21159a74",
+      "7b06a7072be7b5aafb9cdd8062a56c0853fa10752f50441d96ad23cf72c94db0"
+    ],
+    "ApogeePartyHealthBars/Actions/Keyboard/KeyboardLayouts.lua": [
+      "81e59ec5081674e4b88bdeb7fe667aecad15350788afa7eb9d42771d4858b4a8",
+      "a838e3d17a6dc822522bf353207fd3788f240fd28706c7b553aaa86acef9812d"
+    ],
+    "ApogeePartyHealthBars/Actions/MouseButtons/MouseButtonActions.lua": [
+      "64815c17b3d0adcd8d5c958a01f700f76efefd56ed6e829a43383044d68754ee",
+      "b87dbc0db4b6cec317bb2740cc7df896c504a9723bc5e3f61d1e5ac49a8a41e3"
+    ],
+    "ApogeePartyHealthBars/Actions/MouseButtons/MouseButtonData.lua": [
+      "6e4a883ee28de2051148dd9c77fbf537d3a44ccadc8d529c52f79601fcb2ba32",
+      "e1caaf2c78bdac71340dde9faf236b0d9032949ce345d200fcdec8e66a74ebfe"
+    ],
+    "ApogeePartyHealthBars/Actions/MouseButtons/MouseButtonLayouts.lua": [
+      "47d00584b095e234053b3f631908a379f7d11980e1ee792d34fc2bbabf0415ea",
+      "de7ec71b34d42080990b7939099db0abe678f26bd9e6bff24e35d472342b1125"
+    ],
+    "ApogeePartyHealthBars/Actions/MouseWheel/MouseWheelActions.lua": [
+      "739b6e79e676826c95d239f4de462041da708bff3ffea035b90cd416326f919f",
+      "a10380a49b93b2b227bdbcf3bca73d883759254a3d5c8df3ca2a74f2ae6c4925"
+    ],
+    "ApogeePartyHealthBars/Actions/MouseWheel/MouseWheelData.lua": [
+      "4450843d42f48442f889ceb5879a0d9a0a3cead4e47aa08e119ca5f93cbe4c7a",
+      "72e8ae51178cb50ccff5d6d027e8fc4c3c159a4195ca3176150eac086c3cd119"
+    ],
+    "ApogeePartyHealthBars/Actions/MouseWheel/MouseWheelLayouts.lua": [
+      "298393390842959e36b3ee7ac4c9982f949c0984261905689a1e6a41dd285d5e",
+      "6730f1d2c6cf5e744ce1f85085b6d7b7f46e4e2e238b7615b247e941ca5699b8"
+    ],
+    "ApogeePartyHealthBars/Actions/PartyFrameClickBindings.lua": [
+      "6c0f6650f6a8dcb41a96594d0bc8058ba1ecba604756ad09b36607929af26f52",
+      "e1f79e5a0779feea53d771431619d5a48fe2ba879ccf44d3ad7179ddd5bf521d"
+    ],
+    "ApogeePartyHealthBars/Actions/ShortcutBar.lua": [
+      "2e0de9db8648fbd1c1472ac882098970a8db9bae5ccaa4b4d50012e3fe599cbd",
+      "86483e6cd81cc65e3ddc0fa29c07a361b8ad2c96f6e72973dc46f4c997e2c769",
+      "c9de052bc341313e29955dab8b3563adc32943d7f27dc25735b566d51fa4530f",
+      "d4a802ac98adf9bc077342b3577ab324437498ad3bbd5c5db5cd657fb9ba7efd"
+    ],
+    "ApogeePartyHealthBars/Actions/ShortcutItems.lua": [
+      "0e88078ca1928835a7af33e9f95aa8c1122e81a0c1ba54016fd37eb9217615cb",
+      "4388365fb11f521020453829c071ee8e3c8c8474d2eceacc640b2a4c424a9119"
+    ],
+    "ApogeePartyHealthBars/Actions/ShortcutStore.lua": [
+      "14fa3ab7350d5e3ce2b367d590e097cf74c031a36afc9edc0b17152598e1b508",
+      "3ffb7490f853feacbba0c8c083ee94d11c0c542a9b672f8c45bc0c8e1288ad1d",
+      "941b3e0a2f536cbdd4e9381902b9265c4d93bcd2329b08dc7acf4ace93df2d10",
+      "fb5c81557198651b19f44fe86a4dd17a91a3d2c6ce9e61e5b0078e4b38c27d11"
+    ],
+    "ApogeePartyHealthBars/Actions/WeaponSets.lua": [
+      "d428188faeb22c66e51c5068a7d99f07c07833a4c362034d141e96c010a5547d",
+      "ebaf135e3d201d0ff59ce8cde13269710b5f6f23a10b3999ea79fc27694a5b2c"
+    ],
+    "ApogeePartyHealthBars/ApogeePartyHealthBars.lua": [
+      "0b97ff06b44d20e3cb9edd167fe5dde35414e175b58c467f4ec3fb550fc79561",
+      "27f135d56746da82a448f88225614023a82a197d3ff4f441f0f1b17009421c1d",
+      "836946d64f6d5e9cbdedb1c152f3e7e63c74508cf263fabbbd9bc90532d4fe33",
+      "9d971a7b3939e5218e9e064b6259cae460b2ac9f81ac827a86c467debd084307",
+      "a8089e22e0fb98317e70a7df706fc98cadacf2a6c3f5450ffdf632396e61ccaf",
+      "b70a0b7bcfbcefcf37d6175902796de7bdef1175aab83ea5878708f7f5da680b",
+      "e8753b4c8419a61cb935e24e296fbfd3c7f5a2c07e3ad39c5837b36aac397ce5",
+      "fbf57f45f1b849d3060e59b57c9691e2af5c2c6123c09003726bd58bed251d9d"
+    ],
+    "ApogeePartyHealthBars/ApogeePartyHealthBars.toc": [
+      "1454e58ec13316430c48db52b01caeab0762bd479b5e3264ab8422d9ab88793b",
+      "1a3eacc2ff7c14a176368d187acabbaff1f56e0bf59413115c3666bc623cf2a4",
+      "2cc5c90db04456ed15e1b06e20ff8c86ca5758a27091c3a13bca96aba7c61c50",
+      "45b3fe37ff6368fa03fa742428df8739a2ab604e953273cbb173646357aa68e5",
+      "86ce2b08156d7c2fb3bc56402c03768db1739df4a4806824ff91e6f031f89c17",
+      "bdde8710cd80f8cc9dfad281f08cb85074bfedec71e99689c63b9aa98e2812ef",
+      "e566e10dfd15a1455d11d73b1c859b3417f78ff6d79f3fecf09050a7a0d2f7b4",
+      "f6bf37a399087104852604863250b1c6ef38094846322d5661be73602b72ce41",
+      "d01c2a42ec3fb0a87cb0274245b5e44841b9b46072ed8640ae85078a78215f3b"
+    ],
+    "ApogeePartyHealthBars/Bootstrap/ActionComposition.lua": [
+      "a17da96581f8a2ca6368720b64e96277fe3ca1e6cf25ed45fa62dba6cf0ac5af",
+      "f88cc60ce7c2e453c7bcabc365f2c90553bba3a02dde253e55ec4877a62bad26"
+    ],
+    "ApogeePartyHealthBars/Bootstrap/AuxiliaryComposition.lua": [
+      "4763c9c3e047e574398fc884c0940830c7c04c8e63b345c28a88ff834911214c",
+      "ca4016c254008475c7361513f7ef2daeae885a14ca2e2c0f2e6bd68e65ae9e2c"
+    ],
+    "ApogeePartyHealthBars/Bootstrap/EventRegistration.lua": [
+      "31f4a782a6cf1da6ef4fa4ddde28cc63a296b096af69947f3b5fd5ed87762d54",
+      "4c6512427807653a7c54881dff4c9a5a1921643b0f5ce86448070ead86652d38",
+      "960a8053efb258271cab54232726dd976ee27ad076c032735691e1f6dbe66dcd",
+      "f65ad8c38a08bce05e2291fe6c02ecba85a08f07e02e7d51d6779451d15e61ef"
+    ],
+    "ApogeePartyHealthBars/Bootstrap/PartyFrameComposition.lua": [
+      "266f93bd57aa3fae7d6f97f9879176d12bc5c7625879c6569476f30c3b704037",
+      "7b54b4c10fd187b9764f0f734e60e5053d1319179a4d8460189064bb73363acf"
+    ],
+    "ApogeePartyHealthBars/Bootstrap/SettingsComposition.lua": [
+      "c96074f1505ad07aecf9170a0b9ca4ff1fdbd28c23a75177c653d08c5e646f36",
+      "fec8f92a3e891810942e0b1c0c71024fcaaca2e905c9e43045ee5f7b279fc96f"
+    ],
+    "ApogeePartyHealthBars/CHANGELOG.md": [
+      "0f9ea1c93eb328b8cd61e0ba5255970dadddaec66f3170ada639861b4a810027",
+      "68eb67b987418429df755ddb58d733bb16b8f602c2fd6e50884a11594a4dd62c",
+      "772bb744b93bc5bc5a1876157bb581ba7cc1420e84a57f91d2982a932a242857",
+      "7d12b4328bb7437fa4d6c65f8a6cc9fa6a447a2ed3685799999c19533e011f78",
+      "80d3c0c5b3335679abc22bae29bdcfbd897ade406fcfd66674f0dc15a9f7ce1c",
+      "9e11022c508b11f5201c5c40892ffce957a58536251625f39ca58616c62d73d5",
+      "ac1792f4570f9e232c0a4b55d1973f4b40bb81d7f36f5df85bc74cf15656db2d",
+      "b6c04c659019d94d4795b83d00027e3e664c42fe00ac9089eece44e3e52a756a"
+    ],
+    "ApogeePartyHealthBars/Core/ChatComposer.lua": [
+      "007000bf6a2daabc55f74a5d0286369e8c4b69025f7f7c4e4dd33c7d38cdea62",
+      "36b7cf35002954777c4af1f370b3cfdd7b8a274bbb38eae5e7c853c082805cdd",
+      "880416883192bdb2e155eeb02820ca9630271fab0bf8549f0fb0e3f2929b0e7d",
+      "fbce1be5b4cb89c7ab89dc57d2114cd0ff5125ae700433029a43ea8db7f5a90e"
+    ],
+    "ApogeePartyHealthBars/Core/ClientCapabilities.lua": [
+      "0e168fd43db8a847184247c7d0299d4fc7015e51d554a7169871bd6929af9467",
+      "47c467c1aa98678c245a28393361234064526e14c05372414d0ec846cfeb0336",
+      "56e288be13c7bf9f6738587487b77e9bb1656e2d2ae09d3746c8fad4d2f7ac5b",
+      "60767efda3987ee00604ef2a65d9b3bf44ee6401677f88c5e9bd9fdb4a6af360",
+      "7f202a910e9b2e8fd6e9d9be9938b433ff76274e97ce79fcc9d0dcc0a1a53f56",
+      "8dc85c14cae66e6e1f46be848a39bd33d87b20dbe44539d1bf8bce239c650dc7",
+      "e8906ccacfb4294916196dc8622a7342315eb1558b8d6734ef357c15b96fef37",
+      "f3b0fafeb1bafacfc5fb9d2af855d44f9675ba437d3c7d599131c27a4606bf03"
+    ],
+    "ApogeePartyHealthBars/Core/Data.lua": [
+      "16cbbb71e5475420bc0cd8f3fb8a7c56230f100a5d4c432554fce76b8a75301c",
+      "459ef7e5d94609a5e607eb5e3b583b52cc71aab5647fae45df00b9df35718623",
+      "aa470f967d34c065123b0eeac6eccbec962c737636eebb0e804bebd74cce43e5",
+      "ccac5d6e110ee534039aab7331ead3dce501f6289de8bcf6cb90499bea87c85b"
+    ],
+    "ApogeePartyHealthBars/Core/Effects.lua": [
+      "0c32748b2933f9bc4929e471d076baf28724858a56e129cc8401ca45eda21a62",
+      "251e7c270333fb6d434ddddd5b66ba5af18487f49c65303cea1fd9177f7a787d",
+      "3898cb606f6313a345fa8af066726dd02360ea13395bd44ed9b8040c47c4c9f4",
+      "8e366820976a93b92a581c7599dc937b838ddbeb5ae474a12b8d01c92398077b",
+      "a85b47d2784855e57709ff9c2c20c932ad249e6c6ecb507087d522095891eb7d",
+      "ef9b2e1290096af1a6cbc436888c14aff2d1e709419cab4f8d1e5eee21f927bf"
+    ],
+    "ApogeePartyHealthBars/Core/EventRouter.lua": [
+      "409103d02ed67461976da6e2bddad0ce8ab961e24f823deb43ee0741a2cb8222",
+      "8901040024893b80bba22ce71b7a72572742b9c34c3e18a487612b2948755a4d"
+    ],
+    "ApogeePartyHealthBars/Core/FeaturePolicy.lua": [
+      "ac37b7e91092e955203382cc23c21758a315ebac580fe6dd13de5f2556dd3143",
+      "c22637208fcfd4e1814883f5ea248827dc8b95952bc06247ef4987cccb6740c9",
+      "e4abaca2752d4c9d3d0d0eab86666d07fc4485b943f7b2e35b0b2a6037f8c0a0",
+      "e6a0996f0983a83eb1d3c4ff30bbaa92ea7b8393c517d864f696f9c5356444ce"
+    ],
+    "ApogeePartyHealthBars/Core/Namespace.lua": [
+      "28d027fd125dc8e4d65b4124fe2180a18433faa1411a36a32717da9a3c2ff671",
+      "c4543c9c61e896d9602ccb9776eb4048b08d37500eba0a4e0af01635e8f2204b"
+    ],
+    "ApogeePartyHealthBars/Core/PlayerContext.lua": [
+      "7106da0651c12933b10a1b94e70f52939c07865ad554debe155d93a1d2ec2379",
+      "eec720b24c7c6ec2c95a287673537b0f6150a104b9c267048ac21fdb4d4eef40"
+    ],
+    "ApogeePartyHealthBars/Core/PlayerSpells.lua": [
+      "6c21011a7fb5fafb412034f35bba1bc21fa3d230011a69e2e3ea0cc125d6bdbb",
+      "9b0b411afefb2744115d253c8c60868d4111ff2ec8bb56d01c0616a0f9d12194"
+    ],
+    "ApogeePartyHealthBars/Core/Sounds.lua": [
+      "3bb9958b19fabb609775a81ce8fbce1c19bd7390dc195271fac08387818a4dde",
+      "6324cf8f5272cca2cbbcd2d1734513c9bbeeedc0ba73f275b991c1b26a159d52"
+    ],
+    "ApogeePartyHealthBars/Core/UIErrorSuppressor.lua": [
+      "2a8b9f34a9dea92923eb55367a891e51c3d61ef73ed8b5a155d6d66e6df6f25f",
+      "7d8ae4b6e2caf76b17d56a568ce35c0277cb5c586cef74222060421b7c048136"
+    ],
+    "ApogeePartyHealthBars/Core/UIHelpers.lua": [
+      "3b49f55c74c0779f85862ddce6a672d84632d4047d9313ce1be81d547a49aafd",
+      "7816bb8c1f7566afa38516312635d27f22a8ff215b6bd2b86a505183502c3a56"
+    ],
+    "ApogeePartyHealthBars/Core/UnitAPI.lua": [
+      "283a9c9379cf9a106accf4074172911b16e5d7ac6580aa0735d6a80e504e259e",
+      "6166cc38ab9b0db68722c890b1e417d7c9d4c7c54a8831b36677396561150bbf",
+      "8d5ded869b0bbdfdbdf058b032f2c3be9d7c2c403350687139488564fdcefa27",
+      "bfaea6d4b44d62a5d5235fc5460419e23680ed02b9fcc98afec45b4b0b7040cb"
+    ],
+    "ApogeePartyHealthBars/Core/UnitTopology.lua": [
+      "0bd1b62822ca187304bc816e4fb99d74edf13ba4f3e59dc9b9d061538ff8bcbf",
+      "cdbeec6da582ab8f3f44497128bce9ac9d5bf54b90abb9f27b6f08733b07ec58"
+    ],
+    "ApogeePartyHealthBars/Core/UpdateScheduler.lua": [
+      "5ba5736aaa953c4f72b5d0df5dd062de2143b7c058ca35b9f26dc5edfd8f3c7b",
+      "8389da678345de87a7368c8ea479bd2453f7967dbf191cfd168008f50dd63cb2"
+    ],
+    "ApogeePartyHealthBars/DungeonBoard/DungeonBoardActions.lua": [
+      "71d36e74e73cd4560d211d1458bc8cb345bd1bed56e076ec949c978d5c990658",
+      "937c34ca2ba5731a3c0b010376345a7e75f26024cfa7c397252d863cc7c6138f"
+    ],
+    "ApogeePartyHealthBars/DungeonBoard/DungeonBoardActivityData.lua": [
+      "672a5a622f8355d1d74ebf7b71ae86a2f2f0010fb45a9663fa0e9b983dca3cf2",
+      "c324c7e9d38a3853c430eb2c64460a0b586e8f2ff5cd7094d41ff4e0f843ded1"
+    ],
+    "ApogeePartyHealthBars/DungeonBoard/DungeonBoardCatalog.lua": [
+      "11e84316559dbf7922480f045196483df6655388f7ed588eac1d6043e941c1f4",
+      "4e77928dce5f956ff4fa0f3fe96d9ba5af2c132e813c6f99fcfe026511cc9a0f",
+      "72100d6a725db7ed49a35c3d820c0f85e9b022e9d80a978bf64ac57e68cc9e74",
+      "f777695c84963d0339342364784a432c3b066cb6c47e5000be3512fab0e12573"
+    ],
+    "ApogeePartyHealthBars/DungeonBoard/DungeonBoardClassifier.lua": [
+      "4b2a9f7349627eb5df37e8cdaede5fb934f74b15f711ba8a579b17715acb4f16",
+      "5ce8a5ceee15452a6292ff80648dc92e680229fb18c098c66df03b6bd4dbc523"
+    ],
+    "ApogeePartyHealthBars/DungeonBoard/DungeonBoardEligibility.lua": [
+      "49a9edd4db2a0a6937b8fc6dcecf8c9b5aa42add58f8e0b5a41c7f3fd471febf",
+      "ca9473fb8c238bff85c9223e998239229807125fa811cf72ec113004b405ed56"
+    ],
+    "ApogeePartyHealthBars/DungeonBoard/DungeonBoardFeed.lua": [
+      "950f469e0a1d7113762280b267e52facfa5e86c6183b64d84f6c70619ad051cb",
+      "a33bbeb69ef09d5e33da3225279096d92ccc947ef77c7ec95bff81b957ddf3c4"
+    ],
+    "ApogeePartyHealthBars/DungeonBoard/DungeonBoardGroupFinder.lua": [
+      "5ae4a358045c2bd6a798bf0c38ac27bf677051cbba993fd85c3aef3a7fbfe836",
+      "6fa7ec8c03948a6c43f8d890647156070f8223bcd5531e7108cdaee70b10d26e"
+    ],
+    "ApogeePartyHealthBars/DungeonBoard/DungeonBoardRuntime.lua": [
+      "60bc1436e66c999e177a7f36de0f45baeab45e055f3f1862d521bfce676b7543",
+      "a99e8447e32705a86d96f3e05296fa4dff96b606a9d184ec8a4485ff54ac78df"
+    ],
+    "ApogeePartyHealthBars/DungeonBoard/DungeonBoardSettings.lua": [
+      "ab930a91ce62356e4b1f5f8e2f8b1c986a31c90e4da8626a528ec89d11e1922b",
+      "c3f7cc051fbe8172dba4000ba28f66536db589abc0cd106a875e866f2584d360"
+    ],
+    "ApogeePartyHealthBars/DungeonBoard/DungeonBoardUI.lua": [
+      "566c82ce5ad56a8f6a22bd27c3e39752129f58c0a9e50c29dda3888a1948cf92",
+      "8cc494b75c2c66762f6c46957401b2281e821f9c235b4f2c4f8968a5b9b42b9a"
+    ],
+    "ApogeePartyHealthBars/DungeonGuide/DungeonGuideCatalog.lua": [
+      "1d12ef51c5a0dd80743985f6c8e9e179c5ddc16cdfb64cdbaea9f8e31262fb5c",
+      "7485eb72186d68c6977710d1fe66d0b6bad4dc636e7af6a99399c71dca5d997c",
+      "988c54819d52bfedd731b099813970ee4fee1faba1f1125b6d765cbfc5dc103f",
+      "bdb50e7e8693a8588f638f48f03b10504c78914e6c90c0fa17682263b0c0f89e"
+    ],
+    "ApogeePartyHealthBars/DungeonGuide/DungeonGuidePolicy.lua": [
+      "0058fde64fe1323d03414fb8f0ef1ac8419bbaf886abb02cd6622378590b9560",
+      "71211d95062e71a5466b21c71732a6cc76bcc92957467a80fdc41e7f761511c6",
+      "8d9284acf128987f4adaa0dea891d791f22da19f29f7b671046c37957cf8d5cb",
+      "c5dbaeac375f51827324d2511076540e441a154abec8cc0bc964f1e32aca6386"
+    ],
+    "ApogeePartyHealthBars/DungeonGuide/DungeonGuideSettings.lua": [
+      "51a4a05283474b946ab618936559bf1168ab6b87ea12d188b220a375e25464c4",
+      "a9e187332f2177f4c779dfb0a9a9de646e2ee478472b20ebe7eefab9565aace3"
+    ],
+    "ApogeePartyHealthBars/DungeonGuide/DungeonGuideUI.lua": [
+      "34e7947595d90042d7391d8fdd5f1ef7dcff5c983e8f6104ee0590541ac3678d",
+      "6bdbc1bbde49d2d2d90152cfb3b0f1ae909576d75489a9811d8a04fbabb096cc",
+      "d305549f726dcab7b1ce29633a3f24b8a6bfce2468809c32f34412f8362a2bd6",
+      "ebd68027dc51bd73637a29cb4b4cf43be889d882478c4262798e1d45239f5ffd"
+    ],
+    "ApogeePartyHealthBars/DungeonGuide/GnomereganGuide.lua": [
+      "0419bc3e5e85c999630c3f55de3a8db794a4f10980ee2ecd2f638a6d73791838",
+      "9fccca14fd57b48421f2f57e4bc229614ddb4994251209fa67fa8235e20b77f5",
+      "ced49ced47e4deb00aac6b6c731d5e492931aa5c5773e92dabbdcba8eab4612b",
+      "d1d9ba2ee70c47bb3ffb39e298f9e54e7f13aa6453d86b76a9c9c52733f9478a"
+    ],
+    "ApogeePartyHealthBars/DungeonGuide/MaraudonGuide.lua": [
+      "0c10da4d47833496bcc276c92cd66a63a6d89761455902827a2da7999c0284a1",
+      "adfe349f5738614ef143c6c732ddcf5a2a479d65981fc5d5ced4b35776a33bd5"
+    ],
+    "ApogeePartyHealthBars/DungeonGuide/RazorfenDownsGuide.lua": [
+      "3e44b061a0c7d2aa8b1607e2541949bd269a83f3fd967673c552e169c5563395",
+      "3f9b7090054081e0a33b0335d3d95b3061d21cf790d422107c62fa3831008919",
+      "dbba4458e25b70471b00cbf4115daad873f94c6d134d7ba7f066c8806dee6b05",
+      "fe3265f717c488781c8e68377cf3a7d6d49796dca99c2774845b89f232cd7eb3"
+    ],
+    "ApogeePartyHealthBars/DungeonGuide/RazorfenKraulGuide.lua": [
+      "10151f0d88844d8815534f888b6311c71ab20b4989c0e5121a7b26f603188007",
+      "c8c0da97a21107de77db41b63d273f771d918dfca995051ecd0b402856a9682f",
+      "dfaa249e4d4a5624836bcf89776d3e54a9f41f6f0fb5746a364e77bd501ec3d3",
+      "e47cf899c3dd38ab7cec352b80c4be5e59dba8b8cda06aaa1c71a6cd6e008614"
+    ],
+    "ApogeePartyHealthBars/DungeonGuide/ScarletMonasteryGuide.lua": [
+      "22df5b678522cacedd452d448c19a5c3f513bb325906341b21ae8c07b93e5427",
+      "250e3f4964c7066459d9458444435044acaf4bff2181bfb43e3f1eba02db48dc",
+      "2894ee85125581d15f0dbfe58e748c6e9fdb11b69d76dda931f168717b87dfcf",
+      "bc0a98babec9b6ee851ff3b73d020c5a7b310703065babb5469e515350f6f14c"
+    ],
+    "ApogeePartyHealthBars/DungeonGuide/StockadesGuide.lua": [
+      "3eac0ca2841a076f2ca5e42dc9f7adc829f84369397d458ea68b1da6aaaefbcf",
+      "49bd2d4efcf8c53b0e113930ff2e62258d01b471cc6e62e88af322bc45301290",
+      "7ea0c5eebe4c43fa60f687fb4d6b0321007c5300ab4da7d0dadade5d963ce640",
+      "b76423c6bfdd246ec58789bb557e93c9da5dd236630aa1fe13bde6641a36ccf2"
+    ],
+    "ApogeePartyHealthBars/DungeonGuide/UldamanGuide.lua": [
+      "711c3e3d761357fc3af353f3f6f9fab819c8d36224ab3e389d86eeab5928290d",
+      "81b7a16babc7ebcf1325e4c38cf4907e45d3cdcfb188ab9cc712ef93b1199146",
+      "a9ac7f332e59ee0cd85dc2261fc48fd8ab1782b835dfd1e2fc8bb2f649d67777",
+      "e58399a2b82144843e49a635da38af18fa83c83828cf4b006ff9d785a5ab3acc"
+    ],
+    "ApogeePartyHealthBars/DungeonGuide/ZulFarrakGuide.lua": [
+      "9772d60577a8203d9cd844e6034b0b61ed486bc6733595f068a6bbcbb24f8d7f",
+      "e046999160bad7699cc5c3a9846efcd3c2ad23e834e9abaaf82ac657228ef382"
+    ],
+    "ApogeePartyHealthBars/Integrations/Baganator.lua": [
+      "bb1dd51070855753695d3cf1f8dea6dd283f0f47a800c447cd6a93a6317c0948",
+      "c5b4a0519397bd47217ef12a7aca09b1c26973e7decaedf95d06c7117a30ea3d"
+    ],
+    "ApogeePartyHealthBars/LICENSE": [
+      "22c7f01b79be20bd0ab43b1b8ee9896901ad20411e893c97c6eae35734887b3a",
+      "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b"
+    ],
+    "ApogeePartyHealthBars/Media/ATTRIBUTION.md": [
+      "7ecbdba3a102733bc16d52633b05548d34b7e698f1c6f140c4acf8d37adf381f",
+      "a419b49d03e06770f9cf3078f460ffc6ec83727c7b4ebd7cb03fd2c532885f84"
+    ],
+    "ApogeePartyHealthBars/Media/LICENSE-CC-BY-3.0.txt": [
+      "5eaea53a195c558d251f8e7a403ac50add3d2f6f4422b5a97cefd27bcfc03062",
+      "b8e31e986723be7e70db725329625816385a2b0b4ec32c51040f2f08acfb4185"
+    ],
+    "ApogeePartyHealthBars/Media/LICENSE-CC-SAMPLING-PLUS-1.0.txt": [
+      "46eb58ca12aed2f0c90ae67b897df0dd06cbb939c4452c5bd629b5102331975f",
+      "ba45bf90c062aca1af64dbd68f84131de55cee64485333876528335d0cf41c36"
+    ],
+    "ApogeePartyHealthBars/Media/Sounds/Blast.ogg": [
+      "5a19163856fc1e3df873e389c2b37f4e08113140ce54d5892da9acf4e0985780"
+    ],
+    "ApogeePartyHealthBars/Media/Sounds/BoxingArenaSound.ogg": [
+      "a5c99cabbeb47f4d2f07c367f04421e77dd0b077ef2c2880e1d7f65f5eeaf948"
+    ],
+    "ApogeePartyHealthBars/Media/Sounds/Focus.ogg": [
+      "acf3d7fa0b52e218ebe6cdbd156e46fd4834d7a759692f4cf596b574b2767e3b"
+    ],
+    "ApogeePartyHealthBars/Media/Sounds/Glass.mp3": [
+      "462583ba42ebf4fce37c23d23f742f274d72beb30537ca402fefad8b3bbddddd"
+    ],
+    "ApogeePartyHealthBars/Media/Sounds/RobotBlip.ogg": [
+      "07601e812f4dd9e0963282662d965e1aceeee253eb468caffb97e75025903c7d"
+    ],
+    "ApogeePartyHealthBars/Media/Sounds/Shotgun.ogg": [
+      "8dd7d0f08e67ef9ae74553a6d80cb76f4cf3f31d5840e79dc2b5679e8f336c6f"
+    ],
+    "ApogeePartyHealthBars/Media/Sounds/SquishFart.ogg": [
+      "5de26542bdf50b0cc83a2f625c107ed8ac949f9bd70fc8487bf791772914e916"
+    ],
+    "ApogeePartyHealthBars/Media/Sounds/TempleBellHuge.ogg": [
+      "ea3b4adb80affddb2d7f77073cef423f5ccb28ad7de390aad071993f725d318f"
+    ],
+    "ApogeePartyHealthBars/Media/Sounds/Torch.ogg": [
+      "42ef2181769739bf9841c05a54b014936dddbe7cb57aca1a9d32951c31b2693d"
+    ],
+    "ApogeePartyHealthBars/Media/Sounds/WaterDrop.ogg": [
+      "fb9422e9c5835078a229aa9410e0d497151f00aaaeedbb6cab9a21d295787f95"
+    ],
+    "ApogeePartyHealthBars/Media/Sounds/sonar.ogg": [
+      "8b630564f7f77791f9b0e4f6f59ee0bebc8c163f4824032ead60e506747f49e1"
+    ],
+    "ApogeePartyHealthBars/Media/Textures/ApogeePartyHealthBarsLogo.png": [
+      "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e"
+    ],
+    "ApogeePartyHealthBars/Media/Textures/DungeonGuide/Gnomeregan.png": [
+      "bc4b948abb1fa1d3e8a929e00212132bf0038a5918129d9410530ad55e46d5de"
+    ],
+    "ApogeePartyHealthBars/Media/Textures/DungeonGuide/RazorfenDowns.png": [
+      "81ef2da61b0af9d210536587b6f1a705f64ea3ea8fa336a4db1c563080504ec7"
+    ],
+    "ApogeePartyHealthBars/Media/Textures/DungeonGuide/RazorfenKraul.png": [
+      "43f94ce309ae1b90ecdc7efa0201fa963099b4014d1fea17a64d08b30f595393"
+    ],
+    "ApogeePartyHealthBars/Media/Textures/DungeonGuide/ScarletMonasteryArmory.png": [
+      "2f24d6d4c146c907ee058a61ba341eaab5d047d97384ca7a8e01b0548c0728ad"
+    ],
+    "ApogeePartyHealthBars/Media/Textures/DungeonGuide/ScarletMonasteryCathedral.png": [
+      "852e47ee0811a3308e05660c84c4393b67743fe88ec2b5eb38c351f7e3eef0a8"
+    ],
+    "ApogeePartyHealthBars/Media/Textures/DungeonGuide/ScarletMonasteryGraveyard.png": [
+      "7941ce32e5bd1a51bb9ced4ee6be9fcc983bd10990e969a84cc9b10213a6456b"
+    ],
+    "ApogeePartyHealthBars/Media/Textures/DungeonGuide/ScarletMonasteryLibrary.png": [
+      "3949ed0f8ace8c23b7631e22fe55f141cf852c8a643fe23f96343c282ca4f6ad"
+    ],
+    "ApogeePartyHealthBars/Media/Textures/DungeonGuide/Stockades.png": [
+      "2b879fe41c087a686b48e394a78f53656066f9757ad8ee8dea0e5e9576f4010a"
+    ],
+    "ApogeePartyHealthBars/Media/Textures/DungeonGuide/Uldaman.png": [
+      "9a4aed8d20c4a1be851f3c8ac73baaf804df0ec8bd230686589347fab7291374"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/AccessoryLayout.lua": [
+      "d0fa2205ca964a2d9f98aa221819ea162152848c695e78025f056913fd80f8d6",
+      "f8a657a5b79ac7f20c3f5a7627da42fa77eeba62e6c1ed631b2a7b08c636e046"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/Auras.lua": [
+      "31f551159dcee636508c352b1c567920978e294d0634432407932de898ee7b22",
+      "670dc32a9ad516ff1df7fba7afd03639f5fb46606e25a85c5af247d6eb0695d1",
+      "bef6fecae1d9f9d50858bba4af7170524477a3a6ba6652c7436f0ff2148ed0a5",
+      "c80b414b5adb20d9b29af984e231e5e9cfab35ed891ffa048e9798a17578c606"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/CombatUIFader.lua": [
+      "0e38c6de2756dbdb81cb19c4fc30ac1b4567c15498d309450d428709b7f7f3c1",
+      "67adbd50b552c5d24de5199bb9e3d0b565079803dfeaed6364877475a95a1d0a"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/CrowdControl.lua": [
+      "42d75c4a4a47f796770547a8afb4dec7becee34de7e74b31364138e0691809d8",
+      "bf057507c3025185495263f4711e4f51198ab62a0ade5a926c7f72d3b007a93c"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/GroupHelperPresentation.lua": [
+      "1b90af6f36ea55db9669fde319aa622eca27a371d885a3846e097ce761ebc37a",
+      "a75cfbebb6c584421bfc2f309eb295cc304e9b13dc200d4cacd149d262501184"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/HotTracker.lua": [
+      "a3a9930c54676622e3782f10c28478ca0b4a9295630fbb9246e192b9ad6dc4ec",
+      "dff77d5dd437dab5dd48941f9a24f7bdee7f39f1487fdd82b5b9472db5882802"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/IncomingHeals.lua": [
+      "314e696973a9b1724b576ff50e23b762a391ae6d0e644ffec1aa24e64460f3f8",
+      "c819784601014eda151d83407c3fefc74bc78aad04c8e31c5ffd9fbbe1e0063a"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/Layout.lua": [
+      "3818790492eef1d64b29642ad4f298ef3bad44dd58cdcc6b27827e55b1c604fe",
+      "81e2b8e666d881b9dbaeb9e97e903e825a1b2dce98e76bc03ff1ac8036753a9f"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/MinimapController.lua": [
+      "059545153b79e9524cd377745b920b47c1efb284ed3899e2c201b1c3ddba3250",
+      "8ba3fba32767ee735b59019ed61b13d91bfe43523b3c7529571c0cd51b4f2aff",
+      "c12c345fe632d792f36894ee81b95f27c6476ccc28bdc19e889dbdf2150be6a9",
+      "ccb3190db97db296585f9860f3d755f9b18d5231b44bea482b07aac34294a932"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/PartyFramePreview.lua": [
+      "4a2ea2ddabd4939cd242b444874b696d7bba2eaa367bbb2ac41ef203bef17949",
+      "fd1826299858b9229780ff5aa0715ed899d1d309133183224cb78830e43daaad"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/PlayerStatusHud.lua": [
+      "16ae5a686230a197710459242fa2f1e57efb8c85f125d719c3714dd57853d8aa",
+      "5bb99c227c737d671904f445ab1ef0c14a324f13e9da5a47944319735a4b4f2f"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/PlayerUtility.lua": [
+      "6e7804c12b2d220bdb5ffc94d93b991df4ffbb0c3e4d2921b60a426b2787b10f",
+      "a259cc00a3755276f68def0b62c7c82725c8d5ea4b689f6e997db40b2bb2aa29"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/RaidMarkers.lua": [
+      "157022d91b44d1994a48ba5ce3ae3eb3e9a68c42f3c10ad48f59927def8d7789",
+      "2acd99e9ccd5bf3274902ebbac4ff794da33b277dd3a855a29686b3f40e296ad",
+      "7a02472b5f0953d273db5273b49c90b7d0a86f0776710342ad2aeef02248f148",
+      "ca19e80f48dc5c357836a0df1ef186f8b664c26b4e160802b7c3f7a386bb9fe3"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/RowGeometry.lua": [
+      "04ef648c9ac20129d14b11afdf721a380127b862a41ff1f47dbc3938e9ea9e15",
+      "193598ab2fe3979b1eba5396f0e810e5bfd427e6d9fd0c2dbe413787fa6c88b2"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/SecureFrames.lua": [
+      "c26c6c69be9d536354a3b31decc8202fc1f87ef5c55f0c83b5022ca03a4dda87",
+      "c8f1d98dd2f06ac47f2179063e85d47819e1627e9dca5c322dff54ce543d4841"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/ShieldTracker.lua": [
+      "69b8d9e4ed355367d74b9d90b489f847a00aff49e94f33b15f4b6ae4887693ef",
+      "7fc6527dc508690f8a78ef805a80418d0ef81cd00cbc2890f33c078d7bb3736a"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/TargetNameplateHud.lua": [
+      "aabe3a8d39ad06f0bb5c820c842d06f8d87349381402099bedc3060859d0d19f",
+      "d79c17a6bb458f475c7d328f32aa494393d8164df6ab117ecb913c9d35bc269f"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/Threat.lua": [
+      "91f4404397b6dc4b3212648ad09045720ace6102091940bcbedbd6fedac62b71",
+      "fc24ed960ef9962e58cfc7781efa0e205f94d8eb1a79e70d7ee142e391305fe6"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/ThreatAwareness.lua": [
+      "458a657587cd3e1d52e09acb9f32c6923d9275a455b799815b1024f84c1ab7ee",
+      "50f53df27fa512325c245d3dabd22b345e0499f683102a6f07684f8ee91996fb",
+      "81874354f1b79febd12bc970c9177b664de17d9ee269bb2b95c35dc4309af791",
+      "9042e962d0900efbd026d2a21ab97a5394b9ccf95fb40dae767347238b426af4"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/ThreatObserver.lua": [
+      "151789433221155a7bbc42ca6c3e322b65d73968cdca062bb491c28a923b5c7c",
+      "2b2894d846b27259ef1640d5fab91fa9b6e8dc09ca3f152f84290049d14c873d",
+      "2c1dbe04784c9a1138e346255aee8b163e51aa8f8cac3ab7f3d7fe8ba92ed6fe",
+      "65e38bdaa9c2e8a8faeed1af88a1e528fbc84f24b97bbf7d02ef5e1d362354cc",
+      "851955ad4206b0d9c3cfd44d4417684606a9c51f464049fcb057cb63eee58e7e",
+      "cf888c4dd50cd4e76df8b47565da7f383c5a2092a45da27afa3acd1f5f332f5d",
+      "d63f92c25a634ca57014ab4e8f1c42b23e8f82c0aa1c9479cb5360ecc557be0d",
+      "ff4b3e6d46870095b79120607fd898920bfa821983d98aed38091d55b855ce65"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/UnitBar.lua": [
+      "04a51deb706158b13ff80a701df8ab87786cb699de0b54a7ae28ab0211c93a63",
+      "5c5e61245df2197e5c7318867912d3640a12ccf72bebd68b93aac227909a1247",
+      "bfe1a3d80f9709fd4d7b278c457bee14d1d6587ea15e3b676fda7a6867a16bdd",
+      "fa6fbb151a0c9a85500198cc08cfd220052b308f81547f63323293f9b12f9cb4"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/UnitFrames.lua": [
+      "9ff98c522109bb0507c6afe9c0556dcd08ccb281a630ad8f3d60a39245832159",
+      "a73c3bd6d56f1bd4a1ed0ed0488bb175bb4130c3db9e3b9093b05758c76aeb61"
+    ],
+    "ApogeePartyHealthBars/PartyFrames/VisualTicker.lua": [
+      "23f75e4586da2ce583a321930f600c81ba7699ca205a20e4a596f7b3d6a91d87",
+      "56225f138df5b31f852b8423826cd92ffd95fa48aa589b87e4d5b6063402e33f",
+      "5e3dac468a41a20d1f094f07b5ab093f884beda6bb6042895faf4c5fdd46a605",
+      "684bda247fc2aca6f5fd4cc916eadfceb8b141a9485d5603f3caa62c0905dfe2",
+      "c6a20ffffdcdc9e982cfbaf8a6e3b9178281a7efeb4015d5e6091c8505497dab",
+      "d4011da89ac08bc0966b7f54c184c4d022d93e78073d7a6dedc33472e88ca4f0"
+    ],
+    "ApogeePartyHealthBars/Profiles/ProfileCodec.lua": [
+      "5b7cfb496595f1b8ec9bd4dd4ceabfa02dc55adb2818e09ab15eff821782733a",
+      "f01247d990403b7592d2012d8aea316453efa9d708c8e91863d2a0f7e5141173"
+    ],
+    "ApogeePartyHealthBars/Profiles/ProfileStore.lua": [
+      "0b109230757af667c2a4427f84458035cebb941e026dc888095d3894fa78af7e",
+      "10716a5f69190223cbef33e6c1bc66c97ff0a209c7a01b4ae343fdd1bb9dfd78",
+      "56c0823ddb4af76ba902381770933506d97e43136eaf42e3f0a6a878b67dc5c5",
+      "5fc45b9b11e807a27c697d9c272efce6e0218234b5e5f81106a9407514a56d6c",
+      "6efc4b459dfe8d9802167902e7ac8ea68efb5239ae325d22f9798c343fa952bf",
+      "a5dab98a61f43dcbfc600e15079bbd041b7ca0d6199735a43f99b975d8aebfe4",
+      "d3acc17e57ea3c20834a1cb67596ad9f7388906223bea914901582096f8785d5",
+      "e239bddffbb123017231876742c7e72e162dedb215149c1c8e897e4788bc3318"
+    ],
+    "ApogeePartyHealthBars/README.md": [
+      "35ce6413abedc96f2951b7f5c5ba3ac21fd5d273d182b041536bfabc302ddd52",
+      "5c028e0fdaf6bdacaaff4321931de3eb79c35d6264178a4e9a3ee51648327360",
+      "620975b2bf0e41c7a6e0db191a83515dbec4166ace1db7d29ffa72d75e123e58",
+      "8bae35f241ca9a9b810341e97f09fe1b4d7104878ea7012ab1cb4582a3d190d4",
+      "93d1301ee9c3ce1a29bd5a175345cbb2ba665aa6fdcb799cbf8f5067ad8fadb7",
+      "ac215b75993e96351553dfad5d7bb018dcdc1579ad5de3e29f828a635560c8e5",
+      "d70643af6dcd0e3c3beacf407eac5f1683369c8f64feb2931ee63e3e0b69fe91",
+      "da62609329583410094bb3ef4fc94284accc6ecbebc1e89bf966801b000ee9cc",
+      "70311ac5b530d33b64df5591eecec323485c5f958c18df5f472614dcfb9275ef"
+    ],
+    "ApogeePartyHealthBars/RELEASING.md": [
+      "5f20fcba4b88caa0ad591891e1307a1c4289054da8155b6134bafaad13c8239b",
+      "bdc64cfbd5a81fbead3571ce4f00ef2c6ff645e76974971cd172a4543a2c5ef4"
+    ],
+    "ApogeePartyHealthBars/Reminders/AbilityCooldowns/CooldownData.lua": [
+      "1aee738620b3eac527331d97165e72c98b5c10227b506eda301bfff4b73f5598",
+      "519763e892de9c4d75082dfef86ce190afabbcb698f044150d3a568db10b17f5"
+    ],
+    "ApogeePartyHealthBars/Reminders/AbilityCooldowns/CooldownHud.lua": [
+      "07bcc4b1d92b5143332c7c13e13ff715937d1361a20eecde3a4fe67321be375e",
+      "d1b3308653a4ca53c6c9715778bc5ff5712331f9cf7959d138bc5807acf2007c"
+    ],
+    "ApogeePartyHealthBars/Reminders/AbilityCooldowns/CooldownTracker.lua": [
+      "3d5cbd435c6c7b2c755ca3f9ad4d96ef564e8fee794754e02e9491f7d1c1032e",
+      "9bf1236b8a2af1c401046bd35f5e7314f0e6a581cc182688d2eff82434eae9fa"
+    ],
+    "ApogeePartyHealthBars/Reminders/BuffReminders.lua": [
+      "10401635c6f1de13660a1cecb13043913e249d37e57eec878468a72f9d7af5ca",
+      "3bf08cf69377445b35062a54ad4d67382b459e5df851b657cfa9c069b840ace3"
+    ],
+    "ApogeePartyHealthBars/Reminders/BuffThanks.lua": [
+      "13f132dd8883c8c5704b5a1e9db7496133025bd8a2fbc4f85f6b3070e3824136",
+      "8bd990d116adc29df69df14dcc1df8752972df8e32db13424128481db29a64f8"
+    ],
+    "ApogeePartyHealthBars/Reminders/CleanseData.lua": [
+      "6a00a0007a9983e540441d87e3f5bf788e85cfd1bf71cf5ad340731614e1e3d6",
+      "aa961349f20dc1d5c5f9b90a31b6bff7ac63d6207dd49054b7f1cbac2d3ab71a"
+    ],
+    "ApogeePartyHealthBars/Reminders/CleanseWatch.lua": [
+      "1f6cfe214bea214bf777e89ce50f413f3ac0e74ad8d0f4b9e18a0919000cd2b9",
+      "6f240a5925424d08a84e85b764d6e30d5401fce291f6c5098876700c0583471f"
+    ],
+    "ApogeePartyHealthBars/Reminders/GroupHelperData.lua": [
+      "7f8ae62b48fe69141a553792580b1d6b46dd10fdd66e0158ed4f8fba216f3322",
+      "80b834c917b8ebc63663efe4deb176605a255f3a1c9c5588bf5590b6caa2f3f2"
+    ],
+    "ApogeePartyHealthBars/Reminders/GroupHelperPolicy.lua": [
+      "34e5b9c0c18b29aabc21581ee2e86ea57fc74c17f56ca84e1106e665af4c6358",
+      "40bcf70fa8c50aa18462d3407b24d8883f598d311b896dfe9d164cda85873b06"
+    ],
+    "ApogeePartyHealthBars/Reminders/GroupHelperRuntime.lua": [
+      "05cbff3032f0cccf0a328f9473c0ea3b78423cedb51a4ccf8c1f77e83602b449",
+      "cbfb1632085f0cb441d8fd9624f5249963dbf501f9a88c6bfa2d5b52d73fc5eb"
+    ],
+    "ApogeePartyHealthBars/Reminders/GroupHelperSettings.lua": [
+      "1adc1b24b052323b8dd7e59af6e3da2c3c2f0da630d00a664d78b00ea69e392e",
+      "4ed9fe9861aa908e56f365d5a2a4c5df63fd06ab91135c7fc9d7371f2e3701ea"
+    ],
+    "ApogeePartyHealthBars/Reminders/HealthAlerts.lua": [
+      "87a9b264db1848aa05bd0d8f1ab74e9e6d4840693e89065d53d42ba55dd86cf1",
+      "f4ae7d8c7e46dd4da3a8893f9ca51cc66c511700f5e555036853b06da07db9ea"
+    ],
+    "ApogeePartyHealthBars/Reminders/MentionAlerts.lua": [
+      "01045ae16854512d5e4183dc37458bcbaba755146640a069a0d6877586cee176",
+      "02a279e045ff24fc3159735bb2195c5a872f7285182cb5e366323a40041a0ace"
+    ],
+    "ApogeePartyHealthBars/Reminders/TargetEffects/TargetEffectData.lua": [
+      "2b32ca980ef383bb235a344a57a17e941ba79fc10141b2a167e9c086b5ded3c9",
+      "466f9da16c7f15fdeb39b16b93b5d9f8f6069d36cb45690e97347b9afa03e3a9",
+      "65b4a9d2d135ed0b62ad1967b678fb0f78c6fb16051e669cd4b73be6eb2a63da",
+      "8282cf2e81dba35132270cff0e8471a961f176ea791fd1291312f3a38103177b"
+    ],
+    "ApogeePartyHealthBars/Reminders/TargetEffects/TargetEffectHud.lua": [
+      "309478f731e8af33746d7faea09b2a52d70cfaaf26070cd316ee8c798261aedb",
+      "465e15415f7769011263e59f26eb4ef7b70ca5f074f9b4c1789f312afea5767c",
+      "a20ed33fd24b86ed984798a7a6913e7f6d4f83792743915aa6153e095aa0be07",
+      "a5b5cc43afa414df35d84c70841fd4569c6f7a6385469cf21841dbd630130e51"
+    ],
+    "ApogeePartyHealthBars/Reminders/TargetEffects/TargetEffectTracker.lua": [
+      "25faf18ec6b34309b639f41f79cab99308b5b0f3bc20d0b1a94be45ab63ea349",
+      "745e738d8f44cd6b6ccb281957fdb26509238cb7994594ce6f606c478d3153d5",
+      "95c098bf7fc25b889058b44cef2ddfe8e6d431aff80aa17c403985be65c56937",
+      "cfffd509c0b1da0b4c2764f44843cad234dcfae6d08e7c9b3f3533a7ab0429c2"
+    ],
+    "ApogeePartyHealthBars/Runtime/ActionAssignmentEvents.lua": [
+      "2b8cbc70de56ac0c772646748e7d826588f283830112e04a9a2713013f5ff76f",
+      "832851607cb02e0b8f3eb5e71e2fa8825bee4ace84a107723685d5f99f548419"
+    ],
+    "ApogeePartyHealthBars/Runtime/ActionEvents.lua": [
+      "a24d8e9d5f451d27c780bf5d3632f4e9bfb488710e7bb15f4da86f7fd2126b8e",
+      "ad060d5798cf6071e6c2eab1e2bb3ab14ee64edede09121fc67959c1652e85e0",
+      "d8841642cbf4c4133d8ae0436c126607d71cdaffd43ea4203efd2cbfe1a477d9",
+      "fc4ab5355dde4de1a7aa214f8d25677201760089b3ac9b1f75c4eb8896686faa"
+    ],
+    "ApogeePartyHealthBars/Runtime/BuffThanksEvents.lua": [
+      "4703970857fd0b56a2735526e500b61c02bbdd01f9bacd30b54dfc6c4d0bdbc9",
+      "9b0bd945bf8dfed3a0c8da6c5374e094716c129cbcfff4e5b27842be1927e9b5"
+    ],
+    "ApogeePartyHealthBars/Runtime/CleanseEvents.lua": [
+      "89c60bd931433b66a5c6f95ded1f5d92ec11d8237fdb33cbf5482b8414bd7c11",
+      "f1a1408468ba51a7a0f66528d2e01199883693b0aa0d11d4e1e071cdf7309194"
+    ],
+    "ApogeePartyHealthBars/Runtime/CooldownEvents.lua": [
+      "9d0f4f19618f50a46c28e0df2992113007ae7e6c81064f1f78e8884ce359c266",
+      "ce5a482c0e2c0b88495167013fc65fda03ffb72e78ecb238a61cf1aa5a479763"
+    ],
+    "ApogeePartyHealthBars/Runtime/DungeonBoardEvents.lua": [
+      "20cf90685df684b1dd8f2cd82a7b958d37798d3d692063bf62f9d3539ffcea6a",
+      "47dc8d607fcedc46b1f4be5fbd369a6af55bb4157e6f7be2b714e6743ced53f5"
+    ],
+    "ApogeePartyHealthBars/Runtime/GroupHelperEvents.lua": [
+      "60148b89ca4eb9fc8b7c45099b739fda8ae69470b81a0685913b2e6376b0023d",
+      "b28cc6bbc76b2a9302e32a8597b7da793229e81e6239fc95733fb8a30f55f573"
+    ],
+    "ApogeePartyHealthBars/Runtime/LifecycleEvents.lua": [
+      "1907744ed23920b747da1305d5296684bfef66d15648a0214f5c398ed27eb1e9",
+      "463ca758377cb1491439c8857644488f5a3943b68f7ca4437cf6924bcd0de715",
+      "76dd294e4137f9c3886a1784846d92c6eb6a280592eae5c4b8f5607addc252ed",
+      "cd065bb5233dfe6bed620082baa06dff5842cf7266821902b698ce651d0033f6",
+      "dd2ad66e27cac378a51f38300021cc131fc23bf4dff1cf0ce272425eba4e7897",
+      "ff01122418d5006bc7c456843449e2dcf1333df52a75b57ed00cfd07e9626bc7"
+    ],
+    "ApogeePartyHealthBars/Runtime/RuntimeEvents.lua": [
+      "2dd5d7d999780c148a021e75c13c41ed89d7c89b7f41a7abd5addbc97c369538",
+      "acaf5a6050a8241ea696513a044f2a25d76c1da97966bbf175ba52dff66c7d84",
+      "c4ae657ce7f747c8ba24adb89b757417394479dbe46118155f6bbc87f1b85699",
+      "d9bf3793647f5de242e762514560cea1267e33b367100b5c8842c3145d494f58",
+      "f5934813abca31a5350ee479d1fb98ad2d20e2076f72931e8369e54dff179185",
+      "fa6e2cbe33bb42700a8e97bf74784b7f8ca46eb7aef14bed19d5fb26b2845d74"
+    ],
+    "ApogeePartyHealthBars/Runtime/TargetEffectEvents.lua": [
+      "19b5194924f6d9bc276f69eb9a79711ae7037c438bfd0b8ac9aa3cb83d039e39",
+      "f9818f9e103468a5aa8fd96db53bac51c29b6b1645d946cb677e340081e3bb85"
+    ],
+    "ApogeePartyHealthBars/Runtime/UnitEvents.lua": [
+      "24f7c61c4caa3c37af7f73d10664b5d04cf43bd307af87f8bd3690db49cadc0c",
+      "4858039ccc55cd2f57a1439c0bdffbcc45c4d81374f9cc7eb3dd73fa0ef545a5",
+      "4c2d20b98d18fab0a1793994ab7d67699f48a44ea5054dde3e2144cd2ec6b297",
+      "9b18197d0f99ee5136b0dda129a6b742f864f203be5c252e8e46fbbfd9af2860",
+      "c65043995c336706b78068e65eac03fb1119cdfc16b978d6aeb6ebc39faf44fa",
+      "e495a7f698510549d234989f216dc4ba09a4c6ac0927e70946c9a133805e4182"
+    ],
+    "ApogeePartyHealthBars/Settings/CoreSettingsPages.lua": [
+      "0d24a3cc6adf5edfcd38c0273282d6aceadb91095da2e3e557f09eb970e340ea",
+      "0e02447d823feec752ea0486a17212cfb647f7cfdb865bbed7dd510ea689df43",
+      "155aaa7ba423e7d7f57e49e1496eec10d572b2e2d87bb4d35bafcad469111908",
+      "1d47e5beac17297c09e509572bf8129b319f05b9a65efb37fced123c6e44b330",
+      "e58e4538144cb642462d59d086e9558ba977e5b1bf183defeddaf099a21fb9ed",
+      "f0cedb1c26696e086430e20337b97f3835302651ac02b07af985806b3a698dfe"
+    ],
+    "ApogeePartyHealthBars/Settings/DungeonGuideSettingsPage.lua": [
+      "091fa294b623d7409e5e6d796dbcd6458959b1e122c87ed8620d334060b4368a",
+      "6edb64a9514f8cc0bc18b4fa410ad23597f583997d1408a87b699baed58b22ca",
+      "80d2f54724b14dbd7a76f9cef9e6c5d730bcdcfa94eae9066f341a3f92089556",
+      "ff2a01e5c15ee2f3d4552f58229d367da44cf6d2c8d0ee26a40d658b7743cb27"
+    ],
+    "ApogeePartyHealthBars/Settings/KeyboardSettingsPage.lua": [
+      "0f0240c15af1ed5223fd8d791f7732063f5d138e8b45cb5d60c2daf9ba425b70",
+      "3a74df46bce236aab9783359f0e501fd8243c5e615d343e4322954c98098f601",
+      "6aa43804acc72b2011e95a4b62cf75b27b8c0c74612153023f813f8f606f7e79",
+      "cdc27537cc0b2963788384477284340111321602a42f6c1e32c20d69699b94ff"
+    ],
+    "ApogeePartyHealthBars/Settings/LoadoutsSettingsPage.lua": [
+      "09e7ce070d54ffe3b5c6f34a2047f3467ede21d810147f9a4568208ed12063e6",
+      "f847eb731576d09353f07e8c542fd83497ce94af1caa7280775069b856677316"
+    ],
+    "ApogeePartyHealthBars/Settings/MouseButtonsSettingsPage.lua": [
+      "1d32c585026681221d8534cd5f1fb0aff71e99e0a19fc57a1b1a51e8547ee1ef",
+      "364ff30f2242b4a51d45c542dbd55d2416695a3ae70ac6360814d563a15a9f18",
+      "89a1e75d74ac73fb8887a6fff1b8ff3a8c9badb13b491dae8e2a41a8f94fca6d",
+      "f853706967e6f1c191568714f2eee6a5d1f890d996b65b3720694efc39dca01b"
+    ],
+    "ApogeePartyHealthBars/Settings/MouseWheelSettingsPage.lua": [
+      "13294dee18ed42764fe49bbe33c2855788f6c0f52b0d156eef6780ad665fc345",
+      "281a2b7c2f42ee6af8163e2419649aa457fb439c53cb364b16dc59e24390cac8",
+      "602fd7a4af3799f96886456dfbd86c0445c30cac99f96566db93219f81303d98",
+      "d8b00ec0e0bf70e99ee8f9909a838f857baaf881b189280b20bc40e7e4b401a7"
+    ],
+    "ApogeePartyHealthBars/Settings/PartyFrameClicksSettingsPage.lua": [
+      "14be320388a67c068be64a3404bff376422a63b68ca7209b83b9a528094538f8",
+      "a815db8458dfdb7b7e90a02c6fe47cf1a797965a689cb980f7c459ffc6316453"
+    ],
+    "ApogeePartyHealthBars/Settings/ProfilesSettingsPage.lua": [
+      "73b7c2939a74eb9a72bc1a7232bce99298730df5dabec1d963419d0862aeacb9",
+      "8a4fb91ebb715860a3492b8316fd7047a555d3e64fd12ff3a642c67d96eeb0bf"
+    ],
+    "ApogeePartyHealthBars/Settings/SettingsController.lua": [
+      "04b086e6ec26ae12d7f6f17daaa9cdb8945ebf8105ca975e32263981ceb1bbbf",
+      "46d401f0d4bba77312f67071a56543440a79f5dfd72b7c857da529d25fd63cfb",
+      "5e3edd82f8555ddde855eda99660a892da9ffdaf5d0128bbac47dace613f0433",
+      "cccacc21df3e1eba86ae949e3189cfef694d5f9158fa35abf8a76ab5567332da",
+      "d5eb3f5d47974c6fea5cfaf779b7b8aa8b5818db9fd125ce5d9a3e3c75035dd1",
+      "f7b9be997a534913467389263b2e53701b958b65ee08027002418d4b197be4e0"
+    ],
+    "ApogeePartyHealthBars/Settings/SettingsSurfaces.lua": [
+      "2c1131b4ebd963fa9ea3658e087f15387e91170a6fe7c8ddc8aa041a703badbf",
+      "780afea31f6b838361bdae1e1d2f9b02c408ee6104a86af6986088f4a7cb4a97"
+    ],
+    "ApogeePartyHealthBars/Settings/SettingsUI.lua": [
+      "12e2c2e679a0189424fe25749b4722cf8e37988d338f9960e3bb0de588914409",
+      "28818bf5b83452c92b904eb01dbb40ab6f208f351dcbb45e7d0033680cb3a3d2",
+      "34914cf97d25f9e8ec94bad79dc4299f3984d7b2a7faa25f1a1ce4113127d7af",
+      "5be4b6589ae40dfc884a432811e2018d1c8621bbeece906014463ee5134eaea5",
+      "5d1c8dab477d80f8f6519631c07ede683b2061a1eb59052a18a9e801e187167d",
+      "6b4e2bb7a89d03d5bbe6e19094082fafb8e3a4072697128287905c9f001fbd79",
+      "c713ff52e20008dd81fb5a9b71d50d6433baf2fb1c91ff1eea4912476758700a",
+      "e2c04d769261530725b2a84c5ed4a0cc0878423289250579c7170072708f9509"
+    ],
+    "ApogeePartyHealthBars/Settings/ShortcutBarSettingsPage.lua": [
+      "13ca63ea38ff78cfc8b6b2ac8937bfd203867b070aae97c5391dd431ca12bc57",
+      "3b6b0c98ee713faae1c0c9d11d3ac438e452671614881a2975e9c757399ce133",
+      "aa57d0a49117542c7eace7a97aee2388f27c4c7f2a93b2632537abf3d1c0b7c6",
+      "b3813beda26e97e5c9e5d6cd4811183fc4d3d852b07064c6f40fe1e1f91888f8"
+    ],
+    "ApogeePartyHealthBars/Settings/TargetEffectsSettingsPage.lua": [
+      "89afc095a4e9275f1135a2610aa8e3a193f370d97761f3f3576c24433409762b",
+      "de1b419cead434847a4f605feee1cd930d09290a0d516a25ab6a4612f0d96178"
+    ],
+    "ApogeePartyHealthBars/Settings/ThreatControlSettingsPage.lua": [
+      "5925601792ee72b6bfd74f7d2a3abd231bad3d7a4a5018021f2925e2532da367",
+      "ee9c6df9173d87903b3007b5cb3db556b4a99cdabcb04829e087afd479056e4f"
+    ],
+    "ApogeePartyHealthBars/Settings/WeaponSetsSettingsPage.lua": [
+      "563430ef6f7fcfeee08559ac5d248ebfa4ca03deab838882bba89a242f93f9a0",
+      "87bd1d05db0e6afbef370fe76e1614e7f841cfd83ba5bad5e1b183a07ee1cd9e"
+    ],
+    "ApogeePartyHealthBars/THIRD_PARTY_NOTICES.md": [
+      "41b09c56f5e0f548350ec868e806d4eadbb24c4015d5121bc2e53e1c042d2bfa",
+      "756e535e429e00aefb47582dca1f93c1d83a87d967945d8b4f7239265245be69",
+      "b5cb6d1b5426374b494b93cb60174ed716e8f3642841ed9d244cfd90fd25c012",
+      "c67cf19d2623e11245d585f228e8931e29c601b975738347f63c8223a775033c"
+    ],
+    "ApogeePartyHealthBars/assets/apogee-party-health-bars-logo.png": [
+      "ddcc4935997d858b4c2cdc43fabed3b2e03fd700a28b610c5dc07be9939d383a"
+    ],
+    "ApogeePartyHealthBars/assets/dungeon-maps/gnomeregan.svg": [
+      "6ec529b1029491048e7e8cead7126349e040ce1331da1d77fb86a7849f38d0e6",
+      "d9a4574192ed47f0d9803604fd159b7ad2c2124d8050f2a62f951cb49e2f7632"
+    ],
+    "ApogeePartyHealthBars/assets/dungeon-maps/razorfen-downs.svg": [
+      "55d6ce00c53fd97d23d3928dd5e7a8ae63332f361fbad0320f542706ef381dc1",
+      "d5e1cc289a891fb7602eef7657829de21e679ccd3f95a2978ba1a77e72fcf63d"
+    ],
+    "ApogeePartyHealthBars/assets/dungeon-maps/razorfen-kraul.svg": [
+      "6e1b960533f370ee40e85d9a872ceff17abaa769afc5f42713b62c5cb6008668",
+      "f22ea531eefdc65c8fdd01ce44780ba5ecb78eb6b920b2468aa22447de9ad347"
+    ],
+    "ApogeePartyHealthBars/assets/dungeon-maps/scarlet-monastery-armory.svg": [
+      "05dc3630a2a2cd3a10c902b866dbfe4c780c25b687ebc8d12b5662b07232ed5b",
+      "9b918d07a6cce9b5325309399dca81b999440ae2c283bbc29e0f61223d1ba1c8"
+    ],
+    "ApogeePartyHealthBars/assets/dungeon-maps/scarlet-monastery-cathedral.svg": [
+      "5140edf29db9b24f81ee3375d0174f4436efc90bccb21885aceeea64bfcf1051",
+      "f0ec45372a9e5218491e89c5c523f685c73fe2b94a97d52fa1a9c1be2cc508f2"
+    ],
+    "ApogeePartyHealthBars/assets/dungeon-maps/scarlet-monastery-graveyard.svg": [
+      "3dc1cc3113f9db7d55cd4e89f34bc79cedd4bd5aede6e7ca8c58330c7d2dd91c",
+      "5ad27ff536f715b8afc52bf3f09bc61fb8b6e23ae4a2d8c3ddb313aaf6be6214"
+    ],
+    "ApogeePartyHealthBars/assets/dungeon-maps/scarlet-monastery-library.svg": [
+      "2a48ba42d0c85d5d1ac2587951b83dc8a7c7cf5e80282b2bf7bdc4857a58950a",
+      "2d7fd1ae856ea3187f340282978dc1a0c473e45cc83b425db0bb4d3ab33fa1ef"
+    ],
+    "ApogeePartyHealthBars/assets/dungeon-maps/stockades.svg": [
+      "7984c722e0a9f5f0726c52200909b2eac79a9bab34430450c81c430a096e220d",
+      "855d2e340f55a0145183f9844d9d7041cc07f036c25df002e4f76e3dee2423fb"
+    ],
+    "ApogeePartyHealthBars/assets/dungeon-maps/uldaman.svg": [
+      "7bc112d3b6894e9ba3718adb681ad669fc91a82cb878b3daf8a7cc52f6c2b051",
+      "840c3e655e42cd9a278b0ae4a4a1e5726671e08e8bffb78f5c70031f064e6cb6"
+    ],
+    "ApogeePartyHealthBars/docs/ADDING_WOW_CLIENT.md": [
+      "3b0c7a720032c41b6cd82c807b1dfae1853508b28fa16d0644920a18e75b76c4",
+      "79ae35839d90762ede54ea43400afd608aa264bc33a1b3885dbd98a337ff1d47"
+    ],
+    "ApogeePartyHealthBars/docs/CLASSIC_ERA_SUPPORT.md": [
+      "086f88602342215094821d43a7f90a9009570d4fd0741d9b92c70255684f7f96",
+      "3402db1954b725ca201b4eaed3cfb828ad4b8c417ac5bab987dc112cb12944d2",
+      "3cfe142df824270a1affd841a2053b4e148ee7265bda8f0a2f5ee190416049fe",
+      "9ebfd933c927d2f19332c3a08cdbd27813f0d4f01a9d5b3c32c91e6ced060d7c"
+    ],
+    "ApogeePartyHealthBars/docs/DEVELOPMENT_GUIDE.md": [
+      "60f4e442a0a92ac0cadfa0236fefa9e22b40b665498537ecac3337ad182ee15e",
+      "625f98513d597f2b442324e8d3c32418ed55f5edd593c8910304fdf5a8580a06",
+      "816d6bede8c665481b8bce6dac8cdb410c4e04cb4cf464403e15aa8607a3b662",
+      "c08120bf776fedd949f1818aa1a86e9e013d3eb9af61266c01fe81949a2d9521",
+      "c8024c9f2b4c53608367aa8c0d5febec4bc3e84dad1f9c3998eddde32d26497d",
+      "d638e5595074d8f51d13c8c1747a60361294db82acd9adccd2250fbaa9cb9fdc",
+      "f35c5be4ef2729f393a5baa6990188cfeb49e104eaccedbb05a7f845e30872cc",
+      "f83e12419526fac7095c6e98202fa3240410adcf778418e6d5c491c00fb58be3"
+    ],
+    "ApogeePartyHealthBars/docs/DUNGEON_GUIDE_MARKER_AUDIT.md": [
+      "9a3c9068735e84e5339e5eb9e2c216c4a2658fef8ad3aa35a10bb80d2e460e6f",
+      "d9df4801a45530f49d41231da14195c0dbcf5a33d1ac52aff6beef0b4e7b4884"
+    ],
+    "ApogeePartyHealthBars/docs/PORTING.md": [
+      "546ef0ecd4bced6b6f17a90dac736fd578f61b1b0c8bd61c45897b861ba72c0e",
+      "598fdb6b223b21980507af403465310695925b7325a1958c296ff2cfca623f7a",
+      "cdbbf578e0f909db39bfd53582756e5308aabea57a874270250fa7ab85340052",
+      "e2c6c46f45e1424f57d254198bb55cc3d58334fa04d9324b227c9675d814269c"
+    ],
+    "ApogeePartyHealthBars/docs/TARGET_EFFECT_CATALOG.md": [
+      "b072d21ac7572da9b69493addb0aa6dbbf616611dbb0255ff29ceeb1707691da",
+      "ef777d6ba67021d10f315425991bf6bac54e84c10f491bec40fd33e13b558379"
+    ],
+    "ApogeePartyHealthBars/docs/WOW_INTERFACE_EXPORT.md": [
+      "05bccee8bf31df952dc70d081b5882eead851c9b70f4f504c0f8fbb2824b4fde",
+      "d0f338c30ea5bc90cf8a5f3ced84175d26eec007131f6a2e3fea239dccb8056e"
+    ],
+    "ApogeePartyHealthBars/docs/screenshots/settings-ui-classic-era.png": [
+      "755caf2fbf19ae2c381bc25272f19a63047e51326b38b8df056809c83230e595"
+    ],
+    "ApogeePartyHealthBars/docs/wow-api-export.json": [
+      "41509ba9199d40c51e67cdb4fb242c7bf80f4c194cbd7720fca45938a9ba682c",
+      "6c1e5fa2be9f379260ede8f785f262ffbc6902115531f9739194e6be3fa7dfa7",
+      "6e6f51b5d53b6f24306008630594dbd192483331a151780074162d96b6e2a8a2",
+      "d07447a49ed680682b340468927d30ffe28e63e68de0e6ad3c1306d85d596ce0"
+    ],
+    "ApogeePartyHealthBars/scripts/build-package.ps1": [
+      "0a53d36f8a57c78bb51f15c1729eae33f391abdb61f131710e06933779ea427b",
+      "18486a46384323193601e0c583c00ea615ede98f961936b8b180c60db4e27306"
+    ],
+    "ApogeePartyHealthBars/scripts/check-dev-links.ps1": [
+      "b5c9bb482348dd66da00ca1cedac20d9c620b8b6c3b29cc776c78c7b195ad7e7",
+      "de1369d1be179939f469521a77240324ae09d37372926d53d83f390296d5250c"
+    ],
+    "ApogeePartyHealthBars/scripts/check-terminology.ps1": [
+      "62b279b9bd39b424e1944f2843c96d3267ea24acd4e0cb13af3ad2e76b116b67",
+      "fb85dd09637c45d939a0eeddb8271f67b3c3fea1a6a37ffdbd95fa626603e24b"
+    ],
+    "ApogeePartyHealthBars/scripts/check-wow-api-export.ps1": [
+      "2fa718b2519f31054bb64864611b73b8b2eeb8d0ea380045081f3359aa0d9a46",
+      "379b4aa8e7b9f0dbf6165c341e21b1136fcf1719f857605a6f98e6b8024fc50f"
+    ],
+    "ApogeePartyHealthBars/scripts/generate-dungeon-guide-audit.lua": [
+      "1dd0ce7df86d3fc96569d207e1b86a151755ef6961fa71c4e12ca9f0627108dd",
+      "fbddfa7ee51aa983f3512317fdf709f538b1fe7a857a2868d9bf3babed0b5e5b"
+    ],
+    "ApogeePartyHealthBars/scripts/prepare-release.ps1": [
+      "abb6b8d9966a8ff5ef3731fe4191a3a15933706566b10c5473432deecaaa6209",
+      "e56e8c6f4704378c5892cfd91958a0f8911023081cc29ee76085c111f4c325c8"
+    ],
+    "ApogeePartyHealthBars/scripts/publish-release.ps1": [
+      "099c7b1c03c796b66d662bfa58213e8f3aea794c432ef0682879c5d7d59a58bb",
+      "d634c57888c4d94eef2f2c0d229a509a573bc038b0c5c9bc54cc7b962f6784e4"
+    ],
+    "ApogeePartyHealthBars/scripts/record-wow-api-export.ps1": [
+      "11d86baf8db7afb798424f65b92c8cc48ea97758732177339c55979e68375e3b",
+      "62bb0a095e1bd4ac720d8ae80a59e360966b3893b21dd97b746abd978b4dbf1f"
+    ],
+    "ApogeePartyHealthBars/scripts/set-dev-links.ps1": [
+      "0ae878119bcee49e5c41f1f4c24fd0fee2d8397b2a182aab956282d97da91717",
+      "455d3a3873f506f3749f409eef80b51c797fdd3e772d978c5db52651c4018f44"
+    ],
+    "ApogeePartyHealthBars/scripts/test-dev-links.ps1": [
+      "8d7aee760ffc875bc713a8b8049e0bbd7dda6e5f081b2890e193be1cb9ef1c6e",
+      "9c69578edb40d67ec4052f73425e930041645c86f8ac09b285e9fcf4539ae7eb"
+    ],
+    "ApogeePartyHealthBars/scripts/test-local.ps1": [
+      "13f5b85152785411d457e5150af92130a3c0e4e3dae6d33769c8ab37bb0bf015",
+      "8fe104f017076afc631f92a3cb2374bd1d4a3a3a2836718e73d5f545812e6dc2"
+    ],
+    "ApogeePartyHealthBars/scripts/test-lua.ps1": [
+      "cc4eb6316c8aaa68ba30c4a08b98dd930b7510e6647116996918e2f0d2230b02",
+      "f1361fe890af2c31714c8e5b3d9c44b3f7431594ed82a1cc493446fc290965c4"
+    ],
+    "ApogeePartyHealthBars/scripts/test-wow-api-export.ps1": [
+      "1159b072c38ab190d43590f1f84a02db86035b4524cd9c6f44d44978d51a3230",
+      "25d6fdd5fe885e6a6fb50239e0f4c7b93c34447e52db0e672035e054fb64d704"
+    ],
+    "ApogeePartyHealthBars/scripts/validate-package.ps1": [
+      "3903ccba2204b55dd528e396fd96db98c3ea61ad45d0c677839a94e8ceeb31d7",
+      "4158c42e75638c1b8ac26c6df51ef0d39067e607d48f76524fda52674cdb5e18"
+    ],
+    "ApogeePartyHealthBars/scripts/validate-release-workflow.ps1": [
+      "43925bebd561b1c1bd37592f4284e0a29c3dc407ab6c23c120f5b2f7c217d10d",
+      "67cfbec4a02f7b2d8b852761a6bfbfc1f8c33d25183af71f23175ce4d4acac16"
+    ],
+    "ApogeePartyHealthBars/tests/accessory_layout_spec.lua": [
+      "a661560fdc5cbb3e83ea0fbdf40089b83af9086d89cab7a51b6c3f6536c00840",
+      "a7f2bc3565bdbadbdc621f260c4738e0c5dd15216e6a0a082d0657d5254c74d4"
+    ],
+    "ApogeePartyHealthBars/tests/action_assignment_sources_spec.lua": [
+      "6c7bf8bc33341978036df16df4892e2ee8b5f2f48aaff7ddecb9d229f997813a",
+      "d6270282a0840ca5ce36b071cde9a43832135833e00a21ae9e1c1a3d6fabb349"
+    ],
+    "ApogeePartyHealthBars/tests/action_config_spec.lua": [
+      "4d5c5e74cfe6ab75d521eeecdf7f7e580cffe021b72b70d6aa2fdf27ff464ba8",
+      "f3b6a17a38960638e928051a0d5e4dd418e4bb8060c1a740c4a2ace01a4801ca"
+    ],
+    "ApogeePartyHealthBars/tests/action_cooldowns_spec.lua": [
+      "0c64d9f935657916c6161d219d65229e028eb74cc7150eb8733bdcd33504ede5",
+      "0dd194b6e6415a004b8698b2e5d5d50590d3b760238bca80b320f480767f6c22",
+      "7a2a65f314aaa7068eefbd308a7be3754b4771bc257da26edaad31fb9fe3a94c",
+      "7f80e71eeaefd70e929544ae2018b34c510585f08a5a41efa3acc00dc9f71b6b"
+    ],
+    "ApogeePartyHealthBars/tests/action_coordinator_spec.lua": [
+      "1e9f6360056930a08dbb270658ced20c44a6c93942c025a695193da4419459f5",
+      "aac8e3592dabafd8e3c38b40e6b16baba1f42938ee3f5f1ef9f7e820d7b77948"
+    ],
+    "ApogeePartyHealthBars/tests/action_data_spec.lua": [
+      "354840e3abf272d3a960d3daeae846886406f578d56b5b79f9f99fb33afb9d22",
+      "d490444a380ae77fc28c36f75a31ffce25b6767cb8361535d725624b03c28ec9",
+      "da08fd1ae4284ba87d87f8aed8c34345b44a8f384c3c54c09ab62d4702edfd0b",
+      "fe9cfb09bf70bd4afcb3c89c991fd23d260050e36f2f171f3b6ec9da05f202a0"
+    ],
+    "ApogeePartyHealthBars/tests/action_hud_spec.lua": [
+      "411c83b5ef7999e9f15fa08668ce961e48564898df6d02d2e396841121a29179",
+      "b1e3c59cb661e962720ee2ccfe203c98a81d23022ce50f5894238a3b71bfc889"
+    ],
+    "ApogeePartyHealthBars/tests/action_macros_spec.lua": [
+      "c5e3afdb95cf028074676ea34b70e9b5fc15264d8341f95f37c07027d925b030",
+      "d8d7ac0445d20dc561cbe3d0571135edfcc9edf14b68fbaba0abb07f6c81ea30"
+    ],
+    "ApogeePartyHealthBars/tests/addon_smoke_spec.lua": [
+      "0856d1a5bf4fa5c924bcb1ec20932559866ef8beb171387a8b99128d9d5a0745",
+      "222fa24c829afde6c5779a4eb1f32496aa5a05bdb1ae30c7e136220308e341a6",
+      "390832ecac258adbba26f476fd31b52cc87b5a008959dd9095e44cbd6188d09e",
+      "430b5439df52c56f2f508fcdb6e29b6b9ef8bc49789f298095c62ce7e0150c9f",
+      "93c81a57ee01c67e7eaaace8701a70f46717f86722a9fe77650e0e50081d860b",
+      "b779a853cc65131adb46da7dae54d92038430f0b5fdd7a5fc8b3ecc458dad94b",
+      "ba05ab44dd3d73bddd1f13525637487386ead87ce9cbc818db51832e915d62b6",
+      "c89f192dc2148c52cabb8eaecdce70880aeb58633c904813b906ce968f0cc792"
+    ],
+    "ApogeePartyHealthBars/tests/aura_buff_matchers_spec.lua": [
+      "214ebfa61c72aee2d05298231747fac8bbbb03f5147fa1967701d4e747cbd268",
+      "ee8481f54ed6862988cdfb87cd887a3985b9b773e336bbdfebc6dc7319a23a5e"
+    ],
+    "ApogeePartyHealthBars/tests/baganator_integration_spec.lua": [
+      "0f3a1106196fd10e02d51db0535f0926d2e2a0708c0ad40f3031167d1abadc10",
+      "3abfbf502651ebcca0a52a3c9162d7f4d0b6b4f405b8ea0604b4f02c52c6e7a9"
+    ],
+    "ApogeePartyHealthBars/tests/binding_controller_spec.lua": [
+      "521dc17ad2e1a2d2336977907d6dd3a3091b929450aa403b65a469169c26c63e",
+      "f4f92a59cb3e5f3acf54f5e13d7398ed546faa6a6920426ced427c2a7336cd6d"
+    ],
+    "ApogeePartyHealthBars/tests/binding_store_spec.lua": [
+      "4818fa11e799e7544383a2b7d1cfa5fef14b5aa7241ce305a5495b4b4ba8ec78",
+      "bead92ada9dda47fafb9bf2e2918f4fae018fc3e8b3075bcce3d286747331717"
+    ],
+    "ApogeePartyHealthBars/tests/bootstrap_composition_spec.lua": [
+      "0d046e7ca324a49c393f03c4015cd255799889f71231e360573dcdcd48b09e19",
+      "4e8c09d9d50910360b92f965034a3e5bcd30dcd81fb49d9ae4f83920ae64cd83",
+      "aad42a3687be2e070d222ed5a35bba202aa536bf223fc6303ff3be1c6cbd1d61",
+      "d8c6d52619fc3ee6dc9ff6decea84d6aa5ca399a1fc4e215f652ad9b3d150aaa"
+    ],
+    "ApogeePartyHealthBars/tests/bound_action_binding_sets_spec.lua": [
+      "c463f8615d6ceafd0e5dd6eb25e2dbe0e386622fc63e16596128b3d64a21e202",
+      "e4d06b7fe80204e64ec04d29c5ae966269ad688998fc1d578ddd992ef001fa2e"
+    ],
+    "ApogeePartyHealthBars/tests/bound_action_drag_controller_spec.lua": [
+      "82cf5d98cb888802810b595f88479b87e3a9e979bb41895a727488c3fad3d413",
+      "f4f3a9dd2978c48be4ce16d9429a71bff4884f35b1bd62d93f74768343f4bc9b"
+    ],
+    "ApogeePartyHealthBars/tests/bound_action_runtime_spec.lua": [
+      "2bcc970ab62e642cd2c7340c1597171116311f24f8c9454047cbf5530265804e",
+      "ff582d34a31e4eeb22d100c60afee34cf89b55ea5d3cd24161c3cfd0c17c2243"
+    ],
+    "ApogeePartyHealthBars/tests/buff_icon_clickability_spec.lua": [
+      "1761b8ec43494da405f7f76eec095b43ca6882fb4e68234f97d5d8d37dba24e0",
+      "94b0b69641dc352d9c8850bdb924631bee83bade18a506c5f14f10ee01bd18fc"
+    ],
+    "ApogeePartyHealthBars/tests/buff_reminders_spec.lua": [
+      "4d264ad744097424d5b29878d8103e50a7cd4b8ccc602b3af7019328cb71e677",
+      "fd9c776d75c4b58f7e9cd1e9144f0ec1e06673cd53d3ba11bf9201ef4bbce075"
+    ],
+    "ApogeePartyHealthBars/tests/buff_thanks_spec.lua": [
+      "a16ab92e93cb280c9b9626ddb1d8434e6757e5c864c282c49c4029b1cfe7faa0",
+      "b93cba7824d5d869ef21cc52897f48fea1f3c40c64b52d0550e07409d3ad6cd3"
+    ],
+    "ApogeePartyHealthBars/tests/chat_composer_spec.lua": [
+      "1e45afed9d57865871ad041e6aed67f7a4cda6e0ff2cea6f63ea2a1f9c2e4887",
+      "2a0eba54106816454c5c044a92a943f53c7c366c468bc9139931902c06eaac03",
+      "b36d3b0e6109269a294fd8b9d980298c1daa870ce1392d29c4ccb842ea52f442",
+      "f4ef9678923b170a328dd32b99e7c7b4defae5fcb9f7fb391ca40387d9d27fb6"
+    ],
+    "ApogeePartyHealthBars/tests/cleanse_data_spec.lua": [
+      "08559580262383b2b24631dc0bff4eaf22427a7d0c11b86e9f4ccd5c27f01224",
+      "af86337fb86c8368d029c058b33a90bfe64ae096c2ead3045b82144e260e87a4"
+    ],
+    "ApogeePartyHealthBars/tests/cleanse_watch_spec.lua": [
+      "721b3a1d3f5ae5a2a2d6cb44a623abe40ab62c69bd28c0ae479f24317b9aa07a",
+      "f62667ab34d42be05cea599e03f9b6cbfb5cbf27ed413c00167d57066aa45dbe"
+    ],
+    "ApogeePartyHealthBars/tests/client_capabilities_spec.lua": [
+      "4398737b07a99faf41378788adc399f79ab1b98406662088ef8ec7ad35677bee",
+      "8213fccec40cd1809b7f4e385be59a44ffea5dd5515a5908ada59205e538602b",
+      "9ef4ebb352b7c0f13647afc7d110d3a7a2f2a3e569ca2147844040bd9c258dc7",
+      "bf7ea93091558ab369c19ef5deeab7f0f18b3c24e1bf97411b83593e04dddfe1",
+      "cf3b9c3b99bde057fba08dbfc92ae76952d57e5bf5848a0f2f389b8717534e1a",
+      "cfe84c3fa47a449a29d788d990d5e8d414f40370ebba770775b5f91863045cc0"
+    ],
+    "ApogeePartyHealthBars/tests/combat_ui_fader_spec.lua": [
+      "14425d2ddcfe7d4a72a174d9b6ff8607370ea903a591bb7d7df4e9407554e659",
+      "7d59bd3d1dde5646bbf3700ab9cc05fc7312ebc6e9ab8dbd5c9ad1de139e3bbc"
+    ],
+    "ApogeePartyHealthBars/tests/compatibility_boundaries_spec.lua": [
+      "4fbc2b483e59979a538622d538dea0cca548c4e8d52b0a9f726781ffd4a61cba",
+      "87c4d5d8de4bcf11e177d395d32ba44bc083f071f44617a4f882baf361877714",
+      "8fe39749981e65f9db232ac05f37522f3b854cb6d01ad8419c74867945206c2a",
+      "ca30a3bc4f2263035e89e9af8f9a78106cd15e6de234e3e1f690c086d2b314f5"
+    ],
+    "ApogeePartyHealthBars/tests/consumable_bar_spec.lua": [
+      "0da07080814e97c662e38cf8c772bbabbed65088f577a4edbf7a1186888cfcbb",
+      "6fad3a38f65e3de578368468bd4172eae57bf916e652f912cfe31d1102452705"
+    ],
+    "ApogeePartyHealthBars/tests/cooldown_hud_spec.lua": [
+      "2a328bef1c41b24d35d0f2243a690306fe8365596cd63af26425ad959aaebdae",
+      "f1a23aa382f0203f874dda01f6255dc10c47016ac650305ee784d5fa95abe62e"
+    ],
+    "ApogeePartyHealthBars/tests/cooldown_tracker_spec.lua": [
+      "0a7005b8662b4e08bb324269dc09d88d5ab02651d8e2984766ecba16e0d2e77d",
+      "b5e4d93db6df7d3a484684ea66d0a2b1d3add1e22695ed3b5bce0e6deedabe84"
+    ],
+    "ApogeePartyHealthBars/tests/core_settings_pages_spec.lua": [
+      "005e648d86167042485c4e7732ebfeb9e0c87bf09b2b38442b2a5344f6eba385",
+      "0c3b540fca24114466669d6d9bd783a14c38cdadb6fc31095cfaca8c403964c6",
+      "124feab001dd8b97626419392aedb555165e2b0c8d984e8b652728d57e29985e",
+      "9b46c2bf8f361a645c5fc228caec551a80035d544e4d1f525093d7c29f1cdfc8",
+      "db137acdd2bf493edaec5a61004effefc62fe57e6caa932328e51dae9d74f8cd",
+      "e93daa0885d4503817ae0c4e9c8d182d6f30f3ee1cba2fa68860078e6493ed6e"
+    ],
+    "ApogeePartyHealthBars/tests/crowd_control_catalog_spec.lua": [
+      "926217b0901087881557b865cd5e1f57c888bd9d0fd75f6b5141782872269f0d",
+      "af5ac2efea4b0198f541b3314dabb41151418101e1785b538a24b48bb3f5e8a9"
+    ],
+    "ApogeePartyHealthBars/tests/crowd_control_shortcut_spec.lua": [
+      "55df1932dd71ac06ea2f9943816b7be8d6953944c7a8f7bc11ae9fec66252432",
+      "a1f04f1f8ab35373fc03987d0a7feabafeca81510c8da0ba6e4862371baa52ce"
+    ],
+    "ApogeePartyHealthBars/tests/dungeon_board_actions_spec.lua": [
+      "5cd3b4f159a4bb5dc967c52afdcfeaae50b8c736fdd0bdaa2222b793bebca1b4",
+      "a24695e99b93802d3c3cda7a48791d467ae4df5f89877289708b107a9cc2833a"
+    ],
+    "ApogeePartyHealthBars/tests/dungeon_board_activity_data_spec.lua": [
+      "180d79813c79786a757f26cc6d14d8040adedc9c1143e04542ae4bb79690a830",
+      "1b11e953231e7a914841520ce7030971689d7909789b2dd4af301c4dae6f3bd3"
+    ],
+    "ApogeePartyHealthBars/tests/dungeon_board_catalog_spec.lua": [
+      "28a292037c22489efd6893805be0a12b6f57ce6ae1c97106fc1135b88d717bfb",
+      "30aef0919d00b253415e051d7296b7319c229c200b716b5279f08ca298057f91",
+      "910b20fde887955d8ce4f7b05846a3764903c50eb5d047984d15d2f01a439f73",
+      "bfc81e08ea2ec37af65ec9ace6fd1060661465fd9d4cc609741b4ef62fa171ad"
+    ],
+    "ApogeePartyHealthBars/tests/dungeon_board_classifier_spec.lua": [
+      "5153b80be392196fa250beb436d2113bf61125ff688be2f799ce50fa02015d42",
+      "c808ce697fb2b632511591811f69abc6ebbf1aa5175df456881e5f70c47d7672"
+    ],
+    "ApogeePartyHealthBars/tests/dungeon_board_eligibility_spec.lua": [
+      "48a4b40ff15a34a7a21bc156998e78d608ae088e00c0c09d3fb2f2add2cc696b",
+      "6fc7bb44fa22d86b28d260518566ef373ce8aebbe43d0d8caf177c8bfbf3f0cc",
+      "c3219ca3ebc1706cce2bc70b544fde0b8cd19047166dc37c2cc9882ca99fc0bf",
+      "d3775e601110accedc2e3d56c91329a79e11b8c8d9b53e667087417be49c3ff5"
+    ],
+    "ApogeePartyHealthBars/tests/dungeon_board_feed_spec.lua": [
+      "5134a42847c53de5bb023a9c69741f1b3f766419dca82af1409d71c9efe519d3",
+      "67bc99476e494bbe9278c84b22c1f42336d09f74a353c9d72537dee15459374b"
+    ],
+    "ApogeePartyHealthBars/tests/dungeon_board_group_finder_spec.lua": [
+      "052b87348c2e980c8bd8a0b2e3ef9aaeb97ce40ed166a25635eeb03398f653fe",
+      "be95c4e4924a6dd0ea897b74dee16812de74b0083e0dafef1d526bcd083870cb"
+    ],
+    "ApogeePartyHealthBars/tests/dungeon_board_runtime_spec.lua": [
+      "16be62b709e9720a2818f305f8d034e9f5441ebfc31856fe5ff2a84e996dc022",
+      "691946d22627ac778b625fca902fbe3f853ea7ffbadbd25d7a73248095fd37c8"
+    ],
+    "ApogeePartyHealthBars/tests/dungeon_board_settings_spec.lua": [
+      "6d3fbd6398578a806f2c7279a3eb1fc47886bca2705b93d925f1771eafadb2f3",
+      "f548c0ea74da976c9dd5d58af61e29c2fc14c21e608520a35acbb4ba1abef9e0"
+    ],
+    "ApogeePartyHealthBars/tests/dungeon_board_ui_spec.lua": [
+      "549e4643a8fa6f3b1cdb6f370af891430b526d36c32b0af0a9559a78df648c58",
+      "e1811995c53d304d327169baec834c91452ccb09727712d159806c4da15668bb"
+    ],
+    "ApogeePartyHealthBars/tests/dungeon_guide_spec.lua": [
+      "0e7b34d6b6c7b21b30c311947fdb02a8ebb5997c8049088f866c954f87545785",
+      "293a112aeca2e543ee5e0f92b069131493f02a2ff2a0a602551a00614aad6dd6",
+      "6b14e1b549e089ff2be7cc9bb2c322f0cd1f7dafb4efe10bc64851325b8f140a",
+      "ee87a89f120bc3549bb18314b3edc475b3160c111ee6cd8e078a6e1a3f4e5b2a"
+    ],
+    "ApogeePartyHealthBars/tests/equipment_sets_spec.lua": [
+      "388d261a89ae765b6e43214a49d6c14b8caf38fb36b277a0c4417bd43a4428c1",
+      "67a09cf95d81948031fa13788b77943ac331a024f45b288f9e8698f10e412371"
+    ],
+    "ApogeePartyHealthBars/tests/event_router_spec.lua": [
+      "604f6c8d45ebddea76bce38e084973933f61045767a60a71402f61d89e7c96af",
+      "6f7eb13b8921d6845a86ab16e56d9380195d298d3df900200da3f92f0b211c0c"
+    ],
+    "ApogeePartyHealthBars/tests/feature_policy_spec.lua": [
+      "514695d7e26feec767fd7b335b97c102e0620b527fe70bbf2f10c8e54476ba97",
+      "9c5fab26e991007f676c9682d38980db55f60f34646f4a439b47dfe9982f0abf"
+    ],
+    "ApogeePartyHealthBars/tests/group_helper_policy_spec.lua": [
+      "bf298b6dbc322b46d92cbd13c0d043b2fb1d406c50cc62863d32d8188f184778",
+      "d0dc85189070d929d52d755deeb48b7c7489bbc44899a5ccede3cc0ee65185ab"
+    ],
+    "ApogeePartyHealthBars/tests/group_helper_runtime_spec.lua": [
+      "1deac69383cf633e6785cef5a427bf54082d657b341cecc2d830e14bb3a13dff",
+      "ebd53611e3e68bd048284656c20c45843cfa7eef12faaa1f4cc078b550181b10"
+    ],
+    "ApogeePartyHealthBars/tests/group_helper_settings_spec.lua": [
+      "157e80b6535b9a0fe14dddace269dd226bc04279441c01edad24874353f3ffa4",
+      "eff7e5d1aca511dea52f3abc9f5430669d190a1adfb9ebccf0d9e0eca186f022"
+    ],
+    "ApogeePartyHealthBars/tests/harmful_auras_spec.lua": [
+      "0e9ca752d16e57fc49cae6ec3f04a38d3480370345dbd32dccaeabda5af46c8e",
+      "9f3dab452f238604611f059c91ac1c660315bf52d8705afaec1bb8d3ddecd0e9",
+      "e5610975fd010cff106d35ac8fce1b184b6d42456530101fb87c092e4a646162",
+      "f3c011ea5d39efe775132065e84dd8f21ddffb78a507ee7e21eefb93d3e63580"
+    ],
+    "ApogeePartyHealthBars/tests/health_alerts_spec.lua": [
+      "2e604da81d8b0c05a2af79ad8dc9bb413011456627d6aba748212fe552213596",
+      "3c0d3b67a1a1cebc13fea27cf4373202d685bad0bee42548bd68b2e088978392"
+    ],
+    "ApogeePartyHealthBars/tests/hot_tracker_spec.lua": [
+      "7081c114878415cef17318330fab575f84e1fec55a195f49cd8e60f16afd3513",
+      "99c09c77a00c8328a3564c9a79411ff945ebd9f164984acef16ab1079b0a38ba"
+    ],
+    "ApogeePartyHealthBars/tests/incoming_heals_spec.lua": [
+      "2eb0a4888e859122e5d0a641fe99d5b1d4b650c334d1d30407e122b5713ae58d",
+      "f25dadc06adb04f6d9f84e8137351ab8625fdaec27307de5cbb88bc3a4b885b6"
+    ],
+    "ApogeePartyHealthBars/tests/keyboard_actions_spec.lua": [
+      "818f882a6196d28a38baf9910b86adf598dd687643eaadf3961930b41e68b062",
+      "969f0b08faba975f454efd081629b680249abb00bdfb8ce563f7c2483c8f471a"
+    ],
+    "ApogeePartyHealthBars/tests/keyboard_data_spec.lua": [
+      "3f4df6a7535d6f0285753a32247acd74198c5187b922db29ce8a23a30ed35cc9",
+      "e14307eae76ad4b139d9d3b9144735f53740bb1b1356a79b5562cf24b09d5f69"
+    ],
+    "ApogeePartyHealthBars/tests/keyboard_layouts_spec.lua": [
+      "496f2ab2a049bd6016471fbd47a66fc7a44256ef361444f6221eb9ddcbd36c85",
+      "9fdb50e036ddd5331dbc96c0c72331f017350232e92e969de3e9b07131ea56d8"
+    ],
+    "ApogeePartyHealthBars/tests/keyboard_settings_page_spec.lua": [
+      "1e483ce580ef436ca41bfb224e4d645816c4733fe92fb1fc3b4c80342566d6ac",
+      "b812a6c4476b38268a5467b444026dac5fbcc2886a301a6943b2fd09eba4c2cc"
+    ],
+    "ApogeePartyHealthBars/tests/layout_header_spec.lua": [
+      "5ce67cdd05d03ec56f1028796a5c7f75cef3eaec61dc9cdf7cf68a2d5ba28a9a",
+      "76d7b28d311007080f3233cfad96bd7e45c064134259b12b50433650627da6cf"
+    ],
+    "ApogeePartyHealthBars/tests/mention_alerts_spec.lua": [
+      "28ba52df6a9fb566ac1f5e2cffcda4852ecff31fe63156af611946c26c801a3b",
+      "6aec11508e73270a01534a498eea6d7111998026e6c751fa6f8a58aa218d6c5d"
+    ],
+    "ApogeePartyHealthBars/tests/mouse_button_data_spec.lua": [
+      "47e286a9626bb543b3482cda7a3fe3d3f414b698b0f4e81eb608933039e6e499",
+      "9f89ed418f2abb7f9416be5f2017fd27fa21eff2e5b13d6b8b0b56cb0c143cc0"
+    ],
+    "ApogeePartyHealthBars/tests/mouse_button_layouts_spec.lua": [
+      "408878b97edd9b7de5cfdd3efa258ff77a4ec244f26ced8247bdb06268b750f1",
+      "d8079f62a0016da0ff555a9bc13db4efe2462b58a8e2561a9a6eb783cd836364"
+    ],
+    "ApogeePartyHealthBars/tests/mouse_wheel_actions_spec.lua": [
+      "5708ce25a790dc2ea1d10c517602651f225f3f4be7c64393236ec3c1711fecef",
+      "7152f1fb216b7a6db33549959959c4b76b3a18c39640af9fb237c7bc84a69b91"
+    ],
+    "ApogeePartyHealthBars/tests/mouse_wheel_layouts_spec.lua": [
+      "7870eb67af521a42a14bb776561af9cccf776dc64a0611344e59465be39cd5a1",
+      "a382568a5f9c1685c22f4439d6ca2168c250e38aa7a74df1e9830661e61b238f"
+    ],
+    "ApogeePartyHealthBars/tests/mouse_wheel_settings_page_spec.lua": [
+      "bb289f4251bc942576d3ba5792d14895f6e1fd7bc67c24e2ab3465e6289f055f",
+      "ce773c70ff53a7fb9668fb72fc7ab5f9c2c7772a8b4294a176de9147e92eafec"
+    ],
+    "ApogeePartyHealthBars/tests/namespace_spec.lua": [
+      "6d7aa8fd073cfc5dc131eee7aaeb5308182fd0100aab7cbd410914224f1649bc",
+      "d25f5218b90a42ab5c9cb669ad69fcbd8c0e2a56f3c468d414e42682598bbf95"
+    ],
+    "ApogeePartyHealthBars/tests/namespace_usage_spec.lua": [
+      "26573cf76756716d55e1901836443b868bb30979da924ede3d595823fba52669",
+      "3754737654119f1ccb6bd65dcfd15d1ef80bb6d8d111994bd837b7300aab6094",
+      "5c63b2cb5ed5dc325475c2681b9d7bf02e88e2e0caa75f900b34a70e36f6d479",
+      "fb213412c88ecf5396f1f6489871222fdc78a73149d6a269f2c82eb2f3cb0bdd"
+    ],
+    "ApogeePartyHealthBars/tests/party_buff_definitions_spec.lua": [
+      "4d97c2313b6439e9f99686e878beea384afaa9e405532f24be89733321bb1617",
+      "9ef4e1dc5c26104a76580a3c78d800fda1b7ea534f0152c4ac4c7950c3883dac"
+    ],
+    "ApogeePartyHealthBars/tests/party_frame_click_bindings_spec.lua": [
+      "d36fc84c0fd87353988e0c1d85a5c099219a99cc81fa4ece91a97f06b5428a39",
+      "f4265076648b3a9fd29b5fa0ef30cffcdfaf67a6fcf472ae47f2fbeaf2a81c47"
+    ],
+    "ApogeePartyHealthBars/tests/party_frame_clicks_settings_page_spec.lua": [
+      "9746e17aef093667064b7a559cc0de15174e4801038735fb9b4e7d677851fe0a",
+      "999cf567432d54f4135720e5b6412201a1dc41b16f8bb37e116a9017ba51241f"
+    ],
+    "ApogeePartyHealthBars/tests/player_context_spec.lua": [
+      "705fdd3efc6d6cca9b8735b328b7cb6dc58585a4662881aecf7ddfabd8941f53",
+      "7d5245f396a5009ab548bb051fe600bd30231617ab5a4c9f82462f233df49cb1"
+    ],
+    "ApogeePartyHealthBars/tests/player_spells_spec.lua": [
+      "50f902d13c05ee6126e96b85e8d2da916a30043d87d33655e9036b01f98466bb",
+      "dae16a9aa1640e008a5d816d7876f53f2e36bf432a9495db43a8b0bfad5d4fc4"
+    ],
+    "ApogeePartyHealthBars/tests/player_status_hud_spec.lua": [
+      "2df5c0698f193d44e08ed3a92c850f4e11f477005db4a0ca54b3d4fadb9de645",
+      "fbdeb1843555f1b3f2ed44bbd8b990c867a55e8879abd5f3030bca6477ae5f6b"
+    ],
+    "ApogeePartyHealthBars/tests/player_utility_spec.lua": [
+      "0a9750cab15b5c238e3a952ec612a1782aca1f1157000aacc6b155b9faf26b7c",
+      "a764decde9c1f872563ab26ace85aca75fe1f91c80b712bd721d27cee41a428a"
+    ],
+    "ApogeePartyHealthBars/tests/profile_binding_release_spec.lua": [
+      "823b8b91c70f58eecda92d1836e487cafae6a0ffa26855837d002c374222b86a",
+      "94b1c29fe1fadde80da55bf7d5ce3f62eef86ba7ab1f62461b9b9a7a583a70c4"
+    ],
+    "ApogeePartyHealthBars/tests/profile_codec_spec.lua": [
+      "9e063f5513f2d86ada5276c248c29909cddf9cfa613963eac08922a0ed7f780e",
+      "ee4eaa71df6faf7cdab7f4dae6727c67bad41130fef1b989d98f1b3bf23cb690"
+    ],
+    "ApogeePartyHealthBars/tests/profile_controller_spec.lua": [
+      "2c310f7e8b490053d781554d2a3629ab5c176c6f42203b3c6cdc98aa4e86b08b",
+      "7cc0ad5a38f18415e0c4bd31b9723a9cc93020972b7f6ea1ceec0f56ffdd5ec7"
+    ],
+    "ApogeePartyHealthBars/tests/profile_store_spec.lua": [
+      "169658d390b415eb301ea88cfec1ec9bcb3ee5d45ca50e4bf9f384ac0ef3d2d7",
+      "1f11a7006534fa5f952d0a7da6d1a37f88404ff825dcb64ff15dfd2d2e627909",
+      "7eeed189bc3d7a0cd3c08f7838fece2345b7d3e7c87b30fbbb8e562e50deefe8",
+      "8b467922a970f1c5b2288feddaf893592b0766f4a5737d0025b44342c02bbe70",
+      "96408392dea35cf38ca83a8ec0508d8707ce8ed925afc46e3903304749219125",
+      "a3012fdd885324af5d991c559e47014df386467a337d620faade6b123bde64c3",
+      "a665e008d4c4ddd631e2fc5c65dcf3b93b6ff55c078ca627f18371d1fc987ec3",
+      "c1adeb1b1f1624dce013861ab464909ec5447c0b31b30f4df2c0bdbae1ad033d"
+    ],
+    "ApogeePartyHealthBars/tests/profiles_settings_page_spec.lua": [
+      "36eb18948e2d8604d8c66e91d3cead5b4e486a27936a4f0b20150f4b9712a5aa",
+      "c047b8cc378e72c62d67fbb8ca0f14f2e72bba777e7a75474875e067fcb147fc"
+    ],
+    "ApogeePartyHealthBars/tests/raid_markers_spec.lua": [
+      "224929a2a031a3518c85f31bf13d0c20868c1124ff77cb70d430b1e5ec928f9c",
+      "3ec0b68048dc9e33219bbd2e63e4ee5cbc103ee8b899587d7b03236637e14c2e",
+      "a03985423ca63b6eaecd81783f95804e0e9d932f79d49fdce05402090febc580",
+      "fcf2ad29798df5a83521948c103e6db368f3d25e59274f38b0c9d9e2ba2c01c5"
+    ],
+    "ApogeePartyHealthBars/tests/row_geometry_spec.lua": [
+      "55cd36d828221b88b91d86f6d2969438aca28d0a82ec9566bdbd07716b9ed698",
+      "bc594ff2c466f34daeb2021ee5b6ea6a71856367428839b1716d21be8b970d5a"
+    ],
+    "ApogeePartyHealthBars/tests/runtime_action_events_spec.lua": [
+      "84e45043fe4442ca19453a6ef1de4d53bcf9598ac1c41d7d585d8bc526e495db",
+      "d1557269ea612af61881e3a1d705a6ba38ea123f78282ff3fde96bb3d8618f23",
+      "d76a6c62da4dcaa65b3d34ffd22e00386058918a7d8285648608ac825200e8cf",
+      "e08ea882510467a0935559e2d49a537615cddaca91e363e71f488f721ada2407"
+    ],
+    "ApogeePartyHealthBars/tests/runtime_buff_thanks_events_spec.lua": [
+      "8b97dfd1d3b7ea3f623289b914ea90e032f89a6e718a045f930d70c33273cccf",
+      "ffd28e9bb88d44f9cebe1d967bc548be1afaa3521ad0dcce1a2c064dbe986628"
+    ],
+    "ApogeePartyHealthBars/tests/runtime_cleanse_events_spec.lua": [
+      "b73112c12836582569b2bbb31d46ea656119447c87065369e80a6011a37770ee",
+      "d301c2797a8285611bbf3f01dc27ed37bcd8ed87f48fe4f6d54dcff428e8f59d"
+    ],
+    "ApogeePartyHealthBars/tests/runtime_cooldown_events_spec.lua": [
+      "80a0ad4fdf1c4876888b34b0f1662511bed52a699867b3b49863ff72aeed8c1a",
+      "fc5712bb0c31adb77dd2d29c6ba9f03d95af3f6d092a56792b911295811e7823"
+    ],
+    "ApogeePartyHealthBars/tests/runtime_dungeon_board_events_spec.lua": [
+      "2b72759699532adb615d7e61494155ea982181b75e36269714249ea2a34114b5",
+      "971b8e1ed9df74babc05f1eb0651a8cb0afba5676cd1f90c2713f142238c9f75"
+    ],
+    "ApogeePartyHealthBars/tests/runtime_events_spec.lua": [
+      "3bb664a5c94629a3a0f7bfaacd6265422c914a610e44cce5f7f4cd31d90ab0a8",
+      "7282a7cdf01c11bc3e09bdd93f4e15b9886de9dd5729296be6bd16dfda1d65eb",
+      "a2dc48c1f495095f721dedd0b3f056e8a6623507debcecfb5558cafec2f734dc",
+      "a4798d587fef82ae815a310743575e8852f74824e930e69f9d37e4bcabfc8861"
+    ],
+    "ApogeePartyHealthBars/tests/runtime_group_helper_events_spec.lua": [
+      "6c864d5b97742bb76605d87fcea61d666788679ea5d244d307cbfa768ccb6dc3",
+      "8e47bf61bbce68d67c31cc58edb2c2561d4f0e1308744d0c7d879ce64531dab8"
+    ],
+    "ApogeePartyHealthBars/tests/runtime_lifecycle_events_spec.lua": [
+      "0b212cafe3948f08ec5d0c07f897fe284688a1fa8900fbd64d4f85b211a8fdf0",
+      "5ecd1675f37cba1d5c5d77d9292b35b78efdf3b0094d32b6ea56275236ec256f",
+      "7a9586c92246af2911ce456c56b16e90f0148b2f39d6907ebdcd8aca0355d310",
+      "bd84ee34dca60d7948a0a9cdeffa31946d1a247455173d32023d541cb1af75d6",
+      "dc1bd82b453da34534dac58e59771f6128193203a75e27e25e5ba23cffa0d2c0",
+      "e986f0eb6b5ec27ab7806634db9b7cf8c6367cb0922b715e4673eb4c691707f3"
+    ],
+    "ApogeePartyHealthBars/tests/runtime_target_effect_events_spec.lua": [
+      "442966eabde2c68e0db9dee4454eb725de8f5979770ca4377234e0cb06e7c7d6",
+      "5a99a36c45a66a1628e310a13192c014a22ba2d0cf4fbcfa00b08be463c4e3c8"
+    ],
+    "ApogeePartyHealthBars/tests/runtime_unit_events_spec.lua": [
+      "1e0d2ef4d66f6f2af40f360c3b2e6a491068e29a2ac507785da671b70deb0ae4",
+      "33efd30896d9fe7d9e3073355e26928b091f83c03d16efae27fc5047c88cd075",
+      "794221473528efac296ec7332167233fa3d3172e5e8d106a32eed0db2b835ec7",
+      "c59326104c377f6369bd027a41c7d34c58a04e205fcc7cddc1b3b1430d655611",
+      "d849061c66241ba8dbdcd4dc5fc5a1583f95084e483475dc1c630cdd9ad9bd7a",
+      "ffee2537376aa111737180bd85622ec9fd81eece75f57fb8646c39e8b9b995d0"
+    ],
+    "ApogeePartyHealthBars/tests/secure_frames_spec.lua": [
+      "21805adb7c90e5388ae75b186670b96cb7a8f8ad50de7429f551d4848d4ceb79",
+      "e2253b01ddf3424e1b9ac7b6fee859c3a5e636285323827e7e0b23ee6bf87895"
+    ],
+    "ApogeePartyHealthBars/tests/secure_overlay_layering_spec.lua": [
+      "2f89894c745f5aedfb22ebea0f71eb82f7107268441afd2847ac58dde14dc3b1",
+      "f84b49046200cc14cf1d838663718037950ba4b37894b1d8f7e2d8fa4eb08565"
+    ],
+    "ApogeePartyHealthBars/tests/self_buff_families_spec.lua": [
+      "25a0bda8d60b33bb9c4d42da04648594d01ebd3ad2a9e68208bfa308ccab22b2",
+      "80758e0827d22247e7577f28ee9db573c8330c45f356643e585491d384ba4397"
+    ],
+    "ApogeePartyHealthBars/tests/settings_controller_spec.lua": [
+      "1c3c3476bd41ac17a50baf01d134dbc4db3a091febb3f8d77dda7d64e39d9032",
+      "56f038a311644b721d163e4a38c4af8c3dab9681c812c2898d824d9769719a47"
+    ],
+    "ApogeePartyHealthBars/tests/settings_surfaces_spec.lua": [
+      "0092b413bf4ca0661c28c95db0f85f83f6e6fe320e14a0d824a4948626c2e7e7",
+      "304f9f050bda32809606ac66062ea4ca119081b9c2944ebe8521e0817ad77a4a",
+      "564b506642ad0e6f9d738e1538242b729f76a3e39266101e81f023d4f0597988",
+      "9f265789eb505f8dab8fda725ae056c985cc5878095142a0855f7dbd2f1aa919"
+    ],
+    "ApogeePartyHealthBars/tests/shield_tracker_spec.lua": [
+      "93b6d44ed444f939ab8de50eada589bbd4497548abd3e82cf9eff804a6d1edd2",
+      "9bb6da543d31a5932f239cdc18d3c9f21d6a8270d2799f34821965e314769d26"
+    ],
+    "ApogeePartyHealthBars/tests/shortcut_bar_casting_spec.lua": [
+      "953803853a3be65d8a2f93c03ec7f05563bfedf31cfade94905e35bdeb8d1435",
+      "99085bf54818d024de63ae8fbd3cce6e27d643f80f323ff9ab9a652f5590c950"
+    ],
+    "ApogeePartyHealthBars/tests/shortcut_bar_settings_page_spec.lua": [
+      "219681a72b65533ff51f16586f868fd226b10968bc06a704d7320e55c092700d",
+      "af7b2388adb609a229b8eaccfce133a93bace268f88ded8aff31a829352c095a"
+    ],
+    "ApogeePartyHealthBars/tests/shortcut_items_spec.lua": [
+      "10989afb4ff14e0e736f2a3b33ba827cb28c5a6475f2c877075567a00351a394",
+      "50ee59adee4ad43e1cdcaa23f0de3f06be3fc0d0ae9c806561dd3cec637fc753"
+    ],
+    "ApogeePartyHealthBars/tests/sounds_spec.lua": [
+      "c85486393c452474eb10a61ec8ffdddb99ce42cc16e82331de43fe83cf4afc55",
+      "f9a4096b0ffcfc9824298579ebcf97c99ee92cba9940a02416ba4b2cad5a5d11"
+    ],
+    "ApogeePartyHealthBars/tests/target_effect_data_spec.lua": [
+      "6c413b6e5ed830db598e3263fd182380a4cca845b3e7a4ad4cbd52feb0ad2042",
+      "9513d86cc3cdd4efcfbee54d5a519f2a99e6ca0cec3e52b7c7676f5ca2792449",
+      "cf5d6406f84a0d6838a9319bc9868fe0b9f1664d10d60cbcdc615a7fe9de723a",
+      "e63a1db3dcdfec2bf5135d5a12478f46a16368b027c7b66f36c56c0ec9dc2af0"
+    ],
+    "ApogeePartyHealthBars/tests/target_effect_hud_spec.lua": [
+      "690f5a8f0ebcc015dc217f9af4a2b838eefadbddf4ea33855083b8131e4a11b4",
+      "8a40a13a370daeea7d8af03acfda868ff383722dc892911316d18dab2a916c8d",
+      "9dcb32a4734aa81f5d909c46a2b08eb8e480dd727de38547ad3dd79e23fd6977",
+      "bc229dd190c2e81bb91f0f64cf4337e1a88ad02e451a4769cfe136db19cb9deb"
+    ],
+    "ApogeePartyHealthBars/tests/target_effect_tracker_spec.lua": [
+      "2975c7812df9abfde425dbbcebce6831ea6b85b0643da03ce8981fedefb4aa56",
+      "37395878149673c7b32454e2c30902781992f020dadb9e066e611aa4ce81c20c",
+      "67bae3c4863b688e2abaadfba2aa83cc26af07f7f00c08af8e0c139a8f56d716",
+      "e4490cf74a14f417d27df51deb7da5066623b3ae027307398834e66e3ed690f7"
+    ],
+    "ApogeePartyHealthBars/tests/target_nameplate_hud_spec.lua": [
+      "aaeb9c58d7fd23a0ffc86ea9246b5ec6fd57de0bf20edc1caae983fb85367ad7",
+      "bc8eb5c024fbbd5415ae751abfad99c9416fef3fb83aec6b02c54706facdef83"
+    ],
+    "ApogeePartyHealthBars/tests/threat_awareness_spec.lua": [
+      "401f60bb9c06816e374d907294b69eb64503b70110f18a6225aa005cbd5854f3",
+      "4998e9ebfacf38c47cdd692fef75f3614f3db1fe671c244e6dfa5d85079218b5",
+      "65a72d0fa081b508b647fc50ecd3c311a6e86a5ceb68dcf4ac139b221d2782ef",
+      "e1b66cb37c6465c5aa0c650a5b484b135903acecb025efe71f95722f0a067007"
+    ],
+    "ApogeePartyHealthBars/tests/threat_observer_spec.lua": [
+      "48a6499cead95d488d7d0021733a42ba94e9a758bdbdb89936a09f4dcaa2a542",
+      "512f0367e8503fe3ef4b7bc5f0e68ab24c6f05fa20e160e3c2c36eb6e4a2231d",
+      "78f0cf155fcc3f751b406611801687c7cfa219b63c14fd8389af85d6bf581600",
+      "b001febbdb0bcc8a528ecce575a30fd4a955e89f8ce5a27584390e68a50759a1",
+      "d1d2423a8fb1e71a5d027b9a3152cc0d30a4c1ba59edee33352f97816363b108",
+      "ee2fa63e564aeaebff6d099541c7f09c678e91c73051a0216c2d41119b05517c"
+    ],
+    "ApogeePartyHealthBars/tests/threat_spec.lua": [
+      "732225b603d2c757ea1f247876f4418a575489f2bbe6f67fe80ed667d5f093dd",
+      "84521d2a4038b7dd98535a8ad397258a4bace7ca1d5cecd3ad72552b5247684a"
+    ],
+    "ApogeePartyHealthBars/tests/ui_error_suppressor_spec.lua": [
+      "621c90f3b2fc14d3621b8086652cf0eeab92029179e7bbeab5dc546fccbee4fb",
+      "edc04fe956fa21e76574d2efb15adb0f24c0a649d350e8e6d79fd5db5d106d2b"
+    ],
+    "ApogeePartyHealthBars/tests/ui_helpers_spec.lua": [
+      "000bd2f6f1374e4480a28304d20727163ab0dcc44c95fae3760b89f20f4ef262",
+      "5103639823a95bee0a35372d4750ec4edfb81c7ea67a06b3fea3376234dc1428"
+    ],
+    "ApogeePartyHealthBars/tests/unit_api_spec.lua": [
+      "4b752603f63cfd7f79451f3891f0304026551138c3cae29f105323ab0305f283",
+      "7f1ee55005efd3c334fd287c8c10df95c6dcdffb741ee761bb509cb8142aacc0",
+      "994ba85ca245e0b4d93f755c8c718cfaa6849a4b13c81b8b198b5917fd2deac7",
+      "9d4ba219687a1d3f8372c84647ee4772505fd8d6ec0449576d9494c2782c79e1"
+    ],
+    "ApogeePartyHealthBars/tests/unit_bar_spec.lua": [
+      "304b9db2a4445f67b4c4935d4a83847d99fefb5bfe85896ad82f33d018beb0d6",
+      "39fe069d3462e2d1ea2b9ca40b0975bba789f802d717e2682aa1aeb61587c931",
+      "b62876427daf7959488b6d959658bdf50e7da01435df82ef73521d8462c68165",
+      "b8e37e1aea182dae844b176329e5648dc8a846574af9bb4c2803c5341f5c1644"
+    ],
+    "ApogeePartyHealthBars/tests/unit_topology_spec.lua": [
+      "9921e03311c74b0775b384e800b10675141c3a0a48b1316aac5bb5e4c7dd1391",
+      "bfd41770711d1f43c6e6a5b96f316c054974cfc84dee603d1d3ce463b05a2b2b"
+    ],
+    "ApogeePartyHealthBars/tests/update_scheduler_spec.lua": [
+      "32f22200b80ae2678e043968597d3614ec8f50c5b8b6806bc52a71523a7f8110",
+      "3ab4ee852a644f48a9fefd0e781ae01af26c7327b57ff24bd63069c1f57cfb91"
+    ],
+    "ApogeePartyHealthBars/tests/visual_ticker_spec.lua": [
+      "16542dd4ef7563a5dfaf2a904bb583a68bebcfdb6795c9b0547d4df439d39c73",
+      "3f584a5ad1f12354fd6feaa9d9e88a5a7fc3d663b7890f4da71c70363b1e9e7d",
+      "718afa930a9848c680b257b30af54e6492784afb5735f3bdf2d7474df020225b",
+      "7caba6f3ecb2c6d22bfabae0d20c612233f934ccc2230d7783fc8af99b952dfb",
+      "9e907332b06b94c1c172f46685aad3e300cc6437f599440e9cc5873bd7bbf477",
+      "e77808b1dc520f27a180493e20d950d5df57b8bf8ce8aeb46773ed521ab5c1a5"
+    ],
+    "ApogeePartyHealthBars/tests/weapon_sets_spec.lua": [
+      "01af0a5b769c8a9b1be030c711de90677e924134c08edf2715b8385fe1868460",
+      "d54e6fe617bf50cce0df85b399a4c79ba15effdea747010eebe28a1165808827"
+    ],
+    "ApogeeTank/.gitattributes": [
+      "d60f352d0db1404c70afb4bb8b2ca3fd1c610572aa40720e8a0b7baa7885418c",
+      "d711b6ba64c7208f3059111e2a74a2453348584bef1fec237198ad08befe28b9"
+    ],
+    "ApogeeTank/AGENTS.md": [
+      "c6461cee5235f243727159255e162cd53afdebff5f1fc02934992c42853a29fb",
+      "df87757645eb1bc864f78fc034127c952717bc2c83055b92e6ba72eead175c32"
+    ],
+    "ApogeeTank/ApogeeTank.lua": [
+      "085b4409caba3203bf45c5ca9f8a5c26bd5ffe1b6b68431975f07b5cb0fb1abe",
+      "84f2c3484d2810e4815b55c68d2a04dec0bf762b3385e50a86d28df2fad020d2"
+    ],
+    "ApogeeTank/ApogeeTank.toc": [
+      "dfa9ba6cb582d19dd2f92fabbced3f38e08e14385cf6afd85a60916f25a20f98",
+      "eb44d993b60611d8e71a1187de3e146461b95eadd1870aeb0d7557e9a0b555b2"
+    ],
+    "ApogeeTank/CHANGELOG.md": [
+      "04770c8518938811bb0a4f6695c221d5f17d0a342eb6e29e56c088a2f535f5eb",
+      "eba20889e4937fd303fe7847d9a61c2b23e3dcf5631085b6412703afc4487d44"
+    ],
+    "ApogeeTank/Cooldowns/Actions.lua": [
+      "161f06866dba75d2468e76a1ccb362ba58589e44cf20651b522bb22320a0f833",
+      "56184e88d9d23717217c91cd2fd007c9fd9591f11ba98279d4f028319ef46aa6"
+    ],
+    "ApogeeTank/Cooldowns/Runtime.lua": [
+      "31fe8fe48f22c481608d8127a0380c76b7229e78b8625fec2eef3ff283780a40",
+      "439e7f63c6da8eba6e6b99c3cf2f339c86a6544b22315ff584d8ea5fff12fe48"
+    ],
+    "ApogeeTank/Cooldowns/View.lua": [
+      "2368f71492ec6b956fb3d79c496c8c49a6f62ffe7db3dfe2bc7206c5692fd2c0",
+      "bfd32d9e4f2cd91732ccacbc9554d645e9d777ccf9eab4055bfccadf25aefd9f"
+    ],
+    "ApogeeTank/Core/Access.lua": [
+      "21250949651b3b9e4a57f1b0b63efa7e14b7d7cecaf678b51a266bcd4ff24c9e",
+      "fd20bb3ca6c6f93c86f0977977d6159644e9f7682515077d1d96f28e4d0d53bf"
+    ],
+    "ApogeeTank/Core/Client.lua": [
+      "2b48d404ba10931997be200fd8813d70387ecaedc78fee092317504a2f0e854f",
+      "f56d2f677ea9d23080cf486b62850509f3530bd01da11c9c3ae7b9d950860d78"
+    ],
+    "ApogeeTank/Core/Cooldowns.lua": [
+      "723fe5ac6351543b4958564022f7a6109a2ce45b6e7a61beafb7f1e899360eb3",
+      "fda756a30a56c02d622a0f5ac0164dc10e8168225334591e181931598e5e49f1"
+    ],
+    "ApogeeTank/Core/ObservedSpellList.lua": [
+      "6947430733029c7b5176abd9e5dbe236bef53106e52b91f228a55e2faff77bd1",
+      "8bcd4dfb88e3159119b063fae543e597fa0437f2df6885b9f72f804db9e2f814"
+    ],
+    "ApogeeTank/Core/Stance.lua": [
+      "23e37f8b346fd42d8d3e652ef97debfa3aeceb56f76631d1afd73f9b7a33bcb8",
+      "e744f95d953e9764c1b5be46bd55cb0d2c5dc4f00134e858da4dc33fdbaedbc5"
+    ],
+    "ApogeeTank/Core/UnitAPI.lua": [
+      "106d26219b33a82667fcba4dc581262eb290fdd0228f6065f4993d36c9e56ef7",
+      "178bcbab2c2530012d7a0b5eebf8424d16429538a80aee364c2a55a6bfd700e3"
+    ],
+    "ApogeeTank/Guidance/API.lua": [
+      "7eac5a644d062da5879242b76d8d79d760006f077ed94b71e8d795d364d7d8cc",
+      "bd6958e3f03abc7f2cf3dd19d77db6d93b22bc7b4a16e3a2538c75ad55de3f9b"
+    ],
+    "ApogeeTank/Guidance/Model.lua": [
+      "15fa90547ba955e264fcc87290b24e98709ca51a78e460ff339a3914a07b05f5",
+      "dae0169c3ad8ea1e3b826de44117434f1f0662b0eab2395d1fa5c93a81c1ca1d"
+    ],
+    "ApogeeTank/Guidance/Runtime.lua": [
+      "364aca84ee837490d5acefa12b2594c17013bdfd7c82ce6aed08831adfc74565",
+      "83a91cef2ebc83cd722990e389af32bfbca5429c7a49715b2df3f5a5baee780b"
+    ],
+    "ApogeeTank/LICENSE": [
+      "22c7f01b79be20bd0ab43b1b8ee9896901ad20411e893c97c6eae35734887b3a",
+      "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b"
+    ],
+    "ApogeeTank/Media/Textures/ApogeeLogo.png": [
+      "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e"
+    ],
+    "ApogeeTank/Minimap/Runtime.lua": [
+      "8e8fa1e8b804a38da995977c0a60cf033e80aeceb9c3a7f8da07b790f0f21482",
+      "c07ecf7b5818a4ab3ed0ba74ec5a283ed3591c8fd234c33424b4eca77063df91"
+    ],
+    "ApogeeTank/Picker/Runtime.lua": [
+      "72098d4f3ad94553bcdc105eaf3d09898086adbaba0506cd4e4f4ea1b5812879",
+      "a47c57ea59b9bfb3b0aa1ab0db9cc139ed7cde04c0499c10bf4243903222afaa"
+    ],
+    "ApogeeTank/Picker/View.lua": [
+      "3cac0f9948d31913f8531129e30b0dba58995123cb7fd6282a3c0ac85b8745b2",
+      "e409b9e4b36292daad731e2e64655a08f17ac1b67e41aef3de82b66cfa29af02"
+    ],
+    "ApogeeTank/PickerPreview/Runtime.lua": [
+      "8d1965bf532db9460a70421289dce7b7104048c9a3a5da7ffaa4519f53557f96",
+      "92374f4a679a09d1ed479ee9552897238af108de300cdb39cf1f1f81bceb5365"
+    ],
+    "ApogeeTank/README.md": [
+      "0045c8d581ed088db1f043e9dc6929a63577a6546ab265d547cb7405f8f63628",
+      "9eff18e60ca6e31b76766d7b200f781460f1bdff13d98fd66f6e9a7e2cf6799e"
+    ],
+    "ApogeeTank/Seals/API.lua": [
+      "2972985886d1b9d6bf2b07cb08cba005f1200e65a583cf7254d9a2b9add78664",
+      "ea2acee977b6d8dee03a5b5ee8cfab303e0ccd9a05f87c31f9c3f81bf200eb8f"
+    ],
+    "ApogeeTank/Seals/Runtime.lua": [
+      "4285ed0e8085b0f5e0b8bdf3e00a6e121f84ae3110713e940a558e34b8a638e3",
+      "75eaa7c06b24020278dd2f84e044dc2e02004f52527ca40b48b8b0af18c3ed09"
+    ],
+    "ApogeeTank/Stance/Action.lua": [
+      "e942d6676c3115c09e69e1534e08dd9a5301ea0c1a519473410a2f8fe332a5a5",
+      "f86564ef79397ca13d19496ecaa2ab1a77a3f981cbae37a2b5b79316a4de8d2c"
+    ],
+    "ApogeeTank/Stance/Runtime.lua": [
+      "5951acda9ad25ee46545f974829639b557fce4e427005b4daf1b0e99ee9934b5",
+      "b2fcfaf9885b794e5d4ea4d510b50aa1badda3d5a9ee1945e0945529a6998c32"
+    ],
+    "ApogeeTank/Threat/Hud.lua": [
+      "a37f67490b55d6ea9c56375d4b03544b717b0ea9e23de57021c8ee518549ead7",
+      "b9e4e8730ad785a504747adaa54b0e102563a0fd3a685e2509dd3deea038aaae"
+    ],
+    "ApogeeTank/Threat/Observer.lua": [
+      "392d4067462bc8928f3f77a2e193ac0ed794677c1263fedc3d3f9baa73594227",
+      "8da13f9df18f621cfa86b1ee22385c1d8cb532045eae626d99a65c7c3ab65d31"
+    ],
+    "ApogeeTank/Threat/Runtime.lua": [
+      "954c85aba9e476a2f46dee5ae887405b4bed7444e20fa879efc93aa05c7231ee",
+      "df0883a531c9e9f3278f647dfecb7a9923bcc91da4ad460136fde5cfcc89e701"
+    ],
+    "ApogeeTank/UI/Style.lua": [
+      "57246c57f83c7d8919ac14ce9cae64624dd7a939ee012f6df1a79a3efa40f2f0",
+      "b667d6679cc87364baa386dd8849348baa31ffc5b18d8664dd3a25c08689e7dd"
+    ],
+    "ApogeeTank/docs/API_REFERENCE.md": [
+      "74f5f113a911d27bacc9d6e72fc9e2673ab20928007e4572cdccdadb5eaf0693",
+      "89ea13912749bc0f4806863b867a0a10638bf67d736b2a854dbf248c780c948f"
+    ],
+    "ApogeeTank/docs/ARCHITECTURE.md": [
+      "1a6eafc7d4013b631a1a161b72b747281bab04d6ccef80e26913bc558795c65f",
+      "72a48da51f7a72ce7871876ecb32d796e7338aac25492fca5e2aae6c44ba8b74"
+    ],
+    "ApogeeTank/docs/CODE_QUALITY_REVIEW.md": [
+      "69deea705570ff5cc7297d7e1d199c3f63140888b860d2c69712b45b8f590c6d",
+      "fdf5c92209f6b4e2c99e3c3f8d10e346f758099b0cd4c823e94aff2d3561e998"
+    ],
+    "ApogeeTank/docs/CONSOLIDATION.md": [
+      "5336c967b0e83c1c9f10181d307424c9a5cf3420510ba8ed5a266d7b99c24738",
+      "8c8e0f65d796f8e0f82be52b05de33645605b6300dae1b915ef6db151fcf1cdd"
+    ],
+    "ApogeeTank/docs/FOREVER_BETA_PLAN.md": [
+      "6ba968f0c43878e23b3a6df9c17cddb2be79a01449094a8387c7594895e3a7a6",
+      "79166ef626e469d92653c61d8459e01e966c4670bcfa732d2026b744ad4f3f89"
+    ],
+    "ApogeeTank/docs/HUD_REDESIGN.md": [
+      "660381c34507b5310bf1bee0f7d98493bb0d9ab90a9a2ce0cd2c5fd9faac0355",
+      "96494f62a908c6238880361c70b2f817ef4c8a9dd6161ba0f7f3fb92ea2b88fc"
+    ],
+    "ApogeeTank/docs/PREPARATION_GUIDANCE.md": [
+      "4dc04763f24c1545840324a0d46896108532a826ea9091dc1cb783348aeebac0",
+      "dc3cd831f98498da828ada03166a69fb62cf6b2af235e2eb455b4467a0f49f00"
+    ],
+    "ApogeeTank/docs/QUALITY_SWEEP.md": [
+      "7beb398817b1db744286a47013418621f6198e86d274454d1ca116ed2dedffd8",
+      "7c5c2b13d0158d2382aca7a3a5c1a6a3a9ecf9adad399bea3582206dd27bca33"
+    ],
+    "ApogeeTank/docs/VISUAL_STYLE.md": [
+      "53367344a5c29335aff4a22078846d47ba58414eae21599e7bf9387bd6afa17c",
+      "9c523747b73e672006fdf1b0a20c82a8237d2ced01c58897e39be761a4dff65b"
+    ],
+    "ApogeeTank/docs/wow-api-export.json": [
+      "27b2b46686839868e39106563e434ee2e6e25ee50f9ee1ad2fb14dbe27d02c6a",
+      "ba95378922573860bea9a31686bb7ae57f406c7b48c4d29ed1e8d46e4f7560c9"
+    ],
+    "ApogeeTank/scripts/check-wow-api-export.ps1": [
+      "674073982fb7379b592d90fe746c4ff9c447abed29564401aecb964f99365bba",
+      "f3a5888d42c03fb4b021471c5a7ff1ba177f166dbed3b0a7d0c6d1b05343744d"
+    ],
+    "ApogeeTank/scripts/hud-preview.html": [
+      "36630e35af79674c6d608c95cf723cf6b32aa305fd22be44e939c3c95a14d8e4",
+      "b4c528c04766144ce0a2d2f383e2b8b951503be189133eea072d8b730160f4b9"
+    ],
+    "ApogeeTank/scripts/preview-hud.ps1": [
+      "0030cdc79790868ac71159183b951c972d91d533de6954cb8fd78e3794eb67f4",
+      "db69b03d13f1862c7188ac531d7e6f3a998c79095a84e8dc392136328658f2cc"
+    ],
+    "ApogeeTank/scripts/test-local.ps1": [
+      "6f114f9f49ad101c0e273fafcf6e02a61b4777712c30c3b75f527c3e1da6df7c",
+      "7820c33bf6720631f3b0ba32b65ebdfc3c6eda7ab41ca7e7f58c24a1884bdc96"
+    ],
+    "ApogeeTank/scripts/test-wow-api-export.ps1": [
+      "2edcb589bdc0ecfbb112030ccc4ab8633c277250dcbb3ec48a7bf977b1e61353",
+      "44bc493c7d29cec783d032f84ad7b8aa2ce097b0619fd385ac5dc1b5ab13b80f"
+    ],
+    "ApogeeTank/tests/aura_action_spec.lua": [
+      "dba7f95e600e5eb2db2aace709800a2f602f8f557f62107c3dafac4b5a1fe0e0",
+      "dc59949c4dac609056cd59fe640ba4f64e46f2f9dff1026b52285bf39241e59b"
+    ],
+    "ApogeeTank/tests/cooldown_actions_spec.lua": [
+      "0f3e3b91c59e9bd97ed621d9138309e08eb8384a1e14fc9780cc7b0fad990179",
+      "daa682767fab289d5fb18df06c4126e7f8d1c041dcfaeee80e3d9d7adb947a4e"
+    ],
+    "ApogeeTank/tests/cooldown_view_spec.lua": [
+      "585e705593f59584195d24de207eb2fda2b225298a360b37c1bbc0e53a811e9c",
+      "b87b42a73fb18c854ee3f644917db22d07a25c6763c82b2d7af0fa50922f2598"
+    ],
+    "ApogeeTank/tests/cooldowns_spec.lua": [
+      "3954d92eb6619bf709d017b9d35ee9b716bb7875644530c004480325fd326a10",
+      "786aad3505092c8f16f4486322383dacc341fb15735bc64e50a815244b4ced31"
+    ],
+    "ApogeeTank/tests/default_cooldowns_spec.lua": [
+      "3239f3a7eb10d0707ca1d5b8206f3eab80a6c77c2ee036123e35dc779f0b9ff4",
+      "da9672b1031e23a6918635fa36bcda8e15f2bfbb4c705f91749db7132b90d345"
+    ],
+    "ApogeeTank/tests/forever_beta_spec.lua": [
+      "28f0d5b4f5be745b04ddbaf072972cb1583c472144b848b315c1da5303d20868",
+      "ebd7d1ef1b6c56f53143af448c62b75841389d49ab40ab0c294541b876614eac"
+    ],
+    "ApogeeTank/tests/guidance_runtime_spec.lua": [
+      "2eb8cdd045f9282ab4315282d767f70925d8e6bf86d30180fd64d1d1bbd4bf65",
+      "3945d7fafe0becd96c11edd23b7f95581ed98ab48d3bbbf93d8fbea038ffe905"
+    ],
+    "ApogeeTank/tests/guidance_spec.lua": [
+      "195850e6dfc9719f8c8c34061af836209c3efd3cc5f3c46c6cc7029f7e8c2ffe",
+      "97901f9ec7af97a9e88bb6c47a1275625366de31dc765e160b6612b328952931"
+    ],
+    "ApogeeTank/tests/hud_spec.lua": [
+      "43dd1c12d84e5595bc7fc1aa0e19788518495f4484ac4c58e58fd88f9e297e60",
+      "b8fea29922a8787bb540e9bd7d3dce0b5e028e953bc1ef09d1cc18655c38769d"
+    ],
+    "ApogeeTank/tests/minimap_spec.lua": [
+      "2560806514b2c7c3092a6a5a81bcc86d7380859e34dfa5fd2b1c6308211f9543",
+      "6afa396fb5c319b29ddf919ab52c29ea1775eaa5347d6b6fdadaf20da71742c1"
+    ],
+    "ApogeeTank/tests/observer_spec.lua": [
+      "751281a6fc720c84233a34fb49d9de2ec5f252c03a3dcb8b6a7ef9d29882f019",
+      "792c3d0b13ac79a6b8e7e144ed6ee0fa89f3b94dab9d6a79a27877badabc2192"
+    ],
+    "ApogeeTank/tests/persistence_runtime_spec.lua": [
+      "5fe128d5511cb5e82c5ada2af3ea98fc29035180cb04d98a4a1bc5ce009480a5",
+      "eed16258e5d7e03e4e660cf3cc1f4c954319f2a0929fccd69123c04f95b9bcaa"
+    ],
+    "ApogeeTank/tests/range_performance_spec.lua": [
+      "7b84adfb57dfcd80a640f351fb59348bcd52952ed8119971784cca2527da486f",
+      "dc13bc02fd5b1fcdcb99d729131aa9b47149ce0644944acad4e3c47cea5813e2"
+    ],
+    "ApogeeTank/tests/runtime_spec.lua": [
+      "ccee1b6036986a957136dcd1532baf4f7cf3d37b0f50f5b204f89ff59e02d465",
+      "e0f38d957a9bb4af14f8562f0d10bf56e65f092f9fcc594e2466f89aa3ff0dd4"
+    ],
+    "ApogeeTank/tests/seals_spec.lua": [
+      "7043bf8a2c64f2a30f12f90848c0f78eb40aa6e23ad94af1ef75a0b8ec92fe41",
+      "9e1ec8334b7785682192df1940956e0d5fc69bbbc00da385495f68287d9da603"
+    ],
+    "ApogeeTank/tests/selection_model_spec.lua": [
+      "3dd3bf9d5652613c93bd9450b9bc150e7d0aa2cdb70bec3616fc5faead09dc46",
+      "f7f690f431e5873d38fed8169041bde71006750d29d7b92ea9b54f6ae7a797b4"
+    ],
+    "ApogeeTank/tests/stance_indicator_spec.lua": [
+      "148d7527bea1074f8b653cf8ee6b6a0177791aa32f9ff91f40f980d4e5fb4764",
+      "e005faade437e7d68e7c7d42bbee7676be25bdedf90ed0bed59f1b075d5f7c2f"
+    ],
+    "ApogeeTank/tests/ui_capture.lua": [
+      "310f67c51f1dd3ad51623a9273c2eaefaad0b7d8b240f9b375439b696fa3032b",
+      "914efbbe2c0baa8fedaf0458cc725b3d3ac27c4b4a2afcdf424eec3eda921081"
+    ]
+  },
+  "legacyRevisions": [
+    "eac66429006c4f1c3a99a168c5a64a9d5cc7cd18",
+    "31d081d0621321aa1dc743f1cf97989b05876f25",
+    "3ae6918dfa857da5a210c736bfc5c626d7c08e3e",
+    "07612af0b5d9a0a2951df8b2a500cb5c37d5d125"
+  ],
+  "legacyTocHashes": [
+    "1454e58ec13316430c48db52b01caeab0762bd479b5e3264ab8422d9ab88793b",
+    "1a3eacc2ff7c14a176368d187acabbaff1f56e0bf59413115c3666bc623cf2a4",
+    "2cc5c90db04456ed15e1b06e20ff8c86ca5758a27091c3a13bca96aba7c61c50",
+    "45b3fe37ff6368fa03fa742428df8739a2ab604e953273cbb173646357aa68e5",
+    "86ce2b08156d7c2fb3bc56402c03768db1739df4a4806824ff91e6f031f89c17",
+    "bdde8710cd80f8cc9dfad281f08cb85074bfedec71e99689c63b9aa98e2812ef",
+    "e566e10dfd15a1455d11d73b1c859b3417f78ff6d79f3fecf09050a7a0d2f7b4",
+    "f6bf37a399087104852604863250b1c6ef38094846322d5661be73602b72ce41",
+    "d01c2a42ec3fb0a87cb0274245b5e44841b9b46072ed8640ae85078a78215f3b"
+  ],
+  "schema": 1,
+  "sourceEvidence": [
+    {
+      "name": "ApogeePartyHealthBars",
+      "revision": "eac66429006c4f1c3a99a168c5a64a9d5cc7cd18"
+    },
+    {
+      "name": "ApogeePartyHealthBars",
+      "revision": "31d081d0621321aa1dc743f1cf97989b05876f25"
+    },
+    {
+      "name": "ApogeePartyHealthBars",
+      "revision": "3ae6918dfa857da5a210c736bfc5c626d7c08e3e"
+    },
+    {
+      "name": "ApogeePartyHealthBars",
+      "revision": "07612af0b5d9a0a2951df8b2a500cb5c37d5d125"
+    },
+    {
+      "name": "ApogeeHeals",
+      "revision": "3b4cbfc0c783d44116752dff6b622d6084d63889"
+    },
+    {
+      "name": "ApogeeKeybinds",
+      "revision": "bbc7d7b18782fcef36dbd376c46cf3f70f66b9bf"
+    },
+    {
+      "name": "ApogeeGroupAlert",
+      "revision": "0d72d88e02f7b01d48977abfdc486c9108c0655e"
+    },
+    {
+      "name": "ApogeeEssentials",
+      "revision": "7bd042678e3ff5516929c687be51538a3b9bee9e"
+    },
+    {
+      "name": "ApogeeTank",
+      "revision": "ccc69e5b56bccd72fde620cdf20e3fd422b175a2"
+    },
+    {
+      "name": "ApogeeEssentials",
+      "revision": "0eaab2a8677dfbea4c7db739c66a756036573417"
+    },
+    {
+      "name": "ApogeeEssentials",
+      "revision": "a5b382ecad37246cb63969ddae115109c16c9faa"
+    }
+  ]
+}

@@ -118,7 +118,18 @@ def child_contract(child, files):
     return runtime
 
 
-def marker_files(lock):
+def marker_files(lock, candidate=False):
+    if candidate:
+        toc = ('## Interface: 16001\n## Title: Apogee Distribution\n'
+               '## Notes: Distribution identity only. Gameplay belongs to independent Apogee addons.\n'
+               '## Version: ' + lock['version'] + '\n## X-Curse-Project-ID: 1608100\n'
+               '## X-Apogee-Distribution-Only: 1\n## X-Apogee-Distribution-Schema: 1\n')
+        return {MARKER + '/' + MARKER + '.toc': toc.encode(),
+                MARKER + '/README.md': (
+                    '# Apogee distribution identity\n\nThis addon contains no executable code, '
+                    'saved data, bindings, settings or gameplay.\n'
+                    'Gameplay is provided by five independent Apogee addons.\n'
+                    'Local candidate; native-client and CurseForge updater acceptance pending.\n').encode()}
     toc = ('## Interface: 16001\n## Title: Apogee Distribution Prototype (DO NOT INSTALL)\n'
            '## Notes: Metadata-only fixture; current Keybinds blocks this loaded addon.\n'
            '## Version: ' + lock['version'] + '\n## X-Curse-Project-ID: 1608100\n'
@@ -130,10 +141,10 @@ def marker_files(lock):
 
 
 def expected_hashes(lock, variant):
-    require(variant in ('children-only', 'marker-fixture'), 'Unknown variant')
+    require(variant in ('children-only', 'marker-fixture', 'local-candidate'), 'Unknown variant')
     hashes = {child['name'] + '/' + p: h for child in lock['children'] for p, h in child['files'].items()}
-    if variant == 'marker-fixture':
-        hashes.update({p: sha(data) for p, data in marker_files(lock).items()})
+    if variant != 'children-only':
+        hashes.update({p: sha(data) for p, data in marker_files(lock, variant == 'local-candidate').items()})
     return hashes
 
 
@@ -153,8 +164,8 @@ def collect(lock, sources_root, variant):
                 require(tree.get('common/' + p) == files[p], 'Keybinds generated policy drift')
         child_contract(child, files)
         result.update({child['name'] + '/' + p: data for p, data in files.items()})
-    if variant == 'marker-fixture':
-        result.update(marker_files(lock))
+    if variant != 'children-only':
+        result.update(marker_files(lock, variant == 'local-candidate'))
     require({p: sha(data) for p, data in result.items()} == expected_hashes(lock, variant), 'Payload mismatch')
     return result
 
@@ -190,9 +201,14 @@ def validate(data, lock, variant):
     for child in lock['children']:
         prefix = child['name'] + '/'
         child_contract(child, {p[len(prefix):]: body for p, body in files.items() if p.startswith(prefix)})
-    if variant == 'marker-fixture':
+    if variant != 'children-only':
         meta, runtime = toc_info(files[MARKER + '/' + MARKER + '.toc'])
         require(not runtime and not any(k.startswith('SavedVariables') for k in meta), 'Marker has runtime/data')
+        require(not any(k in meta for k in ('Dependencies', 'RequiredDeps', 'OptionalDeps', 'LoadWith')),
+                'Marker has dependency')
+        if variant == 'local-candidate':
+            require(meta.get('X-Apogee-Distribution-Only') == '1'
+                    and meta.get('X-Apogee-Distribution-Schema') == '1', 'Unknown marker contract')
     return files
 
 
@@ -213,7 +229,9 @@ def build(lock, sources_root, output, variant):
                                  'Combined native client acceptance pending'] + (
                                      ['Loaded APHB marker blocks unmodified Keybinds']
                                      if variant == 'marker-fixture' else
-                                     ['Overlay leaves legacy APHB loadable if already installed'])}
+                                     ['Overlay leaves legacy APHB loadable if already installed']
+                                     if variant == 'children-only' else
+                                     ['Requires backup-first migration; ZIP overlay is not an installer'])}
     (output / name).write_bytes(data)
     (output / 'manifest.json').write_bytes(canonical(manifest))
     (output / (name + '.sha256')).write_text(sha(data) + '  ' + name + '\n', encoding='utf-8')
@@ -248,10 +266,10 @@ def main():
     b = sub.add_parser('build')
     b.add_argument('--sources-root', type=Path, required=True)
     b.add_argument('--output', type=Path, required=True)
-    b.add_argument('--variant', choices=('children-only', 'marker-fixture'), default='children-only')
+    b.add_argument('--variant', choices=('children-only', 'marker-fixture', 'local-candidate'), default='children-only')
     v = sub.add_parser('validate')
     v.add_argument('--archive', type=Path, required=True)
-    v.add_argument('--variant', choices=('children-only', 'marker-fixture'), required=True)
+    v.add_argument('--variant', choices=('children-only', 'marker-fixture', 'local-candidate'), required=True)
     p = sub.add_parser('preflight')
     p.add_argument('--versions', type=Path, required=True)
     r = sub.add_parser('review-packager')

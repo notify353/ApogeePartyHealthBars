@@ -15,6 +15,7 @@ ignore:
   - ARCHITECTURE.md
   - CHANGELOG.md
   - docs
+  - distribution
   - MACRO_LIBRARY_STYLE.md
   - RELEASING.md
   - ApogeePartyHealthBars-v*.zip

@@ -6,6 +6,9 @@ The project follows semantic versioning beginning with v0.30.0. Version 0.29 is 
 
 ## [Unreleased]
 
+- Add a build-only Forever distribution prototype with pinned independent addon
+  sources and upgrade fixtures; existing gameplay and production releases are unchanged.
+
 - Consolidate feature-removal branches. Their removal supersedes the earlier Essentials ownership handoff; APHB no longer starts those features or needs an ownership protocol.
 
 - Repair startup after missing runtime folders by recovering required modules

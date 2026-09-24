@@ -82,6 +82,8 @@ Every Lua chunk checks admission; an opposite guarded family loaded later cannot
 initialize gameplay. Missing API/GUID, restricted values, malformed metadata and
 invalid shared state fail closed. DEV refuses any installed canonical child
 without schema-1 safety metadata, even disabled, and reports inactivity.
+It also rejects an installed legacy/malformed production APHB marker, preventing
+an older single-addon release from silently coexisting with DEV gameplay.
 An older CurseForge release overwriting the retrofit therefore blocks DEV until
 a compatible PROD release is installed. Never silently repair PROD on a DEV install.
 

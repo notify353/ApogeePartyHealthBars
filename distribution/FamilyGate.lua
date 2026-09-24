@@ -36,6 +36,13 @@ local function decide()
             and exact(api.GetAddOnMetadata(addon, "X-Apogee-Family"), mode)
     end
     if not installed[name] or not metadata(name, family) then error("package metadata is unrecognized") end
+    if family == "DEV" and installed.ApogeePartyHealthBars then
+        if not metadata("ApogeePartyHealthBars", "PROD")
+            or not exact(api.GetAddOnMetadata("ApogeePartyHealthBars", "X-Apogee-Distribution-Only"), "1")
+            or not exact(api.GetAddOnMetadata("ApogeePartyHealthBars", "X-Apogee-Distribution-Schema"), "1") then
+            error("legacy production APHB is installed; compatible distribution marker required")
+        end
+    end
     local production = false
     for _, addon in ipairs(members) do
         if installed[addon] then

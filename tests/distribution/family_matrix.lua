@@ -8,6 +8,7 @@ local function setup(name, family, option)
     _G.ApogeeDistributionFamilyLease = nil
     local inventory = {name}
     if family == "DEV" then inventory[#inventory+1] = "ApogeeHeals" end
+    if option == "legacy-marker" or option == "valid-marker" then inventory[#inventory+1] = "ApogeePartyHealthBars" end
     local count = #inventory
     issecretvalue = function(value) return value == secret end
     UnitGUID = function(unit) assert(unit == "player"); return option == "no-guid" and nil or "Player-Fixture" end
@@ -21,6 +22,7 @@ local function setup(name, family, option)
             if option == "old-prod" and mode == "PROD" then return nil end
             if option == "bad-metadata" then return "wrong" end
             if option == "secret-metadata" then return secret end
+            if option == "valid-marker" and (key == "X-Apogee-Distribution-Only" or key == "X-Apogee-Distribution-Schema") then return "1" end
             if key == "X-Apogee-Family-Schema" then return "1" end
             if key == "X-Apogee-Family" then return mode end
         end,
@@ -67,7 +69,7 @@ for _, base in ipairs(children) do
             loadDenied(base, family, option)
         end
     end
-    for _, option in ipairs({"old-prod", "prod-enabled", "prod-some", "prod-loaded"}) do
+    for _, option in ipairs({"old-prod", "legacy-marker", "prod-enabled", "prod-some", "prod-loaded"}) do
         loadDenied(base, "DEV", option)
     end
 end
@@ -78,7 +80,7 @@ for _, base in ipairs(children) do
     local ns = {}
     assert(loadfile(root.."/DEV/"..dev.."/__Distribution/FamilyGate.lua"))(dev, ns)
     assert(ApogeeDistributionFamilyLease.family == "PROD" and ns.__ApogeeFamilyAdmission == nil)
-    setup(dev, "DEV", "dev-enabled")
+    setup(dev, "DEV", "valid-marker")
     assert(loadfile(root.."/DEV/"..dev.."/__Distribution/FamilyGate.lua"))(dev, ns)
     assert(ApogeeDistributionFamilyLease.family == "DEV" and ns.__ApogeeFamilyAdmission(dev))
     assert(not ns.__ApogeeFamilyAdmission(base))

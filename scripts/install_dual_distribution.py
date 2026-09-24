@@ -34,6 +34,8 @@ def prepare(client, payload, known, initial=False, previous=None):
             d.safe_path(p)
             d.require(p.split('/')[0] in m.NAMES + tuple(n + 'Dev' for n in m.NAMES), 'Receipt escapes families')
             known['files'].setdefault(p, []).append(h)
+            if p.startswith(d.MARKER + '/') and p.lower().endswith('.toc'):
+                known['legacyTocHashes'].append(h)
     for p, b in payload.items():
         known['files'].setdefault(p, []).append(d.sha(b))
     preserved_docs = []

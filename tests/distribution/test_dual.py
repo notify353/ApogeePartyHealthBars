@@ -112,6 +112,21 @@ class DualTests(unittest.TestCase):
         with self.assertRaises(ValueError): installer.install(client, self.dev, self.known, backup)
         self.assertEqual(m.tree(client), before); self.assertFalse(backup.exists())
 
+    def test_reviewed_dev_update_uses_receipt_and_preserves_rollback_chain(self):
+        client, first_backup = self.fixture(self.prod)
+        first = installer.install(client, self.dev, self.known, first_backup)
+        updated = dict(self.dev)
+        path = 'ApogeeHealsDev/' + dual.GATE_PATH
+        updated[path] += b'\n-- fixture next reviewed version\n'
+        second_backup = first_backup.parent / 'backup-update'
+        result = installer.install(client, updated, self.known, second_backup, previous=first)
+        self.assertEqual(len(result['writes']), 1)
+        self.assertEqual(m.managed(client / 'Interface/AddOns'), self.prod)
+        m.rollback(second_backup)
+        self.assertEqual(m.managed(client / 'Interface/AddOns', tuple(n + 'Dev' for n in m.NAMES)), self.dev)
+        m.rollback(first_backup)
+        self.assertEqual(m.managed(client / 'Interface/AddOns', tuple(n + 'Dev' for n in m.NAMES)), {})
+
     def test_lexical_transform_preserves_comments_and_gameplay_literals(self):
         source = b'-- ApogeeTankUIDB\nlocal x="1"; local y="Interface/Icons/Spell"\nApogeeTankUIDB={}\n'
         output, edits = dual.transform_lua(source, 'ApogeeTank')

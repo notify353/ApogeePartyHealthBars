@@ -157,11 +157,11 @@
       "version": "0.1.0"
     },
     {
-      "commit": "7bcd70b89a92ca0a58fa05a75113fc6d77b43019",
+      "commit": "30baf3829c012118281224d4ca3dba4cd952534b",
       "files": {
         "ApogeeTank.lua": "62ffc7a5c6fdacd9b708af04f35369bd6dc084f67c522537e648d57e4f375693",
         "ApogeeTank.toc": "47702b073920a306a692635931ceeb8f497001a2a6abdd48591c761c9654a394",
-        "CHANGELOG.md": "32b2d2a4a98a7b445c0a25fce20aa7947c1a9b130a0c111fda017e9ea0a60d61",
+        "CHANGELOG.md": "bb58fb573a1bc8bde121a87f669f993561ee74773e3688610ee87d6ea25d30c3",
         "Cooldowns/Actions.lua": "161f06866dba75d2468e76a1ccb362ba58589e44cf20651b522bb22320a0f833",
         "Cooldowns/Runtime.lua": "c03ab0a9d9e00179d43bcea6d05f06742d11ac54ae39ec936eedd13aff61bf4d",
         "Cooldowns/View.lua": "2368f71492ec6b956fb3d79c496c8c49a6f62ffe7db3dfe2bc7206c5692fd2c0",
@@ -180,10 +180,10 @@
         "Picker/Runtime.lua": "d70cb68835589d3cb67da7a8e1efd462ad1aba1512267fae39e7a55aa3ee0257",
         "Picker/View.lua": "b5bebec59273a48a8f5e02ef968ddcc9a69c1a6f6a4ae5358f942b316f3eef4b",
         "PickerPreview/Runtime.lua": "0ba63a32e3cb3fb801ec6772cf33ce49e6f0588cb7548a21a0e2473a5e9ed0cc",
-        "README.md": "bced203d2aa7ccb5a20472056aa5a3e19fff05ba0855e513cfd621e95eb8a2e7",
+        "README.md": "67ff7ce6ee5ee08f74a2d495938ff5e0de6b818cd84b2993798f7eec4018503e",
         "Seals/API.lua": "cb5ccce6c9a02f7508a91c808788038417b085ba1fa8a135353ab2b6def06fd1",
         "Seals/Runtime.lua": "b5c9ad8d47d9e465befd4a191f834df7d144b80e2c48d6aa312b6b8459d27574",
-        "Seals/Selection.lua": "99151255eb6efe735d4a80a5b796be0bed2abd9b3e98a2687a0dd998cbf63e45",
+        "Seals/Selection.lua": "784a54fe411caf0eaff82d4b8eb8e44d6de04455681c0f6cdcd180ab2c52fbab",
         "Stance/Action.lua": "e942d6676c3115c09e69e1534e08dd9a5301ea0c1a519473410a2f8fe332a5a5",
         "Stance/Runtime.lua": "b2fcfaf9885b794e5d4ea4d510b50aa1badda3d5a9ee1945e0945529a6998c32",
         "Threat/Hud.lua": "b9e4e8730ad785a504747adaa54b0e102563a0fd3a685e2509dd3deea038aaae",

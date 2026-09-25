@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Start Seal of the Crusader unchecked and preserve explicit seal opt-ins through ranks and reloads.
+
 - Seed learned Paladin Might reminders automatically and offer Wisdom unchecked, preserving saved choices and rank upgrades.
 - Show native spell tooltips on buff reminders and limit each recipient to one blessing prompt.
 

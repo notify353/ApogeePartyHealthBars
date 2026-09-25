@@ -1,9 +1,11 @@
 import argparse
 import copy
+import json
 from pathlib import Path
 import subprocess
 import sys
 import unittest
+from unittest.mock import patch
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
@@ -66,9 +68,55 @@ class DualTests(unittest.TestCase):
         self.assertTrue(saves['PROD']); self.assertTrue(saves['DEV'])
         self.assertFalse(saves['PROD'] & saves['DEV'])
 
-    def test_release_payload_matches_native_accepted_runtime(self):
-        archive = publisher.payload(OPTIONS.sources_root, '1.0.0')
-        self.assertTrue(archive.startswith(b'PK'))
+    def test_release_requires_native_accepted_runtime(self):
+        accepted = json.loads(publisher.ACCEPTANCE.read_text())
+        actual = {family: {p: d.sha(b) for p, b in files.items() if p.endswith('.lua')}
+                  for family, files in (('PROD', self.prod), ('DEV', self.dev))}
+        if actual == accepted['runtimeFiles']:
+            self.assertTrue(publisher.payload(OPTIONS.sources_root, '1.0.0').startswith(b'PK'))
+        else:
+            with self.assertRaisesRegex(ValueError, 'Runtime changed since native acceptance'):
+                publisher.payload(OPTIONS.sources_root, '1.0.0')
+
+    def test_running_client_allowed_only_for_dev_preflight(self):
+        client, _ = self.fixture(self.dev)
+        (client.parent / '.build.info').write_text('Product|Version\nwow_classic_beta|' + self.lock['client']['reviewedBuild'])
+        process = subprocess.CompletedProcess([], 0, stdout='"WowB.exe","123"', stderr='')
+        with patch.object(m.os, 'name', 'nt'), patch.object(m.subprocess, 'run', return_value=process):
+            self.assertTrue(m.real_client_preflight(client, self.lock, allow_running_dev=True))
+            with self.assertRaisesRegex(ValueError, 'close it before migration'):
+                m.real_client_preflight(client, self.lock)
+            bad = copy.deepcopy(self.lock); bad['client']['reviewedBuild'] = 'wrong'
+            with self.assertRaisesRegex(ValueError, 'build changed'):
+                m.real_client_preflight(client, bad, allow_running_dev=True)
+
+    def test_atomic_dev_failure_retains_original_and_verified_backup(self):
+        client, backup = self.fixture(self.dev)
+        updated = dict(self.dev)
+        path = 'ApogeeHealsDev/' + dual.GATE_PATH
+        updated[path] += b'\n-- next version\n'
+        previous = {'schema': 1, 'status': 'installed', 'client': str(client), 'after': m.hashes(self.dev)}
+        with patch.object(m.os, 'replace', side_effect=OSError('fixture sharing violation')):
+            with self.assertRaisesRegex(OSError, 'sharing violation'):
+                installer.install(client, updated, self.known, backup, previous=previous)
+        self.assertEqual((client / 'Interface/AddOns' / path).read_bytes(), self.dev[path])
+        self.assertEqual(m.tree(backup / 'addons-before'), self.dev)
+        self.assertEqual(json.loads((backup / 'transaction.json').read_bytes())['status'], 'incomplete-recover-with-rollback')
+        with self.assertRaisesRegex(ValueError, 'DEV-only'):
+            m.apply(client, self.prod, self.known, backup.parent / 'forbidden', atomic_dev=True)
+
+    def test_activation_distinguishes_existing_runtime_and_discovery(self):
+        self.assertFalse(installer.activation({'before': {'a.lua': b'old'}, 'writes': {'a.lua': b'new'}})['restartRequired'])
+        result = installer.activation({'before': {}, 'writes': {'a.lua': b'new', 'a.toc': b'metadata'}})
+        self.assertEqual(result['discoveryChanges'], ['a.lua', 'a.toc'])
+        self.assertEqual(result['action'], 'user-reload-after-install')
+
+    def test_dev_install_still_refuses_concurrent_protected_changes(self):
+        client, backup = self.fixture(self.dev)
+        with patch.object(m, 'protected', side_effect=[{}, {'WTF/fixture': [1, 2]}]):
+            with self.assertRaisesRegex(ValueError, 'Preferences changed during backup'):
+                installer.install(client, self.dev, self.known, backup)
+        self.assertEqual(m.managed(client / 'Interface/AddOns', tuple(n + 'Dev' for n in m.NAMES)), self.dev)
 
     def test_public_package_has_player_guide_and_required_notices(self):
         source = d.collect(self.lock, OPTIONS.sources_root, 'local-candidate')

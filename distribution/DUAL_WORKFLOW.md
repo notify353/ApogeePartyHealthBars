@@ -36,6 +36,8 @@ DEV TOCs contain no CurseForge project ID.
 
 Only the central installer writes local DEV folders. Future child changes must
 not copy canonical sources over production. Normal local installs are DEV-only.
+Requested source changes include checked DEV installation under standing owner
+authorization; do not ask for another routine DEV install confirmation.
 
 The owner requires canonical PROD folders to come only from the CurseForge app.
 The initial staged PROD candidate has been moved out of AddOns into the verified
@@ -61,8 +63,21 @@ executable files and required assets match the package exactly. All scoped addon
 files are backed up and byte-verified before writes. Unknown non-loader files
 remain untouched. It does not open, import, copy or modify private SavedVariables;
 only WTF/unrelated-addon filesystem metadata is observed for concurrent changes.
-Enabled preferences remain untouched. The reviewed Forever build must match and
-the game must be closed. The installer never operates WoW.
+Enabled preferences remain untouched. The reviewed Forever build must match.
+Routine DEV installation permits WoW to remain running and replaces each changed
+file atomically after the verified backup. Do not reload, log out or switch addon
+groups during the short installation transaction; the package as a whole is not
+an atomic switch. Concurrent protected-state changes still stop validation and
+retain the receipt/backup. Sharing violations fail without truncating the target;
+failed staging files are retained for diagnosis. Legacy migration, retrofit and
+rollback continue to require a closed client. The installer never operates WoW.
+
+After a successful DEV install, the user reloads the UI. Existing Lua edits take
+effect on reload. Receipts separately list new files and changed TOCs as discovery
+changes: the local exported UI does not establish the native filesystem rescan
+contract for Forever. Verify those changes after reload; if not discovered, the
+user may need to restart. This activation uncertainty does not require closing
+WoW before writing the DEV package. Never claim native acceptance from installation.
 
 ```powershell
 python -B scripts/migrate_distribution.py rollback --backup C:/Dev/WoW/local-install-backups/apogee-UNIQUE

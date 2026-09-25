@@ -7,6 +7,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import tempfile
 
 sys.dont_write_bytecode = True
 import distribution as d
@@ -139,7 +140,25 @@ def put(root, files):
         d.require(target.read_bytes() == b, 'Write verification failed')
 
 
-def apply(client, payload, known, backup, expected_plan=None, names=NAMES):
+def put_atomic(root, files):
+    """Same-directory replacement prevents readers seeing a truncated DEV file."""
+    for p, body in files.items():
+        target = under(root, p)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(dir=target.parent, prefix='.apogee-', suffix='.tmp', delete=False) as staged:
+            temporary = Path(staged.name)
+            staged.write(body)
+            staged.flush()
+            os.fsync(staged.fileno())
+        # On failure retain the temporary file for diagnosis; never alter the original.
+        d.require(temporary.read_bytes() == body, 'Staged write verification failed')
+        os.replace(temporary, target)
+        d.require(target.read_bytes() == body, 'Write verification failed')
+
+
+def apply(client, payload, known, backup, expected_plan=None, names=NAMES, atomic_dev=False):
+    if atomic_dev:
+        d.require(set(names) == {n + 'Dev' for n in NAMES}, 'Atomic live install is DEV-only')
     client = ordinary(client)
     backup = ordinary(backup)
     d.require(not backup.is_relative_to(client) and not client.is_relative_to(backup),
@@ -162,7 +181,7 @@ def apply(client, payload, known, backup, expected_plan=None, names=NAMES):
     d.require(protected(client, names) == saved, 'Preferences changed during backup')
     try:
         journal['status'] = 'applying'; journal_path.write_bytes(d.canonical(journal))
-        put(client / 'Interface/AddOns', current['writes'])
+        (put_atomic if atomic_dev else put)(client / 'Interface/AddOns', current['writes'])
         installed = managed(client / 'Interface/AddOns', names)
         d.require(all(installed.get(p) == b for p, b in current['desired'].items()), 'Installed payload mismatch')
         d.require(all(installed.get(p) == b for p, b in current['before'].items()
@@ -218,7 +237,7 @@ def rollback(backup):
     return journal
 
 
-def real_client_preflight(client, lock):
+def real_client_preflight(client, lock, allow_running_dev=False):
     client = ordinary(client)
     d.require(client.name == '_classic_beta_', 'Only reviewed Forever client is supported')
     lines = (client.parent / '.build.info').read_text(encoding='utf-8-sig').splitlines()
@@ -229,7 +248,9 @@ def real_client_preflight(client, lock):
     d.require(os.name == 'nt', 'Real installation is supported on reviewed Windows host only')
     result = subprocess.run(['tasklist', '/FI', 'IMAGENAME eq WowB.exe', '/FO', 'CSV', '/NH'],
                             capture_output=True, text=True, check=True)
-    d.require('wowb.exe' not in result.stdout.lower(), 'Forever client is running; close it before migration')
+    running = 'wowb.exe' in result.stdout.lower()
+    d.require(allow_running_dev or not running, 'Forever client is running; close it before migration')
+    return running
 
 
 def main():

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Default Essentials to Never adjust camera and show enemy nameplates, with opt-out switches.
+- Allow checked DEV updates while WoW runs; preserve backups and verify atomic file replacements.
+
 - Show the healing icon beside Apogee Heals in the AddOns list.
 
 ## [1.0.0] - 2026-09-24

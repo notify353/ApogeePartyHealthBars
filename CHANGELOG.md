@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- Add a native poison-triggered Purify candidate to Heals' action strip; live secure-click acceptance is required before release.
+- Disable the rejected Purify native-button setup to prevent forbidden click-handler warnings; combat Purify remains unavailable.
 
 - Keep living hostile targets selected for managed attacks; acquire an enemy only when the current target is invalid.
 - Default Tank's Paladin cooldowns to Holy Strike, Judgement, then Hammer of Justice, preserving explicit opt-outs and identifiable custom choices.

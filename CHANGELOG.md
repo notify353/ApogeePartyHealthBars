@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Clarify Keybinds' per-character factory-reset button and confirmation scope; keep its confirmation and combat guards.
+
 - Disable the rejected Purify native-button setup to prevent forbidden click-handler warnings; combat Purify remains unavailable.
 
 - Keep living hostile targets selected for managed attacks; acquire an enemy only when the current target is invalid.

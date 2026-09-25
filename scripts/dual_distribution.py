@@ -22,10 +22,10 @@ IDENTITIES = {
     'ApogeeHeals': ['ApogeeHealsDB', 'ApogeeHealsAnchor', 'ApogeeHealsUnit',
                     'ApogeeHealsBindingEditor', 'ApogeeHealsBuffPicker', 'ApogeeHealsMinimapButton'],
     'ApogeeKeybinds': ['ApogeeKeybindsDB', 'ApogeeKeybindsPhysical', 'ApogeeKeybindsHud',
-                      'ApogeeKeybindsSlotMenu', 'ApogeeKeybindsMinimapButton'],
+                      'ApogeeKeybindsSlotMenu', 'ApogeeKeybindsMinimapButton', 'ApogeeKeybindsWeaponsHeader'],
     'ApogeeGroupAlert': ['ApogeeGroupAlertDB', 'ApogeeGroupAlertCharacterDB', 'ApogeeGroupAlertGroups'],
     'ApogeeEssentials': ['ApogeeEssentialsDB'],
-    'ApogeeTank': ['ApogeeTankEffectsDB', 'ApogeeTankCooldownsDB', 'ApogeeTankUIDB',
+    'ApogeeTank': ['ApogeeTankEffectsDB', 'ApogeeTankCooldownsDB', 'ApogeeTankUIDB', 'ApogeeTankSealsDB',
                   'ApogeeTankTargetMarkerButton', 'ApogeeTankThreatHud', 'ApogeeTankAuraAction',
                   'ApogeeTankCooldownAction', 'ApogeeTankSealAction', 'ApogeeTankMinimapButton',
                   'ApogeeTankPickerWindow', 'ApogeeTank']}
@@ -33,6 +33,9 @@ IDENTITIES = {
 
 def identity_map(name):
     result = {s: name + 'Dev' + s[len(name):] for s in IDENTITIES[name]}
+    if name == 'ApogeeHeals':
+        # Optional sibling anchor: use the producer's DEV identity, not the consumer's prefix.
+        result['ApogeeKeybindsWeaponsHeader'] = 'ApogeeKeybindsDevWeaponsHeader'
     if name == 'ApogeeKeybinds':
         result['APOGEE_KEYBINDS_RESET_CHARACTER'] = 'APOGEE_KEYBINDS_DEV_RESET_CHARACTER'
     if name == 'ApogeeGroupAlert':
@@ -141,6 +144,12 @@ def family_files(lock, sources_root, family):
                 output[target] = data
     marker_meta, _ = d.toc_info(source[d.MARKER + '/' + d.MARKER + '.toc'])
     marker_meta.update(Title=FAMILY_TITLES[family], Group=marker, Category=FAMILY_TITLES[family])
+    # The native group row is the marker addon. Keep its icon self-contained,
+    # using the exact existing artwork from the reviewed immutable child source.
+    logo = 'Media/Textures/ApogeeLogo.png'
+    output[marker + '/' + logo] = source['ApogeeKeybinds/' + logo]
+    output[marker + '/LICENSE'] = source['ApogeeKeybinds/LICENSE']
+    marker_meta['IconTexture'] = 'Interface/AddOns/' + marker + '/' + logo
     marker_meta.update({'X-Apogee-Family': family, 'X-Apogee-Family-Schema': '1'})
     if family == 'DEV':
         marker_meta.pop('X-Curse-Project-ID', None)

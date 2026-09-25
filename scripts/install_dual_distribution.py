@@ -4,6 +4,7 @@ import copy
 import json
 from pathlib import Path
 import sys
+import subprocess
 
 sys.dont_write_bytecode = True
 import distribution as d
@@ -49,9 +50,18 @@ def prepare(client, payload, known, initial=False, previous=None):
     return desired, known, names, preview, preserved_docs
 
 
+def activation(preview):
+    writes = preview['writes']
+    discovery = sorted(p for p in writes if p not in preview['before'] or p.lower().endswith('.toc'))
+    return {'action': 'user-reload-after-install' if writes else 'none',
+            'discoveryChanges': discovery,
+            'restartRequired': 'unverified-if-reload-does-not-discover-changes' if discovery else False}
+
+
 def install(client, payload, known, backup, initial=False, previous=None):
     desired, known, names, preview, docs = prepare(client, payload, known, initial, previous)
-    result = m.apply(client, desired, known, backup, preview, names)
+    result = m.apply(client, desired, known, backup, preview, names, atomic_dev=not initial)
+    result['activation'] = activation(preview)
     result['preservedDocumentation'] = docs
     result['mode'] = 'initial-production-retrofit-and-dev' if initial else 'dev-only'
     result['packageFilesVerified'] = len(desired)
@@ -72,18 +82,19 @@ def main():
     args = parser.parse_args()
     try:
         lock = d.read_lock(args.lock)
-        m.real_client_preflight(args.client_root, lock)
+        running = m.real_client_preflight(args.client_root, lock, allow_running_dev=not args.initial_retrofit)
         files = payloads(lock, args.sources_root, args.artifacts, args.initial_retrofit)
         known = m.catalog(d.ROOT / 'distribution/migration-known.json')
         previous = json.loads(args.previous_install.read_text()) if args.previous_install else None
         if args.inspect_only:
             _, _, _, preview, docs = prepare(args.client_root, files, known, args.initial_retrofit, previous)
             print(json.dumps({'writeCount': len(preview['writes']), 'preservedDocumentation': docs,
-                              'inventory': preview['inventory']}))
+                              'inventory': preview['inventory'], 'clientRunning': running,
+                              'activation': activation(preview)}))
         else:
             result = install(args.client_root, files, known, args.backup, args.initial_retrofit, previous)
-            print(json.dumps({k: result[k] for k in ('status', 'mode', 'packageFilesVerified', 'preservedDocumentation')}))
-    except (ValueError, KeyError, OSError) as error:
+            print(json.dumps({k: result[k] for k in ('status', 'mode', 'packageFilesVerified', 'preservedDocumentation', 'activation')}))
+    except (ValueError, KeyError, OSError, subprocess.SubprocessError) as error:
         parser.exit(1, 'Family install stopped: ' + str(error) + '\n')
 
 

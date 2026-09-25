@@ -136,7 +136,8 @@ def family_files(lock, sources_root, family):
                 output[target] = prefix(name, family) + body
                 changes[target] = {'source': old + '/' + p, 'sourceSha256': d.sha(data),
                                    'gameplayBodySha256': d.sha(body), 'identityEdits': audit}
-            else:
+            elif not (family == 'PROD' and (p.endswith('.md') or p.startswith('docs/'))
+                      and p not in ('NOTICE.md', 'THIRD_PARTY_NOTICES.md')):
                 output[target] = data
     marker_meta, _ = d.toc_info(source[d.MARKER + '/' + d.MARKER + '.toc'])
     marker_meta.update(Title=FAMILY_TITLES[family], Group=marker, Category=FAMILY_TITLES[family])
@@ -146,6 +147,8 @@ def family_files(lock, sources_root, family):
     output[marker + '/' + marker + '.toc'] = ''.join('## ' + k + ': ' + v + '\n' for k, v in marker_meta.items()).encode()
     output[marker + '/README.md'] = ('# Apogee ' + family + '\n\nDistribution identity only; no runtime or saved data.\n'
                                       'Switch the complete family in AddOns and reload. DEV settings are separate.\n').encode()
+    if family == 'PROD':
+        output[marker + '/README.md'] = (d.ROOT / 'distribution/PLAYER_README.md').read_bytes()
     return output, changes
 
 

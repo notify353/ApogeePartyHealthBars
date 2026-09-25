@@ -9,6 +9,8 @@ try {
     & ./scripts/check-wow-api-export.ps1
     python -B tests/distribution/test_repository.py
     if ($LASTEXITCODE -ne 0) { throw 'Distribution repository validation failed.' }
+    python -B tests/distribution/test_curseforge.py
+    if ($LASTEXITCODE -ne 0) { throw 'CurseForge preflight validation failed.' }
     foreach ($test in @('test_distribution','test_migration','test_dual')) {
         python -B "tests/distribution/$test.py" --sources-root $SourcesRoot --artifacts (Join-Path $ArtifactRoot $test)
         if ($LASTEXITCODE -ne 0) { throw "$test failed." }

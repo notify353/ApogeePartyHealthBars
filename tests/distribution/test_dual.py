@@ -65,6 +65,19 @@ class DualTests(unittest.TestCase):
         self.assertTrue(saves['PROD']); self.assertTrue(saves['DEV'])
         self.assertFalse(saves['PROD'] & saves['DEV'])
 
+    def test_public_package_has_player_guide_and_required_notices(self):
+        source = d.collect(self.lock, OPTIONS.sources_root, 'local-candidate')
+        for child in self.lock['children']:
+            for p in child['files']:
+                path = child['name'] + '/' + p
+                if p in ('LICENSE', 'NOTICE.md', 'THIRD_PARTY_NOTICES.md'):
+                    self.assertEqual(self.prod[path], source[path])
+                elif p.endswith('.md') or p.startswith('docs/'):
+                    self.assertNotIn(path, self.prod)
+        guide = self.prod[d.MARKER + '/README.md'].decode()
+        self.assertIn('Forever 1.60.1', guide)
+        self.assertNotIn('PROD', guide)
+
     def test_every_actual_runtime_chunk_is_denied_without_gameplay_effects(self):
         result = subprocess.run(['lua', str(ROOT / 'tests/distribution/family_matrix.lua'), str(OPTIONS.artifacts)],
                                 capture_output=True, text=True)
@@ -87,7 +100,6 @@ class DualTests(unittest.TestCase):
         client, backup = self.fixture(baseline)
         protected = m.protected(client, m.NAMES + tuple(n + 'Dev' for n in m.NAMES))
         result = installer.install(client, dict(self.prod, **self.dev), self.known, backup, True)
-        self.assertIn('ApogeeKeybinds/README.md', result['preservedDocumentation'])
         self.assertEqual((client / 'Interface/AddOns/ApogeeKeybinds/README.md').read_bytes(), baseline['ApogeeKeybinds/README.md'])
         self.assertEqual(m.protected(client, tuple(result['names'])), protected)
         for p, b in dict(self.prod, **self.dev).items():

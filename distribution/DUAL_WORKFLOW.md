@@ -29,6 +29,9 @@ source gameplay bodies behind an admission prefix. DEV transforms audited
 identifiers, saves, frames, popup/slash names, asset paths and labels. Manifests
 list every identity edit and source/body hash. Comments, gameplay keys and Blizzard
 names are not blindly renamed. Each artifact has six roots: marker plus children.
+Heals' optional editor anchor uses the Keybinds Weapons header in the same family.
+The producer and consumer explicitly map `ApogeeKeybindsWeaponsHeader` to
+`ApogeeKeybindsDevWeaponsHeader` in DEV; this does not add a required dependency.
 The existing CurseForge project1608100 download owns PROD roots, never the six Dev roots.
 DEV TOCs contain no CurseForge project ID.
 Each family marker bundles the existing green Apogee logo from the pinned

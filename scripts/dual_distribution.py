@@ -22,7 +22,7 @@ IDENTITIES = {
     'ApogeeHeals': ['ApogeeHealsDB', 'ApogeeHealsAnchor', 'ApogeeHealsUnit',
                     'ApogeeHealsBindingEditor', 'ApogeeHealsBuffPicker', 'ApogeeHealsMinimapButton'],
     'ApogeeKeybinds': ['ApogeeKeybindsDB', 'ApogeeKeybindsPhysical', 'ApogeeKeybindsHud',
-                      'ApogeeKeybindsSlotMenu', 'ApogeeKeybindsMinimapButton'],
+                      'ApogeeKeybindsSlotMenu', 'ApogeeKeybindsMinimapButton', 'ApogeeKeybindsWeaponsHeader'],
     'ApogeeGroupAlert': ['ApogeeGroupAlertDB', 'ApogeeGroupAlertCharacterDB', 'ApogeeGroupAlertGroups'],
     'ApogeeEssentials': ['ApogeeEssentialsDB'],
     'ApogeeTank': ['ApogeeTankEffectsDB', 'ApogeeTankCooldownsDB', 'ApogeeTankUIDB', 'ApogeeTankSealsDB',
@@ -33,6 +33,9 @@ IDENTITIES = {
 
 def identity_map(name):
     result = {s: name + 'Dev' + s[len(name):] for s in IDENTITIES[name]}
+    if name == 'ApogeeHeals':
+        # Optional sibling anchor: use the producer's DEV identity, not the consumer's prefix.
+        result['ApogeeKeybindsWeaponsHeader'] = 'ApogeeKeybindsDevWeaponsHeader'
     if name == 'ApogeeKeybinds':
         result['APOGEE_KEYBINDS_RESET_CHARACTER'] = 'APOGEE_KEYBINDS_DEV_RESET_CHARACTER'
     if name == 'ApogeeGroupAlert':

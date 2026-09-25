@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Default the Healing Mouse editor beside the same-family Keybinds Weapons header, with standalone fallback and saved custom editor placement.
+
 - Show Heals row range feedback for the exact applied plain-left-click spell and row recipient; unknown range clears the indicator.
 
 - Default Keybinds "Hide unusable spells in combat" off for fresh settings and factory resets, preserving saved on/off choices.
@@ -15,7 +17,7 @@
 - Add a Paladin Seals checklist with saved choices; Crusader starts unchecked. Order known, enabled seals Fury, Righteousness, then Crusader, with Tank/DPS tooltip labels.
 - Hide the Paladin seal strip in combat and restore selected seals afterward. Gray target-required cooldown icons with no target while keeping their clicks available.
 - Seed learned Paladin Might reminders automatically and offer Wisdom unchecked, preserving saved choices and rank upgrades. Show native spell tooltips and at most one blessing prompt per recipient.
-- Place Tank, Keybinds and Heals minimap buttons on a circular orbit outside the minimap with spaced defaults and remembered right-drag positions. Use a shield for Tank's minimap icon. Keybinds right-click no longer opens settings.
+- Place Tank, Keybinds and Heals minimap buttons on a circular orbit outside the minimap with equally spaced Heals, Keybinds, Tank defaults, a shared radius that brings the 32-pixel buttons flush with the nominal minimap edge, and session-only right-drag positions that reset on reload. Use a shield for Tank's minimap icon. Keybinds right-click no longer opens settings.
 - Default Essentials to Never adjust camera and show enemy nameplates, with opt-out switches.
 - Show the shared green Apogee icon beside Heals and the Apogee group in the AddOns list.
 - Allow checked DEV updates while WoW runs, with verified backups and atomic file replacements.

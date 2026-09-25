@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Add a native poison-triggered Purify candidate to Heals' action strip; live secure-click acceptance is required before release.
+
 - Keep living hostile targets selected for managed attacks; acquire an enemy only when the current target is invalid.
 - Default Tank's Paladin cooldowns to Holy Strike, Judgement, then Hammer of Justice, preserving explicit opt-outs and identifiable custom choices.
 - Add a Paladin Seals checklist with saved choices; Crusader starts unchecked. Order known, enabled seals Fury, Righteousness, then Crusader, with Tank/DPS tooltip labels.

@@ -1,50 +1,76 @@
-name: Lua validation
-
+name: Distribution validation
 on:
   push:
   pull_request:
-
+  workflow_dispatch:
 permissions:
   contents: read
-
-concurrency:
-  group: validation-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - run: python -B tests/distribution/test_repository.py
+      - run: python -B tests/distribution/test_curseforge.py
+  aggregate:
+    if: vars.APOGEE_DISTRIBUTION_SOURCES_READY == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          fetch-depth: 0
+          path: distribution-repo
+      - name: Read immutable child pins
+        id: pins
+        shell: python
+        run: |
+          import json, os
+          lock=json.load(open('distribution-repo/distribution/candidate.lock.json'))
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              for child in lock['children']: out.write(child['name']+'='+child['commit']+'\n')
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          repository: notify353/ApogeeHeals
+          ref: ${{ steps.pins.outputs.ApogeeHeals }}
+          path: sources/ApogeeHeals
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{ secrets.DISTRIBUTION_READ_TOKEN || github.token }}
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          repository: notify353/ApogeeKeybinds
+          ref: ${{ steps.pins.outputs.ApogeeKeybinds }}
+          path: sources/ApogeeKeybinds
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{ secrets.DISTRIBUTION_READ_TOKEN || github.token }}
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          repository: notify353/ApogeeGroupAlert
+          ref: ${{ steps.pins.outputs.ApogeeGroupAlert }}
+          path: sources/ApogeeGroupAlert
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{ secrets.DISTRIBUTION_READ_TOKEN || github.token }}
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          repository: notify353/ApogeeEssentials
+          ref: ${{ steps.pins.outputs.ApogeeEssentials }}
+          path: sources/ApogeeEssentials
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{ secrets.DISTRIBUTION_READ_TOKEN || github.token }}
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          repository: notify353/ApogeeTank
+          ref: ${{ steps.pins.outputs.ApogeeTank }}
+          path: sources/ApogeeTank
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{ secrets.DISTRIBUTION_READ_TOKEN || github.token }}
       - name: Install Lua 5.1
         run: sudo apt-get update && sudo apt-get install -y lua5.1
-      - name: Test and validate WoW API export baseline
+      - name: Validate and build both families without publishing
         shell: pwsh
-        run: |
-          ./scripts/test-dev-links.ps1
-          ./scripts/test-wow-api-export.ps1
-          ./scripts/check-wow-api-export.ps1
-      - name: Parse add-on files and run Lua test suite
-        shell: pwsh
-        run: ./scripts/test-lua.ps1
-      - name: Validate source and TOC layout
-        shell: pwsh
-        run: ./scripts/validate-package.ps1
-      - name: Validate release workflow safety
-        shell: pwsh
-        run: ./scripts/validate-release-workflow.ps1
-      - name: Build and inspect installable ZIP
-        shell: pwsh
-        run: ./scripts/build-package.ps1 -OutputPath .release/ci-package.zip
-      - name: Build with the production packager
-        uses: BigWigsMods/packager@6d50adb6e8517eefef63f4afb16a6518166a6b28 # v2.5.1
-        with:
-          args: -d -n "{package-name}-ci"
-      - name: Inspect production-packager ZIP
-        shell: pwsh
-        run: |
-          $zip = Get-ChildItem .release -File -Filter 'ApogeePartyHealthBars-ci.zip'
-          if ($zip.Count -ne 1) { throw "Expected exactly one production-packager ZIP, found $($zip.Count)." }
-          ./scripts/validate-package.ps1 -ArchivePath $zip.FullName
-      - name: Check whitespace errors
-        run: git diff --check
+        working-directory: distribution-repo
+        run: ./scripts/test-local.ps1 -SourcesRoot "$env:GITHUB_WORKSPACE/sources" -ArtifactRoot "$env:RUNNER_TEMP/apogee-validation"

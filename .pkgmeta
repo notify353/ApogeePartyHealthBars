@@ -1,20 +1,15 @@
+# Historical identity only; the old single-root publisher is not supported.
+# scripts/dual_distribution.py owns the exact six-root PROD package.
 package-as: ApogeePartyHealthBars
 manual-changelog: CHANGELOG.md
-
 ignore:
-  - .agents
-  - .codex
   - .github
   - .gitignore
   - .pkgmeta
   - .release
   - AGENTS.md
-  - assets
+  - distribution
+  - docs
   - scripts
   - tests
-  - ARCHITECTURE.md
-  - CHANGELOG.md
-  - docs
-  - MACRO_LIBRARY_STYLE.md
   - RELEASING.md
-  - ApogeePartyHealthBars-v*.zip

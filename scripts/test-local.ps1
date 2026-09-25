@@ -1,32 +1,23 @@
 [CmdletBinding()]
-param(
-    [string]$LuaPath,
-    [string]$LuacPath
-)
-
+param([string]$SourcesRoot = 'C:/Dev/WoW', [string]$ArtifactRoot)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-$repoRoot = Split-Path -Parent $PSScriptRoot
-$luaArguments = @{}
-if ($PSBoundParameters.ContainsKey('LuaPath')) { $luaArguments.LuaPath = $LuaPath }
-if ($PSBoundParameters.ContainsKey('LuacPath')) { $luaArguments.LuacPath = $LuacPath }
-
-Push-Location $repoRoot
+$repo = Split-Path -Parent $PSScriptRoot
+if (-not $ArtifactRoot) { $ArtifactRoot = Join-Path $repo ('.release/validation-' + [guid]::NewGuid().ToString('N')) }
+Push-Location $repo
 try {
-    & (Join-Path $PSScriptRoot 'test-dev-links.ps1')
-    & (Join-Path $PSScriptRoot 'test-wow-api-export.ps1')
-    & (Join-Path $PSScriptRoot 'check-wow-api-export.ps1')
-    & (Join-Path $PSScriptRoot 'check-terminology.ps1')
-    & (Join-Path $PSScriptRoot 'test-lua.ps1') @luaArguments
-    & (Join-Path $PSScriptRoot 'validate-package.ps1')
-    & (Join-Path $PSScriptRoot 'validate-release-workflow.ps1')
-    & (Join-Path $PSScriptRoot 'build-package.ps1') -OutputPath (Join-Path $repoRoot '.release/local-validation.zip')
-
+    & ./scripts/check-wow-api-export.ps1
+    python -B tests/distribution/test_repository.py
+    if ($LASTEXITCODE -ne 0) { throw 'Distribution repository validation failed.' }
+    python -B tests/distribution/test_curseforge.py
+    if ($LASTEXITCODE -ne 0) { throw 'CurseForge preflight validation failed.' }
+    foreach ($test in @('test_distribution','test_migration','test_dual')) {
+        python -B "tests/distribution/$test.py" --sources-root $SourcesRoot --artifacts (Join-Path $ArtifactRoot $test)
+        if ($LASTEXITCODE -ne 0) { throw "$test failed." }
+    }
+    python -B scripts/dual_distribution.py --sources-root $SourcesRoot --output (Join-Path $ArtifactRoot 'packages')
+    if ($LASTEXITCODE -ne 0) { throw 'Aggregate build failed.' }
     git diff --check
     if ($LASTEXITCODE -ne 0) { throw 'Whitespace validation failed.' }
-
-    Write-Host 'Full local validation passed.'
-}
-finally {
-    Pop-Location
-}
+    Write-Host "Full distribution validation passed. Artifacts: $ArtifactRoot"
+} finally { Pop-Location }

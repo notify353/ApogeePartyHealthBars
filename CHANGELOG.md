@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-09-24
+
 - Introduce Apogee Forever for World of Warcraft Forever 1.60.1.
 - Bring together Apogee Heals, Keybinds, Group Alert, Essentials and Tank in one download, with individually configurable modules.
 - Group the modules under Apogee Forever in the AddOns list.

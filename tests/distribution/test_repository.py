@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import re
 import sys
+import subprocess
 import unittest
 
 sys.dont_write_bytecode = True
@@ -25,6 +26,16 @@ class RepositoryTests(unittest.TestCase):
                      'Profiles','Reminders','Runtime','Settings','assets'):
             self.assertFalse((ROOT / name).exists(), name)
         self.assertEqual([p.name for p in (ROOT / 'tests').iterdir()], ['distribution'])
+
+    def test_absent_installation_is_portable_and_require_installed_still_fails(self):
+        command = ['pwsh', '-NoProfile', '-File', str(ROOT / 'scripts/check-wow-api-export.ps1'),
+                   '-WowRoot', 'ApogeeMissingDrive:/absent']
+        optional = subprocess.run(command, capture_output=True, text=True)
+        self.assertEqual(optional.returncode, 0, optional.stderr)
+        self.assertIn('baseline only', optional.stdout)
+        required = subprocess.run(command + ['-RequireInstalled'], capture_output=True, text=True)
+        self.assertNotEqual(required.returncode, 0)
+        self.assertIn('Authoritative installed Forever export unavailable', required.stderr)
 
     def test_forever_lock_and_api_baseline(self):
         lock = d.read_lock(ROOT / 'distribution/candidate.lock.json')

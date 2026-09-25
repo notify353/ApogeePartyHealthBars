@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$WowRoot = 'C:/Program Files (x86)/World of Warcraft', [switch]$RequireInstalled)
+param([string]$WowRoot, [switch]$RequireInstalled)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $repo = Split-Path -Parent $PSScriptRoot
@@ -7,8 +7,9 @@ $record = Get-Content -Raw (Join-Path $repo 'docs/wow-api-export.json') | Conver
 $lock = Get-Content -Raw (Join-Path $repo 'distribution/candidate.lock.json') | ConvertFrom-Json
 if ($record.interface -ne 16001 -or $record.clientVersion -ne $lock.client.reviewedBuild -or $record.product -ne 'wow_classic_beta') { throw 'Forever baseline mismatch.' }
 if (-not ((Get-Content (Join-Path $repo 'ApogeePartyHealthBars.toc')) -contains '## Interface: 16001')) { throw 'Root marker interface mismatch.' }
-$buildInfo = Join-Path $WowRoot '.build.info'
-if (-not (Test-Path -LiteralPath $buildInfo)) {
+if (-not $WowRoot -and $IsWindows) { $WowRoot = 'C:/Program Files (x86)/World of Warcraft' }
+$buildInfo = if ($WowRoot) { [IO.Path]::Combine($WowRoot, '.build.info') } else { $null }
+if (-not $buildInfo -or -not (Test-Path -LiteralPath $buildInfo)) {
     if ($RequireInstalled) { throw 'Authoritative installed Forever export unavailable.' }
     Write-Warning 'No local WoW installation: authoritative installed-client export could not be checked; baseline only.'
     return

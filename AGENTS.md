@@ -54,3 +54,9 @@ These instructions apply to every file in this repository.
 - GitHub's **Code -> Download ZIP** archive is source code, not an installable release.
 - A release archive must contain exactly one `ApogeePartyHealthBars/` root and must pass `scripts/validate-package.ps1` before publication.
 - GitHub and CurseForge must receive the same verified package bytes.
+
+## Active local DEV/PROD workflow (owner approved 2026-09-24)
+
+- Future source changes build and install the separate DEV family through the single central APHB installer; do not overwrite canonical PROD folders from child tasks. Separate DEV SavedVariables have no automatic production import.
+- Until this candidate is integrated, use the durable worktree workflow at `C:/Users/nickm/.codex/worktrees/forever-distribution-prototype/ApogeePartyHealthBars/distribution/DUAL_WORKFLOW.md`. It documents pinned builds, exact ZIP checks, DEV-only installation, backups and recovery. Preserve this checkout's historical runtime/release configuration.
+- The initial production loading-safety retrofit is a one-time authorized exception, not ongoing permission to replace production on development edits. Publication still needs separate approval. Switch families through addon-list group controls and reload; do not operate the game for the user or claim native acceptance from mocks.

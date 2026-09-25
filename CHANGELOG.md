@@ -2,24 +2,15 @@
 
 ## [Unreleased]
 
-- Start Seal of the Crusader unchecked and preserve explicit seal opt-ins through ranks and reloads.
-
-- Seed learned Paladin Might reminders automatically and offer Wisdom unchecked, preserving saved choices and rank upgrades.
-- Show native spell tooltips on buff reminders and limit each recipient to one blessing prompt.
-
 - Keep living hostile targets selected for managed attacks; acquire an enemy only when the current target is invalid.
-- Default Paladin Shift Wheel Up to Holy Strike and Ctrl Wheel Up to Judgement, preserving assigned bindings.
-- Start Holy Strike and Judgement unchecked in Tank's cooldown picker while retaining explicit opt-ins.
-- Hide the Paladin seal strip in combat and restore selected seals afterward.
-- Gray target-required cooldown icons with no target while keeping their clicks available.
-
-- Order Paladin default cooldowns as Holy Strike, Judgement, then Hammer of Justice, preserving identifiable custom choices.
-- Add a Paladin Seals checklist with saved hide/show choices that survive new ranks and reloads.
-
+- Default Tank's Paladin cooldowns to Holy Strike, Judgement, then Hammer of Justice, preserving explicit opt-outs and identifiable custom choices.
+- Add a Paladin Seals checklist with saved choices; Crusader starts unchecked. Order known, enabled seals Fury, Righteousness, then Crusader, with Tank/DPS tooltip labels.
+- Hide the Paladin seal strip in combat and restore selected seals afterward. Gray target-required cooldown icons with no target while keeping their clicks available.
+- Seed learned Paladin Might reminders automatically and offer Wisdom unchecked, preserving saved choices and rank upgrades. Show native spell tooltips and at most one blessing prompt per recipient.
+- Place Tank, Keybinds and Heals minimap buttons outside the minimap with spaced defaults and remembered right-drag positions. Keybinds right-click no longer opens settings.
 - Default Essentials to Never adjust camera and show enemy nameplates, with opt-out switches.
-- Allow checked DEV updates while WoW runs; preserve backups and verify atomic file replacements.
-
 - Show the shared green Apogee icon beside Heals and the Apogee group in the AddOns list.
+- Allow checked DEV updates while WoW runs, with verified backups and atomic file replacements.
 
 ## [1.0.0] - 2026-09-24
 

@@ -13,6 +13,10 @@ requests run self-contained tests without these environment credentials.
 Production retains its v*.*.* tag-only policy and holds the same scoped source
 read token plus its existing CF upload credential. Never log secret values.
 
+The current source-read token expires October 1, 2026. Before the next build after
+expiry, renew equivalent read-only access for the same three private repositories
+and securely update both environments. Do not broaden access or print credentials.
+
 Enable APOGEE_DISTRIBUTION_SOURCES_READY only after the required secrets exist.
 Run Distribution validation and CurseForge version preflight on main. Both must
 pass for the exact release-preparation commit before tagging. The preflight

@@ -10,3 +10,4 @@
 - Preserve CurseForge1608100/GitHub identity. No push, main integration, tag, release, upload, registration, account/security change or external message without explicit authorization. Use GitHub CLI for GitHub operations.
 - Offline candidate locks never authorize publication. The reviewed Actions publisher requires accepted runtime bytes, hosted source access and exact Forever version checks. Production tags require explicit approval under the owner's current instructions. Actions must publish identical verified PROD bytes to both services; never include DEV roots.
 - Add changes to CHANGELOG.md Unreleased. Historical entries describe archived versions. No destructive repository/worktree/backup cleanup.
+- Stable central workflow: C:/Dev/WoW/ApogeePartyHealthBars/distribution/DUAL_WORKFLOW.md. Child tasks request reviewed pin updates and DEV installs here; retained prototype worktrees are not the active authority.

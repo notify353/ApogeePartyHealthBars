@@ -1,15 +1,16 @@
 # One source, two distributions
 
 The active local workflow is side-by-side PROD and DEV. Earlier prototype and
-migration fixtures remain historical evidence. Neither current artifact is
-published. APHB is a zero-Lua distribution identity with no gameplay or saved
+migration fixtures remain historical evidence. PROD 1.0.0 is published on
+CurseForge and GitHub; DEV remains local. APHB is a zero-Lua distribution identity with no gameplay or saved
 settings; five independent children supply gameplay.
 
 ## Build and validate
 
-Run from `C:/Users/nickm/.codex/worktrees/forever-distribution-prototype/ApogeePartyHealthBars`.
-Canonical APHB main still has the old release system; do not use its release
-scripts for these candidates.
+Run from the canonical checkout `C:/Dev/WoW/ApogeePartyHealthBars`.
+This document and its central scripts are the stable authority for all five
+child projects. Historical prototype worktrees are retained evidence, not an
+installation dependency. Run `pwsh ./scripts/test-local.ps1` for full validation.
 
 ```powershell
 python -B scripts/dual_distribution.py --sources-root C:/Dev/WoW --output C:/Temp/apogee-dual-UNIQUE
@@ -28,7 +29,7 @@ source gameplay bodies behind an admission prefix. DEV transforms audited
 identifiers, saves, frames, popup/slash names, asset paths and labels. Manifests
 list every identity edit and source/body hash. Comments, gameplay keys and Blizzard
 names are not blindly renamed. Each artifact has six roots: marker plus children.
-One future CurseForge product/download owns PROD roots, never the six Dev roots.
+The existing CurseForge project1608100 download owns PROD roots, never the six Dev roots.
 DEV TOCs contain no CurseForge project ID.
 
 ## Install and recover
@@ -110,5 +111,10 @@ Actual CurseForge app testing requires an approved available compatible release.
 Local ZIP installation is not that test; private/held uploads are not assumed
 accessible. Its FAQ says Modified/Working Copy addons skip auto-updates, so check
 production app status for release testing. DEV stays installed separately.
-Public multi-folder ownership/update/removal, fresh exact upload-version ID and
-publication approval remain gates. No publication workflow or trigger changed.
+Native acceptance for the staged gameplay is recorded in native-acceptance.json.
+Release1.0.0 was approved for exact Forever1.60.1 (upload ID17053/type88568), and
+Actions verified identical downloaded CurseForge/GitHub ZIP bytes. See RELEASING.md
+for the active publication workflow and required gates for future versions.
+The locally installed PROD candidate has not been replaced through the CurseForge
+app. First app installation and later update/removal ownership tests remain
+separate acceptance checks; published-byte verification does not establish them.

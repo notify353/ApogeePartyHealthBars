@@ -11,11 +11,10 @@ Five focused addons for **World of Warcraft Forever 1.60.1**:
 Enable the modules you want under **Apogee Forever** in WoW's AddOns list.
 Each module has its own settings. This edition supports Forever only.
 
-The first Forever release is being prepared. Earlier downloads belong to the
-previous Classic addon and do not contain this edition. Legacy profiles are not
-imported, and Dungeon Guide is not included.
+Apogee Forever 1.0.0 is available. Legacy profiles are not imported, and Dungeon
+Guide is not included.
 
-When available, install using the [CurseForge listing](https://www.curseforge.com/wow/addons/apogee-party-health-bars)
+Install using the [CurseForge listing](https://www.curseforge.com/wow/addons/apogee-party-health-bars)
 or a packaged [GitHub release](https://github.com/notify353/ApogeePartyHealthBars/releases).
 For a manual installation, extract all six addon folders into Interface/AddOns.
 GitHub source archives are not installable packages.

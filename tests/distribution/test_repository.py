@@ -36,25 +36,38 @@ class RepositoryTests(unittest.TestCase):
         for item in record['files']:
             d.safe_path(item['path']); self.assertRegex(item['sha256'], r'^[0-9a-f]{64}$')
 
-    def test_release_is_fail_closed_and_ci_uses_distribution_checks(self):
+    def test_release_requires_guarded_actions_and_private_sources_are_restricted(self):
         workflow = (ROOT / '.github/workflows/release.yml').read_text()
-        self.assertIn('contents: read', workflow)
-        self.assertIn('exit 1', workflow)
-        for unsafe in ('contents: write','CF_API_KEY','gh release','BigWigsMods/packager','tags:'):
-            self.assertNotIn(unsafe, workflow)
-        for filename in ('prepare-release.ps1','publish-release.ps1'):
-            script = (ROOT / 'scripts' / filename).read_text()
-            self.assertIn('throw ', script)
-            self.assertNotIn('git tag', script); self.assertNotIn('git push', script)
+        self.assertIn("tags: ['v*.*.*']", workflow)
+        self.assertIn('environment: production', workflow)
+        self.assertIn('publish_distribution.py stage', workflow)
+        self.assertIn('publish_distribution.py upload', workflow)
+        self.assertIn('test-local.ps1', workflow)
+        self.assertIn('if: always()', workflow)
+        self.assertNotIn('pull_request', workflow)
+        self.assertNotIn('workflow_dispatch', workflow)
+        self.assertNotIn('BigWigsMods/packager', workflow)
+        self.assertNotIn('dual_distribution.py --', workflow)
+        publish = (ROOT / 'scripts/publish-release.ps1').read_text()
+        self.assertIn('-not $ConfirmProduction', publish)
+        self.assertIn("@('test','aggregate','version')", publish)
+        self.assertIn('never reuse or move', publish)
         ci = (ROOT / '.github/workflows/lua-validation.yml').read_text()
         self.assertIn('test_repository.py', ci)
         self.assertIn('test-local.ps1', ci)
         self.assertIn('APOGEE_DISTRIBUTION_SOURCES_READY', ci)
+        self.assertIn("github.ref == 'refs/heads/main'", ci)
+        self.assertIn("github.event_name != 'pull_request'", ci)
+        self.assertIn('environment: distribution-validation', ci)
         self.assertNotIn('pull_request_target', ci)
         self.assertNotIn('contents: write', ci)
         for name in d.CHILDREN:
             self.assertIn('repository: notify353/' + name, ci)
             self.assertIn('steps.pins.outputs.' + name, ci)
+        preflight = (ROOT / '.github/workflows/curseforge-preflight.yml').read_text()
+        self.assertIn('environment: distribution-validation', preflight)
+        self.assertNotIn('publish_distribution', preflight)
+        self.assertNotIn('contents: write', preflight)
 
 
 if __name__ == '__main__':

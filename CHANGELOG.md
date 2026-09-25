@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Default Keybinds "Hide unusable spells in combat" off for fresh settings and factory resets, preserving saved on/off choices.
+
 - Clarify Keybinds' per-character factory-reset button and confirmation scope; keep its confirmation and combat guards.
 
 - Disable the rejected Purify native-button setup to prevent forbidden click-handler warnings; combat Purify remains unavailable.

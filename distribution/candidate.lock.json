@@ -38,7 +38,7 @@
       "version": "0.1.0-dev"
     },
     {
-      "commit": "749c6a6430ed2e21696db85e9dd2959fb72b8c22",
+      "commit": "8b5eec54b00bea59eb945888887d8a541db9ffea",
       "files": {
         "Actions/Compile.lua": "f56780e4116f39d6f51705221fd718ca023eeda4ce8e2fd9500f4e4142b16363",
         "Actions/Defaults.lua": "077d1fbae51228e01d40507f0fbd1c4e9bc76a07dce458eeece6105cf2ccd60c",
@@ -47,15 +47,15 @@
         "Actions/Secure.lua": "9e55657083dbcfbff57badddc575b46ae1ae4b78ce95be2e7ba794453d6582bc",
         "ApogeeKeybinds.lua": "851cc5fce4aa043110669e059999b7c70d017e459631901b93d858df67722b71",
         "ApogeeKeybinds.toc": "5dcd4b5f7601b339e8d182e3f34a07db68d4d14438faf0dc46e575a4c5214f92",
-        "CHANGELOG.md": "89046c59ce4a5e4f1d88f573c05679d6b2802918b51f2f58f8109995f14c4369",
+        "CHANGELOG.md": "9bfd209e627de51a75e9fa2e10ce5f319cbabdddadd65d77a75956c55929718b",
         "Core/Client.lua": "be9d6cb7d118d0cf9e9b5b85997d27108805b5345be0f8e7c87983ec29250d59",
         "Core/Inputs.lua": "55ea639b20225f5cf5b39b9362edb49932fafb05b34c6fd51d4d6d40487172c5",
         "Core/States.lua": "d50bce1c35422a810247b51f6303806366d89b63da3d7afdcc12217ca4cb2ad8",
-        "Core/Storage.lua": "aa660cb5e09fb5f8c72f3cb5c5dee1866da23f6dfd72e81066c339fc60faaefb",
+        "Core/Storage.lua": "85cbc604828cec76bfe3481491357c1612e3410137d43dd33f78855400372117",
         "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",
         "Media/Textures/ApogeeLogo.png": "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e",
         "NOTICE.md": "f1672e42817d7a61ec552508b4fa2dc9bf6066e97c9e2e9af73f7a4b32020f68",
-        "README.md": "e22adae1c4d76d6f94b384b5ec9e5baad304a4085d5111abccd597634f169acf",
+        "README.md": "a6f0ab5d3e8f2b78bc3da262ff85fb3b79617a30840c1f858ea4d5abd00e9955",
         "Rules/Bloodrage.lua": "c708b713003383b6da351a9823ff4c59926478c172fd40222fe8da15c3e0c494",
         "Rules/Charge.lua": "fce93ea0aea85b21fbbf94a742a2e528c96a06b73b1605a9ebfbb169b4092c0a",
         "Rules/Explosives.lua": "e0ee6146ed300a5b340ec3e04dbe82b5c72fbc42ee92829d4043eb293b84d628",

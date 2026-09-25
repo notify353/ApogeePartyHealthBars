@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Show the healing icon beside Apogee Heals in the AddOns list.
+
 ## [1.0.0] - 2026-09-24
 
 - Introduce Apogee Forever for World of Warcraft Forever 1.60.1.

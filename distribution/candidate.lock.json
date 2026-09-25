@@ -1,15 +1,15 @@
 {
   "children": [
     {
-      "commit": "3b4cbfc0c783d44116752dff6b622d6084d63889",
+      "commit": "c4b00a1ffcccde7fdc3666a78b82db34d0cd4131",
       "files": {
         "ApogeeHeals.lua": "85c0d39cb749bab22dff41926927531bd88d8f393211bba748fe90bdf4af5730",
-        "ApogeeHeals.toc": "2a1de13c8fe7a4a4c837f2a2bf5287f61ba45d25c2ee80dd8d78ee2c9b0a7232",
+        "ApogeeHeals.toc": "0e76f26acd51f92d043c5d0271e37917a35c8a2571ecbc5d5a5c8554c3134abd",
         "Bindings/Defaults.lua": "e8e4a09365c284308c83db3f552b1c986af35f7b6334cb5946d6f8516d989512",
         "Bindings/Runtime.lua": "631e1f27dafdcfd3ba4da9db90bedf90ea530c0173b4e16da725c1b6c5d3dc44",
         "Buffs/Runtime.lua": "1d68e4916a462601ecfd0120a340cc4e3399492f2098676e170e66aa496a1b00",
         "Buffs/View.lua": "dadc3e08b6074f9f5fa1919448ce2df5991deb0abacc8d308cf0823ee4b0a48a",
-        "CHANGELOG.md": "95a2364409a1d638947fae692d81a90c16dd98f5754bd6b0e92e156d6622a595",
+        "CHANGELOG.md": "a09e994da9e02c26f43681a960fa6003e0463626a6753ab276f8abbccd88d989",
         "Core/Access.lua": "7e518d6a5a11f608ca797756f0448e88733b2346821c283812231a47c1ab821e",
         "Core/Client.lua": "bc76401feacc82f6d6feab6b854f38d0f509343813432770f76d80546df09e72",
         "Core/Storage.lua": "cce29226e4639d69078c50988c57e503fd4b541aaf99d61226cf2d0253cb20ba",

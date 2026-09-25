@@ -12,6 +12,7 @@ import distribution as d
 import dual_distribution as dual
 import migrate_distribution as m
 import install_dual_distribution as installer
+import publish_distribution as publisher
 
 
 class DualTests(unittest.TestCase):
@@ -64,6 +65,10 @@ class DualTests(unittest.TestCase):
                 if family == 'DEV': self.assertFalse(any(k.startswith('X-Curse') for k in meta))
         self.assertTrue(saves['PROD']); self.assertTrue(saves['DEV'])
         self.assertFalse(saves['PROD'] & saves['DEV'])
+
+    def test_release_payload_matches_native_accepted_runtime(self):
+        archive = publisher.payload(OPTIONS.sources_root, '1.0.0')
+        self.assertTrue(archive.startswith(b'PK'))
 
     def test_public_package_has_player_guide_and_required_notices(self):
         source = d.collect(self.lock, OPTIONS.sources_root, 'local-candidate')

@@ -10,19 +10,22 @@ Before enabling an Actions-only publisher:
 1. Integrate reviewed distribution/child commits through PRs. Make pinned child
    repositories readable by CI. Owner credentials can read all pins locally; three
    child repositories are private and need dedicated read-only CI access.
-   Configure least-privilege DISTRIBUTION_READ_TOKEN with owner authorization,
+   Configure least-privilege DISTRIBUTION_READ_TOKEN in approved environments with owner authorization,
    then enable APOGEE_DISTRIBUTION_SOURCES_READY. Build CI has read-only permissions.
-2. Complete real Forever startup GUID, group switching/reload, isolated settings,
-   PROD priority, missing/disabled child, secure input and combat/taint acceptance.
-3. Verify actual CurseForge multi-folder ownership/update/removal with approved
-   available releases, clean installs and legacy upgrades, preserving DEV/unknown
-   files. Old unguarded PROD intentionally blocks DEV. Local fixtures are not app tests.
+2. Native acceptance is owner-reported complete for the newly installed package.
+   `distribution/native-acceptance.json` pins both families' accepted Lua bytes.
+   Any runtime change invalidates this acceptance and requires a new review.
+3. After the first approved Forever upload, verify actual CurseForge multi-folder
+   install/update behavior, preserving DEV and unknown files. This is post-upload
+   acceptance; a local staged package cannot satisfy it. Never advertise it as
+   tested before the app performs the install. Keep a verified rollback path.
 4. Obtain a fresh authenticated exact 1.60.1 upload version ID for Forever type88568.
    Type88568 is not an upload ID. No Retail or nearest-version fallback.
-5. Implement/review a publisher submitting the exact verified PROD ZIP bytes to
-   GitHub and CurseForge and checking both hashes. Never publish the marker alone,
-   rerun a differently shaped packager or include DEV. The future packager pin is
-   evidence only, not executed by current builds.
+5. Review `scripts/publish_distribution.py` and the two workflow examples under
+   distribution/. They stage the accepted PROD package, upload identical bytes,
+   preserve a receipt before the single CF POST, and publish the GitHub draft only
+   after both remote hashes match. No production workflow calls these tools yet.
+   Never retry an uncertain upload without inspecting service state and receipt.
 6. Use stable X.Y.Z metadata/changelog, wait for CI and require explicit user
    confirmation immediately before the production tag. Never reuse/move tags.
 
@@ -33,9 +36,11 @@ For local build/install/rollback use [DUAL_WORKFLOW.md](distribution/DUAL_WORKFL
 
 ## Read-only preflight
 
-After integration, dispatch `CurseForge version preflight` on main. It uses the
-existing production environment credential solely to GET game versions and
-prints only the unique 1.60.1 / Forever88568 match. Missing, ambiguous or wrong
+The existing production environment allows release tags only. A main dispatch
+was rejected before execution, so its credential has not been used. After owner
+approval, configure a separate validation environment limited to main, supply
+the CF credential through GitHub secrets UI, and point the preflight there. It
+only GETs versions and prints the unique 1.60.1 / Forever88568 match. Missing, ambiguous or wrong
 flavor metadata fails. This workflow cannot upload files or create releases.
 The production publisher remains disabled until the other gates are satisfied.
 

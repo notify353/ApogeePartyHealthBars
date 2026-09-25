@@ -1,26 +1,25 @@
-name: Distribution validation
+# Reviewable template only. No production trigger currently uses this file.
+name: Apogee Forever release
 on:
   push:
-  pull_request:
-  workflow_dispatch:
+    tags: ['v*.*.*']
 permissions:
   contents: read
+concurrency:
+  group: apogee-production-release
+  cancel-in-progress: false
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
-      - run: python -B tests/distribution/test_repository.py
-      - run: python -B tests/distribution/test_curseforge.py
-      - run: python -B tests/distribution/test_publisher.py
-  aggregate:
-    if: vars.APOGEE_DISTRIBUTION_SOURCES_READY == 'true'
+  publish:
+    permissions:
+      contents: write
+    environment: production
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           fetch-depth: 0
           path: distribution-repo
+          persist-credentials: false
       - name: Read immutable child pins
         id: pins
         shell: python
@@ -36,7 +35,7 @@ jobs:
           path: sources/ApogeeHeals
           fetch-depth: 0
           persist-credentials: false
-          token: ${{ secrets.DISTRIBUTION_READ_TOKEN || github.token }}
+          token: ${{ github.token }}
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           repository: notify353/ApogeeKeybinds
@@ -44,7 +43,7 @@ jobs:
           path: sources/ApogeeKeybinds
           fetch-depth: 0
           persist-credentials: false
-          token: ${{ secrets.DISTRIBUTION_READ_TOKEN || github.token }}
+          token: ${{ secrets.DISTRIBUTION_READ_TOKEN }}
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           repository: notify353/ApogeeGroupAlert
@@ -52,7 +51,7 @@ jobs:
           path: sources/ApogeeGroupAlert
           fetch-depth: 0
           persist-credentials: false
-          token: ${{ secrets.DISTRIBUTION_READ_TOKEN || github.token }}
+          token: ${{ secrets.DISTRIBUTION_READ_TOKEN }}
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           repository: notify353/ApogeeEssentials
@@ -60,7 +59,7 @@ jobs:
           path: sources/ApogeeEssentials
           fetch-depth: 0
           persist-credentials: false
-          token: ${{ secrets.DISTRIBUTION_READ_TOKEN || github.token }}
+          token: ${{ secrets.DISTRIBUTION_READ_TOKEN }}
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           repository: notify353/ApogeeTank
@@ -68,10 +67,30 @@ jobs:
           path: sources/ApogeeTank
           fetch-depth: 0
           persist-credentials: false
-          token: ${{ secrets.DISTRIBUTION_READ_TOKEN || github.token }}
+          token: ${{ github.token }}
       - name: Install Lua 5.1
         run: sudo apt-get update && sudo apt-get install -y lua5.1
-      - name: Validate and build both families without publishing
+      - name: Validate and build both families
         shell: pwsh
         working-directory: distribution-repo
         run: ./scripts/test-local.ps1 -SourcesRoot "$env:GITHUB_WORKSPACE/sources" -ArtifactRoot "$env:RUNNER_TEMP/apogee-validation"
+      - name: Stage exact accepted production package
+        working-directory: distribution-repo
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python -B scripts/publish_distribution.py stage --version "${RELEASE_TAG#v}" --sources-root "$GITHUB_WORKSPACE/sources" --output "$RUNNER_TEMP/apogee-publication"
+      - name: Upload once to CurseForge and GitHub draft
+        working-directory: distribution-repo
+        env:
+          APOGEE_PUBLISH_APPROVED: 'true'
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+        run: python -B scripts/publish_distribution.py upload --sources-root "$GITHUB_WORKSPACE/sources" --output "$RUNNER_TEMP/apogee-publication"
+      - name: Preserve exact package and upload receipt even on failure
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: apogee-publication
+          path: ${{ runner.temp }}/apogee-publication
+          if-no-files-found: warn
+          retention-days: 30

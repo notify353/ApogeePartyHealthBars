@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+- Keep living hostile targets selected for managed attacks; acquire an enemy only when the current target is invalid.
+- Default Paladin Shift Wheel Up to Holy Strike and Ctrl Wheel Up to Judgement, preserving assigned bindings.
+- Start Holy Strike and Judgement unchecked in Tank's cooldown picker while retaining explicit opt-ins.
+- Hide the Paladin seal strip in combat and restore selected seals afterward.
+- Gray target-required cooldown icons with no target while keeping their clicks available.
+
 - Order Paladin default cooldowns as Holy Strike, Judgement, then Hammer of Justice, preserving identifiable custom choices.
 - Add a Paladin Seals checklist with saved hide/show choices that survive new ranks and reloads.
 

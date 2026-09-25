@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Seed learned Paladin Might reminders automatically and offer Wisdom unchecked, preserving saved choices and rank upgrades.
+- Show native spell tooltips on buff reminders and limit each recipient to one blessing prompt.
+
 - Keep living hostile targets selected for managed attacks; acquire an enemy only when the current target is invalid.
 - Default Paladin Shift Wheel Up to Holy Strike and Ctrl Wheel Up to Judgement, preserving assigned bindings.
 - Start Holy Strike and Judgement unchecked in Tank's cooldown picker while retaining explicit opt-ins.

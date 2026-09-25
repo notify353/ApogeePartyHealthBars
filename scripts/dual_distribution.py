@@ -25,7 +25,7 @@ IDENTITIES = {
                       'ApogeeKeybindsSlotMenu', 'ApogeeKeybindsMinimapButton'],
     'ApogeeGroupAlert': ['ApogeeGroupAlertDB', 'ApogeeGroupAlertCharacterDB', 'ApogeeGroupAlertGroups'],
     'ApogeeEssentials': ['ApogeeEssentialsDB'],
-    'ApogeeTank': ['ApogeeTankEffectsDB', 'ApogeeTankCooldownsDB', 'ApogeeTankUIDB',
+    'ApogeeTank': ['ApogeeTankEffectsDB', 'ApogeeTankCooldownsDB', 'ApogeeTankUIDB', 'ApogeeTankSealsDB',
                   'ApogeeTankTargetMarkerButton', 'ApogeeTankThreatHud', 'ApogeeTankAuraAction',
                   'ApogeeTankCooldownAction', 'ApogeeTankSealAction', 'ApogeeTankMinimapButton',
                   'ApogeeTankPickerWindow', 'ApogeeTank']}

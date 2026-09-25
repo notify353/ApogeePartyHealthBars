@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Order Paladin default cooldowns as Holy Strike, Judgement, then Hammer of Justice, preserving identifiable custom choices.
+- Add a Paladin Seals checklist with saved hide/show choices that survive new ranks and reloads.
+
 - Default Essentials to Never adjust camera and show enemy nameplates, with opt-out switches.
 - Allow checked DEV updates while WoW runs; preserve backups and verify atomic file replacements.
 

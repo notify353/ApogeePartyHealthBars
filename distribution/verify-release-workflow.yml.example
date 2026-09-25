@@ -23,6 +23,19 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Verify artifact comes from this tag's completed publisher
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UPLOAD_RUN: ${{ inputs.upload_run }}
+        shell: python
+        run: |
+          import json, os, subprocess
+          run = os.environ['UPLOAD_RUN']
+          assert run.isdigit(), 'Numeric upload run required'
+          info = json.loads(subprocess.check_output(['gh','api','repos/notify353/ApogeePartyHealthBars/actions/runs/'+run]))
+          assert info['head_sha'] == os.environ['GITHUB_SHA'], 'Wrong source commit'
+          assert info['path'] == '.github/workflows/release.yml' and info['event'] == 'push', 'Wrong publisher workflow'
+          assert info['status'] == 'completed' and info['conclusion'] == 'success', 'Publisher did not succeed'
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: apogee-publication

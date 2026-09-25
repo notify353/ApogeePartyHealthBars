@@ -19,6 +19,7 @@ jobs:
         with:
           fetch-depth: 0
           path: distribution-repo
+          persist-credentials: false
       - name: Read immutable child pins
         id: pins
         shell: python
@@ -34,7 +35,7 @@ jobs:
           path: sources/ApogeeHeals
           fetch-depth: 0
           persist-credentials: false
-          token: ${{ secrets.DISTRIBUTION_READ_TOKEN || github.token }}
+          token: ${{ github.token }}
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           repository: notify353/ApogeeKeybinds
@@ -42,7 +43,7 @@ jobs:
           path: sources/ApogeeKeybinds
           fetch-depth: 0
           persist-credentials: false
-          token: ${{ secrets.DISTRIBUTION_READ_TOKEN || github.token }}
+          token: ${{ secrets.DISTRIBUTION_READ_TOKEN }}
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           repository: notify353/ApogeeGroupAlert
@@ -50,7 +51,7 @@ jobs:
           path: sources/ApogeeGroupAlert
           fetch-depth: 0
           persist-credentials: false
-          token: ${{ secrets.DISTRIBUTION_READ_TOKEN || github.token }}
+          token: ${{ secrets.DISTRIBUTION_READ_TOKEN }}
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           repository: notify353/ApogeeEssentials
@@ -58,7 +59,7 @@ jobs:
           path: sources/ApogeeEssentials
           fetch-depth: 0
           persist-credentials: false
-          token: ${{ secrets.DISTRIBUTION_READ_TOKEN || github.token }}
+          token: ${{ secrets.DISTRIBUTION_READ_TOKEN }}
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           repository: notify353/ApogeeTank
@@ -66,7 +67,7 @@ jobs:
           path: sources/ApogeeTank
           fetch-depth: 0
           persist-credentials: false
-          token: ${{ secrets.DISTRIBUTION_READ_TOKEN || github.token }}
+          token: ${{ github.token }}
       - name: Install Lua 5.1
         run: sudo apt-get update && sudo apt-get install -y lua5.1
       - name: Validate and build both families

@@ -141,6 +141,12 @@ def family_files(lock, sources_root, family):
                 output[target] = data
     marker_meta, _ = d.toc_info(source[d.MARKER + '/' + d.MARKER + '.toc'])
     marker_meta.update(Title=FAMILY_TITLES[family], Group=marker, Category=FAMILY_TITLES[family])
+    # The native group row is the marker addon. Keep its icon self-contained,
+    # using the exact existing artwork from the reviewed immutable child source.
+    logo = 'Media/Textures/ApogeeLogo.png'
+    output[marker + '/' + logo] = source['ApogeeKeybinds/' + logo]
+    output[marker + '/LICENSE'] = source['ApogeeKeybinds/LICENSE']
+    marker_meta['IconTexture'] = 'Interface/AddOns/' + marker + '/' + logo
     marker_meta.update({'X-Apogee-Family': family, 'X-Apogee-Family-Schema': '1'})
     if family == 'DEV':
         marker_meta.pop('X-Curse-Project-ID', None)

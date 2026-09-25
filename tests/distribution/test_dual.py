@@ -45,6 +45,20 @@ class DualTests(unittest.TestCase):
             self.assertEqual(self.prod[path], prefix + source[change['source']])
             self.assertEqual(change['identityEdits'], [])
 
+    def test_group_and_heals_icons_bundle_same_brand_asset(self):
+        logo = 'Media/Textures/ApogeeLogo.png'
+        for family, files in (('PROD', self.prod), ('DEV', self.dev)):
+            suffix = 'Dev' if family == 'DEV' else ''
+            expected = files['ApogeeKeybinds' + suffix + '/' + logo]
+            for base in (d.MARKER, 'ApogeeHeals'):
+                name = base + suffix
+                meta, runtime = d.toc_info(files[name + '/' + name + '.toc'])
+                self.assertEqual(meta['IconTexture'], 'Interface/AddOns/' + name + '/' + logo)
+                self.assertEqual(files[name + '/' + logo], expected)
+                if base == d.MARKER:
+                    self.assertEqual(runtime, [])
+                    self.assertFalse(any(k.startswith('SavedVariables') for k in meta))
+
     def test_exact_roots_tocs_guards_separate_saves_and_no_dev_project_ids(self):
         saves = {}
         for family, files in (('PROD', self.prod), ('DEV', self.dev)):

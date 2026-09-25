@@ -31,6 +31,9 @@ list every identity edit and source/body hash. Comments, gameplay keys and Blizz
 names are not blindly renamed. Each artifact has six roots: marker plus children.
 The existing CurseForge project1608100 download owns PROD roots, never the six Dev roots.
 DEV TOCs contain no CurseForge project ID.
+Each family marker bundles the existing green Apogee logo from the pinned
+Keybinds source and points its IconTexture at that family-local asset. Native
+group rows use the marker icon; this adds no runtime, saved data or child dependency.
 
 ## Install and recover
 

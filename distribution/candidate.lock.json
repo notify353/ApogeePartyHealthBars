@@ -1,15 +1,15 @@
 {
   "children": [
     {
-      "commit": "c4b00a1ffcccde7fdc3666a78b82db34d0cd4131",
+      "commit": "eb451e7a05a9eb3b322d4f87137d2a266a3d75e2",
       "files": {
         "ApogeeHeals.lua": "85c0d39cb749bab22dff41926927531bd88d8f393211bba748fe90bdf4af5730",
-        "ApogeeHeals.toc": "0e76f26acd51f92d043c5d0271e37917a35c8a2571ecbc5d5a5c8554c3134abd",
+        "ApogeeHeals.toc": "10534338ee90c98c065d1f2a759ca80d0b460ef133c068131ed96950b30f9c7b",
         "Bindings/Defaults.lua": "e8e4a09365c284308c83db3f552b1c986af35f7b6334cb5946d6f8516d989512",
         "Bindings/Runtime.lua": "631e1f27dafdcfd3ba4da9db90bedf90ea530c0173b4e16da725c1b6c5d3dc44",
         "Buffs/Runtime.lua": "1d68e4916a462601ecfd0120a340cc4e3399492f2098676e170e66aa496a1b00",
         "Buffs/View.lua": "dadc3e08b6074f9f5fa1919448ce2df5991deb0abacc8d308cf0823ee4b0a48a",
-        "CHANGELOG.md": "a09e994da9e02c26f43681a960fa6003e0463626a6753ab276f8abbccd88d989",
+        "CHANGELOG.md": "4260178206489f7b984b190afdb2881a193d8cbfa79442ed4531921f3510468e",
         "Core/Access.lua": "7e518d6a5a11f608ca797756f0448e88733b2346821c283812231a47c1ab821e",
         "Core/Client.lua": "bc76401feacc82f6d6feab6b854f38d0f509343813432770f76d80546df09e72",
         "Core/Storage.lua": "cce29226e4639d69078c50988c57e503fd4b541aaf99d61226cf2d0253cb20ba",
@@ -17,6 +17,7 @@
         "Drinking/Runtime.lua": "543b618e9ca2fae971ea5f23beae3a12ab70242299591f43380f8d5968280606",
         "IncomingHeals/View.lua": "00a0dcdffe24a60c78a6d5b7301b142d8ec28f3d9afd8ea2afdd99060aa5c7f1",
         "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",
+        "Media/Textures/ApogeeLogo.png": "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e",
         "PartyFrames/Preview.lua": "44d56bf0dd11d64e6657108ba24ab676210b11a4fc20cf7251c8d270c284bea9",
         "PartyFrames/Runtime.lua": "9ba8941b005d0e3e8cce9371bf0977920836ddb37f16423bd375d0fde3f366d7",
         "PartyFrames/View.lua": "863c4f434af3dc7300ce350f7a5f8006bacb668572f5c885708f82288a561388",

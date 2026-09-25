@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Show Heals row range feedback for the exact applied plain-left-click spell and row recipient; unknown range clears the indicator.
+
 - Default Keybinds "Hide unusable spells in combat" off for fresh settings and factory resets, preserving saved on/off choices.
 
 - Clarify Keybinds' per-character factory-reset button and confirmation scope; keep its confirmation and combat guards.

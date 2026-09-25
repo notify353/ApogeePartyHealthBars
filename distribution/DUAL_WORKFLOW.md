@@ -34,8 +34,16 @@ DEV TOCs contain no CurseForge project ID.
 
 ## Install and recover
 
-Only the central installer writes live folders. Future child changes must not
-copy canonical sources over production. Normal installs are DEV-only:
+Only the central installer writes local DEV folders. Future child changes must
+not copy canonical sources over production. Normal local installs are DEV-only.
+
+The owner requires canonical PROD folders to come only from the CurseForge app.
+The initial staged PROD candidate has been moved out of AddOns into the verified
+handover backup at `C:/Dev/WoW/local-install-backups/apogee-curseforge-handover-20260924`.
+Its transaction.json preserves all original files for explicitly authorized recovery.
+Do not reinstall local PROD ZIPs, repeat the initial retrofit, or restore the
+candidate automatically. User-managed CurseForge installation is the next step.
+All six DEV roots and private settings remain unchanged by the handover.
 
 ```powershell
 python -B scripts/install_dual_distribution.py --client-root 'C:/Program Files (x86)/World of Warcraft/_classic_beta_' --sources-root C:/Dev/WoW --artifacts C:/Temp/apogee-dual-UNIQUE --backup C:/Dev/WoW/local-install-backups/apogee-UNIQUE --previous-install C:/Dev/WoW/local-install-backups/PREVIOUS/transaction.json
@@ -43,8 +51,8 @@ python -B scripts/install_dual_distribution.py --client-root 'C:/Program Files (
 
 Omit `--previous-install` only for fresh DEV installs or exact matching files.
 `--inspect-only` validates without writes. Existing output/backup directories are
-refused. `--initial-retrofit` is exclusively the authorized first compatibility
-migration installing both families, not a routine development option.
+refused. `--initial-retrofit` remains historical migration tooling and must not be
+used under the owner's current CurseForge-managed PROD policy.
 
 The installer regenerates expected bytes and verifies the actual aggregate ZIPs.
 It rejects unexpected runtime/asset overwrites, links/junctions and alternate
@@ -115,6 +123,6 @@ Native acceptance for the staged gameplay is recorded in native-acceptance.json.
 Release1.0.0 was approved for exact Forever1.60.1 (upload ID17053/type88568), and
 Actions verified identical downloaded CurseForge/GitHub ZIP bytes. See RELEASING.md
 for the active publication workflow and required gates for future versions.
-The locally installed PROD candidate has not been replaced through the CurseForge
-app. First app installation and later update/removal ownership tests remain
+The staged PROD candidate is backed up outside AddOns. First CurseForge app
+installation and later update/removal ownership tests remain
 separate acceptance checks; published-byte verification does not establish them.

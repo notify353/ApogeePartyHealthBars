@@ -5,6 +5,7 @@ from pathlib import Path
 import subprocess
 import sys
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 sys.dont_write_bytecode = True
@@ -96,7 +97,8 @@ class DualTests(unittest.TestCase):
         client, _ = self.fixture(self.dev)
         (client.parent / '.build.info').write_text('Product|Version\nwow_classic_beta|' + self.lock['client']['reviewedBuild'])
         process = subprocess.CompletedProcess([], 0, stdout='"WowB.exe","123"', stderr='')
-        with patch.object(m.os, 'name', 'nt'), patch.object(m.subprocess, 'run', return_value=process):
+        # Keep pathlib on the real host platform while simulating the installer OS check.
+        with patch.object(m, 'os', SimpleNamespace(name='nt')), patch.object(m.subprocess, 'run', return_value=process):
             self.assertTrue(m.real_client_preflight(client, self.lock, allow_running_dev=True))
             with self.assertRaisesRegex(ValueError, 'close it before migration'):
                 m.real_client_preflight(client, self.lock)

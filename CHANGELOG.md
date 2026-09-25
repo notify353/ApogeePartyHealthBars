@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Keep the Windows installer preflight test isolated from the Linux release runner platform.
+
 ## [1.1.0] - 2026-09-24
 
 - Place Healing Mouse beside the Weapons header with a small gap, while preserving custom positions and independent use.

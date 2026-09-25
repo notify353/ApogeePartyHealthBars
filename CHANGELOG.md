@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- Default the Healing Mouse editor beside the same-family Keybinds Weapons header, with standalone fallback and saved custom editor placement.
+- Default the Healing Mouse editor 8 pixels right of the same-family Keybinds Weapons header, with standalone fallback and saved custom editor placement.
 
 - Show Heals row range feedback for the exact applied plain-left-click spell and row recipient; unknown range clears the indicator.
 

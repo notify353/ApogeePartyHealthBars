@@ -23,8 +23,10 @@ pass for the exact release-preparation commit before tagging. The preflight
 requires one exact 1.60.1 result with Forever version type88568; the type is not
 an upload-version ID and there is no fallback.
 
-Native acceptance is owner-reported complete for the newly installed package.
-`distribution/native-acceptance.json` pins both families' accepted Lua bytes.
+Native acceptance is owner-reported complete for the installed DEV package.
+`distribution/native-acceptance.json` pins its tested Lua bytes and the generated
+PROD counterpart from the same reviewed sources; this does not claim separate
+PROD or CurseForge-client testing.
 Runtime changes invalidate acceptance; documentation/version changes do not.
 The local staged installation was not a CurseForge download.
 

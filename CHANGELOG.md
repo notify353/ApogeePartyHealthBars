@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+- Limit Warrior Shield Bash, Throw and Battle Shout defaults to Defensive Stance while preserving saved assignments in every stance.
+
+- Move Warrior Battle Shout default to F and limit the Thunder Clap wheel-down default to Defensive Stance, preserving saved assignments.
+
+- Default Warrior Shift+wheel-down to Cleave and Ctrl+wheel-down to Demoralizing Shout only in Defensive Stance, preserving saved assignments.
+
+- Move the Keybinds default layout one full key position farther left after live placement review, preserving its height and spacing.
+
+- Pin Keybinds default HUD placement left of the character, with aligned Weapons, Keyboard and Wheel headers and Mouse below; position reset preserves assigned keys.
+
+- Pin Keybinds optional Hide spells except while editing setting for DEV; reveal artwork during editing and keep bindings and click targets active.
+
+- Pin Keybinds warrior Shift+wheel-down Demoralizing Shout default for DEV; preserve Revenge and saved assignments.
+
+- Pin Keybinds Defensive Stance wheel-up Revenge default for DEV; preserve saved assignments and other defaults.
+
+- Pin reviewed Heals bandage assignments for local DEV validation and installation.
+
 - Keep the Windows installer preflight test isolated from the Linux release runner platform.
 
 ## [1.1.0] - 2026-09-24

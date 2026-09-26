@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-09-26
+
 - Limit Warrior Shield Bash, Throw and Battle Shout defaults to Defensive Stance while preserving saved assignments in every stance.
 
 - Move Warrior Battle Shout default to F and limit the Thunder Clap wheel-down default to Defensive Stance, preserving saved assignments.

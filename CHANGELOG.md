@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Limit Warrior Shield Bash, Throw and Battle Shout defaults to Defensive Stance while preserving saved assignments in every stance.
+
 - Move Warrior Battle Shout default to F and limit the Thunder Clap wheel-down default to Defensive Stance, preserving saved assignments.
 
 - Default Warrior Shift+wheel-down to Cleave and Ctrl+wheel-down to Demoralizing Shout only in Defensive Stance, preserving saved assignments.

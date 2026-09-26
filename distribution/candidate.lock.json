@@ -38,10 +38,10 @@
       "version": "0.1.0-dev"
     },
     {
-      "commit": "e3caff0803cbdd57035b4fcfca303ec000d51b8f",
+      "commit": "2193eb0ddb1b5e8487ab3d1dab130ff79fc8f196",
       "files": {
         "Actions/Compile.lua": "f56780e4116f39d6f51705221fd718ca023eeda4ce8e2fd9500f4e4142b16363",
-        "Actions/Defaults.lua": "c20e0854ea1221031250fc73e0b874cd37a5b1feed25caa79c446900d495892a",
+        "Actions/Defaults.lua": "6e335e12fb615cadb94dbcd16e4168d73a250c5f41d0654cc4cf3861d00a69ee",
         "Actions/Drag.lua": "7a5cb485fc8856393320216cb19000b6d1bbdf2479f1d93c45d793dd3c09f97c",
         "Actions/Identity.lua": "ee93094bb697842eac92c77b110421ee96755d8271d54362ef130138a374f7b1",
         "Actions/Secure.lua": "9e55657083dbcfbff57badddc575b46ae1ae4b78ce95be2e7ba794453d6582bc",
@@ -55,7 +55,7 @@
         "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",
         "Media/Textures/ApogeeLogo.png": "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e",
         "NOTICE.md": "f1672e42817d7a61ec552508b4fa2dc9bf6066e97c9e2e9af73f7a4b32020f68",
-        "README.md": "cf5dc18e4b96c77ef11438a8df2afb9a347da57532a6ef73c133c8a9aa659a8b",
+        "README.md": "867db3f8a81fab5a9d93f385d01a95eabfcf241ffa30e28225a92124e42f6e49",
         "Rules/Bloodrage.lua": "c708b713003383b6da351a9823ff4c59926478c172fd40222fe8da15c3e0c494",
         "Rules/Charge.lua": "fce93ea0aea85b21fbbf94a742a2e528c96a06b73b1605a9ebfbb169b4092c0a",
         "Rules/Explosives.lua": "e0ee6146ed300a5b340ec3e04dbe82b5c72fbc42ee92829d4043eb293b84d628",

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Pin reviewed Heals bandage assignments for local DEV validation and installation.
+
 - Keep the Windows installer preflight test isolated from the Linux release runner platform.
 
 ## [1.1.0] - 2026-09-24

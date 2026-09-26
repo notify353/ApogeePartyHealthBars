@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Pin Keybinds optional Always hide spells setting for DEV; keep bindings and click targets active.
+
 - Pin Keybinds warrior Shift+wheel-down Demoralizing Shout default for DEV; preserve Revenge and saved assignments.
 
 - Pin Keybinds Defensive Stance wheel-up Revenge default for DEV; preserve saved assignments and other defaults.

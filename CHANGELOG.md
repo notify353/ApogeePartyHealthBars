@@ -4,25 +4,13 @@
 
 ## [1.1.1] - 2026-09-26
 
-- Limit Warrior Shield Bash, Throw and Battle Shout defaults to Defensive Stance while preserving saved assignments in every stance.
+- Add bandage assignments to the healing editor.
+- Arrange the default Keybinds HUD neatly left of the character, with Weapons, Keyboard and Wheel aligned and Mouse below. Reset Grid Positions restores this layout without clearing assigned actions.
+- Add an option to hide spell artwork except while editing, while keeping bindings and click targets active.
+- Update Warrior defaults: Shift+wheel-down uses Cleave; Defensive Stance uses wheel-up for Revenge, wheel-down for Thunder Clap, Ctrl+wheel-down for Demoralizing Shout, F for Battle Shout, Mouse Button 4 for Shield Bash and Shift+Mouse Button 4 for Throw.
+- Preserve saved custom assignments and positions when updating.
 
-- Move Warrior Battle Shout default to F and limit the Thunder Clap wheel-down default to Defensive Stance, preserving saved assignments.
-
-- Default Warrior Shift+wheel-down to Cleave and Ctrl+wheel-down to Demoralizing Shout only in Defensive Stance, preserving saved assignments.
-
-- Move the Keybinds default layout one full key position farther left after live placement review, preserving its height and spacing.
-
-- Pin Keybinds default HUD placement left of the character, with aligned Weapons, Keyboard and Wheel headers and Mouse below; position reset preserves assigned keys.
-
-- Pin Keybinds optional Hide spells except while editing setting for DEV; reveal artwork during editing and keep bindings and click targets active.
-
-- Pin Keybinds warrior Shift+wheel-down Demoralizing Shout default for DEV; preserve Revenge and saved assignments.
-
-- Pin Keybinds Defensive Stance wheel-up Revenge default for DEV; preserve saved assignments and other defaults.
-
-- Pin reviewed Heals bandage assignments for local DEV validation and installation.
-
-- Keep the Windows installer preflight test isolated from the Linux release runner platform.
+Supports World of Warcraft Forever 1.60.1. Reload the UI after updating.
 
 ## [1.1.0] - 2026-09-24
 

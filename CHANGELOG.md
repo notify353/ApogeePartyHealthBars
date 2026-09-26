@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Pin Keybinds Defensive Stance wheel-up Revenge default for DEV; preserve saved assignments and other defaults.
+
 - Pin reviewed Heals bandage assignments for local DEV validation and installation.
 
 - Keep the Windows installer preflight test isolated from the Linux release runner platform.

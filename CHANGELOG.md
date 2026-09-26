@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Pin Keybinds warrior Shift+wheel-down Demoralizing Shout default for DEV; preserve Revenge and saved assignments.
+
 - Pin Keybinds Defensive Stance wheel-up Revenge default for DEV; preserve saved assignments and other defaults.
 
 - Pin reviewed Heals bandage assignments for local DEV validation and installation.

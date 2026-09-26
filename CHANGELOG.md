@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- Move the Keybinds Warrior Demoralizing Shout default to Ctrl+wheel-down, preserving saved assignments.
+- Default Warrior Shift+wheel-down to Cleave and Ctrl+wheel-down to Demoralizing Shout only in Defensive Stance, preserving saved assignments.
 
 - Move the Keybinds default layout one full key position farther left after live placement review, preserving its height and spacing.
 

@@ -38,7 +38,7 @@
       "version": "0.1.0-dev"
     },
     {
-      "commit": "6c4765246fd64c7e7fb58528f07dd20f16a007d7",
+      "commit": "35b4f1d37ce3c9a1dc3c61be62048c83e37323ec",
       "files": {
         "Actions/Compile.lua": "f56780e4116f39d6f51705221fd718ca023eeda4ce8e2fd9500f4e4142b16363",
         "Actions/Defaults.lua": "44fd768d9d8f70e04f301b0ff1a09fea51b47e3f29439a40c07935a842aa4b1a",
@@ -49,7 +49,7 @@
         "ApogeeKeybinds.toc": "5dcd4b5f7601b339e8d182e3f34a07db68d4d14438faf0dc46e575a4c5214f92",
         "CHANGELOG.md": "623212b8e32bacaf60e46040529ed54a2198be8dd36d396b403b2eeb31d0c91a",
         "Core/Client.lua": "be9d6cb7d118d0cf9e9b5b85997d27108805b5345be0f8e7c87983ec29250d59",
-        "Core/Inputs.lua": "539ccf53544a2007f6eabe3dae365092fff67a04240dbc8903efe69e26e5b365",
+        "Core/Inputs.lua": "2f91baadc8551cd229ef8f259260494ca5c20fa84778b098a68f0d924022b230",
         "Core/States.lua": "d50bce1c35422a810247b51f6303806366d89b63da3d7afdcc12217ca4cb2ad8",
         "Core/Storage.lua": "f19d6c3dc0fc23887dc27d60c1a81e31e2a5eea7f6fb58283d6d8c8827605c87",
         "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Move the Keybinds Warrior Demoralizing Shout default to Ctrl+wheel-down, preserving saved assignments.
+
 - Move the Keybinds default layout one full key position farther left after live placement review, preserving its height and spacing.
 
 - Pin Keybinds default HUD placement left of the character, with aligned Weapons, Keyboard and Wheel headers and Mouse below; position reset preserves assigned keys.

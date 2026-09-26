@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- Pin Keybinds optional Always hide spells setting for DEV; keep bindings and click targets active.
+- Pin Keybinds optional Hide spells except while editing setting for DEV; reveal artwork during editing and keep bindings and click targets active.
 
 - Pin Keybinds warrior Shift+wheel-down Demoralizing Shout default for DEV; preserve Revenge and saved assignments.
 

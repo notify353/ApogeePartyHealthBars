@@ -1,17 +1,17 @@
 {
   "children": [
     {
-      "commit": "8b03da2791d5d0325adb52ddd394521ef1a11928",
+      "commit": "e8b4dc04fb5adb39d21e295f483e1bd7d1aaeecb",
       "files": {
         "ApogeeHeals.lua": "52ebe8c761df2eabf10386ad0405c66213fcf3e5b467e3630f042da653555eb4",
         "ApogeeHeals.toc": "14ef725abfa28b0d2ac71f358b7f691849f4a2c65e033018e1b5bc1553dfb5f9",
         "Bindings/Defaults.lua": "e8e4a09365c284308c83db3f552b1c986af35f7b6334cb5946d6f8516d989512",
         "Bindings/Runtime.lua": "fd7bcd0039a3290b923168578e7f7d13821207e1ef84909d22e64f953a0a1cbb",
         "Buffs/Defaults.lua": "88118e8147534df41c6e695475557aafe8c86d610bc4b52b55656935ca006073",
-        "Buffs/Runtime.lua": "3b0e75799e0aea161bf768ea28b2178721440a4e2c2b0eb1054944b48d39f16d",
-        "Buffs/View.lua": "b62151a02a1b22108408f2637c313e02438deedbf2e08836f2c6190cb5c9b9c9",
-        "CHANGELOG.md": "a0d544e05bcda66129428b110c0c32ef85717be5754f48f5ec6983ee449e790f",
-        "Cleansing/Runtime.lua": "7823ca386e0aa4ae73626d3d7eb62075ce3546e48bcf6d32e5535f9a4d52a700",
+        "Buffs/Runtime.lua": "1b4f47fd56ce7e4935e59ded401e827326a422175b48cd6b4ec8c83c607e2428",
+        "Buffs/View.lua": "3521f50d3bc49655e8e288871e4abff40a1fd5d6d6138a790c668771097c1c93",
+        "CHANGELOG.md": "61e03d44d7fb3f7f4b2800f837b8260fd872b923a4710b66e082fa5e7aba5797",
+        "Cleansing/Runtime.lua": "042664a0aaac2530694692dc92a64e37ebe9b8b5a025562a4e1f2da7ec2bc406",
         "Core/Access.lua": "7e518d6a5a11f608ca797756f0448e88733b2346821c283812231a47c1ab821e",
         "Core/Client.lua": "bc76401feacc82f6d6feab6b854f38d0f509343813432770f76d80546df09e72",
         "Core/Storage.lua": "2b2cd0c656c2f94eaa0ed214b07666cc873f24bef523d68a642250ed0b4b24c5",
@@ -21,8 +21,8 @@
         "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",
         "Media/Textures/ApogeeLogo.png": "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e",
         "PartyFrames/Preview.lua": "44d56bf0dd11d64e6657108ba24ab676210b11a4fc20cf7251c8d270c284bea9",
-        "PartyFrames/Runtime.lua": "c1af494a8d1802bad366a33e9ee8d0238a7fff394c7da981df387cb62976e154",
-        "PartyFrames/View.lua": "89e6ed47e714b50ab4a691336a0564c3db340e1c12f01cfee98ca84f3ec90f9c",
+        "PartyFrames/Runtime.lua": "daf471fef832c4bbee3d4340fc62fe5a88ce28fc7fcd3a616dca16895f0d76a3",
+        "PartyFrames/View.lua": "8884398e64f3f8c810028b4f8ee946e79e99260894872c60ed0b3397c57f2e54",
         "README.md": "39432e986d75ab47c1e03cc4be5313b8330f09a1c1aab6342006b8f883f3a3ba",
         "UI/BindingEditor.lua": "af8cf5f60a274fcc04da7eed3a7f308d5ab211b6a6ad363a6dc82d32d86bf258",
         "UI/Minimap.lua": "9133eef058f71d27b1ba11efb6b24faa062e0dc818b171186eef476099d5e9a0",

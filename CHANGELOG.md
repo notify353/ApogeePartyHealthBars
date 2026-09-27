@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Extend Heals buff and cleansing controls to friendly selected targets.
+
 - Add role-first yellow blessing suggestions and explanatory tooltips in Heals.
 
 - Restrict Heals blessing choices to pre-combat party upkeep buffs.

@@ -4,21 +4,13 @@
 
 ## [1.2.0] - 2026-09-26
 
-- Match Healing Mouse input flashes to Keybinds across player, party and target bars.
+- Add target and target-of-target bars with matching widths, smaller NPC names, and a clear target-of-target label.
+- Use your healing mouse assignments, including bandages, on both target bars. The game applies normal target, range and spell restrictions.
+- Highlight the matching Healing Mouse binding when clicked, using the same blue feedback as Keybinds.
+- Place Healing Mouse below the default Mouse grid and simplify Heals settings.
+- Give Heals and Keybinds matching Reset positions and Factory reset buttons at the bottom of settings. Both work outside combat without editing mode; factory reset asks for confirmation and affects only the current character.
 
-- Apply healing mouse assignments and bandages to target and target-of-target bars.
-
-- Show target of target above the selected target, with matching bars and a subtle label.
-
-- Allow both Keybinds reset actions outside combat without editing mode, matching Heals.
-
-- Standardize Reset positions and Factory reset buttons at the bottom of Heals and Keybinds settings.
-
-- Simplify Heals settings by removing Unlock frames and Edit healing bindings shortcuts.
-
-- Place Healing Mouse below the default Mouse grid and add position reset and confirmed per-character factory reset controls.
-
-- Add a matching-width target frame beside the player bars, with smaller NPC names, health, power and class or reaction coloring.
+Existing assignments and custom positions are preserved. Use Reset positions to apply the new default layout.
 
 ## [1.1.1] - 2026-09-26
 

@@ -28,7 +28,12 @@ The builder emits two deterministic ZIPs from the same pins. PROD retains exact
 source gameplay bodies behind an admission prefix. DEV transforms audited
 identifiers, saves, frames, popup/slash names, asset paths and labels. Manifests
 list every identity edit and source/body hash. Comments, gameplay keys and Blizzard
-names are not blindly renamed. Each artifact has six roots: marker plus children.
+names are not blindly renamed. The publicChildren selection in candidate.lock.json includes four PROD children;
+DEV retains all five pinned children. Public artifacts have five roots including
+the marker; DEV has six. Tank remains DEV-only, with its source pin retained.
+Family safety still recognizes older installed canonical Tank. Omitting a folder
+from a ZIP does not prove CurseForge removes an older installed copy; that update
+behavior needs client acceptance. Never delete PROD folders or saved data here.
 Heals uses an independent default position beneath the default Keybinds Mouse grid.
 Its factory-reset dialog is explicitly mapped to a separate DEV identity; the
 confirmation and per-character storage remain within their own family.

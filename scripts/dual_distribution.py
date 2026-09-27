@@ -107,12 +107,19 @@ def prefix(name, family):
              ' or a.__ApogeeFamilyAdmission(n) ~= true then return end end\n') % name).encode()
 
 
+def family_children(lock, family):
+    d.require(family in ('PROD', 'DEV'), 'Unknown family')
+    return d.public_children(lock) if family == 'PROD' else d.CHILDREN
+
+
 def family_files(lock, sources_root, family):
     d.require(family in ('PROD', 'DEV'), 'Unknown family')
     source = d.collect(lock, sources_root, 'local-candidate')
     output, changes = {}, {}
     marker = d.MARKER + ('Dev' if family == 'DEV' else '')
     for child in lock['children']:
+        if child['name'] not in family_children(lock, family):
+            continue
         old = child['name']; name = old + ('Dev' if family == 'DEV' else '')
         meta, runtime = d.toc_info(source[old + '/' + child['toc']])
         d.require(all(p.endswith('.lua') for p in runtime), 'Only audited direct Lua TOCs supported')
@@ -185,7 +192,7 @@ def build(lock, sources_root, output):
                     'lockSha256': d.sha(d.canonical(lock)), 'gateSha256': d.sha(GATE.read_bytes()),
                     'archive': name, 'archiveSha256': d.sha(data),
                     'files': {p: d.sha(b) for p, b in files.items()}, 'runtimeChanges': changes,
-                    'children': [{k: c[k] for k in ('name', 'commit', 'version')} for c in lock['children']],
+                    'children': [{k: c[k] for k in ('name', 'commit', 'version')} for c in lock['children'] if c['name'] in family_children(lock, family)],
                     'nativeClientTested': False, 'curseforgeAppTested': False}
         artifacts[family] = (name, data, manifest)
     output = Path(output); output.mkdir(parents=True, exist_ok=False)

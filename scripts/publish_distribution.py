@@ -47,8 +47,8 @@ def payload(sources_root, version):
         d.require(actual == accepted['runtimeFiles'][family], 'Runtime changed since native acceptance')
         packages[family] = files
     prod = packages['PROD']
-    d.require(set(p.split('/')[0] for p in prod) == {d.MARKER, *d.CHILDREN}, 'Exactly six canonical roots required')
-    for name in (d.MARKER, *d.CHILDREN):
+    d.require(set(p.split('/')[0] for p in prod) == {d.MARKER, *d.public_children(lock)}, 'Exact selected public roots required')
+    for name in (d.MARKER, *d.public_children(lock)):
         meta, _ = d.toc_info(prod[name + '/' + name + '.toc'])
         d.require(meta['Interface'] == '16001' and meta['X-Apogee-Family'] == 'PROD', 'Forever PROD only')
     archive = d.zip_bytes(prod); dual.validate(archive, prod)

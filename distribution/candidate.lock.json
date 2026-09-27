@@ -1,7 +1,7 @@
 {
   "children": [
     {
-      "commit": "844379648328af4117e64ef2d54daab791a4f5e5",
+      "commit": "947c09b18df1f0d4bf7a59a3b5175bd0e644da8c",
       "files": {
         "ApogeeHeals.lua": "52ebe8c761df2eabf10386ad0405c66213fcf3e5b467e3630f042da653555eb4",
         "ApogeeHeals.toc": "14ef725abfa28b0d2ac71f358b7f691849f4a2c65e033018e1b5bc1553dfb5f9",
@@ -10,7 +10,7 @@
         "Buffs/Defaults.lua": "e4009e0736181b7cba9fb67a63f823f666771e18d0466eee25a11d2a5ac78a31",
         "Buffs/Runtime.lua": "28ce88ae013c2d8640aba1968f7ce55b38bd6c01a4a54348d35f14945dfa5df1",
         "Buffs/View.lua": "7cb4cb13e32d3ba8bea86f85f811d81fa8900cef483c0920adae3da077c9dc0e",
-        "CHANGELOG.md": "193e7deb2cc2b313bb2e8d86a41a32ed21ef90e1f305f73bf1b28a140b5bd344",
+        "CHANGELOG.md": "fd3254c8e25741bcfd2872cb023dd97971198beeba48bd4e871bad2488422acc",
         "Cleansing/Runtime.lua": "cf039ed879dcef2b94afa7cc4d4d02f6e70af1fcbf193e67edef2d97c1cea1b5",
         "Core/Access.lua": "7e518d6a5a11f608ca797756f0448e88733b2346821c283812231a47c1ab821e",
         "Core/Client.lua": "bc76401feacc82f6d6feab6b854f38d0f509343813432770f76d80546df09e72",
@@ -26,7 +26,7 @@
         "README.md": "5cc81398aff4ea38d440a9bae270e10a85a17c14e7b75865d595f6e9c3ba9c86",
         "UI/BindingEditor.lua": "af8cf5f60a274fcc04da7eed3a7f308d5ab211b6a6ad363a6dc82d32d86bf258",
         "UI/Minimap.lua": "9133eef058f71d27b1ba11efb6b24faa062e0dc818b171186eef476099d5e9a0",
-        "UI/Settings.lua": "b941a1d3d400acc772d2fab1bab970f35287dba57d018097420ded213ef205ad",
+        "UI/Settings.lua": "c29b67f191adcd3d5828418d9bdc5d49996fe7a22414a3db50d375349938fb7b",
         "UI/Style.lua": "73ed06667544c1d86eac3c3fb63c4dee7771ac7917b37550c3ba6416f72cb05d"
       },
       "name": "ApogeeHeals",
@@ -38,7 +38,7 @@
       "version": "0.1.0-dev"
     },
     {
-      "commit": "db40cc6ef13f97b9e65ca059772c8e715f32c271",
+      "commit": "630ee7c8923566815bd6d6fa594b3fb625be308b",
       "files": {
         "Actions/Compile.lua": "f56780e4116f39d6f51705221fd718ca023eeda4ce8e2fd9500f4e4142b16363",
         "Actions/Defaults.lua": "a5195a1527bcc7c2705c38bf008d12841ad2c911432c43b93589e00b9869c795",
@@ -47,7 +47,7 @@
         "Actions/Secure.lua": "9e55657083dbcfbff57badddc575b46ae1ae4b78ce95be2e7ba794453d6582bc",
         "ApogeeKeybinds.lua": "851cc5fce4aa043110669e059999b7c70d017e459631901b93d858df67722b71",
         "ApogeeKeybinds.toc": "5dcd4b5f7601b339e8d182e3f34a07db68d4d14438faf0dc46e575a4c5214f92",
-        "CHANGELOG.md": "4d15b27fecb7966cc8a0bb8fe62ea70e13b6f4787ba45053de94d5d3ba047134",
+        "CHANGELOG.md": "3151e1f7ad136323675476d466eb307547db494e454be98aa24ce381f3db6b81",
         "Core/Client.lua": "be9d6cb7d118d0cf9e9b5b85997d27108805b5345be0f8e7c87983ec29250d59",
         "Core/Inputs.lua": "2f91baadc8551cd229ef8f259260494ca5c20fa84778b098a68f0d924022b230",
         "Core/States.lua": "d50bce1c35422a810247b51f6303806366d89b63da3d7afdcc12217ca4cb2ad8",
@@ -67,12 +67,12 @@
         "UI/Cooldowns.lua": "3116fc7d84d0f3affd8459724038a6fa2c900f64f193432731ce4b187224da4e",
         "UI/Hud.lua": "375127bfb1b966bb59e7445e68d042ea6caebe5a83a858b6c986a44c21de7cbf",
         "UI/Minimap.lua": "24e1b0935baa26963d7dc01e3ec61a80141ae4650fb42aa84b42d33a85c5be41",
-        "UI/Settings.lua": "291b08928e8876e69f2f412c1fce5a2a7e6f852a838b6d8def2c2f453e7774fa",
+        "UI/Settings.lua": "89a8baa57fc6ff2bda64f6beb87e602f9343156646a1e7d11d4e194d11e93359",
         "UI/WeaponPanel.lua": "a201f71d398aa318d4569fd0bb385b047ac98b32c6fa3d6a435cf09e31b3c2de",
         "UI/Widgets.lua": "82e5fc012764a106a5b3fb055410994bdf13f2b7b963757eacde73060f6567b5",
         "Weapons/Loadouts.lua": "e4cf1a5a9fbf8aa814a89b18026a7a3ff935ba0ffdc8a849e790229186c85ad4",
-        "docs/ACCEPTANCE.md": "4f253a79db820cf874d052ac9e0be4489d74fba712ec8a594ebb8fc4158fc6b1",
-        "docs/API_REFERENCE.md": "575256332624d8fc46ea73d7e0a36130955cb30da69a0464e7f454d603dbf6e4",
+        "docs/ACCEPTANCE.md": "0d0013270bfc731970a1342d1af51f425114ef4fcd0b24f8cbb4b3dac7271200",
+        "docs/API_REFERENCE.md": "58698b41fc722f0a44f9a99e7259cd4a6db96a8cdcf1997b0e582e1136d16acd",
         "docs/ARCHITECTURE.md": "ce46952f6e63604b3cc746628faffacad09b474a17245a5d07c068cc898d4a7f",
         "docs/BETA_TESTING.md": "2b0c99c10a57ccc156a5d38238ff09293b0ac8308eac1abcaa6ee4838ca02e5a",
         "docs/CLOSEOUT.md": "788d6da887cb0ccb3ac51491971d65ad26a05ece1d507bbbb79ba81c1d029cd6",
@@ -121,18 +121,18 @@
       "version": "0.2.0-beta.1"
     },
     {
-      "commit": "41add9d79a3219cab464df5a7c8aca8f5f596b36",
+      "commit": "b28a51bcbb8c38ebd2fa720e851c3658f4849c9c",
       "files": {
         "ApogeeEssentials.lua": "32912b03821711e07a607c8b7c0c226becebd76e0a4bc8b620730e936d5c2a71",
         "ApogeeEssentials.toc": "3feb37ea900d66e7979fae4556187e485125a2372c82cf07774545268dffc751",
-        "CHANGELOG.md": "bd3e077efa104f961a9547fc938e615ea287725ceaf6345a26964ce59dce2cb7",
+        "CHANGELOG.md": "3794985ea75efec337a708e7bfdd9e72e9fd97a6b520c7a5f3254351432a909b",
         "Camera/Runtime.lua": "4b0d1fa5779ee0de6919b81789e1967b8ba818ae9111824b69e450b2fc2e7e9b",
         "Camera/Zoom.lua": "dbc434649beb411cc3471bd5a05db8750fcd866eac5ed40a065893def9ab89ba",
         "Core/CVarDefault.lua": "bad301a75b6de2ade57fe0d1a732c11d7c8538f897df446093b83cc130b45a2e",
         "Core/Client.lua": "bb7bffbf83edea2b1aed338439e32f1e9ec64c7be04f809c85a76c8e7df23c0a",
         "Core/LearnedList.lua": "7a55c24b6daf3ed4ff6c37d258d6afe2285d7b7616ff7620e6fc5fa77adf804d",
         "Core/LoginDefaults.lua": "43c8058ad9b12be11856747a392c1b0f7fbfce497b79f2e4b93cf8cc54715886",
-        "Core/Settings.lua": "bcee12cb0435ffd2e0b569d7cb1a2b548ec764671bb93812be6c9e78dac62813",
+        "Core/Settings.lua": "37315b3a68fffc5d8f91b8661a95336508a0b2bc2f7b512229828cb076876586",
         "Errors/Runtime.lua": "8625359a10a4b065eafcd46672b2756eaa100d6201c3a23708cb3d9cfeabd142",
         "Errors/Settings.lua": "16470d46471ac992720e500cc5d3de25d981db5db9ccda3c8a1a01eae46abb73",
         "Fade/Runtime.lua": "e8f15b8524fd5f66afe448cbf1540f4a61ecbf0b6623c40c45ac27bd79ff1851",
@@ -143,8 +143,8 @@
         "NOTICE.md": "60dda1459fe759974deebcab4ab89704e3ea4b63358d980315c384895441fe33",
         "Nameplates/Runtime.lua": "c9737b0fc256ef365c78dc71a9b01622a66627001c6a8a3da88e45e12b24c589",
         "README.md": "4d4581c05971db93942b34ca5c3cdc58b35d08fe00eac0df9036b475e9c697b9",
-        "docs/ACCEPTANCE.md": "c381c8aeb855bc51fb1665d1c8b15fe30f387c75a92eaad96cd68a1a19ca6adb",
-        "docs/API_REFERENCE.md": "39fa43a558437fdc3c957a621a0eb689eecb49e9f9b66b97bda1234d70ffdb8a",
+        "docs/ACCEPTANCE.md": "266c26f4a1563549b0d4a83e6bda1af9528552cc8e3cbce98fb774b1dae8a064",
+        "docs/API_REFERENCE.md": "e7f68260ad6c1062e4f843be96f5bfeeaaeca5e4541003863d9f7b358c126eca",
         "docs/DEEP_REVIEW_2026-09-24.md": "28ecd785cdf54930cb95f4364c142d78133ce71baeb647d34d270467545ea5b8"
       },
       "name": "ApogeeEssentials",
@@ -221,5 +221,11 @@
   "projectId": 1608100,
   "publicationAllowed": false,
   "schema": 1,
-  "version": "1.2.0"
+  "version": "1.2.0",
+  "publicChildren": [
+    "ApogeeHeals",
+    "ApogeeKeybinds",
+    "ApogeeGroupAlert",
+    "ApogeeEssentials"
+  ]
 }

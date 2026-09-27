@@ -90,6 +90,28 @@ class DualTests(unittest.TestCase):
         with self.assertRaises(ValueError): m.rollback(backup)
         self.assertEqual(target.read_bytes(), b'-- new user file')
 
+    def test_public_selection_omits_tank_but_retains_complete_dev(self):
+        self.assertNotIn('ApogeeTank', d.public_children(self.lock))
+        self.assertFalse(any(p.startswith('ApogeeTank/') for p in self.prod))
+        self.assertIn('ApogeeTankDev/ApogeeTankDev.toc', self.dev)
+        for family, files in (('PROD', self.prod), ('DEV', self.dev)):
+            for p, b in files.items():
+                if p.endswith('.toc'):
+                    meta, runtime = d.toc_info(b)
+                    self.assertFalse(any(k in meta for k in ('Dependencies', 'RequiredDeps', 'OptionalDeps', 'LoadWith')))
+                    self.assertTrue(all(p.rsplit('/', 1)[0] + '/' + f in files for f in runtime))
+        # Simulated acceptance tests publisher mechanics only, never live acceptance.
+        accepted = {'accepted': True, 'runtimeFiles': {
+            f: {p: d.sha(b) for p, b in files.items() if p.endswith('.lua')}
+            for f, files in (('PROD', self.prod), ('DEV', self.dev))}}
+        evidence = OPTIONS.artifacts / 'simulated-native-acceptance.json'
+        evidence.write_bytes(d.canonical(accepted))
+        with patch.object(publisher, 'ACCEPTANCE', evidence):
+            self.assertEqual(publisher.payload(OPTIONS.sources_root, '1.2.0'), d.zip_bytes(self.prod))
+        for names in ([], ['Unknown'], ['ApogeeTank', 'ApogeeHeals'], ['ApogeeHeals', 'ApogeeHeals']):
+            invalid = copy.deepcopy(self.lock); invalid['publicChildren'] = names
+            with self.assertRaises(ValueError): d.public_children(invalid)
+
     def test_production_gameplay_bodies_are_identical_to_pins(self):
         source = d.collect(self.lock, OPTIONS.sources_root, 'local-candidate')
         for path, change in self.prod_changes.items():
@@ -114,7 +136,7 @@ class DualTests(unittest.TestCase):
     def test_exact_roots_tocs_guards_separate_saves_and_no_dev_project_ids(self):
         saves = {}
         for family, files in (('PROD', self.prod), ('DEV', self.dev)):
-            names = tuple(n + ('Dev' if family == 'DEV' else '') for n in m.NAMES)
+            names = tuple(n + ('Dev' if family == 'DEV' else '') for n in (d.MARKER, *dual.family_children(self.lock, family)))
             self.assertEqual(set(p.split('/')[0] for p in files), set(names))
             saves[family] = set()
             for name in names:
@@ -188,6 +210,7 @@ class DualTests(unittest.TestCase):
     def test_public_package_has_player_guide_and_required_notices(self):
         source = d.collect(self.lock, OPTIONS.sources_root, 'local-candidate')
         for child in self.lock['children']:
+            if child['name'] not in d.public_children(self.lock): continue
             for p in child['files']:
                 path = child['name'] + '/' + p
                 if p in ('LICENSE', 'NOTICE.md', 'THIRD_PARTY_NOTICES.md'):
@@ -219,7 +242,9 @@ class DualTests(unittest.TestCase):
         baseline['ApogeeTank/unknown.lua'] = b'user source unreferenced'
         client, backup = self.fixture(baseline)
         protected = m.protected(client, m.NAMES + tuple(n + 'Dev' for n in m.NAMES))
-        result = installer.install(client, dict(self.prod, **self.dev), self.known, backup, True)
+        legacy_lock = copy.deepcopy(self.lock); legacy_lock.pop('publicChildren', None)
+        retrofit_prod, _ = dual.family_files(legacy_lock, OPTIONS.sources_root, 'PROD')
+        result = installer.install(client, dict(retrofit_prod, **self.dev), self.known, backup, True)
         self.assertEqual((client / 'Interface/AddOns/ApogeeKeybinds/README.md').read_bytes(), baseline['ApogeeKeybinds/README.md'])
         self.assertEqual(m.protected(client, tuple(result['names'])), protected)
         for p, b in dict(self.prod, **self.dev).items():

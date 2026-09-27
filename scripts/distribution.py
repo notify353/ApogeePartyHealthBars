@@ -39,6 +39,13 @@ def safe_path(value):
     return value
 
 
+def public_children(lock):
+    names = lock.get('publicChildren', list(CHILDREN))
+    require(isinstance(names, list) and names and all(isinstance(n, str) for n in names)
+            and names == [n for n in CHILDREN if n in names], 'Invalid public child selection')
+    return tuple(names)
+
+
 def read_lock(path=DEFAULT_LOCK):
     lock = json.loads(Path(path).read_text(encoding='utf-8'))
     require(lock['schema'] == 1 and lock['publicationAllowed'] is False, 'Prototype lock required')
@@ -48,6 +55,7 @@ def read_lock(path=DEFAULT_LOCK):
         'Unexpected client/project; no flavor fallback is permitted')
     require(re.fullmatch(r'[0-9A-Za-z.-]+', lock['version']), 'Unsafe version')
     require([c['name'] for c in lock['children']] == list(CHILDREN), 'Exact five children required')
+    public_children(lock)
     for child in lock['children']:
         require(re.fullmatch('[0-9a-f]{40}', child['commit']), 'Immutable commit required')
         require(child['repository'] == 'https://github.com/notify353/' + child['name'] + '.git',

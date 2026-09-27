@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Place Healing Mouse below the default Mouse grid and add position reset and confirmed per-character factory reset controls.
+
 - Add a matching-width target frame beside the player bars, with smaller NPC names, health, power and class or reaction coloring.
 
 ## [1.1.1] - 2026-09-26

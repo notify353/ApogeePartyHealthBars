@@ -218,27 +218,26 @@ class DualTests(unittest.TestCase):
         self.assertIn(b'local x="1"', output)
         with self.assertRaises(ValueError): dual.transform_lua(b'ApogeeTankUnknown={}', 'ApogeeTank')
 
-    def test_optional_weapons_anchor_stays_in_its_own_family(self):
-        canonical = 'ApogeeKeybindsWeaponsHeader'
-        development = 'ApogeeKeybindsDevWeaponsHeader'
+    def test_heals_default_is_independent_and_reset_dialog_is_family_local(self):
+        canonical = 'APOGEE_HEALS_RESET_CHARACTER'
+        development = 'APOGEE_HEALS_DEV_RESET_CHARACTER'
         for family, files in (('PROD', self.prod), ('DEV', self.dev)):
             suffix = 'Dev' if family == 'DEV' else ''
+            settings = files['ApogeeHeals' + suffix + '/UI/Settings.lua'].decode()
             expected = development if suffix else canonical
             forbidden = canonical if suffix else development
-            for addon, module in (('ApogeeHeals', 'UI/BindingEditor.lua'),
-                                  ('ApogeeKeybinds', 'UI/WeaponPanel.lua')):
-                code = files[addon + suffix + '/' + module].decode()
-                tokens = [token.strip('\"\'') for kind, token in dual.lua_tokens(code)
-                          if kind in ('identifier', 'string')]
-                self.assertIn(expected, tokens)
-                self.assertNotIn(forbidden, tokens)
-                self.assertNotIn('ApogeeHealsDevWeaponsHeader', tokens)
+            tokens = [token.strip(chr(34) + chr(39)) for kind, token in dual.lua_tokens(settings)
+                      if kind in ('identifier', 'string')]
+            self.assertIn(expected, tokens)
+            self.assertNotIn(forbidden, tokens)
+            editor = files['ApogeeHeals' + suffix + '/UI/BindingEditor.lua'].decode()
+            self.assertNotIn('ApogeeKeybinds', editor)
             meta, _ = d.toc_info(files['ApogeeHeals' + suffix + '/ApogeeHeals' + suffix + '.toc'])
             self.assertNotIn('Dependencies', meta)
             self.assertNotIn('RequiredDeps', meta)
-        source = ('-- ' + canonical + '\nlocal h=_G["' + canonical + '"]\n').encode()
+        source = ('-- ' + canonical + '\nStaticPopup_Show("' + canonical + '")\n').encode()
         output, edits = dual.transform_lua(source, 'ApogeeHeals')
-        self.assertEqual(output, ('-- ' + canonical + '\nlocal h=_G["' + development + '"]\n').encode())
+        self.assertEqual(output, ('-- ' + canonical + '\nStaticPopup_Show("' + development + '")\n').encode())
         self.assertEqual(len(edits), 1)
 
 

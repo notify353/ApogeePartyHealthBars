@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Show full names using the smaller font consistently across Heals bars and keep names and levels visible during combat when normal status and range rules allow.
+
 - Place Heals target and target-of-target bars above the player and party, with a full-row gap and unchanged bar sizes.
 
 ## [1.3.0] - 2026-09-27

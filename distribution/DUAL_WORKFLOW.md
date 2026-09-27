@@ -58,7 +58,13 @@ python -B scripts/install_dual_distribution.py --client-root 'C:/Program Files (
 ```
 
 Omit `--previous-install` only for fresh DEV installs or exact matching files.
-`--inspect-only` validates without writes. Existing output/backup directories are
+`--inspect-only` validates without writes. For explicitly approved obsolete DEV
+Lua files, repeat `--retire-file <exact-Dev-root/path.lua>`. Retirement requires
+that each file is absent from the new package and matches the previous installed
+receipt exactly. After the full verified backup and new writes, the central
+installer moves only those files to `retired-files` inside the backup. Unknown
+files are preserved. Rollback restores retired files from the verified original
+backup and refuses a conflicting new user file at any retired path. Existing output/backup directories are
 refused. `--initial-retrofit` remains historical migration tooling and must not be
 used under the owner's current CurseForge-managed PROD policy.
 

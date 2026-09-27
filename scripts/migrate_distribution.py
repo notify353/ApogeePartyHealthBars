@@ -156,7 +156,7 @@ def put_atomic(root, files):
         d.require(target.read_bytes() == body, 'Write verification failed')
 
 
-def apply(client, payload, known, backup, expected_plan=None, names=NAMES, atomic_dev=False):
+def apply(client, payload, known, backup, expected_plan=None, names=NAMES, atomic_dev=False, retired=None):
     if atomic_dev:
         d.require(set(names) == {n + 'Dev' for n in NAMES}, 'Atomic live install is DEV-only')
     client = ordinary(client)
@@ -166,6 +166,12 @@ def apply(client, payload, known, backup, expected_plan=None, names=NAMES, atomi
     current = plan(client, payload, known, names)
     if expected_plan is not None:
         d.require(hashes(current['before']) == hashes(expected_plan['before']), 'Destination changed after review')
+    retired = retired or {}
+    for p, digest in retired.items():
+        d.safe_path(p)
+        d.require(atomic_dev and p.split('/')[0] in names and p.endswith('.lua')
+                  and p not in payload and p in current['before']
+                  and d.sha(current['before'][p]) == digest, 'Invalid retirement: ' + p)
     saved = protected(client, names)
     backup.mkdir(parents=True, exist_ok=False)
     # Complete byte-verified backup before the first destination write.
@@ -173,7 +179,7 @@ def apply(client, payload, known, backup, expected_plan=None, names=NAMES, atomi
     d.require(tree(backup / 'addons-before') == current['before'], 'Addon backup verification failed')
     journal = {'schema': 1, 'client': str(client), 'status': 'prepared', 'names': list(names),
                'before': hashes(current['before']), 'after': hashes(current['desired']),
-               'writes': hashes(current['writes']), 'inventory': current['inventory'],
+               'writes': hashes(current['writes']), 'retired': retired, 'inventory': current['inventory'],
                'protectedDigest': d.sha(d.canonical(saved)), 'protectedCount': len(saved)}
     journal_path = backup / 'transaction.json'
     journal_path.write_bytes(d.canonical(journal))
@@ -182,10 +188,18 @@ def apply(client, payload, known, backup, expected_plan=None, names=NAMES, atomi
     try:
         journal['status'] = 'applying'; journal_path.write_bytes(d.canonical(journal))
         (put_atomic if atomic_dev else put)(client / 'Interface/AddOns', current['writes'])
+        for p, digest in retired.items():
+            source = under(client / 'Interface/AddOns', p)
+            d.require(d.sha(source.read_bytes()) == digest, 'Retired file changed during installation')
+            target = under(backup / 'retired-files', p)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            os.replace(source, target)
+            d.require(d.sha(target.read_bytes()) == digest, 'Retirement verification failed')
         installed = managed(client / 'Interface/AddOns', names)
+        d.require(all(p not in installed for p in retired), 'Retired file still installed')
         d.require(all(installed.get(p) == b for p, b in current['desired'].items()), 'Installed payload mismatch')
         d.require(all(installed.get(p) == b for p, b in current['before'].items()
-                      if p not in current['writes']), 'Preserved file changed')
+                      if p not in current['writes'] and p not in retired), 'Preserved file changed')
         d.require(protected(client, names) == saved, 'Protected state changed; backup retained')
         journal['status'] = 'installed'
         journal_path.write_bytes(d.canonical(journal))
@@ -216,6 +230,12 @@ def rollback(backup):
         d.require(body is None and p not in original
                   or body is not None and d.sha(body) in (digest, journal['before'].get(p)),
                   'User edit after installation; no rollback writes: ' + p)
+    retired = journal.get('retired', {})
+    for p, digest in retired.items():
+        d.safe_path(p)
+        d.require(p.split('/')[0] in names and p in original and d.sha(original[p]) == digest,
+                  'Invalid retirement journal')
+        d.require(p not in current or d.sha(current[p]) == digest, 'User edit at retired path; no rollback writes')
     saved = protected(client, names)
     quarantine = backup / 'rollback-added-files'
     d.require(not quarantine.exists(), 'Existing rollback output refused')
@@ -228,7 +248,9 @@ def rollback(backup):
             source, target = under(addons, p), under(quarantine, p)
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(source), str(target))
+    put(addons, {p: original[p] for p in retired})
     after = managed(addons, names)
+    d.require(all(after.get(p) == original[p] for p in retired), "Retired file restore mismatch")
     d.require(all(after.get(p) == b for p, b in original.items() if p in journal['writes']), 'Rollback mismatch')
     d.require(all(p not in after for p in journal['writes'] if p not in original), 'Added files still active')
     d.require(protected(client, names) == saved, 'Rollback touched protected state')

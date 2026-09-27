@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+- Support explicit receipt-checked retirement of obsolete DEV Lua files, with
+  verified backup, preserved unknown files and conflict-safe rollback.
+
+- Remove Essentials Thank You runtime and controls; preserve legacy saved fields
+  without purging them. Remaining settings tabs have footer padding.
+
 - Warrior Q defaults to learned Shield Block only in Defensive Stance,
   preserving other stance defaults and saved custom assignments.
 

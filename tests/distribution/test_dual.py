@@ -39,6 +39,57 @@ class DualTests(unittest.TestCase):
                        'Interface/AddOns/Unrelated/keep.txt': b'unchanged unrelated'})
         return client, base / 'backup'
 
+    def test_receipted_retirement_and_rollback_preserve_unknown_files(self):
+        path = 'ApogeeEssentialsDev/Thanks/Retired.lua'
+        extra = 'ApogeeEssentialsDev/Thanks/User.lua'
+        files = dict(self.dev); files[path] = b'-- retired module'; files[extra] = b'-- user file'
+        client, backup = self.fixture(files)
+        previous = {'schema': 1, 'status': 'installed', 'client': str(client), 'after': {path: d.sha(files[path])}}
+        result = installer.install(client, self.dev, self.known, backup, previous=previous, retire_files=[path])
+        self.assertFalse((client / 'Interface/AddOns' / path).exists())
+        self.assertEqual((backup / 'retired-files' / path).read_bytes(), files[path])
+        self.assertEqual((client / 'Interface/AddOns' / extra).read_bytes(), files[extra])
+        self.assertEqual(result['retired'], previous['after'])
+        m.rollback(backup)
+        self.assertEqual((client / 'Interface/AddOns' / path).read_bytes(), files[path])
+
+    def test_interrupted_retirement_recovers_from_verified_backup(self):
+        paths = ['ApogeeEssentialsDev/Thanks/One.lua', 'ApogeeEssentialsDev/Thanks/Two.lua']
+        files = dict(self.dev)
+        for p in paths: files[p] = b'-- retired'
+        client, backup = self.fixture(files)
+        previous = {'schema': 1, 'status': 'installed', 'client': str(client),
+                    'after': {p: d.sha(files[p]) for p in paths}}
+        replace = m.os.replace
+        def fail_second(source, target):
+            if str(source).endswith('Two.lua'): raise OSError('injected sharing violation')
+            return replace(source, target)
+        with patch.object(m.os, 'replace', side_effect=fail_second), self.assertRaises(OSError):
+            installer.install(client, self.dev, self.known, backup, previous=previous, retire_files=paths)
+        self.assertEqual(json.loads((backup / 'transaction.json').read_text())['status'],
+                         'incomplete-recover-with-rollback')
+        m.rollback(backup)
+        for p in paths: self.assertEqual((client / 'Interface/AddOns' / p).read_bytes(), files[p])
+
+    def test_retirement_refuses_modified_or_packaged_files_and_rollback_conflict(self):
+        path = 'ApogeeEssentialsDev/Thanks/Retired.lua'
+        files = dict(self.dev); files[path] = b'-- original'
+        client, backup = self.fixture(files)
+        previous = {'schema': 1, 'status': 'installed', 'client': str(client), 'after': {path: d.sha(files[path])}}
+        target = client / 'Interface/AddOns' / path
+        target.write_bytes(b'-- user change')
+        with self.assertRaises(ValueError):
+            installer.install(client, self.dev, self.known, backup, previous=previous, retire_files=[path])
+        self.assertFalse(backup.exists())
+        target.write_bytes(files[path])
+        with self.assertRaises(ValueError):
+            installer.install(client, files, self.known, backup, previous=previous, retire_files=[path])
+        self.assertFalse(backup.exists())
+        installer.install(client, self.dev, self.known, backup, previous=previous, retire_files=[path])
+        target.write_bytes(b'-- new user file')
+        with self.assertRaises(ValueError): m.rollback(backup)
+        self.assertEqual(target.read_bytes(), b'-- new user file')
+
     def test_production_gameplay_bodies_are_identical_to_pins(self):
         source = d.collect(self.lock, OPTIONS.sources_root, 'local-candidate')
         for path, change in self.prod_changes.items():

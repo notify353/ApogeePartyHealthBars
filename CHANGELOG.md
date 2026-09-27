@@ -2,45 +2,27 @@
 
 ## [Unreleased]
 
-- Match Heals side icons to settings tiles with centered placement and contained borders.
+## [1.4.0] - 2026-09-27
 
-- Pin reviewed Heals class upkeep, direct friendly cleansing, Hunter aspects and native weapon displays for DEV.
+- Add class-aware pre-combat buff choices and helpful suggestions to Heals.
+  Paladins can choose lasting blessings and their own aura; other classes gain
+  supported upkeep such as Mark, Fortitude, Intellect, armor, aspects and shouts.
+- Show native debuffs and learned cleansing buttons beside player, party and
+  friendly target bars. Cleansing icons brighten for matching debuff types.
+- Add food and drink tooltips with a centered countdown, plus native weapon
+  enchantment displays for Rogue, Shaman and Warlock.
+- Match side icons to the settings tiles, with contained borders and clear
+  spacing between stacked rows. Improve target-bar placement, names and casting
+  displays without increasing the bars' size.
+- Set Paladin Keybind defaults to Hammer of Justice on Mouse 4, Holy Strike on 1,
+  and Judgement on 3. Existing custom assignments remain unchanged.
+- Move Keybinds keyboard, weapon, wheel and mouse grids left by one tile spacing,
+  including a one-time adjustment of saved grid positions.
 
-- Extend Heals buff and cleansing controls to friendly selected targets.
+Pet cleansing, weapon-coating application and additional special group interactions
+remain outside these new controls. Native class abilities remain available normally.
 
-- Add role-first yellow blessing suggestions and explanatory tooltips in Heals.
-
-- Restrict Heals blessing choices to pre-combat party upkeep buffs.
-
-- Offer all learned Heals blessing choices on unblessed player and party rows.
-
-- Add Heals food/drink aura tooltips and self-only Paladin aura choices while no aura is selected.
-
-- Move all Keybinds grids left by one icon spacing, including existing saved positions once.
-
-- Match Heals buff reminder sizing, dim idle cleansing icons, and center the
-  drinking countdown without a seconds suffix.
-
-- Show native seconds remaining on Heals drinking indicators.
-
-- Size Heals side icons to the full health/power height and tuck cleansing buttons
-  beside the bar, followed by the drinking indicator and debuffs.
-
-- Default Paladin Mouse Button 4 to Hammer of Justice, 1 to Holy Strike, and 3 to Judgement; preserve custom assignments.
-
-- Add permanent learned Paladin cleansing buttons with native glows beside Heals rows.
-
-- Show up to eight native debuff icons beside each Heals player/party health bar.
-
-- Remove the target-of-target helper caption while keeping both target bars in place.
-
-- Include the separate Forever surname on all Heals bars using the native name separator.
-
-- Show the selected target casting or channeling in its existing power strip, restoring power when the cast ends.
-
-- Show full names using the smaller font consistently across Heals bars and keep names and levels visible during combat when normal status and range rules allow.
-
-- Place Heals target and target-of-target bars above the player and party, with a full-row gap and unchanged bar sizes.
+Supports World of Warcraft Forever 1.60.1. Reload the UI after updating.
 
 ## [1.3.0] - 2026-09-27
 

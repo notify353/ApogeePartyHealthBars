@@ -42,19 +42,49 @@ class PublisherTests(unittest.TestCase):
             (root/'receipt.json').write_text(json.dumps({'version':version,'projectId':1608100,
                 'filename':filename,'sha256':p.d.sha(archive),'publicationState':'staged'}))
             requests=[]
+            def github(*args):
+                requests.append(args[:2])
+                if args[:2] == ('release', 'download'):
+                    Path(args[args.index('--dir')+1],filename).write_bytes(archive)
             class Opener:
                 def open(self,request,timeout):
                     requests.append(request.get_method())
                     if request.get_method() == 'POST': raise TimeoutError('uncertain upload')
                     return io.BytesIO(json.dumps([{'id':123456,'name':'1.60.1','gameVersionTypeID':88568}]).encode())
             with patch.object(p,'actions_guard'), patch.object(p,'payload',return_value=archive), \
-                 patch.object(p,'release_notes',return_value='Changes\n'), patch.object(p,'gh'), \
+                 patch.object(p,'release_notes',return_value='Changes\n'), patch.object(p,'gh',side_effect=github), \
                  patch.object(p.urllib.request,'build_opener',return_value=Opener()), \
                  patch.dict(os.environ,{'CF_API_KEY':'test-placeholder'}):
                 with self.assertRaises(TimeoutError): p.upload(root,root)
                 self.assertEqual(json.loads((root/'receipt.json').read_text())['publicationState'],'curseforge-upload-attempted')
                 with self.assertRaises(ValueError): p.upload(root,root)
-            self.assertEqual(requests,['GET','POST'])
+            self.assertEqual(requests,['GET',('release','create'),('release','upload'),('release','download'),('release','edit'),'POST'])
+
+    def test_wrong_github_asset_blocks_publication_and_curseforge_upload(self):
+        archive=b'PK-test'
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp); filename='ApogeeForever-1.0.0.zip'
+            (root/filename).write_bytes(archive)
+            (root/'release-notes.md').write_text('Changes\n')
+            (root/'receipt.json').write_text(json.dumps({'version':'1.0.0','projectId':1608100,
+                'filename':filename,'sha256':p.d.sha(archive),'publicationState':'staged'}))
+            events=[]
+            def github(*args):
+                events.append(args[:2])
+                if args[:2] == ('release','download'):
+                    Path(args[args.index('--dir')+1],filename).write_bytes(b'wrong')
+            class Opener:
+                def open(self,request,timeout):
+                    events.append(request.get_method())
+                    return io.BytesIO(json.dumps([{'id':123456,'name':'1.60.1','gameVersionTypeID':88568}]).encode())
+            with patch.object(p,'actions_guard'), patch.object(p,'payload',return_value=archive), \
+                 patch.object(p,'release_notes',return_value='Changes\n'), patch.object(p,'gh',side_effect=github), \
+                 patch.object(p.urllib.request,'build_opener',return_value=Opener()), \
+                 patch.dict(os.environ,{'CF_API_KEY':'test-placeholder'}):
+                with self.assertRaisesRegex(ValueError,'GitHub package checksum differs'):
+                    p.upload(root,root)
+            self.assertNotIn(('release','edit'),events)
+            self.assertNotIn('POST',events)
 
     def test_mismatched_public_bytes_never_publish_github(self):
         with tempfile.TemporaryDirectory() as tmp:

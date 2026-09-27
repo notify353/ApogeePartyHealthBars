@@ -78,7 +78,7 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.ref_name }}
         run: python -B scripts/publish_distribution.py stage --version "${RELEASE_TAG#v}" --sources-root "$GITHUB_WORKSPACE/sources" --output "$RUNNER_TEMP/apogee-publication"
-      - name: Upload once to CurseForge and GitHub draft
+      - name: Publish verified GitHub package then upload once to CurseForge
         working-directory: distribution-repo
         env:
           APOGEE_PUBLISH_APPROVED: 'true'

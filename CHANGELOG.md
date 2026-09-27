@@ -2,32 +2,22 @@
 
 ## [Unreleased]
 
-- Exclude Apogee Tank from public GitHub/CurseForge packages while retaining its
-  repository and complete DEV version. Existing installed PROD is unchanged.
-- Match Keybinds, Heals and Group Alert settings backgrounds to Essentials.
+## [1.3.0] - 2026-09-27
 
-- Show the selected Essentials settings tab with gold text and an underline;
-  both navigation buttons remain enabled and readable.
+- Apply Essentials defaults at login/reload: Alt+wheel camera zoom, B for all bags,
+  Auto Loot, Sound and Sound in Background enabled, and Toggle Sound shortcuts cleared.
+  Later native edits remain usable until reload.
+- Show managed settings and shortcuts in the Native game defaults tab. Highlight the
+  selected tab with gold text and an underline, and improve footer spacing.
+- Give Essentials, Keybinds, Heals and Group Alert matching dark settings backgrounds.
+- Allow newly learned inventory-full errors by default; preserve saved suppression choices.
+- Default Warrior Q to learned Shield Block in Defensive Stance, preserving custom
+  assignments and other stance defaults.
+- Remove the Thank You feature and its controls while preserving saved settings.
+- Public downloads now include Heals, Keybinds, Group Alert and Essentials. Tank is
+  excluded from this package and remains available in DEV.
 
-- Support explicit receipt-checked retirement of obsolete DEV Lua files, with
-  verified backup, preserved unknown files and conflict-safe rollback.
-
-- Remove Essentials Thank You runtime and controls; preserve legacy saved fields
-  without purging them. Remaining settings tabs have footer padding.
-
-- Warrior Q defaults to learned Shield Block only in Defensive Stance,
-  preserving other stance defaults and saved custom assignments.
-
-- Essentials applies login/reload defaults: Alt+wheel camera zoom, B for all bags,
-  Auto Loot, Sound and Sound in Background enabled, and all Toggle Sound shortcuts
-  cleared. Other settings and bindings remain unchanged; later native edits remain
-  usable until reload.
-- Essentials Settings now includes a grouped, read-only Native game defaults
-  reference covering every managed native setting and shortcut, with concise
-  values and no helper paragraphs. A near-opaque dark panel improves readability.
-  Existing switches and learned lists remain available.
-- Newly learned inventory-full errors are allowed by default. Saved error
-  suppression choices remain unchanged.
+Supports World of Warcraft Forever 1.60.1. Reload the UI after updating.
 
 ## [1.2.0] - 2026-09-26
 

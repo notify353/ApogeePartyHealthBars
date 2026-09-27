@@ -107,7 +107,7 @@ class DualTests(unittest.TestCase):
         evidence = OPTIONS.artifacts / 'simulated-native-acceptance.json'
         evidence.write_bytes(d.canonical(accepted))
         with patch.object(publisher, 'ACCEPTANCE', evidence):
-            self.assertEqual(publisher.payload(OPTIONS.sources_root, '1.2.0'), d.zip_bytes(self.prod))
+            self.assertEqual(publisher.payload(OPTIONS.sources_root, self.lock['version']), d.zip_bytes(self.prod))
         for names in ([], ['Unknown'], ['ApogeeTank', 'ApogeeHeals'], ['ApogeeHeals', 'ApogeeHeals']):
             invalid = copy.deepcopy(self.lock); invalid['publicChildren'] = names
             with self.assertRaises(ValueError): d.public_children(invalid)

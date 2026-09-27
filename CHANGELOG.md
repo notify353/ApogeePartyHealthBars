@@ -2,12 +2,12 @@
 
 ## [Unreleased]
 
-- Update the DEV Keybinds candidate so Warrior Q defaults to Shield Block,
-  preserving saved custom assignments. Live acceptance pending.
+- Warrior Q defaults to learned Shield Block only in Defensive Stance,
+  preserving other stance defaults and saved custom assignments.
 
-- Update the DEV Essentials candidate with login/reload defaults: Alt+wheel
-  camera zoom, B for all bags, Auto Loot enabled, and all Toggle Sound shortcuts
-  cleared. Preserve unrelated settings and bindings. Live acceptance pending.
+- Essentials applies login/reload defaults: Alt+wheel camera zoom, B for all bags,
+  Auto Loot enabled, and all Toggle Sound shortcuts cleared. Other settings and
+  bindings remain unchanged; later native edits remain usable until reload.
 
 ## [1.2.0] - 2026-09-26
 

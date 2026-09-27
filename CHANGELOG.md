@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Add Heals food/drink aura tooltips and self-only Paladin aura choices while no aura is selected.
+
 - Move all Keybinds grids left by one icon spacing, including existing saved positions once.
 
 - Match Heals buff reminder sizing, dim idle cleansing icons, and center the

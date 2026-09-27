@@ -6,8 +6,12 @@
   preserving other stance defaults and saved custom assignments.
 
 - Essentials applies login/reload defaults: Alt+wheel camera zoom, B for all bags,
-  Auto Loot enabled, and all Toggle Sound shortcuts cleared. Other settings and
-  bindings remain unchanged; later native edits remain usable until reload.
+  Auto Loot, Sound and Sound in Background enabled, and all Toggle Sound shortcuts
+  cleared. Other settings and bindings remain unchanged; later native edits remain
+  usable until reload.
+- Essentials Settings now includes a grouped, read-only Native game defaults
+  reference covering every managed native setting and shortcut, with values and
+  application timing. Existing switches and learned lists remain available.
 
 ## [1.2.0] - 2026-09-26
 

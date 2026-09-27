@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Match Heals side icons to settings tiles with centered placement and contained borders.
+
 - Pin reviewed Heals class upkeep, direct friendly cleansing, Hunter aspects and native weapon displays for DEV.
 
 - Extend Heals buff and cleansing controls to friendly selected targets.

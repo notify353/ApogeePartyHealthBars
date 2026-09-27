@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Place Heals target and target-of-target bars above the player and party, with a half-row gap and unchanged bar sizes.
+
 ## [1.3.0] - 2026-09-27
 
 - Apply Essentials defaults at login/reload: Alt+wheel camera zoom, B for all bags,

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-09-27
+
 - Match Heals side icons to settings tiles with centered placement and contained borders.
 
 - Pin reviewed Heals class upkeep, direct friendly cleansing, Hunter aspects and native weapon displays for DEV.

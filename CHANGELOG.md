@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Offer all learned Heals blessing choices on unblessed player and party rows.
+
 - Add Heals food/drink aura tooltips and self-only Paladin aura choices while no aura is selected.
 
 - Move all Keybinds grids left by one icon spacing, including existing saved positions once.

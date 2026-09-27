@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Allow both Keybinds reset actions outside combat without editing mode, matching Heals.
+
 - Standardize Reset positions and Factory reset buttons at the bottom of Heals and Keybinds settings.
 
 - Simplify Heals settings by removing Unlock frames and Edit healing bindings shortcuts.

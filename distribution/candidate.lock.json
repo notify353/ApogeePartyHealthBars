@@ -38,7 +38,7 @@
       "version": "0.1.0-dev"
     },
     {
-      "commit": "9c6086b3f7edb9d0cb8401cfc737d5334e1411a9",
+      "commit": "feb4500a26afa8a16146dd2a20252c11b916e510",
       "files": {
         "Actions/Compile.lua": "f56780e4116f39d6f51705221fd718ca023eeda4ce8e2fd9500f4e4142b16363",
         "Actions/Defaults.lua": "6e335e12fb615cadb94dbcd16e4168d73a250c5f41d0654cc4cf3861d00a69ee",
@@ -55,7 +55,7 @@
         "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",
         "Media/Textures/ApogeeLogo.png": "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e",
         "NOTICE.md": "f1672e42817d7a61ec552508b4fa2dc9bf6066e97c9e2e9af73f7a4b32020f68",
-        "README.md": "a335059f4d262172037cb9a3c6f05cf15dd38be6c20169f5caeb14fd75be6b4e",
+        "README.md": "b7dab5f21091245f08f98dde2ef602145fd29b03a3436a43732a0f35c647a2ea",
         "Rules/Bloodrage.lua": "c708b713003383b6da351a9823ff4c59926478c172fd40222fe8da15c3e0c494",
         "Rules/Charge.lua": "fce93ea0aea85b21fbbf94a742a2e528c96a06b73b1605a9ebfbb169b4092c0a",
         "Rules/Explosives.lua": "e0ee6146ed300a5b340ec3e04dbe82b5c72fbc42ee92829d4043eb293b84d628",
@@ -65,9 +65,9 @@
         "Rules/SelfBuffs.lua": "59dd3ade2c9bed2c6c2bf3897b6f3bb3361cca92a0bf6edaec288d5d7743e5e5",
         "Rules/Target.lua": "a366182cb61e4aff88dd61e3ffe77d13221ae4b6f8b7d27295e0e0e571ee234e",
         "UI/Cooldowns.lua": "3116fc7d84d0f3affd8459724038a6fa2c900f64f193432731ce4b187224da4e",
-        "UI/Hud.lua": "21685f78dc4ca4cf1b4635b0c20a71343a9bfaa0daf22df06d867e02b45c2680",
+        "UI/Hud.lua": "375127bfb1b966bb59e7445e68d042ea6caebe5a83a858b6c986a44c21de7cbf",
         "UI/Minimap.lua": "24e1b0935baa26963d7dc01e3ec61a80141ae4650fb42aa84b42d33a85c5be41",
-        "UI/Settings.lua": "f944419e18c6d2e8360d478ab561a84d569001ddd0b93cf035474c24a3a44694",
+        "UI/Settings.lua": "291b08928e8876e69f2f412c1fce5a2a7e6f852a838b6d8def2c2f453e7774fa",
         "UI/WeaponPanel.lua": "a201f71d398aa318d4569fd0bb385b047ac98b32c6fa3d6a435cf09e31b3c2de",
         "UI/Widgets.lua": "82e5fc012764a106a5b3fb055410994bdf13f2b7b963757eacde73060f6567b5",
         "Weapons/Loadouts.lua": "e4cf1a5a9fbf8aa814a89b18026a7a3ff935ba0ffdc8a849e790229186c85ad4",

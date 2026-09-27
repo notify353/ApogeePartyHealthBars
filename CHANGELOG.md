@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-26
+
 - Match Healing Mouse input flashes to Keybinds across player, party and target bars.
 
 - Apply healing mouse assignments and bandages to target and target-of-target bars.

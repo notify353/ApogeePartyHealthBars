@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Match Heals buff reminder sizing, dim idle cleansing icons, and center the
+  drinking countdown without a seconds suffix.
+
 - Show native seconds remaining on Heals drinking indicators.
 
 - Size Heals side icons to the full health/power height and tuck cleansing buttons

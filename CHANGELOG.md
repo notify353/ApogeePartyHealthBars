@@ -4,7 +4,7 @@
 
 - Exclude Apogee Tank from public GitHub/CurseForge packages while retaining its
   repository and complete DEV version. Existing installed PROD is unchanged.
-- Match Keybinds and Heals settings backgrounds to Essentials.
+- Match Keybinds, Heals and Group Alert settings backgrounds to Essentials.
 
 - Show the selected Essentials settings tab with gold text and an underline;
   both navigation buttons remain enabled and readable.

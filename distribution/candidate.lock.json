@@ -87,13 +87,13 @@
       "version": "0.1.0-forever-beta.21"
     },
     {
-      "commit": "0d72d88e02f7b01d48977abfdc486c9108c0655e",
+      "commit": "bff2dd670bfe62793716c7f960d4d075fa2d7a91",
       "files": {
         "Alerts/Model.lua": "67252fcd01083bf17b988189098b621c9eafaf1a11ab9c867a6a3c34b98d9754",
         "Alerts/View.lua": "26814f678d1ec19f184e0b78f891d4fc67fec6bee3d0018fdb9e1b200d8e5c11",
         "ApogeeGroupAlert.lua": "f1b859baffc56f2d37de86a48610bc39da4965a31323ee1455156f64f0861919",
         "ApogeeGroupAlert.toc": "bd97bc1fa22291fac8885d26052fd7fa166d77161752c86cc46d2441f5c888e5",
-        "CHANGELOG.md": "acb4ef56d0be739bced84a3537804923b20d684308971192b6dff16bf785e63c",
+        "CHANGELOG.md": "2cb94dea4fbb65d95ac18c0fd9e3e859e9a23695d5aa048dbd327f2d6b6a141d",
         "Core/Client.lua": "c569d347bc719c09e6a24482ae58778c895c7ba24eaa448ec6c78f54553f36a5",
         "Core/Text.lua": "acc322a7745f82d37ba71aadc1fb488b7fcaedd0410841d9b70146c6dc0b5e0a",
         "Core/UI.lua": "e221bb5d56e6f9f3fa20bb42f814867e057cf06be7b0016c91f8741f86ec7ddc",
@@ -108,7 +108,7 @@
         "Matching/Levels.lua": "265a1158c3081587c484af970b14418721fed0bf4079fb22e852b008f03620a5",
         "Media/Textures/ApogeeLogo.png": "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e",
         "README.md": "f08a80ceaa6a6a0e12f05143d98f5ed800758d2e816b069d3971ab119717f116",
-        "Settings/View.lua": "176d0fed0fe8ba8625d82964b18497cac3bf4e2ffb4b9b12d4b8e32aa8e2b33f",
+        "Settings/View.lua": "76e16bbd4b149649fefc63e2c3dc71fe7c612e4a129a4024c39afcc14bec3061",
         "THIRD_PARTY_NOTICES.md": "6c999d3ef098a2ee82642abce8e16d30e82f48495f58529fb56617f0a06486e6"
       },
       "name": "ApogeeGroupAlert",

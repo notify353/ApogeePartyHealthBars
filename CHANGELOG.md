@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Add permanent learned Paladin cleansing buttons with native glows beside Heals rows.
+
 - Show up to eight native debuff icons beside each Heals player/party health bar.
 
 - Remove the target-of-target helper caption while keeping both target bars in place.

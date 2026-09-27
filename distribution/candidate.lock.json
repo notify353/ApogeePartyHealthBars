@@ -1,7 +1,7 @@
 {
   "children": [
     {
-      "commit": "a093fe78581ebc0688a70b20ae1612d3e6f93e9e",
+      "commit": "e460ffd1c025b4845b56ddea49d7b8fef6c157d8",
       "files": {
         "ApogeeHeals.lua": "52ebe8c761df2eabf10386ad0405c66213fcf3e5b467e3630f042da653555eb4",
         "ApogeeHeals.toc": "14ef725abfa28b0d2ac71f358b7f691849f4a2c65e033018e1b5bc1553dfb5f9",
@@ -10,8 +10,8 @@
         "Buffs/Defaults.lua": "e4009e0736181b7cba9fb67a63f823f666771e18d0466eee25a11d2a5ac78a31",
         "Buffs/Runtime.lua": "28ce88ae013c2d8640aba1968f7ce55b38bd6c01a4a54348d35f14945dfa5df1",
         "Buffs/View.lua": "7cb4cb13e32d3ba8bea86f85f811d81fa8900cef483c0920adae3da077c9dc0e",
-        "CHANGELOG.md": "f88b5d7f704300bedebfa9defda4d8b473b051b987de8ef53d5c7ea79a3493ec",
-        "Cleansing/Runtime.lua": "cf039ed879dcef2b94afa7cc4d4d02f6e70af1fcbf193e67edef2d97c1cea1b5",
+        "CHANGELOG.md": "faf8689cc89488d131095ad8463bcad1bba559a30222b427f5d61a2fd68c6a2f",
+        "Cleansing/Runtime.lua": "f5abe681da916610979eb5bfe4d70803267725a85620752226393f036b885cb1",
         "Core/Access.lua": "7e518d6a5a11f608ca797756f0448e88733b2346821c283812231a47c1ab821e",
         "Core/Client.lua": "bc76401feacc82f6d6feab6b854f38d0f509343813432770f76d80546df09e72",
         "Core/Storage.lua": "2b2cd0c656c2f94eaa0ed214b07666cc873f24bef523d68a642250ed0b4b24c5",
@@ -22,8 +22,8 @@
         "Media/Textures/ApogeeLogo.png": "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e",
         "PartyFrames/Preview.lua": "44d56bf0dd11d64e6657108ba24ab676210b11a4fc20cf7251c8d270c284bea9",
         "PartyFrames/Runtime.lua": "5abfca9555c30bfb66f7f909db89025d20b8133b7b76fa10583986e6d17a75ff",
-        "PartyFrames/View.lua": "f77af9fc632e85c5469e8130c8414968fded76dadf9394f3966c81b5fcc99b8d",
-        "README.md": "a83611fc9fa3d9c7caa702f1258b9ad82dba5c616271c3efdeb1b608397d3adb",
+        "PartyFrames/View.lua": "ad6f9800e0078619476f9dff364546d9e4dacc0aa41f8f9976e55140747a1327",
+        "README.md": "6a14f61f55466ca3bbae55f8e97bcff9081ddf165ff40e0904109cd54409303e",
         "UI/BindingEditor.lua": "af8cf5f60a274fcc04da7eed3a7f308d5ab211b6a6ad363a6dc82d32d86bf258",
         "UI/Minimap.lua": "9133eef058f71d27b1ba11efb6b24faa062e0dc818b171186eef476099d5e9a0",
         "UI/Settings.lua": "c29b67f191adcd3d5828418d9bdc5d49996fe7a22414a3db50d375349938fb7b",

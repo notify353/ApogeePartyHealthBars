@@ -123,6 +123,12 @@ def upload(sources_root, output):
     gh('release', 'create', 'v' + version, '--verify-tag', '--draft', '--title', 'Apogee Forever ' + version,
        '--notes-file', str(output / 'release-notes.md'))
     gh('release', 'upload', 'v' + version, str(output / receipt['filename']), str(output / (receipt['filename'] + '.sha256')))
+    # Verify the hosted GitHub asset before making it public, then upload the same bytes.
+    with tempfile.TemporaryDirectory() as folder:
+        gh('release', 'download', 'v' + version, '--pattern', receipt['filename'], '--dir', folder)
+        d.require(d.sha((Path(folder) / receipt['filename']).read_bytes()) == receipt['sha256'], 'GitHub package checksum differs')
+    gh('release', 'edit', 'v' + version, '--draft=false')
+    receipt.update(githubPublished=True)
     receipt.update(publicationState='curseforge-upload-attempted', uploadVersion=row)
     receipt_path.write_bytes(d.canonical(receipt))
     boundary = 'apogee-' + uuid.uuid4().hex

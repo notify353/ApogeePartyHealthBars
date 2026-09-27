@@ -52,15 +52,15 @@ Never create tags ad hoc or move/reuse a published tag. The helper requires a
 clean synchronized main, matching version and successful hosted checks.
 
 Actions regenerates and validates the accepted package, resolves the exact
-Forever upload ID again, creates a GitHub draft, uploads its ZIP, and sends the
-same bytes to CurseForge once. Its retained apogee-publication artifact records
+Forever upload ID again, creates a GitHub draft, uploads and downloads its ZIP to verify its hash,
+publishes GitHub, and then sends the same bytes to CurseForge once. Its retained apogee-publication artifact records
 an attempt before the CF POST and records the returned file ID afterward.
 An uncertain response must be investigated; never blindly rerun an upload.
 
 After CurseForge approval, obtain the file's actual download link. Dispatch
 Verify Apogee Forever publication on the same production tag with the successful
 upload run ID and that link. It validates the source run, matches both remote
-hashes and only then publishes the GitHub draft. Monitor both Actions workflows
+hashes and records completed verification. GitHub is already public. Monitor both Actions workflows
 and the CurseForge file status before declaring publication complete.
 
 ## Client acceptance and public copy

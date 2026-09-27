@@ -42,7 +42,7 @@ jobs:
           run-id: ${{ inputs.upload_run }}
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/apogee-publication
-      - name: Compare both remote packages and publish GitHub draft
+      - name: Compare both public remote packages
         env:
           APOGEE_PUBLISH_APPROVED: 'true'
           GH_TOKEN: ${{ github.token }}

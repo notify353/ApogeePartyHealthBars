@@ -1,7 +1,7 @@
 {
   "children": [
     {
-      "commit": "947c09b18df1f0d4bf7a59a3b5175bd0e644da8c",
+      "commit": "12661e7806d293573a234c2e5d3a33c50df01e79",
       "files": {
         "ApogeeHeals.lua": "52ebe8c761df2eabf10386ad0405c66213fcf3e5b467e3630f042da653555eb4",
         "ApogeeHeals.toc": "14ef725abfa28b0d2ac71f358b7f691849f4a2c65e033018e1b5bc1553dfb5f9",
@@ -10,24 +10,24 @@
         "Buffs/Defaults.lua": "e4009e0736181b7cba9fb67a63f823f666771e18d0466eee25a11d2a5ac78a31",
         "Buffs/Runtime.lua": "28ce88ae013c2d8640aba1968f7ce55b38bd6c01a4a54348d35f14945dfa5df1",
         "Buffs/View.lua": "7cb4cb13e32d3ba8bea86f85f811d81fa8900cef483c0920adae3da077c9dc0e",
-        "CHANGELOG.md": "fd3254c8e25741bcfd2872cb023dd97971198beeba48bd4e871bad2488422acc",
+        "CHANGELOG.md": "4ab7b936a27fd95f957e62c6582f6c26e7b9bd435830dd5ed87c18a861106a27",
         "Cleansing/Runtime.lua": "cf039ed879dcef2b94afa7cc4d4d02f6e70af1fcbf193e67edef2d97c1cea1b5",
         "Core/Access.lua": "7e518d6a5a11f608ca797756f0448e88733b2346821c283812231a47c1ab821e",
         "Core/Client.lua": "bc76401feacc82f6d6feab6b854f38d0f509343813432770f76d80546df09e72",
         "Core/Storage.lua": "2b2cd0c656c2f94eaa0ed214b07666cc873f24bef523d68a642250ed0b4b24c5",
-        "Core/UnitAPI.lua": "624d04cdddf8605b1e17f122358d3576d6aac6dd7a1b2382e40ea92ab0b3079c",
+        "Core/UnitAPI.lua": "acdba49bd9cdc7e98a8f2f90b3474b0da2a7d35601299e794fd49d6cc6b83591",
         "Drinking/Runtime.lua": "543b618e9ca2fae971ea5f23beae3a12ab70242299591f43380f8d5968280606",
         "IncomingHeals/View.lua": "7cc175ce25329c382e08595cad723ca6b01c156ea124e9cb859ccec6c8dc03d1",
         "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",
         "Media/Textures/ApogeeLogo.png": "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e",
         "PartyFrames/Preview.lua": "44d56bf0dd11d64e6657108ba24ab676210b11a4fc20cf7251c8d270c284bea9",
-        "PartyFrames/Runtime.lua": "abb818768ff6dbf8163af77d067b43d50ee3e9a0d4b106007a4cb50fc5dcb6c2",
-        "PartyFrames/View.lua": "886ba2e0cdd6c6b254310075c8ef9f711b2a3d2745ca69dfb03eb1dd1bdedf8b",
-        "README.md": "5cc81398aff4ea38d440a9bae270e10a85a17c14e7b75865d595f6e9c3ba9c86",
+        "PartyFrames/Runtime.lua": "5abfca9555c30bfb66f7f909db89025d20b8133b7b76fa10583986e6d17a75ff",
+        "PartyFrames/View.lua": "b63d1bdb0a973629af6270c5cc49ca0b3afa01e88f2586d58d6d852cda9860dd",
+        "README.md": "6458534d9fe31bbd4e9f3cc5bd064a65223faccc5c995d86f032519d558e9185",
         "UI/BindingEditor.lua": "af8cf5f60a274fcc04da7eed3a7f308d5ab211b6a6ad363a6dc82d32d86bf258",
         "UI/Minimap.lua": "9133eef058f71d27b1ba11efb6b24faa062e0dc818b171186eef476099d5e9a0",
         "UI/Settings.lua": "c29b67f191adcd3d5828418d9bdc5d49996fe7a22414a3db50d375349938fb7b",
-        "UI/Style.lua": "73ed06667544c1d86eac3c3fb63c4dee7771ac7917b37550c3ba6416f72cb05d"
+        "UI/Style.lua": "7644cd48fe944ff6aace72929bdc806153ea01690bb3a0afd31818a487c36baa"
       },
       "name": "ApogeeHeals",
       "repository": "https://github.com/notify353/ApogeeHeals.git",

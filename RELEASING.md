@@ -1,8 +1,8 @@
 # Apogee Forever releases
 
 GitHub Actions is the sole publisher for CurseForge project1608100 and the
-notify353/ApogeePartyHealthBars repository. It publishes only the six canonical
-Forever addon folders. The same verified ZIP goes to both services.
+notify353/ApogeePartyHealthBars repository. It publishes only the selected canonical
+Forever addon folders (currently four public children plus the marker; Tank is DEV-only). The same verified ZIP goes to both services.
 
 ## Access and validation
 

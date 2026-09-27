@@ -1,7 +1,7 @@
 {
   "children": [
     {
-      "commit": "16d64953e621c5d978f4e445cccd6ac2346c7fa3",
+      "commit": "d213f694aa3085f4bde783106a9eab61d84fbcc5",
       "files": {
         "ApogeeHeals.lua": "52ebe8c761df2eabf10386ad0405c66213fcf3e5b467e3630f042da653555eb4",
         "ApogeeHeals.toc": "14ef725abfa28b0d2ac71f358b7f691849f4a2c65e033018e1b5bc1553dfb5f9",
@@ -23,10 +23,10 @@
         "PartyFrames/Preview.lua": "44d56bf0dd11d64e6657108ba24ab676210b11a4fc20cf7251c8d270c284bea9",
         "PartyFrames/Runtime.lua": "b4c4e79f83980147201c559c20c0be42d719ab79433157e16732b4c470dbb261",
         "PartyFrames/View.lua": "4c21d6fd20592c33ab65461a5c6a105b1d945fb6147467d32c60271cc5b096d0",
-        "README.md": "6a83cbcaf5d7fb7be4d0dab4af2212b8966568540d9736141cb6c5d61dd0d534",
+        "README.md": "cfa65b9020733e449afbf35554545317f92cdb03d8071199614592b24b1341ec",
         "UI/BindingEditor.lua": "af59d3b031ade2529fd3632347d979d05bdf4a0b620a989d3beba6c23c533652",
         "UI/Minimap.lua": "9133eef058f71d27b1ba11efb6b24faa062e0dc818b171186eef476099d5e9a0",
-        "UI/Settings.lua": "7c39b4cc29f515cd6ea080cf9921f5e4f43aa618b933c32459b3e534f3ec4982",
+        "UI/Settings.lua": "c86e68f9bc089460a62c47cba081022d9b1271b17bac81be45a9c180e969753b",
         "UI/Style.lua": "40cf2d87a5a5a7c6a60cb54cc9564be516cd7b5866bedf324de0099f0102964e"
       },
       "name": "ApogeeHeals",

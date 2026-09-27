@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Add role-first yellow blessing suggestions and explanatory tooltips in Heals.
+
 - Restrict Heals blessing choices to pre-combat party upkeep buffs.
 
 - Offer all learned Heals blessing choices on unblessed player and party rows.

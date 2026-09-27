@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Size Heals side icons to the full health/power height and tuck cleansing buttons
+  beside the bar, followed by the drinking indicator and debuffs.
+
 - Default Paladin Mouse Button 4 to Hammer of Justice, 1 to Holy Strike, and 3 to Judgement; preserve custom assignments.
 
 - Add permanent learned Paladin cleansing buttons with native glows beside Heals rows.

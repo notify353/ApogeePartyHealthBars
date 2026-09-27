@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Include the separate Forever surname on all Heals bars using the native name separator.
+
 - Show the selected target casting or channeling in its existing power strip, restoring power when the cast ends.
 
 - Show full names using the smaller font consistently across Heals bars and keep names and levels visible during combat when normal status and range rules allow.

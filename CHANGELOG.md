@@ -10,8 +10,11 @@
   cleared. Other settings and bindings remain unchanged; later native edits remain
   usable until reload.
 - Essentials Settings now includes a grouped, read-only Native game defaults
-  reference covering every managed native setting and shortcut, with values and
-  application timing. Existing switches and learned lists remain available.
+  reference covering every managed native setting and shortcut, with concise
+  values and no helper paragraphs. A near-opaque dark panel improves readability.
+  Existing switches and learned lists remain available.
+- Newly learned inventory-full errors are allowed by default. Saved error
+  suppression choices remain unchanged.
 
 ## [1.2.0] - 2026-09-26
 

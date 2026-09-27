@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Standardize Reset positions and Factory reset buttons at the bottom of Heals and Keybinds settings.
+
 - Simplify Heals settings by removing Unlock frames and Edit healing bindings shortcuts.
 
 - Place Healing Mouse below the default Mouse grid and add position reset and confirmed per-character factory reset controls.

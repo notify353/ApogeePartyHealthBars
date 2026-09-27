@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Default Paladin Mouse Button 4 to Hammer of Justice, 1 to Holy Strike, and 3 to Judgement; preserve custom assignments.
+
 - Add permanent learned Paladin cleansing buttons with native glows beside Heals rows.
 
 - Show up to eight native debuff icons beside each Heals player/party health bar.

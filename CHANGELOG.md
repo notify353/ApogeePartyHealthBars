@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Show up to eight native debuff icons beside each Heals player/party health bar.
+
 - Remove the target-of-target helper caption while keeping both target bars in place.
 
 - Include the separate Forever surname on all Heals bars using the native name separator.

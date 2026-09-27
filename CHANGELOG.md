@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- Place Heals target and target-of-target bars above the player and party, with a half-row gap and unchanged bar sizes.
+- Place Heals target and target-of-target bars above the player and party, with a full-row gap and unchanged bar sizes.
 
 ## [1.3.0] - 2026-09-27
 

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Update the DEV Essentials candidate with login/reload defaults: Alt+wheel
+  camera zoom, B for all bags, Auto Loot enabled, and all Toggle Sound shortcuts
+  cleared. Preserve unrelated settings and bindings. Live acceptance pending.
+
 ## [1.2.0] - 2026-09-26
 
 - Add target and target-of-target bars with matching widths, smaller NPC names, and a clear target-of-target label.

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Show the selected target casting or channeling in its existing power strip, restoring power when the cast ends.
+
 - Show full names using the smaller font consistently across Heals bars and keep names and levels visible during combat when normal status and range rules allow.
 
 - Place Heals target and target-of-target bars above the player and party, with a full-row gap and unchanged bar sizes.

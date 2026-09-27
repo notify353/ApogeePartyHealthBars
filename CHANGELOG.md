@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Restrict Heals blessing choices to pre-combat party upkeep buffs.
+
 - Offer all learned Heals blessing choices on unblessed player and party rows.
 
 - Add Heals food/drink aura tooltips and self-only Paladin aura choices while no aura is selected.

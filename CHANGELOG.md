@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+- Match Healing Mouse input flashes to Keybinds across player, party and target bars.
+
+- Apply healing mouse assignments and bandages to target and target-of-target bars.
+
+- Show target of target above the selected target, with matching bars and a subtle label.
+
+- Allow both Keybinds reset actions outside combat without editing mode, matching Heals.
+
+- Standardize Reset positions and Factory reset buttons at the bottom of Heals and Keybinds settings.
+
+- Simplify Heals settings by removing Unlock frames and Edit healing bindings shortcuts.
+
+- Place Healing Mouse below the default Mouse grid and add position reset and confirmed per-character factory reset controls.
+
+- Add a matching-width target frame beside the player bars, with smaller NPC names, health, power and class or reaction coloring.
+
 ## [1.1.1] - 2026-09-26
 
 - Add bandage assignments to the healing editor.

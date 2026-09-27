@@ -34,8 +34,7 @@ IDENTITIES = {
 def identity_map(name):
     result = {s: name + 'Dev' + s[len(name):] for s in IDENTITIES[name]}
     if name == 'ApogeeHeals':
-        # Optional sibling anchor: use the producer's DEV identity, not the consumer's prefix.
-        result['ApogeeKeybindsWeaponsHeader'] = 'ApogeeKeybindsDevWeaponsHeader'
+        result['APOGEE_HEALS_RESET_CHARACTER'] = 'APOGEE_HEALS_DEV_RESET_CHARACTER'
     if name == 'ApogeeKeybinds':
         result['APOGEE_KEYBINDS_RESET_CHARACTER'] = 'APOGEE_KEYBINDS_DEV_RESET_CHARACTER'
     if name == 'ApogeeGroupAlert':

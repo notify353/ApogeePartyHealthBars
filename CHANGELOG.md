@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Pin reviewed Heals class upkeep, direct friendly cleansing, Hunter aspects and native weapon displays for DEV.
+
 - Extend Heals buff and cleansing controls to friendly selected targets.
 
 - Add role-first yellow blessing suggestions and explanatory tooltips in Heals.

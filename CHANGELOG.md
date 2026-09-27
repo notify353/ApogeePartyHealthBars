@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Remove the target-of-target helper caption while keeping both target bars in place.
+
 - Include the separate Forever surname on all Heals bars using the native name separator.
 
 - Show the selected target casting or channeling in its existing power strip, restoring power when the cast ends.

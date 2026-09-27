@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- Add a wider target frame beside the player bars, with full target names, health, power and class or reaction coloring.
+- Add a matching-width target frame beside the player bars, with smaller NPC names, health, power and class or reaction coloring.
 
 ## [1.1.1] - 2026-09-26
 

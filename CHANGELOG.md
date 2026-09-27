@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Apply healing mouse assignments and bandages to target and target-of-target bars.
+
 - Show target of target above the selected target, with matching bars and a subtle label.
 
 - Allow both Keybinds reset actions outside combat without editing mode, matching Heals.

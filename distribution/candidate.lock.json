@@ -1,12 +1,12 @@
 {
   "children": [
     {
-      "commit": "ad033c9b0e288be7f8a0d5fdc1bddd46ab1c8c4b",
+      "commit": "a7810dc7d0fd2bc6fcccc7d8d1dc1087659573bc",
       "files": {
         "ApogeeHeals.lua": "52ebe8c761df2eabf10386ad0405c66213fcf3e5b467e3630f042da653555eb4",
         "ApogeeHeals.toc": "14ef725abfa28b0d2ac71f358b7f691849f4a2c65e033018e1b5bc1553dfb5f9",
         "Bindings/Defaults.lua": "e8e4a09365c284308c83db3f552b1c986af35f7b6334cb5946d6f8516d989512",
-        "Bindings/Runtime.lua": "53a23c136bafebdf78af3221b5f0115eb895612fa2e4bd941ba5fe388b7bd586",
+        "Bindings/Runtime.lua": "b3a05ee816ece5ff8cd2b6bd6e2efb0b2e2dff07676554802cf1801a1bcfc7f9",
         "Buffs/Defaults.lua": "e4009e0736181b7cba9fb67a63f823f666771e18d0466eee25a11d2a5ac78a31",
         "Buffs/Runtime.lua": "28ce88ae013c2d8640aba1968f7ce55b38bd6c01a4a54348d35f14945dfa5df1",
         "Buffs/View.lua": "7cb4cb13e32d3ba8bea86f85f811d81fa8900cef483c0920adae3da077c9dc0e",
@@ -22,9 +22,9 @@
         "Media/Textures/ApogeeLogo.png": "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e",
         "PartyFrames/Preview.lua": "44d56bf0dd11d64e6657108ba24ab676210b11a4fc20cf7251c8d270c284bea9",
         "PartyFrames/Runtime.lua": "abb818768ff6dbf8163af77d067b43d50ee3e9a0d4b106007a4cb50fc5dcb6c2",
-        "PartyFrames/View.lua": "c92924562bfef0807af66d51c4c500da7f2af70804c2a088e188993233c974d5",
-        "README.md": "c8de24e5414f86b9687ea0c3e458a7983a0518b3f2746e431efd5ab009394cae",
-        "UI/BindingEditor.lua": "af59d3b031ade2529fd3632347d979d05bdf4a0b620a989d3beba6c23c533652",
+        "PartyFrames/View.lua": "886ba2e0cdd6c6b254310075c8ef9f711b2a3d2745ca69dfb03eb1dd1bdedf8b",
+        "README.md": "5cc81398aff4ea38d440a9bae270e10a85a17c14e7b75865d595f6e9c3ba9c86",
+        "UI/BindingEditor.lua": "0228f44af7f76927362d057c96c9ded1c467932f98fc1ec4d004dba31c6a0c79",
         "UI/Minimap.lua": "9133eef058f71d27b1ba11efb6b24faa062e0dc818b171186eef476099d5e9a0",
         "UI/Settings.lua": "b941a1d3d400acc772d2fab1bab970f35287dba57d018097420ded213ef205ad",
         "UI/Style.lua": "73ed06667544c1d86eac3c3fb63c4dee7771ac7917b37550c3ba6416f72cb05d"

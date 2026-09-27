@@ -21,7 +21,7 @@ def payloads(lock, sources_root, artifacts, initial=False):
     return result
 
 
-def prepare(client, payload, known, initial=False, previous=None):
+def prepare(client, payload, known, initial=False, previous=None, retire_files=()):
     names = tuple(n + 'Dev' for n in m.NAMES)
     if initial:
         names = m.NAMES + names
@@ -46,7 +46,17 @@ def prepare(client, payload, known, initial=False, previous=None):
         if p in desired and b != desired[p] and p.lower().endswith(('.md', '.txt')):
             preserved_docs.append(p)
             del desired[p]
+    retired = {}
+    for p in retire_files:
+        d.safe_path(p)
+        d.require(not initial and p.split('/')[0] in names and p.endswith('.lua'),
+                  'Retirement is limited to explicit DEV Lua files')
+        d.require(previous is not None and p in previous['after'], 'Retirement requires previous receipt')
+        d.require(p not in payload and p in before and d.sha(before[p]) == previous['after'][p],
+                  'Retired file missing, modified, or still packaged: ' + p)
+        retired[p] = previous['after'][p]
     preview = m.plan(client, desired, known, names)
+    preview['retired'] = retired
     return desired, known, names, preview, preserved_docs
 
 
@@ -58,9 +68,9 @@ def activation(preview):
             'restartRequired': 'unverified-if-reload-does-not-discover-changes' if discovery else False}
 
 
-def install(client, payload, known, backup, initial=False, previous=None):
-    desired, known, names, preview, docs = prepare(client, payload, known, initial, previous)
-    result = m.apply(client, desired, known, backup, preview, names, atomic_dev=not initial)
+def install(client, payload, known, backup, initial=False, previous=None, retire_files=()):
+    desired, known, names, preview, docs = prepare(client, payload, known, initial, previous, retire_files)
+    result = m.apply(client, desired, known, backup, preview, names, atomic_dev=not initial, retired=preview['retired'])
     result['activation'] = activation(preview)
     result['preservedDocumentation'] = docs
     result['mode'] = 'initial-production-retrofit-and-dev' if initial else 'dev-only'
@@ -77,6 +87,7 @@ def main():
     parser.add_argument('--backup', type=Path, required=True)
     parser.add_argument('--lock', type=Path, default=dual.LOCK)
     parser.add_argument('--previous-install', type=Path)
+    parser.add_argument('--retire-file', action='append', default=[], help='Exact obsolete DEV Lua path; requires unchanged prior receipt')
     parser.add_argument('--initial-retrofit', action='store_true', help='One-time explicitly authorized PROD safety migration')
     parser.add_argument('--inspect-only', action='store_true')
     args = parser.parse_args()
@@ -87,12 +98,12 @@ def main():
         known = m.catalog(d.ROOT / 'distribution/migration-known.json')
         previous = json.loads(args.previous_install.read_text()) if args.previous_install else None
         if args.inspect_only:
-            _, _, _, preview, docs = prepare(args.client_root, files, known, args.initial_retrofit, previous)
+            _, _, _, preview, docs = prepare(args.client_root, files, known, args.initial_retrofit, previous, args.retire_file)
             print(json.dumps({'writeCount': len(preview['writes']), 'preservedDocumentation': docs,
-                              'inventory': preview['inventory'], 'clientRunning': running,
+                              'inventory': preview['inventory'], 'retired': preview['retired'], 'clientRunning': running,
                               'activation': activation(preview)}))
         else:
-            result = install(args.client_root, files, known, args.backup, args.initial_retrofit, previous)
+            result = install(args.client_root, files, known, args.backup, args.initial_retrofit, previous, args.retire_file)
             print(json.dumps({k: result[k] for k in ('status', 'mode', 'packageFilesVerified', 'preservedDocumentation', 'activation')}))
     except (ValueError, KeyError, OSError, subprocess.SubprocessError) as error:
         parser.exit(1, 'Family install stopped: ' + str(error) + '\n')

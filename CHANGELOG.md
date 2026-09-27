@@ -2,6 +2,33 @@
 
 ## [Unreleased]
 
+- Exclude Apogee Tank from public GitHub/CurseForge packages while retaining its
+  repository and complete DEV version. Existing installed PROD is unchanged.
+- Match Keybinds, Heals and Group Alert settings backgrounds to Essentials.
+
+- Show the selected Essentials settings tab with gold text and an underline;
+  both navigation buttons remain enabled and readable.
+
+- Support explicit receipt-checked retirement of obsolete DEV Lua files, with
+  verified backup, preserved unknown files and conflict-safe rollback.
+
+- Remove Essentials Thank You runtime and controls; preserve legacy saved fields
+  without purging them. Remaining settings tabs have footer padding.
+
+- Warrior Q defaults to learned Shield Block only in Defensive Stance,
+  preserving other stance defaults and saved custom assignments.
+
+- Essentials applies login/reload defaults: Alt+wheel camera zoom, B for all bags,
+  Auto Loot, Sound and Sound in Background enabled, and all Toggle Sound shortcuts
+  cleared. Other settings and bindings remain unchanged; later native edits remain
+  usable until reload.
+- Essentials Settings now includes a grouped, read-only Native game defaults
+  reference covering every managed native setting and shortcut, with concise
+  values and no helper paragraphs. A near-opaque dark panel improves readability.
+  Existing switches and learned lists remain available.
+- Newly learned inventory-full errors are allowed by default. Saved error
+  suppression choices remain unchanged.
+
 ## [1.2.0] - 2026-09-26
 
 - Add target and target-of-target bars with matching widths, smaller NPC names, and a clear target-of-target label.

@@ -28,7 +28,12 @@ The builder emits two deterministic ZIPs from the same pins. PROD retains exact
 source gameplay bodies behind an admission prefix. DEV transforms audited
 identifiers, saves, frames, popup/slash names, asset paths and labels. Manifests
 list every identity edit and source/body hash. Comments, gameplay keys and Blizzard
-names are not blindly renamed. Each artifact has six roots: marker plus children.
+names are not blindly renamed. The publicChildren selection in candidate.lock.json includes four PROD children;
+DEV retains all five pinned children. Public artifacts have five roots including
+the marker; DEV has six. Tank remains DEV-only, with its source pin retained.
+Family safety still recognizes older installed canonical Tank. Omitting a folder
+from a ZIP does not prove CurseForge removes an older installed copy; that update
+behavior needs client acceptance. Never delete PROD folders or saved data here.
 Heals uses an independent default position beneath the default Keybinds Mouse grid.
 Its factory-reset dialog is explicitly mapped to a separate DEV identity; the
 confirmation and per-character storage remain within their own family.
@@ -58,7 +63,13 @@ python -B scripts/install_dual_distribution.py --client-root 'C:/Program Files (
 ```
 
 Omit `--previous-install` only for fresh DEV installs or exact matching files.
-`--inspect-only` validates without writes. Existing output/backup directories are
+`--inspect-only` validates without writes. For explicitly approved obsolete DEV
+Lua files, repeat `--retire-file <exact-Dev-root/path.lua>`. Retirement requires
+that each file is absent from the new package and matches the previous installed
+receipt exactly. After the full verified backup and new writes, the central
+installer moves only those files to `retired-files` inside the backup. Unknown
+files are preserved. Rollback restores retired files from the verified original
+backup and refuses a conflicting new user file at any retired path. Existing output/backup directories are
 refused. `--initial-retrofit` remains historical migration tooling and must not be
 used under the owner's current CurseForge-managed PROD policy.
 

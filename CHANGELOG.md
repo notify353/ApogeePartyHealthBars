@@ -2,6 +2,36 @@
 
 ## [Unreleased]
 
+- Match Heals side icons to settings tiles with centered placement and contained borders.
+
+- Pin reviewed Heals class upkeep, direct friendly cleansing, Hunter aspects and native weapon displays for DEV.
+
+- Extend Heals buff and cleansing controls to friendly selected targets.
+
+- Add role-first yellow blessing suggestions and explanatory tooltips in Heals.
+
+- Restrict Heals blessing choices to pre-combat party upkeep buffs.
+
+- Offer all learned Heals blessing choices on unblessed player and party rows.
+
+- Add Heals food/drink aura tooltips and self-only Paladin aura choices while no aura is selected.
+
+- Move all Keybinds grids left by one icon spacing, including existing saved positions once.
+
+- Match Heals buff reminder sizing, dim idle cleansing icons, and center the
+  drinking countdown without a seconds suffix.
+
+- Show native seconds remaining on Heals drinking indicators.
+
+- Size Heals side icons to the full health/power height and tuck cleansing buttons
+  beside the bar, followed by the drinking indicator and debuffs.
+
+- Default Paladin Mouse Button 4 to Hammer of Justice, 1 to Holy Strike, and 3 to Judgement; preserve custom assignments.
+
+- Add permanent learned Paladin cleansing buttons with native glows beside Heals rows.
+
+- Show up to eight native debuff icons beside each Heals player/party health bar.
+
 - Remove the target-of-target helper caption while keeping both target bars in place.
 
 - Include the separate Forever surname on all Heals bars using the native name separator.

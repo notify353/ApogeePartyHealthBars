@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Show native seconds remaining on Heals drinking indicators.
+
 - Size Heals side icons to the full health/power height and tuck cleansing buttons
   beside the bar, followed by the drinking indicator and debuffs.
 

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Move all Keybinds grids left by one icon spacing, including existing saved positions once.
+
 - Match Heals buff reminder sizing, dim idle cleansing icons, and center the
   drinking countdown without a seconds suffix.
 

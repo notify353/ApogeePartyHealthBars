@@ -25,7 +25,8 @@ The common reader, evaluator and roster code consume those profiles. Hovered
 native tooltip data preserves auction suffix effects. Mixed healing/damage items
 and possible competing healers retain conservative group checks. Other classes
 are not evaluated yet. Damage and Tank use separate conservative profiles,
-including displayed weapon baselines and same-speed comparisons. Generated gameplay
+including displayed weapon baselines. Damage permits speed changes only with
+higher DPS and no per-hit/stat loss; Tank retains same-speed comparisons. Generated gameplay
 tests exercise DEV output. Player level does not affect recommendations. The tooltip
 role label is simply "Role: Healer" (or the selected role); settings retain the DEV suffix.
 Only clear Need results show a native dice icon, ROLL NEED heading and spaced stat

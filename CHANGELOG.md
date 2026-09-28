@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Update Auction DEV to allow clear Damage weapon improvements across swing
+  speeds while retaining Tank and real stat-tradeoff safeguards.
+
 - Pin Paladin Damage and Tank loot profiles in Auction DEV, with generated-output
   regression coverage and unchanged PROD bytes.
 

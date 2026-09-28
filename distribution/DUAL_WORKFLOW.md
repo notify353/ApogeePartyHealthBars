@@ -18,7 +18,7 @@ and an addon-settings dropdown: Auto, Healer, Tank or Damage. Auto uses the assi
 group role; manual choices also work solo. Its only saved data is a per-character
 role choice. The audited ApogeeAuctionDB identity becomes ApogeeAuctionDevDB in DEV;
 all runtime chunks remain behind the existing family gate. Healing paladins receive
-Need/Greed/Ask first guidance with equipped-item comparisons and conservative
+Need/Greed guidance with equipped-item comparisons and conservative
 effect/tradeoff fallbacks. Class rules, item parsing, group context and comparison
 live in separate modules; other classes are not evaluated yet. Generated gameplay
 tests exercise DEV output. Player level does not affect recommendations. The tooltip

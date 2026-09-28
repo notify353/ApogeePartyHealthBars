@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Exclude Stamina from Auction DEV healing recommendations and stat explanations.
+- Make Auction DEV recommendations binary: clear Need, otherwise Greed with a reason.
 - Update Auction DEV healing guidance to ignore armor gains and losses.
 - Update Auction DEV to ignore level in gear recommendations and use a compact role label.
 - Pin healing-paladin Need/Greed/Ask first guidance and validate its generated DEV

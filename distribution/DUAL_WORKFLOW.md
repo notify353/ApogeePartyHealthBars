@@ -21,7 +21,8 @@ all runtime chunks remain behind the existing family gate. Healing paladins rece
 Need/Greed/Ask first guidance with equipped-item comparisons and conservative
 effect/tradeoff fallbacks. Class rules, item parsing, group context and comparison
 live in separate modules; other classes are not evaluated yet. Generated gameplay
-tests exercise DEV output. The tooltip and settings labels receive the DEV suffix.
+tests exercise DEV output. Player level does not affect recommendations. The tooltip
+role label is simply "Role: Healer" (or the selected role); settings retain the DEV suffix.
 The gate's canonical PROD member
 inventory is unchanged because Auction has no production counterpart.
 

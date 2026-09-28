@@ -123,8 +123,7 @@ class DualTests(unittest.TestCase):
         self.assertTrue(body.startswith(dual.prefix(name, 'DEV')))
         child = d.local_dev_children(self.lock)[0]
         source = d.source_tree(OPTIONS.sources_root / child['name'], child['commit'])
-        expected_body = source['ApogeeAuction.lua'].replace(
-            b'"Apogee Auction - Role: "', b'"Apogee Auction DEV - Role: "')
+        expected_body = source['ApogeeAuction.lua']
         self.assertEqual(body, dual.prefix(name, 'DEV') + expected_body)
         settings_body = self.dev[name + '/RoleSettings.lua']
         expected_settings = source['RoleSettings.lua'].replace(

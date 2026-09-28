@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Update Auction DEV to ignore level in gear recommendations and use a compact role label.
 - Pin healing-paladin Need/Greed/Ask first guidance and validate its generated DEV
   comparison, item parsing, group context and tooltip behavior.
 - Pin Auction's per-character role selector and isolate its DEV saved setting.

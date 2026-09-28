@@ -1,7 +1,7 @@
 {
   "children": [
     {
-      "commit": "a899a280c1ea97e1fad53a05e54153a56571acf1",
+      "commit": "7151707abeefaf7b4366e1766f9de132642ed332",
       "files": {
         "ApogeeHeals.lua": "52ebe8c761df2eabf10386ad0405c66213fcf3e5b467e3630f042da653555eb4",
         "ApogeeHeals.toc": "281277210aad0f92f7c6ea1e7090e4e8219b8bc93fe7492aba248f7ee3c624d3",
@@ -11,12 +11,12 @@
         "Buffs/Defaults.lua": "88118e8147534df41c6e695475557aafe8c86d610bc4b52b55656935ca006073",
         "Buffs/Runtime.lua": "4a8609e2939a8e194c715f99a4230789e8429403f3212db417392632254eb958",
         "Buffs/View.lua": "b0b628439d1d04fe34b2662017bbdc3befad59869720afd74c8cce1491e9efcc",
-        "CHANGELOG.md": "1f6507f16e6387bf6d5b0f92e68134eab1b1819f8343a1e88905bac241cbcb57",
+        "CHANGELOG.md": "2a53877b76a0898f9cca3ae7aff6e0e006a8693470184887e73b6ccb1a517e37",
         "Cleansing/Runtime.lua": "78ec7cd14a77a81b0bfebc12dfa1056c0456dfeaa61b0c0e83f12cf339a51f16",
         "Core/Access.lua": "7e518d6a5a11f608ca797756f0448e88733b2346821c283812231a47c1ab821e",
         "Core/Client.lua": "bc76401feacc82f6d6feab6b854f38d0f509343813432770f76d80546df09e72",
         "Core/Storage.lua": "2b2cd0c656c2f94eaa0ed214b07666cc873f24bef523d68a642250ed0b4b24c5",
-        "Core/UnitAPI.lua": "acdba49bd9cdc7e98a8f2f90b3474b0da2a7d35601299e794fd49d6cc6b83591",
+        "Core/UnitAPI.lua": "1325b34855ce6fcc68d2c4768b367c65647c38ed2e6ca973577847222a1008ab",
         "Drinking/Runtime.lua": "fcc10557de5b6d838ffba27c03c2b38bdb763b30dbbdc28a41c845c325345713",
         "IncomingHeals/View.lua": "7cc175ce25329c382e08595cad723ca6b01c156ea124e9cb859ccec6c8dc03d1",
         "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",
@@ -30,7 +30,7 @@
         "UI/Settings.lua": "c29b67f191adcd3d5828418d9bdc5d49996fe7a22414a3db50d375349938fb7b",
         "UI/Style.lua": "b0ddedfed6dd41f1b33df9d9a2b1416161fd7af558d7b277a4111db1ecc45f15",
         "WeaponUpkeep/Runtime.lua": "d043c7fd40e0d47ae1079b0a0069243355016b126ecf0f72ff3ebca6087978e3",
-        "docs/API_REFERENCE.md": "ae8e081da18cd676a705ca612ba179538fcb4924cb985d0cd6013abca48ce284",
+        "docs/API_REFERENCE.md": "9af18887778aad497a2e9a7453218bba02d02da40808cabdd65c5e956617cf25",
         "docs/CLASS_SUPPORT.md": "984121f6dda5f64cf84196cf1e619279ac09d13c543e84e7ebfeacd72509a20a",
         "docs/wow-api-export.json": "ad4dbc76f011fb42d798ace59076c4b650dce060ed93ace8b9982701a50de133"
       },

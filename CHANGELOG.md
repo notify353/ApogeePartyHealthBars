@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Trim Auction DEV tooltips by removing comparison labels and loot-rule reminders.
 - Exclude Stamina from Auction DEV healing recommendations and stat explanations.
 - Make Auction DEV recommendations binary: clear Need, otherwise Greed with a reason.
 - Update Auction DEV healing guidance to ignore armor gains and losses.

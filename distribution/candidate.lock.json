@@ -225,19 +225,19 @@
   },
   "localDevChildren": [
     {
-      "commit": "3cfd671e6a496dda670170f653ec5e19b8c14bc8",
+      "commit": "543c41e2eeb414eb1cee705a1888e204c57e72af",
       "files": {
-        "ApogeeAuction.lua": "41c2373ff3db873b68ef4a91ca67386a6779d7b62019d1e4523b37016a6a42fe",
+        "ApogeeAuction.lua": "0134988a49313fb2c19f9801c4d8e194b82e480958f6acde7b489b554dc9e2b8",
         "ApogeeAuction.toc": "3abc82d0e6f45ca5c5783ca615a922072da1a134b19f48e7958f570a11d10318",
-        "CHANGELOG.md": "fe37e92cd2d83e349e4ededf116a35756efe2da92b2d6b0b836dbba2df533702",
-        "Core/Evaluate.lua": "7292585abc7310500fb9ec6e2af2bcd5e66860541998560f96353564ece4350e",
+        "CHANGELOG.md": "03a8e364cc146183fce5791e9e1ea6a355347066750cc9aea7a47b9470dadbc9",
+        "Core/Evaluate.lua": "3293d95c4b905a68255004fc9bc59fddcdd8643b1d7ea0c12c8dea98f6996fcd",
         "Core/Group.lua": "678fd6ad686346aa75dc111779ac30c3b3feaaa823a9169170445c0c39582723",
         "Core/Items.lua": "88d772ac9c5f2fd01fd32915f8993b6a5bf7c7d9d54111936805e06f806dcae0",
         "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",
-        "README.md": "f76c4823bd1fc0e126ffddd8a9127dd28342ec1aaf63effa16be648dd1114630",
+        "README.md": "3b1a963755cb58bcfa1a73600bfb7115c01d95e980d504cda0b95d1e87439f1b",
         "RoleSettings.lua": "1a3259f087351cd59d5423ea6c813f7fefb3679cf9e06fd75adf83d25e6f36d9",
         "Rules/Paladin.lua": "4089a420de8a03fbc0be4c63803bae4f797e23c89c162c9a5687fb47da7ff302",
-        "docs/HEALING_RULES.md": "63496a65a0f533cf57f1be1b3124e29627ef53172f7f1812069c6f8a8ac65613"
+        "docs/HEALING_RULES.md": "68de693abea76ad3c0543c2c1f1873973d821669e2050570171e28397d0b1866"
       },
       "localOnly": true,
       "name": "ApogeeAuction",

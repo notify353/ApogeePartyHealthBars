@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Include Auction DEV's native add-on-list icon using the existing Apogee artwork.
+
 - Pin Auction review fixes for signed attributes, native/tooltip consistency,
   and unified Healing crit; verify all Paladin regressions in generated DEV.
 

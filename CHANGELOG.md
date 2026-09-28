@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Pin Auction review fixes for signed attributes, native/tooltip consistency,
+  and unified Healing crit; verify all Paladin regressions in generated DEV.
+
 - Update Auction DEV to allow clear Damage weapon improvements across swing
   speeds while retaining Tank and real stat-tradeoff safeguards.
 

@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Update Auction DEV healing guidance to ignore armor gains and losses.
 - Update Auction DEV to ignore level in gear recommendations and use a compact role label.
 - Pin healing-paladin Need/Greed/Ask first guidance and validate its generated DEV
   comparison, item parsing, group context and tooltip behavior.

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Remove Battle Shout from the Heals pre-group buff reminders in the DEV candidate.
+
 ## [1.4.0] - 2026-09-27
 
 - Add class-aware pre-combat buff choices and helpful suggestions to Heals.

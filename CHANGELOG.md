@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Handle ordinary Auction shield block and Classic healing-stat aliases while
+  retaining conservative handling of defensive bonus effects.
+
 - Expand Auction passive healing wording and formatting coverage with strict
   negative tests for temporary, damage-only and party effects.
 

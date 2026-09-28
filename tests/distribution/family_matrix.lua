@@ -1,6 +1,6 @@
 -- Actual generated chunks must stop before side effects when their family is denied.
 local root = arg[1]
-local children = {"ApogeeHeals", "ApogeeKeybinds", "ApogeeGroupAlert", "ApogeeEssentials", "ApogeeTank"}
+local children = {"ApogeeHeals", "ApogeeKeybinds", "ApogeeGroupAlert", "ApogeeEssentials", "ApogeeTank", "ApogeeAuction"}
 local savedPrint = print
 local secret = {}
 local logs, scenarios = {}, 0
@@ -66,7 +66,7 @@ for _, base in ipairs(children) do
     for _, family in ipairs({"PROD", "DEV"}) do
         for _, option in ipairs({"no-guid", "bad-metadata", "secret-metadata", "secret-state", "missing-api",
                                  "error-api", "bad-enum", "invalid-lease", "opposite-lease", "metatable-lease"}) do
-            if family == "DEV" or base ~= "ApogeeTank" then loadDenied(base, family, option) end
+            if family == "DEV" or (base ~= "ApogeeTank" and base ~= "ApogeeAuction") then loadDenied(base, family, option) end
         end
     end
     for _, option in ipairs({"old-prod", "old-tank", "tank-enabled", "legacy-marker", "prod-enabled", "prod-some", "prod-loaded"}) do
@@ -89,7 +89,7 @@ for _, base in ipairs(children) do
     C_AddOns.GetAddOnName = function() return base end
     C_AddOns.GetAddOnEnableState = function() return 2 end
     local prod = {}
-    local publicBase = base == "ApogeeTank" and "ApogeeHeals" or base
+    local publicBase = (base == "ApogeeTank" or base == "ApogeeAuction") and "ApogeeHeals" or base
     assert(loadfile(root.."/PROD/"..publicBase.."/__Distribution/FamilyGate.lua"))(publicBase, prod)
     assert(ApogeeDistributionFamilyLease == lease and prod.__ApogeeFamilyAdmission == nil)
     ApogeeDistributionFamilyLease = {schema=1, family="DEV"}

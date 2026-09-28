@@ -223,6 +223,23 @@
     "commit": "eac66429006c4f1c3a99a168c5a64a9d5cc7cd18",
     "releaseCommit": "07612af0b5d9a0a2951df8b2a500cb5c37d5d125"
   },
+  "localDevChildren": [
+    {
+      "commit": "60a24e8cee603878ca88125653916fafb70e70fc",
+      "files": {
+        "ApogeeAuction.lua": "a5ffcf1ef37be85b18a8034b14e2706ba50f5c3cf36af83ae2d2e51c27e12061",
+        "ApogeeAuction.toc": "8c6cc007161a3c761c39952f514bc9256f922744b6f53e31d52d572b2c7f2777",
+        "CHANGELOG.md": "602dbbf3332c3f97919293137c038da168bf0fe5857a230d1c72fb67c07a09fc",
+        "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",
+        "README.md": "c3cf6ab72ab79f60ff20834713516cc9c995a1fdcf5e537ae8d441acd2c8c77c"
+      },
+      "localOnly": true,
+      "name": "ApogeeAuction",
+      "savedVariables": {},
+      "toc": "ApogeeAuction.toc",
+      "version": "0.1.0-dev"
+    }
+  ],
   "projectId": 1608100,
   "publicChildren": [
     "ApogeeHeals",

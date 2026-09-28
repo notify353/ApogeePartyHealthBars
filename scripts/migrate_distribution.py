@@ -13,6 +13,8 @@ sys.dont_write_bytecode = True
 import distribution as d
 
 NAMES = (d.MARKER,) + d.CHILDREN
+DEV_NAMES = tuple(n + 'Dev' for n in NAMES)
+LOCAL_DEV_NAMES = tuple(n + 'Dev' for n in d.LOCAL_DEV_CHILDREN)
 
 
 def ordinary(path):
@@ -158,7 +160,8 @@ def put_atomic(root, files):
 
 def apply(client, payload, known, backup, expected_plan=None, names=NAMES, atomic_dev=False, retired=None):
     if atomic_dev:
-        d.require(set(names) == {n + 'Dev' for n in NAMES}, 'Atomic live install is DEV-only')
+        d.require(set(DEV_NAMES) <= set(names) <= set(DEV_NAMES + LOCAL_DEV_NAMES),
+                  'Atomic live install is DEV-only')
     client = ordinary(client)
     backup = ordinary(backup)
     d.require(not backup.is_relative_to(client) and not client.is_relative_to(backup),
@@ -220,7 +223,7 @@ def rollback(backup):
     d.require(not backup.is_relative_to(client) and not client.is_relative_to(backup), 'Unsafe backup location')
     addons = under(client, 'Interface/AddOns')
     names = tuple(journal.get('names', NAMES))
-    d.require(names and all(n in NAMES or n.removesuffix('Dev') in NAMES for n in names), 'Unknown journal family')
+    d.require(names and all(n in NAMES + DEV_NAMES + LOCAL_DEV_NAMES for n in names), 'Unknown journal family')
     original = tree(backup / 'addons-before')
     d.require(hashes(original) == journal['before'], 'Backup corrupted; no rollback writes')
     current = managed(addons, names)

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Add the featureless Apogee Auction skeleton to local DEV builds only, with an
+  immutable local source pin and no production package changes.
+
 - Display restricted Heals unit names through native text sinks for dungeon targets.
 
 - Remove Battle Shout from the Heals pre-group buff reminders in the DEV candidate.

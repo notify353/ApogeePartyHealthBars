@@ -22,7 +22,8 @@ def payloads(lock, sources_root, artifacts, initial=False):
 
 
 def prepare(client, payload, known, initial=False, previous=None, retire_files=()):
-    names = tuple(n + 'Dev' for n in m.NAMES)
+    roots = {p.split('/')[0] for p in payload}
+    names = m.DEV_NAMES + tuple(n for n in m.LOCAL_DEV_NAMES if n in roots)
     if initial:
         names = m.NAMES + names
     d.require(set(p.split('/')[0] for p in payload) == set(names), 'Exact family roots required')
@@ -33,7 +34,7 @@ def prepare(client, payload, known, initial=False, previous=None, retire_files=(
         d.require(Path(previous['client']).absolute() == Path(client).absolute(), 'Receipt belongs to another client')
         for p, h in previous['after'].items():
             d.safe_path(p)
-            d.require(p.split('/')[0] in m.NAMES + tuple(n + 'Dev' for n in m.NAMES), 'Receipt escapes families')
+            d.require(p.split('/')[0] in m.NAMES + m.DEV_NAMES + m.LOCAL_DEV_NAMES, 'Receipt escapes families')
             known['files'].setdefault(p, []).append(h)
             if p.startswith(d.MARKER + '/') and p.lower().endswith('.toc'):
                 known['legacyTocHashes'].append(h)

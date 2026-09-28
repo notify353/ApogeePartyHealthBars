@@ -16,9 +16,10 @@ GATE_PATH = '__Distribution/FamilyGate.lua'
 FAMILY_TITLES = {'PROD': 'Apogee Forever', 'DEV': 'Apogee Dev'}
 LABELS = {'ApogeeHeals': 'Apogee Heals', 'ApogeeKeybinds': 'Apogee Keybinds',
           'ApogeeGroupAlert': 'Apogee Group Alert', 'ApogeeEssentials': 'Apogee Essentials',
-          'ApogeeTank': 'Apogee Tank'}
+          'ApogeeTank': 'Apogee Tank', 'ApogeeAuction': 'Apogee Auction'}
 # Exact identity inventory reviewed with each owning addon task. No Blizzard names or gameplay keys.
 IDENTITIES = {
+    'ApogeeAuction': [],  # Private namespace only: no global, asset or saved-data identities.
     'ApogeeHeals': ['ApogeeHealsDB', 'ApogeeHealsAnchor', 'ApogeeHealsUnit',
                     'ApogeeHealsBindingEditor', 'ApogeeHealsBuffPicker', 'ApogeeHealsMinimapButton'],
     'ApogeeKeybinds': ['ApogeeKeybindsDB', 'ApogeeKeybindsPhysical', 'ApogeeKeybindsHud',
@@ -109,15 +110,26 @@ def prefix(name, family):
 
 def family_children(lock, family):
     d.require(family in ('PROD', 'DEV'), 'Unknown family')
-    return d.public_children(lock) if family == 'PROD' else d.CHILDREN
+    return d.public_children(lock) if family == 'PROD' else d.CHILDREN + tuple(c['name'] for c in d.local_dev_children(lock))
 
 
 def family_files(lock, sources_root, family):
     d.require(family in ('PROD', 'DEV'), 'Unknown family')
     source = d.collect(lock, sources_root, 'local-candidate')
+    children = list(lock['children'])
+    if family == 'DEV':
+        for child in d.local_dev_children(lock):
+            tree = d.source_tree(Path(sources_root) / child['name'], child['commit'])
+            files = {}
+            for p, digest in child['files'].items():
+                d.require(p in tree and d.sha(tree[p]) == digest, 'Local DEV pinned file mismatch: ' + p)
+                files[p] = tree[p]
+            d.child_contract(child, files)
+            source.update({child['name'] + '/' + p: data for p, data in files.items()})
+            children.append(child)
     output, changes = {}, {}
     marker = d.MARKER + ('Dev' if family == 'DEV' else '')
-    for child in lock['children']:
+    for child in children:
         if child['name'] not in family_children(lock, family):
             continue
         old = child['name']; name = old + ('Dev' if family == 'DEV' else '')
@@ -192,7 +204,9 @@ def build(lock, sources_root, output):
                     'lockSha256': d.sha(d.canonical(lock)), 'gateSha256': d.sha(GATE.read_bytes()),
                     'archive': name, 'archiveSha256': d.sha(data),
                     'files': {p: d.sha(b) for p, b in files.items()}, 'runtimeChanges': changes,
-                    'children': [{k: c[k] for k in ('name', 'commit', 'version')} for c in lock['children'] if c['name'] in family_children(lock, family)],
+                    'children': [{k: c[k] for k in ('name', 'commit', 'version')} for c in
+                                 lock['children'] + (d.local_dev_children(lock) if family == 'DEV' else [])
+                                 if c['name'] in family_children(lock, family)],
                     'nativeClientTested': False, 'curseforgeAppTested': False}
         artifacts[family] = (name, data, manifest)
     output = Path(output); output.mkdir(parents=True, exist_ok=False)

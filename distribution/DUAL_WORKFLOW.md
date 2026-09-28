@@ -7,6 +7,29 @@ settings; five independent children supply gameplay.
 
 ## Build and validate
 
+### Local Auction skeleton
+
+`C:/Dev/WoW/ApogeeAuction` is an independent, featureless addon. The candidate
+lock's `localDevChildren` pins its committed source and exact file hashes without
+claiming a hosted repository. It is included only as `ApogeeAuctionDev`: DEV now
+has seven roots. The existing five-child source inventory and four-child public
+selection remain unchanged. Auction has no saved data, events, frames, commands,
+settings or auction operations. Its only runtime is private namespace bootstrap
+and Forever compatibility checking, behind the existing generated family gate.
+No identity rewrites are needed in its Lua body. The gate's canonical PROD member
+inventory is unchanged because Auction has no production counterpart.
+
+Local-only pins require the independent local Git repository to build DEV and
+are not provisioned by hosted Actions. Before future hosted validation/publication,
+explicitly review hosted source access or remove the local-only pin from that
+release candidate. Do not create a remote or claim new native acceptance merely
+to satisfy release gates. Historical five/six-root descriptions below predate
+this local-only skeleton. Current PROD ZIP bytes are unchanged.
+
+For this skeleton task, prepare and validate artifacts first and obtain explicit
+owner approval immediately before live DEV installation. This task-specific
+approval requirement takes precedence over the routine standing authorization.
+
 Run from the canonical checkout `C:/Dev/WoW/ApogeePartyHealthBars`.
 This document and its central scripts are the stable authority for all five
 child projects. Historical prototype worktrees are retained evidence, not an

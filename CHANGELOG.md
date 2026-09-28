@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Add opt-in Alt-hover Auction diagnostics to identify silent evaluation blockers.
+
 - Handle ordinary Auction shield block and Classic healing-stat aliases while
   retaining conservative handling of defensive bonus effects.
 

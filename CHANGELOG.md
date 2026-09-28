@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Pin healing-paladin Need/Greed/Ask first guidance and validate its generated DEV
+  comparison, item parsing, group context and tooltip behavior.
 - Pin Auction's per-character role selector and isolate its DEV saved setting.
 - Pin the Auction item-tooltip assigned-role indicator for local DEV testing.
 - Add the featureless Apogee Auction skeleton to local DEV builds only, with an

@@ -17,8 +17,12 @@ selection remain unchanged. Auction adds an item-tooltip evaluation-role indicat
 and an addon-settings dropdown: Auto, Healer, Tank or Damage. Auto uses the assigned
 group role; manual choices also work solo. Its only saved data is a per-character
 role choice. The audited ApogeeAuctionDB identity becomes ApogeeAuctionDevDB in DEV;
-both runtime chunks remain behind the existing family gate. Gear scoring is not yet
-implemented. The tooltip and settings labels receive the DEV suffix. The gate's canonical PROD member
+all runtime chunks remain behind the existing family gate. Healing paladins receive
+Need/Greed/Ask first guidance with equipped-item comparisons and conservative
+effect/tradeoff fallbacks. Class rules, item parsing, group context and comparison
+live in separate modules; other classes are not evaluated yet. Generated gameplay
+tests exercise DEV output. The tooltip and settings labels receive the DEV suffix.
+The gate's canonical PROD member
 inventory is unchanged because Auction has no production counterpart.
 
 Local-only pins require the independent local Git repository to build DEV and

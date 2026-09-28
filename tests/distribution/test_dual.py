@@ -115,7 +115,8 @@ class DualTests(unittest.TestCase):
         self.assertFalse(any(p.startswith('ApogeeAuction/') for p in self.prod))
         name = 'ApogeeAuctionDev'
         meta, runtime = d.toc_info(self.dev[name + '/' + name + '.toc'])
-        gameplay = ['Rules/Paladin.lua', 'Core/Items.lua', 'Core/Group.lua', 'Core/Evaluate.lua']
+        gameplay = ['Core/Compare.lua', 'Rules/Paladin.lua', 'Rules/Paladin/Healing.lua',
+                    'Core/Items.lua', 'Core/Group.lua', 'Core/Evaluate.lua']
         self.assertEqual(runtime, [dual.GATE_PATH, name + '.lua'] + gameplay + ['RoleSettings.lua'])
         self.assertEqual(meta.get('SavedVariablesPerCharacter'), 'ApogeeAuctionDevDB')
         self.assertNotIn('SavedVariables', meta)

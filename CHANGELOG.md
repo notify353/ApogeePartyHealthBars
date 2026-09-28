@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Harden Auction DEV shared-loot checks and separate paladin healing rules from
+  class-wide equipment rules and the shared comparison engine.
 - Show only clear Auction Need calls, with native dice icon, prominent heading and
   spaced stat gains; hide all non-Need recommendations and explanations.
 - Trim Auction DEV tooltips by removing comparison labels and loot-rule reminders.

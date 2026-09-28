@@ -19,8 +19,10 @@ group role; manual choices also work solo. Its only saved data is a per-characte
 role choice. The audited ApogeeAuctionDB identity becomes ApogeeAuctionDevDB in DEV;
 all runtime chunks remain behind the existing family gate. Healing paladins receive
 Need-only tooltip guidance with equipped-item comparisons and conservative
-effect/tradeoff fallbacks. Class rules, item parsing, group context and comparison
-live in separate modules; other classes are not evaluated yet. Generated gameplay
+effect/tradeoff fallbacks. Class-wide equipment rules and role-specific healing rules are separate from
+shared comparison, item parsing and group context. Mixed healing/damage items
+and possible competing healers retain conservative group checks. Other classes
+and paladin Tank/Damage roles are not evaluated yet. Generated gameplay
 tests exercise DEV output. Player level does not affect recommendations. The tooltip
 role label is simply "Role: Healer" (or the selected role); settings retain the DEV suffix.
 Only clear Need results show a native dice icon, ROLL NEED heading and spaced stat

@@ -225,19 +225,21 @@
   },
   "localDevChildren": [
     {
-      "commit": "5d99c3b9b6bbeb7df0c45dede78e83c153a82098",
+      "commit": "c65f398b191abb76376eea1b515915219d6b5495",
       "files": {
         "ApogeeAuction.lua": "1a8c595fb8b69a31aaf7e135c793d25485869f7b2b51ef5459242761533ad82e",
-        "ApogeeAuction.toc": "3abc82d0e6f45ca5c5783ca615a922072da1a134b19f48e7958f570a11d10318",
-        "CHANGELOG.md": "1af2c35b0b869945f2540aa8cc8e3a98e632e7f27858f94d9a77bb77cb194e90",
+        "ApogeeAuction.toc": "bb2e67c49fe6cb18b697dc6e9327e29f096dcf471f881658d1022ea4467245d9",
+        "CHANGELOG.md": "1e1624d051fae21afb70ecde52e44140bf00b1f37ec7a1e2cfd4c4875d2f3a4e",
+        "Core/Compare.lua": "ff6239a48fc624614f7a80f250847bef9d234515f353c064405ae0f588ae5a04",
         "Core/Evaluate.lua": "3293d95c4b905a68255004fc9bc59fddcdd8643b1d7ea0c12c8dea98f6996fcd",
-        "Core/Group.lua": "678fd6ad686346aa75dc111779ac30c3b3feaaa823a9169170445c0c39582723",
-        "Core/Items.lua": "88d772ac9c5f2fd01fd32915f8993b6a5bf7c7d9d54111936805e06f806dcae0",
+        "Core/Group.lua": "e583ddf348d957fc828b8f198890747c8df053c1d3430b15a3650daee0092246",
+        "Core/Items.lua": "025184829c93b2d7281f2df2dd8248764c5c3bdb48a8caffc5281848fbd20acd",
         "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",
-        "README.md": "a918269ca8effe940816d0ff7c31421a5176351677d6a399484632f30b37c59c",
+        "README.md": "66cf11d781e50ea2f94d93e396f1bea1f830903adfa6884e32c7294a3f86af10",
         "RoleSettings.lua": "1a3259f087351cd59d5423ea6c813f7fefb3679cf9e06fd75adf83d25e6f36d9",
-        "Rules/Paladin.lua": "4089a420de8a03fbc0be4c63803bae4f797e23c89c162c9a5687fb47da7ff302",
-        "docs/HEALING_RULES.md": "f4481d1de7854b2451c685d33d53a5dfb8820edfa918a24f2be07372a59e8a5b"
+        "Rules/Paladin.lua": "699e540f0dc4e33569f0287699f62f044d9ed8cac13c683b89b8e6f45b098312",
+        "Rules/Paladin/Healing.lua": "2d4edacbeb8835a86cd64e31c1059849942e17252f23c6d401976a634f527469",
+        "docs/HEALING_RULES.md": "239df1ea8037d46b83c4f696b0ae27612b2a28606ea5d2dfc990310c58e287cf"
       },
       "localOnly": true,
       "name": "ApogeeAuction",

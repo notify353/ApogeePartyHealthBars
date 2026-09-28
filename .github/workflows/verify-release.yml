@@ -48,7 +48,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           CF_DOWNLOAD_URL: ${{ inputs.download_url }}
         run: python -B scripts/publish_distribution.py verify --output "$RUNNER_TEMP/apogee-publication" --curseforge-download-url "$CF_DOWNLOAD_URL"
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: apogee-publication-verification

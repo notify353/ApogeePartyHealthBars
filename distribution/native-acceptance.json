@@ -2,6 +2,25 @@
   "accepted": true,
   "basis": "Owner reported that everything looks good in test for the installed DEV update, and explicitly authorized merging Heals and Keybinds and publishing the combined CurseForge release. Verified installed DEV Lua bytes against the apogee-inset-icons-d4df305 package and transaction. Includes class upkeep, direct cleansing, friendly target support, food/drink displays, settings-sized side icons, Paladin Keybind defaults and grid positioning. Generated PROD hashes establish source correspondence, not separate PROD or CurseForge-client testing. Deferred pet casting and coating application are not represented as accepted capabilities.",
   "curseforgeClientTested": false,
+  "followUpChecks": [
+    {
+      "check": "Target and target-of-target names inside a five-player dungeon",
+      "installedArchiveSha256": "57146e5f545510e678cc35b5afef2a6ee6a5e1597416d4000d5d323e4072b715",
+      "reportedDate": "2026-09-28",
+      "result": "Owner reports the blank-name issue is fixed after checking inside a dungeon.",
+      "runtimeFiles": {
+        "DEV": {
+          "ApogeeHealsDev/Core/UnitAPI.lua": "2b6acbfbfaed13426ad9306921406405dc9a7a5d05836448a526e920530abd54"
+        },
+        "PROD": {
+          "ApogeeHeals/Core/UnitAPI.lua": "fe8683cf20e6ff15ff286ed5a8ee2d9bdf7b00500da7ac55c66d6c8491b92073"
+        }
+      },
+      "scope": "Confirms the dungeon-name fix only. Existing full-package acceptance hashes remain unchanged; later release candidates require matching acceptance. PROD and CurseForge-client testing are not claimed.",
+      "sourceCommit": "7151707abeefaf7b4366e1766f9de132642ed332",
+      "testedFamily": "DEV"
+    }
+  ],
   "gateSha256": "ba4159949c807b3af7ad47d2df85d75698e7a847a76ab0250ae36b95695a4904",
   "installedArchiveSha256": "b3036f42ae91641508c11c158b52bfefb13aa9be8ccb4d8cae05fd8788f86a76",
   "productionClientTested": false,

@@ -108,6 +108,100 @@ class DualTests(unittest.TestCase):
         evidence.write_bytes(d.canonical(accepted))
         with patch.object(publisher, 'ACCEPTANCE', evidence):
             self.assertEqual(publisher.payload(OPTIONS.sources_root, self.lock['version']), d.zip_bytes(self.prod))
+
+    def test_auction_is_hosted_in_both_families(self):
+        self.assertIn('ApogeeAuction', d.public_children(self.lock))
+        prod_meta, _ = d.toc_info(self.prod['ApogeeAuction/ApogeeAuction.toc'])
+        self.assertEqual(prod_meta['SavedVariablesPerCharacter'], 'ApogeeAuctionDB')
+        self.assertEqual(prod_meta['IconTexture'], 'Interface/AddOns/ApogeeAuction/Media/Textures/ApogeeLogo.png')
+        name = 'ApogeeAuctionDev'
+        meta, runtime = d.toc_info(self.dev[name + '/' + name + '.toc'])
+        gameplay = ['Core/Compare.lua', 'Rules/Paladin.lua', 'Rules/Paladin/Healing.lua',
+                    'Rules/Paladin/Combat.lua', 'Rules/Paladin/Damage.lua', 'Rules/Paladin/Tank.lua',
+                    'Core/Items.lua', 'Core/Group.lua', 'Core/Evaluate.lua']
+        self.assertEqual(runtime, [dual.GATE_PATH, name + '.lua'] + gameplay + ['RoleSettings.lua'])
+        self.assertEqual(meta.get('SavedVariablesPerCharacter'), 'ApogeeAuctionDevDB')
+        self.assertNotIn('SavedVariables', meta)
+        body = self.dev[name + '/' + name + '.lua']
+        self.assertTrue(body.startswith(dual.prefix(name, 'DEV')))
+        child = next(c for c in self.lock['children'] if c['name'] == 'ApogeeAuction')
+        source = d.source_tree(OPTIONS.sources_root / child['name'], child['commit'])
+        expected_body = source['ApogeeAuction.lua']
+        self.assertEqual(body, dual.prefix(name, 'DEV') + expected_body)
+        settings_body = self.dev[name + '/RoleSettings.lua']
+        expected_settings = source['RoleSettings.lua'].replace(
+            b'ApogeeAuctionDB', b'ApogeeAuctionDevDB').replace(
+            b'Apogee Auction', b'Apogee Auction DEV').replace(
+            b'APOGEE_AUCTION_DEFAULTS', b'APOGEE_AUCTION_DEV_DEFAULTS')
+        self.assertEqual(settings_body, dual.prefix(name, 'DEV') + expected_settings)
+        for path in gameplay:
+            self.assertEqual(self.dev[name + '/' + path], dual.prefix(name, 'DEV') + source[path])
+        evaluation_check = OPTIONS.artifacts / 'auction-evaluation.lua'
+        evaluation_check.write_bytes(source['tests/evaluation.lua'])
+        subprocess.run(['lua', str(evaluation_check), str(OPTIONS.artifacts / 'DEV' / name), name], check=True)
+        settings_check = OPTIONS.artifacts / 'auction-settings.lua'
+        settings_check.write_bytes(source['tests/role-settings.lua'])
+        subprocess.run(['lua', str(settings_check),
+                        str(OPTIONS.artifacts / 'DEV' / name / 'RoleSettings.lua'), name], check=True)
+        # Execute the generated body in a strict sandbox: admission must precede
+        # even client inspection and tooltip registration.
+        check = OPTIONS.artifacts / 'auction-bootstrap.lua'
+        check.write_text('''
+local path = arg[1]
+for _, admitted in ipairs({false, true}) do
+    local namespace = {__ApogeeFamilyAdmission=function(name)
+        assert(name == "ApogeeAuctionDev"); return admitted end}
+    local calls, registrations = 0, 0
+    local env = {type=type,
+        Enum={TooltipDataType={Item=0}},
+        TooltipDataProcessor={AddTooltipPostCall=function(kind, callback)
+            assert(kind == 0 and type(callback) == "function")
+            registrations=registrations+1
+        end},
+        GetBuildInfo=function()
+        calls=calls+1; return "1.60.1", "70009", "", 16001 end}
+    setmetatable(env, {__index=function(_, k) error("Unexpected API: "..k) end,
+                      __newindex=function(_, k) error("Unexpected global: "..k) end})
+    local chunk=assert(loadfile(path)); setfenv(chunk, env)
+    chunk("ApogeeAuctionDev", namespace)
+    assert(calls == (admitted and 1 or 0))
+    assert(registrations == (admitted and 1 or 0))
+    assert(namespace.ready == (admitted and true or nil))
+end
+''')
+        subprocess.run(['lua', str(check), str(OPTIONS.artifacts / 'DEV' / name / (name + '.lua'))], check=True)
+
+    def test_local_only_history_remains_private_and_pins_are_verified(self):
+        baseline = copy.deepcopy(self.lock)
+        child = baseline['children'].pop()
+        baseline['publicChildren'].remove('ApogeeAuction')
+        child.pop('repository'); child['localOnly'] = True
+        baseline['localDevChildren'] = [child]
+        self.assertEqual(d.local_dev_children(baseline), [child])
+        self.assertFalse(any(p.startswith('ApogeeAuction/') for p in
+                             dual.family_files(baseline, OPTIONS.sources_root, 'PROD')[0]))
+        bad = copy.deepcopy(baseline); bad['publicChildren'].append('ApogeeAuction')
+        with self.assertRaises(ValueError): d.public_children(bad)
+        bad = copy.deepcopy(baseline)
+        bad['localDevChildren'][0]['repository'] = 'https://example.com/unreviewed.git'
+        with self.assertRaises(ValueError): d.local_dev_children(bad)
+        bad = copy.deepcopy(self.lock); bad['localDevChildren'] = [child]
+        with self.assertRaises(ValueError): d.local_dev_children(bad)
+        for family in ('PROD', 'DEV'):
+            bad = copy.deepcopy(self.lock)
+            bad['children'][-1]['files']['ApogeeAuction.lua'] = '0' * 64
+            with self.assertRaisesRegex(ValueError, 'pinned file mismatch'):
+                dual.family_files(bad, OPTIONS.sources_root, family)
+
+    def test_auction_install_and_rollback_preserve_existing_family(self):
+        old = {p: b for p, b in self.dev.items() if not p.startswith('ApogeeAuctionDev/')}
+        client, backup = self.fixture(old)
+        result = installer.install(client, self.dev, self.known, backup)
+        self.assertIn('ApogeeAuctionDev', result['names'])
+        self.assertEqual(m.tree(client / 'Interface/AddOns/ApogeeAuctionDev'),
+                         {p.split('/', 1)[1]: b for p, b in self.dev.items() if p.startswith('ApogeeAuctionDev/')})
+        m.rollback(backup)
+        self.assertEqual(m.managed(client / 'Interface/AddOns', m.DEV_NAMES + m.LOCAL_DEV_NAMES), old)
         for names in ([], ['Unknown'], ['ApogeeTank', 'ApogeeHeals'], ['ApogeeHeals', 'ApogeeHeals']):
             invalid = copy.deepcopy(self.lock); invalid['publicChildren'] = names
             with self.assertRaises(ValueError): d.public_children(invalid)
@@ -205,7 +299,7 @@ class DualTests(unittest.TestCase):
         with patch.object(m, 'protected', side_effect=[{}, {'WTF/fixture': [1, 2]}]):
             with self.assertRaisesRegex(ValueError, 'Preferences changed during backup'):
                 installer.install(client, self.dev, self.known, backup)
-        self.assertEqual(m.managed(client / 'Interface/AddOns', tuple(n + 'Dev' for n in m.NAMES)), self.dev)
+        self.assertEqual(m.managed(client / 'Interface/AddOns', m.DEV_NAMES + m.LOCAL_DEV_NAMES), self.dev)
 
     def test_public_package_has_player_guide_and_required_notices(self):
         source = d.collect(self.lock, OPTIONS.sources_root, 'local-candidate')
@@ -282,7 +376,7 @@ class DualTests(unittest.TestCase):
         self.assertEqual(len(result['writes']), 1)
         self.assertEqual(m.managed(client / 'Interface/AddOns'), self.prod)
         m.rollback(second_backup)
-        self.assertEqual(m.managed(client / 'Interface/AddOns', tuple(n + 'Dev' for n in m.NAMES)), self.dev)
+        self.assertEqual(m.managed(client / 'Interface/AddOns', m.DEV_NAMES + m.LOCAL_DEV_NAMES), self.dev)
         m.rollback(first_backup)
         self.assertEqual(m.managed(client / 'Interface/AddOns', tuple(n + 'Dev' for n in m.NAMES)), {})
 

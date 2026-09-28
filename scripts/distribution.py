@@ -14,6 +14,39 @@ DEFAULT_LOCK = ROOT / 'distribution' / 'sources.lock.json'
 CHILDREN = ('ApogeeHeals', 'ApogeeKeybinds', 'ApogeeGroupAlert',
             'ApogeeEssentials', 'ApogeeTank')
 MARKER = 'ApogeePartyHealthBars'
+LOCAL_DEV_CHILDREN = ('ApogeeAuction',)
+OPTIONAL_HOSTED_CHILDREN = ('ApogeeAuction',)
+
+def hosted_children(lock):
+    names = tuple(c['name'] for c in lock['children'])
+    require(names in (CHILDREN, CHILDREN + OPTIONAL_HOSTED_CHILDREN),
+            'Unexpected hosted child inventory')
+    return names
+
+
+
+def local_dev_children(lock):
+    children = lock.get('localDevChildren', [])
+    require(isinstance(children, list) and [c['name'] for c in children] in
+            ([], list(LOCAL_DEV_CHILDREN)), 'Unexpected local DEV selection')
+    require(not set(c['name'] for c in children) & set(hosted_children(lock)),
+            'Child cannot be both local and hosted')
+    for child in children:
+        require(child.get('localOnly') is True and child.get('repository') is None,
+                'Local DEV source must not claim a hosted repository')
+        require(re.fullmatch('[0-9a-f]{40}', child['commit']), 'Immutable local DEV commit required')
+        require(child['toc'] == child['name'] + '.toc' and child['savedVariables'] in
+                ({}, {'SavedVariablesPerCharacter': 'ApogeeAuctionDB'}),
+                'Reviewed local DEV TOC and saved-data identity required')
+        require(child['files'] and child['toc'] in child['files'] and 'LICENSE' in child['files'],
+                'Missing local DEV TOC or license')
+        seen = set()
+        for path, digest in child['files'].items():
+            safe_path(path)
+            require(path.casefold() not in seen, 'Case-colliding local DEV source path')
+            seen.add(path.casefold())
+            require(re.fullmatch('[0-9a-f]{64}', digest), 'Invalid local DEV source hash')
+    return children
 
 
 def require(condition, message):
@@ -40,9 +73,9 @@ def safe_path(value):
 
 
 def public_children(lock):
-    names = lock.get('publicChildren', list(CHILDREN))
+    names = lock.get('publicChildren', list(hosted_children(lock)))
     require(isinstance(names, list) and names and all(isinstance(n, str) for n in names)
-            and names == [n for n in CHILDREN if n in names], 'Invalid public child selection')
+            and names == [n for n in hosted_children(lock) if n in names], 'Invalid public child selection')
     return tuple(names)
 
 
@@ -54,8 +87,9 @@ def read_lock(path=DEFAULT_LOCK):
         'reviewedBuild': '1.60.1.70009', 'curseforgeVersionTypeId': 88568},
         'Unexpected client/project; no flavor fallback is permitted')
     require(re.fullmatch(r'[0-9A-Za-z.-]+', lock['version']), 'Unsafe version')
-    require([c['name'] for c in lock['children']] == list(CHILDREN), 'Exact five children required')
+    hosted_children(lock)
     public_children(lock)
+    local_dev_children(lock)
     for child in lock['children']:
         require(re.fullmatch('[0-9a-f]{40}', child['commit']), 'Immutable commit required')
         require(child['repository'] == 'https://github.com/notify353/' + child['name'] + '.git',

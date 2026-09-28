@@ -3,12 +3,32 @@
 The active local workflow is side-by-side PROD and DEV. Earlier prototype and
 migration fixtures remain historical evidence. PROD 1.0.0 is published on
 CurseForge and GitHub; DEV remains local. APHB is a zero-Lua distribution identity with no gameplay or saved
-settings; five independent children supply gameplay.
+settings. The candidate now pins six independent children; five are public.
 
 ## Build and validate
 
+### Hosted Auction
+
+Auction is now a private hosted child under notify353, pinned by immutable commit
+and file hashes alongside the other children. The candidate includes canonical
+ApogeeAuction in PROD and isolated ApogeeAuctionDev in DEV. PROD has six roots
+(five public children and the marker); DEV has seven. ApogeeTank remains DEV-only.
+Historical source locks retain their original five-child inventories; local-only
+Auction fixtures remain supported but cannot be promoted without a hosted pin.
+
+Auction provides conservative Paladin Healing, Damage and Tank guidance, a saved
+per-character role selector, and confirmed Defaults. Clear upgrades show ROLL NEED;
+uncertain comparisons stay quiet. Its displayed-tooltip path preserves random
+auction suffix stats. All generated runtime chunks are guarded, and canonical
+Auction participates in the same PROD/DEV exclusion decision as the other addons.
+
+Hosted validation and production require read access to the new private Auction
+repository in DISTRIBUTION_READ_TOKEN. Adding the repository does not establish
+that access. Runtime changes require renewed owner-reported native acceptance;
+local validation does not authorize a release or claim in-game acceptance.
+
 Run from the canonical checkout `C:/Dev/WoW/ApogeePartyHealthBars`.
-This document and its central scripts are the stable authority for all five
+This document and its central scripts are the stable authority for all six
 child projects. Historical prototype worktrees are retained evidence, not an
 installation dependency. Run `pwsh ./scripts/test-local.ps1` for full validation.
 
@@ -28,16 +48,16 @@ The builder emits two deterministic ZIPs from the same pins. PROD retains exact
 source gameplay bodies behind an admission prefix. DEV transforms audited
 identifiers, saves, frames, popup/slash names, asset paths and labels. Manifests
 list every identity edit and source/body hash. Comments, gameplay keys and Blizzard
-names are not blindly renamed. The publicChildren selection in candidate.lock.json includes four PROD children;
-DEV retains all five pinned children. Public artifacts have five roots including
-the marker; DEV has six. Tank remains DEV-only, with its source pin retained.
+names are not blindly renamed. The publicChildren selection in candidate.lock.json includes five PROD children;
+DEV retains all six pinned children. Public artifacts have six roots including
+the marker; DEV has seven. Tank remains DEV-only, with its source pin retained.
 Family safety still recognizes older installed canonical Tank. Omitting a folder
 from a ZIP does not prove CurseForge removes an older installed copy; that update
 behavior needs client acceptance. Never delete PROD folders or saved data here.
 Heals uses an independent default position beneath the default Keybinds Mouse grid.
 Its factory-reset dialog is explicitly mapped to a separate DEV identity; the
 confirmation and per-character storage remain within their own family.
-The existing CurseForge project1608100 download owns PROD roots, never the six Dev roots.
+The existing CurseForge project1608100 download owns PROD roots, never the seven DEV roots.
 DEV TOCs contain no CurseForge project ID.
 Each family marker bundles the existing green Apogee logo from the pinned
 Keybinds source and points its IconTexture at that family-local asset. Native

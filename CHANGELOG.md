@@ -2,6 +2,61 @@
 
 ## [Unreleased]
 
+- Include hosted Auction source in future PROD packages with isolated DEV identity,
+  canonical family exclusion, and hosted validation/release checkout coverage.
+
+- Unify Auction, Essentials, Group Alert, Heals and Keybinds reset controls under
+  confirmed top-right Defaults buttons, with separately audited DEV popup identities.
+
+- Match Auction DEV settings to Apogee's dark panel and verify native Defaults
+  returns the saved role and dropdown to Auto.
+
+- Include Auction DEV's native add-on-list icon using the existing Apogee artwork.
+
+- Pin Auction review fixes for signed attributes, native/tooltip consistency,
+  and unified Healing crit; verify all Paladin regressions in generated DEV.
+
+- Update Auction DEV to allow clear Damage weapon improvements across swing
+  speeds while retaining Tank and real stat-tradeoff safeguards.
+
+- Pin Paladin Damage and Tank loot profiles in Auction DEV, with generated-output
+  regression coverage and unchanged PROD bytes.
+
+- Refactor Auction class/role policy boundaries and item evaluation helpers,
+  retaining confirmed suffix behavior and conservative healing recommendations.
+
+- Preserve Auction hovered suffix effects through healing evaluation instead of
+  relying on a second generic item-link tooltip query.
+
+- Add opt-in Alt-hover Auction diagnostics to identify silent evaluation blockers.
+
+- Handle ordinary Auction shield block and Classic healing-stat aliases while
+  retaining conservative handling of defensive bonus effects.
+
+- Expand Auction passive healing wording and formatting coverage with strict
+  negative tests for temporary, damage-only and party effects.
+
+- Prevent Auction healing Need calls on melee-focused shields and held off-hands.
+
+- Refine Auction healing weapon guidance with learned-skill checks and melee
+  red flags, retaining individual slot comparisons and conservative fallbacks.
+
+- Harden Auction DEV shared-loot checks and separate paladin healing rules from
+  class-wide equipment rules and the shared comparison engine.
+- Show only clear Auction Need calls, with native dice icon, prominent heading and
+  spaced stat gains; hide all non-Need recommendations and explanations.
+- Trim Auction DEV tooltips by removing comparison labels and loot-rule reminders.
+- Exclude Stamina from Auction DEV healing recommendations and stat explanations.
+- Make Auction DEV recommendations binary: clear Need, otherwise Greed with a reason.
+- Update Auction DEV healing guidance to ignore armor gains and losses.
+- Update Auction DEV to ignore level in gear recommendations and use a compact role label.
+- Pin healing-paladin Need/Greed/Ask first guidance and validate its generated DEV
+  comparison, item parsing, group context and tooltip behavior.
+- Pin Auction's per-character role selector and isolate its DEV saved setting.
+- Pin the Auction item-tooltip assigned-role indicator for local DEV testing.
+- Add the featureless Apogee Auction skeleton to local DEV builds only, with an
+  immutable local source pin and no production package changes.
+
 - Display restricted Heals unit names through native text sinks for dungeon targets.
 
 - Remove Battle Shout from the Heals pre-group buff reminders in the DEV candidate.

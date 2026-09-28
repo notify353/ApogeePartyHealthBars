@@ -67,6 +67,14 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           token: ${{ github.token }}
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          repository: notify353/ApogeeAuction
+          ref: ${{ steps.pins.outputs.ApogeeAuction }}
+          path: sources/ApogeeAuction
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{ secrets.DISTRIBUTION_READ_TOKEN }}
       - name: Install Lua 5.1
         run: sudo apt-get update && sudo apt-get install -y lua5.1
       - name: Validate and build both families

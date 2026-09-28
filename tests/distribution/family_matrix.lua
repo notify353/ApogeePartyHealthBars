@@ -1,13 +1,13 @@
 -- Actual generated chunks must stop before side effects when their family is denied.
 local root = arg[1]
-local children = {"ApogeeHeals", "ApogeeKeybinds", "ApogeeGroupAlert", "ApogeeEssentials", "ApogeeTank"}
+local children = {"ApogeeHeals", "ApogeeKeybinds", "ApogeeGroupAlert", "ApogeeEssentials", "ApogeeTank", "ApogeeAuction"}
 local savedPrint = print
 local secret = {}
 local logs, scenarios = {}, 0
 local function setup(name, family, option)
     _G.ApogeeDistributionFamilyLease = nil
     local inventory = {name}
-    if family == "DEV" then inventory[#inventory+1] = (option == "old-tank" or option == "tank-enabled") and "ApogeeTank" or "ApogeeHeals" end
+    if family == "DEV" then inventory[#inventory+1] = (option == "old-tank" or option == "tank-enabled") and "ApogeeTank" or (option == "auction-enabled" or option == "old-auction") and "ApogeeAuction" or "ApogeeHeals" end
     if option == "legacy-marker" or option == "valid-marker" then inventory[#inventory+1] = "ApogeePartyHealthBars" end
     local count = #inventory
     issecretvalue = function(value) return value == secret end
@@ -19,7 +19,7 @@ local function setup(name, family, option)
         GetAddOnName = function(i) return inventory[i] end,
         GetAddOnMetadata = function(addon, key)
             local mode = addon:sub(-3) == "Dev" and "DEV" or "PROD"
-            if (option == "old-prod" or option == "old-tank") and mode == "PROD" then return nil end
+            if (option == "old-prod" or option == "old-tank" or option == "old-auction") and mode == "PROD" then return nil end
             if option == "bad-metadata" then return "wrong" end
             if option == "secret-metadata" then return secret end
             if option == "valid-marker" and (key == "X-Apogee-Distribution-Only" or key == "X-Apogee-Distribution-Schema") then return "1" end
@@ -29,7 +29,7 @@ local function setup(name, family, option)
         GetAddOnEnableState = function(addon, character)
             assert(character == "Player-Fixture")
             if option == "secret-state" then return secret end
-            return (option == "prod-enabled" or option == "tank-enabled") and 2 or option == "prod-some" and 1 or 0
+            return (option == "prod-enabled" or option == "tank-enabled" or option == "auction-enabled") and 2 or option == "prod-some" and 1 or 0
         end,
         IsAddOnLoaded = function() return option == "prod-loaded" end,
     }
@@ -69,7 +69,7 @@ for _, base in ipairs(children) do
             if family == "DEV" or base ~= "ApogeeTank" then loadDenied(base, family, option) end
         end
     end
-    for _, option in ipairs({"old-prod", "old-tank", "tank-enabled", "legacy-marker", "prod-enabled", "prod-some", "prod-loaded"}) do
+    for _, option in ipairs({"old-prod", "old-tank", "tank-enabled", "old-auction", "auction-enabled", "legacy-marker", "prod-enabled", "prod-some", "prod-loaded"}) do
         loadDenied(base, "DEV", option)
     end
 end
@@ -89,7 +89,7 @@ for _, base in ipairs(children) do
     C_AddOns.GetAddOnName = function() return base end
     C_AddOns.GetAddOnEnableState = function() return 2 end
     local prod = {}
-    local publicBase = base == "ApogeeTank" and "ApogeeHeals" or base
+    local publicBase = (base == "ApogeeTank") and "ApogeeHeals" or base
     assert(loadfile(root.."/PROD/"..publicBase.."/__Distribution/FamilyGate.lua"))(publicBase, prod)
     assert(ApogeeDistributionFamilyLease == lease and prod.__ApogeeFamilyAdmission == nil)
     ApogeeDistributionFamilyLease = {schema=1, family="DEV"}

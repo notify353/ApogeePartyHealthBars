@@ -115,7 +115,7 @@ def prefix(name, family):
 
 def family_children(lock, family):
     d.require(family in ('PROD', 'DEV'), 'Unknown family')
-    return d.public_children(lock) if family == 'PROD' else d.CHILDREN + tuple(c['name'] for c in d.local_dev_children(lock))
+    return d.public_children(lock) if family == 'PROD' else d.hosted_children(lock) + tuple(c['name'] for c in d.local_dev_children(lock))
 
 
 def family_files(lock, sources_root, family):

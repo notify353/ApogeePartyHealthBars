@@ -12,9 +12,9 @@ import tempfile
 sys.dont_write_bytecode = True
 import distribution as d
 
-NAMES = (d.MARKER,) + d.CHILDREN
+NAMES = (d.MARKER,) + d.CHILDREN + d.OPTIONAL_HOSTED_CHILDREN
 DEV_NAMES = tuple(n + 'Dev' for n in NAMES)
-LOCAL_DEV_NAMES = tuple(n + 'Dev' for n in d.LOCAL_DEV_CHILDREN)
+LOCAL_DEV_NAMES = tuple(n + 'Dev' for n in d.LOCAL_DEV_CHILDREN if n + 'Dev' not in DEV_NAMES)
 
 
 def ordinary(path):

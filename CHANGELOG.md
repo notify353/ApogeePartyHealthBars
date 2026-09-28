@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Include hosted Auction source in future PROD packages with isolated DEV identity,
+  canonical family exclusion, and hosted validation/release checkout coverage.
+
 - Unify Auction, Essentials, Group Alert, Heals and Keybinds reset controls under
   confirmed top-right Defaults buttons, with separately audited DEV popup identities.
 

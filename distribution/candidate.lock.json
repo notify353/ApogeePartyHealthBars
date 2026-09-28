@@ -204,26 +204,7 @@
       },
       "toc": "ApogeeTank.toc",
       "version": "0.1.0-dev"
-    }
-  ],
-  "client": {
-    "curseforgeVersionTypeId": 88568,
-    "flavor": "forever",
-    "interface": 16001,
-    "reviewedBuild": "1.60.1.70009",
-    "version": "1.60.1"
-  },
-  "futurePackager": {
-    "commit": "e50a250f8705041e40f2fa1ddcb280a686d65aa0",
-    "mode": "reviewed-only; not executed by offline builder",
-    "releaseScriptSha256": "59b15a8d851b09e6d0fdec702aec91331b9b49d84dbe778da6c621b48f268703",
-    "repository": "https://github.com/BigWigsMods/packager"
-  },
-  "legacyFixtures": {
-    "commit": "eac66429006c4f1c3a99a168c5a64a9d5cc7cd18",
-    "releaseCommit": "07612af0b5d9a0a2951df8b2a500cb5c37d5d125"
-  },
-  "localDevChildren": [
+    },
     {
       "commit": "502f1b6c0471d5b16c5c378cbd963c29a7169725",
       "files": {
@@ -246,8 +227,8 @@
         "docs/COMBAT_RULES.md": "2ad7342234ae4f74d59160620f8a69df0b5b18821cc810b7c6ad2d849fd5e9d1",
         "docs/HEALING_RULES.md": "538bbf04d8a9d3ffd91f6dc16f199ec16e20a06ee5ae7a2d2a21c6f479c8c283"
       },
-      "localOnly": true,
       "name": "ApogeeAuction",
+      "repository": "https://github.com/notify353/ApogeeAuction.git",
       "savedVariables": {
         "SavedVariablesPerCharacter": "ApogeeAuctionDB"
       },
@@ -255,12 +236,30 @@
       "version": "0.1.0-dev"
     }
   ],
+  "client": {
+    "curseforgeVersionTypeId": 88568,
+    "flavor": "forever",
+    "interface": 16001,
+    "reviewedBuild": "1.60.1.70009",
+    "version": "1.60.1"
+  },
+  "futurePackager": {
+    "commit": "e50a250f8705041e40f2fa1ddcb280a686d65aa0",
+    "mode": "reviewed-only; not executed by offline builder",
+    "releaseScriptSha256": "59b15a8d851b09e6d0fdec702aec91331b9b49d84dbe778da6c621b48f268703",
+    "repository": "https://github.com/BigWigsMods/packager"
+  },
+  "legacyFixtures": {
+    "commit": "eac66429006c4f1c3a99a168c5a64a9d5cc7cd18",
+    "releaseCommit": "07612af0b5d9a0a2951df8b2a500cb5c37d5d125"
+  },
   "projectId": 1608100,
   "publicChildren": [
     "ApogeeHeals",
     "ApogeeKeybinds",
     "ApogeeGroupAlert",
-    "ApogeeEssentials"
+    "ApogeeEssentials",
+    "ApogeeAuction"
   ],
   "publicationAllowed": false,
   "schema": 1,

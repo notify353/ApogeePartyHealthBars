@@ -109,10 +109,11 @@ class DualTests(unittest.TestCase):
         with patch.object(publisher, 'ACCEPTANCE', evidence):
             self.assertEqual(publisher.payload(OPTIONS.sources_root, self.lock['version']), d.zip_bytes(self.prod))
 
-    def test_auction_is_local_dev_only_and_does_not_change_prod_bytes(self):
-        baseline = copy.deepcopy(self.lock); baseline.pop('localDevChildren', None)
-        self.assertEqual(dual.family_files(baseline, OPTIONS.sources_root, 'PROD')[0], self.prod)
-        self.assertFalse(any(p.startswith('ApogeeAuction/') for p in self.prod))
+    def test_auction_is_hosted_in_both_families(self):
+        self.assertIn('ApogeeAuction', d.public_children(self.lock))
+        prod_meta, _ = d.toc_info(self.prod['ApogeeAuction/ApogeeAuction.toc'])
+        self.assertEqual(prod_meta['SavedVariablesPerCharacter'], 'ApogeeAuctionDB')
+        self.assertEqual(prod_meta['IconTexture'], 'Interface/AddOns/ApogeeAuction/Media/Textures/ApogeeLogo.png')
         name = 'ApogeeAuctionDev'
         meta, runtime = d.toc_info(self.dev[name + '/' + name + '.toc'])
         gameplay = ['Core/Compare.lua', 'Rules/Paladin.lua', 'Rules/Paladin/Healing.lua',
@@ -123,7 +124,7 @@ class DualTests(unittest.TestCase):
         self.assertNotIn('SavedVariables', meta)
         body = self.dev[name + '/' + name + '.lua']
         self.assertTrue(body.startswith(dual.prefix(name, 'DEV')))
-        child = d.local_dev_children(self.lock)[0]
+        child = next(c for c in self.lock['children'] if c['name'] == 'ApogeeAuction')
         source = d.source_tree(OPTIONS.sources_root / child['name'], child['commit'])
         expected_body = source['ApogeeAuction.lua']
         self.assertEqual(body, dual.prefix(name, 'DEV') + expected_body)
@@ -170,19 +171,27 @@ end
 ''')
         subprocess.run(['lua', str(check), str(OPTIONS.artifacts / 'DEV' / name / (name + '.lua'))], check=True)
 
-    def test_local_dev_pin_rejects_tampering_and_public_promotion(self):
-        bad = copy.deepcopy(self.lock)
-        bad['localDevChildren'][0]['savedVariables'] = {'SavedVariables': 'ForeignDB'}
-        with self.assertRaises(ValueError): d.local_dev_children(bad)
-        bad = copy.deepcopy(self.lock)
-        bad['localDevChildren'][0]['files']['ApogeeAuction.lua'] = '0' * 64
-        with self.assertRaisesRegex(ValueError, 'pinned file mismatch'):
-            dual.family_files(bad, OPTIONS.sources_root, 'DEV')
-        bad = copy.deepcopy(self.lock)
+    def test_local_only_history_remains_private_and_pins_are_verified(self):
+        baseline = copy.deepcopy(self.lock)
+        child = baseline['children'].pop()
+        baseline['publicChildren'].remove('ApogeeAuction')
+        child.pop('repository'); child['localOnly'] = True
+        baseline['localDevChildren'] = [child]
+        self.assertEqual(d.local_dev_children(baseline), [child])
+        self.assertFalse(any(p.startswith('ApogeeAuction/') for p in
+                             dual.family_files(baseline, OPTIONS.sources_root, 'PROD')[0]))
+        bad = copy.deepcopy(baseline); bad['publicChildren'].append('ApogeeAuction')
+        with self.assertRaises(ValueError): d.public_children(bad)
+        bad = copy.deepcopy(baseline)
         bad['localDevChildren'][0]['repository'] = 'https://example.com/unreviewed.git'
         with self.assertRaises(ValueError): d.local_dev_children(bad)
-        bad = copy.deepcopy(self.lock); bad['publicChildren'].append('ApogeeAuction')
-        with self.assertRaises(ValueError): d.public_children(bad)
+        bad = copy.deepcopy(self.lock); bad['localDevChildren'] = [child]
+        with self.assertRaises(ValueError): d.local_dev_children(bad)
+        for family in ('PROD', 'DEV'):
+            bad = copy.deepcopy(self.lock)
+            bad['children'][-1]['files']['ApogeeAuction.lua'] = '0' * 64
+            with self.assertRaisesRegex(ValueError, 'pinned file mismatch'):
+                dual.family_files(bad, OPTIONS.sources_root, family)
 
     def test_auction_install_and_rollback_preserve_existing_family(self):
         old = {p: b for p, b in self.dev.items() if not p.startswith('ApogeeAuctionDev/')}

@@ -2,20 +2,20 @@
 
 GitHub Actions is the sole publisher for CurseForge project1608100 and the
 notify353/ApogeePartyHealthBars repository. It publishes only the selected canonical
-Forever addon folders (currently four public children plus the marker; Tank is DEV-only). The same verified ZIP goes to both services.
+Forever addon folders (currently five public children plus the marker; Tank is DEV-only). The same verified ZIP goes to both services.
 
 ## Access and validation
 
-The distribution-validation environment is restricted to main. It holds
-DISTRIBUTION_READ_TOKEN for the three private child repositories and CF_API_KEY
+The distribution-validation environment is restricted to main. It requires
+DISTRIBUTION_READ_TOKEN access to four private child repositories (including Auction) and CF_API_KEY
 for read-only version preflight. Public child checkouts use the job token. Pull
 requests run self-contained tests without these environment credentials.
 Production retains its v*.*.* tag-only policy and holds the same scoped source
 read token plus its existing CF upload credential. Never log secret values.
 
 The current source-read token expires October 1, 2026. Before the next build after
-expiry, renew equivalent read-only access for the same three private repositories
-and securely update both environments. Do not broaden access or print credentials.
+expiry, renew equivalent read-only access for the reviewed private repositories, including Auction
+and securely update both environments. Auction access must be granted explicitly before hosted validation; do not change token permissions or print credentials automatically.
 
 Enable APOGEE_DISTRIBUTION_SOURCES_READY only after the required secrets exist.
 Run Distribution validation and CurseForge version preflight on main. Both must

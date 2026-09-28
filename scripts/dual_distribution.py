@@ -19,7 +19,7 @@ LABELS = {'ApogeeHeals': 'Apogee Heals', 'ApogeeKeybinds': 'Apogee Keybinds',
           'ApogeeTank': 'Apogee Tank', 'ApogeeAuction': 'Apogee Auction'}
 # Exact identity inventory reviewed with each owning addon task. No Blizzard names or gameplay keys.
 IDENTITIES = {
-    'ApogeeAuction': [],  # Private namespace only: no global, asset or saved-data identities.
+    'ApogeeAuction': ['ApogeeAuctionDB'],  # Per-character evaluation role; DEV keeps a separate table.
     'ApogeeHeals': ['ApogeeHealsDB', 'ApogeeHealsAnchor', 'ApogeeHealsUnit',
                     'ApogeeHealsBindingEditor', 'ApogeeHealsBuffPicker', 'ApogeeHealsMinimapButton'],
     'ApogeeKeybinds': ['ApogeeKeybindsDB', 'ApogeeKeybindsPhysical', 'ApogeeKeybindsHud',

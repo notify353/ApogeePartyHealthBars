@@ -115,35 +115,57 @@ class DualTests(unittest.TestCase):
         self.assertFalse(any(p.startswith('ApogeeAuction/') for p in self.prod))
         name = 'ApogeeAuctionDev'
         meta, runtime = d.toc_info(self.dev[name + '/' + name + '.toc'])
-        self.assertEqual(runtime, [dual.GATE_PATH, name + '.lua'])
-        self.assertFalse(any(k.startswith('SavedVariables') for k in meta))
+        self.assertEqual(runtime, [dual.GATE_PATH, name + '.lua', 'RoleSettings.lua'])
+        self.assertEqual(meta.get('SavedVariablesPerCharacter'), 'ApogeeAuctionDevDB')
+        self.assertNotIn('SavedVariables', meta)
         body = self.dev[name + '/' + name + '.lua']
         self.assertTrue(body.startswith(dual.prefix(name, 'DEV')))
         child = d.local_dev_children(self.lock)[0]
         source = d.source_tree(OPTIONS.sources_root / child['name'], child['commit'])
-        self.assertEqual(body, dual.prefix(name, 'DEV') + source['ApogeeAuction.lua'])
+        expected_body = source['ApogeeAuction.lua'].replace(
+            b'"Apogee Auction - Role: "', b'"Apogee Auction DEV - Role: "')
+        self.assertEqual(body, dual.prefix(name, 'DEV') + expected_body)
+        settings_body = self.dev[name + '/RoleSettings.lua']
+        expected_settings = source['RoleSettings.lua'].replace(
+            b'ApogeeAuctionDB', b'ApogeeAuctionDevDB').replace(
+            b'"Apogee Auction"', b'"Apogee Auction DEV"')
+        self.assertEqual(settings_body, dual.prefix(name, 'DEV') + expected_settings)
+        settings_check = OPTIONS.artifacts / 'auction-settings.lua'
+        settings_check.write_bytes(source['tests/role-settings.lua'])
+        subprocess.run(['lua', str(settings_check),
+                        str(OPTIONS.artifacts / 'DEV' / name / 'RoleSettings.lua'), name], check=True)
         # Execute the generated body in a strict sandbox: admission must precede
-        # even client inspection, and the skeleton may only touch its namespace.
+        # even client inspection and tooltip registration.
         check = OPTIONS.artifacts / 'auction-bootstrap.lua'
         check.write_text('''
 local path = arg[1]
 for _, admitted in ipairs({false, true}) do
     local namespace = {__ApogeeFamilyAdmission=function(name)
         assert(name == "ApogeeAuctionDev"); return admitted end}
-    local calls = 0
-    local env = {type=type, GetBuildInfo=function()
+    local calls, registrations = 0, 0
+    local env = {type=type,
+        Enum={TooltipDataType={Item=0}},
+        TooltipDataProcessor={AddTooltipPostCall=function(kind, callback)
+            assert(kind == 0 and type(callback) == "function")
+            registrations=registrations+1
+        end},
+        GetBuildInfo=function()
         calls=calls+1; return "1.60.1", "70009", "", 16001 end}
     setmetatable(env, {__index=function(_, k) error("Unexpected API: "..k) end,
                       __newindex=function(_, k) error("Unexpected global: "..k) end})
     local chunk=assert(loadfile(path)); setfenv(chunk, env)
     chunk("ApogeeAuctionDev", namespace)
     assert(calls == (admitted and 1 or 0))
+    assert(registrations == (admitted and 1 or 0))
     assert(namespace.ready == (admitted and true or nil))
 end
 ''')
         subprocess.run(['lua', str(check), str(OPTIONS.artifacts / 'DEV' / name / (name + '.lua'))], check=True)
 
     def test_local_dev_pin_rejects_tampering_and_public_promotion(self):
+        bad = copy.deepcopy(self.lock)
+        bad['localDevChildren'][0]['savedVariables'] = {'SavedVariables': 'ForeignDB'}
+        with self.assertRaises(ValueError): d.local_dev_children(bad)
         bad = copy.deepcopy(self.lock)
         bad['localDevChildren'][0]['files']['ApogeeAuction.lua'] = '0' * 64
         with self.assertRaisesRegex(ValueError, 'pinned file mismatch'):

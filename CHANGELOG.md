@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Pin Auction's per-character role selector and isolate its DEV saved setting.
+- Pin the Auction item-tooltip assigned-role indicator for local DEV testing.
 - Add the featureless Apogee Auction skeleton to local DEV builds only, with an
   immutable local source pin and no production package changes.
 

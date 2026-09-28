@@ -7,16 +7,18 @@ settings; five independent children supply gameplay.
 
 ## Build and validate
 
-### Local Auction skeleton
+### Local Auction
 
-`C:/Dev/WoW/ApogeeAuction` is an independent, featureless addon. The candidate
+`C:/Dev/WoW/ApogeeAuction` is an independent addon. The candidate
 lock's `localDevChildren` pins its committed source and exact file hashes without
 claiming a hosted repository. It is included only as `ApogeeAuctionDev`: DEV now
 has seven roots. The existing five-child source inventory and four-child public
-selection remain unchanged. Auction has no saved data, events, frames, commands,
-settings or auction operations. Its only runtime is private namespace bootstrap
-and Forever compatibility checking, behind the existing generated family gate.
-No identity rewrites are needed in its Lua body. The gate's canonical PROD member
+selection remain unchanged. Auction adds an item-tooltip evaluation-role indicator
+and an addon-settings dropdown: Auto, Healer, Tank or Damage. Auto uses the assigned
+group role; manual choices also work solo. Its only saved data is a per-character
+role choice. The audited ApogeeAuctionDB identity becomes ApogeeAuctionDevDB in DEV;
+both runtime chunks remain behind the existing family gate. Gear scoring is not yet
+implemented. The tooltip and settings labels receive the DEV suffix. The gate's canonical PROD member
 inventory is unchanged because Auction has no production counterpart.
 
 Local-only pins require the independent local Git repository to build DEV and

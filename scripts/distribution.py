@@ -25,8 +25,9 @@ def local_dev_children(lock):
         require(child.get('localOnly') is True and child.get('repository') is None,
                 'Local DEV source must not claim a hosted repository')
         require(re.fullmatch('[0-9a-f]{40}', child['commit']), 'Immutable local DEV commit required')
-        require(child['toc'] == child['name'] + '.toc' and child['savedVariables'] == {},
-                'Featureless local DEV TOC required')
+        require(child['toc'] == child['name'] + '.toc' and child['savedVariables'] in
+                ({}, {'SavedVariablesPerCharacter': 'ApogeeAuctionDB'}),
+                'Reviewed local DEV TOC and saved-data identity required')
         require(child['files'] and child['toc'] in child['files'] and 'LICENSE' in child['files'],
                 'Missing local DEV TOC or license')
         seen = set()

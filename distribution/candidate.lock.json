@@ -225,21 +225,21 @@
   },
   "localDevChildren": [
     {
-      "commit": "9bab8c11295e5ddd08868c3a355180f451357ed1",
+      "commit": "8ec8267d0ccc3fe4001e153a6e58a6e13c42ff80",
       "files": {
-        "ApogeeAuction.lua": "e0468ce09c8c551c867b70aab63af0d5a4ace837d1e095005e1d3c03c9277988",
+        "ApogeeAuction.lua": "c7a4eb9f6b4383f58ce2676dcb78d3cde939d34d9de29b44199b2b16ebdb1f87",
         "ApogeeAuction.toc": "bb2e67c49fe6cb18b697dc6e9327e29f096dcf471f881658d1022ea4467245d9",
-        "CHANGELOG.md": "8af69f2eb8adbec9949ae96be1d00aa58c2cb3b444cc093f4dba686fc63f719f",
+        "CHANGELOG.md": "bc9588de478252c1671658ade7bec6f004e5d9bdd98d74037e84c297854a11af",
         "Core/Compare.lua": "ff6239a48fc624614f7a80f250847bef9d234515f353c064405ae0f588ae5a04",
-        "Core/Evaluate.lua": "6898da7e46b2f957b947ac29d6173d0bbcd3643ca9611d4b309123843d4b103e",
-        "Core/Group.lua": "e583ddf348d957fc828b8f198890747c8df053c1d3430b15a3650daee0092246",
-        "Core/Items.lua": "75dc8ed96607157e3951b02ea0bea69537c63731d16d70aa09605b1154bdadc8",
+        "Core/Evaluate.lua": "105d3b00d2c2e2476219ccf1ae3e59d3cd8c4b6f9bace3b36303481f5f8faea5",
+        "Core/Group.lua": "5593322fb4278d4eef5f09e774ee8de55f1ab2606fc3068ed12805be07d56147",
+        "Core/Items.lua": "f1778503cabee8f7232bedcb38d848975e547624d43e1a47d3ac2bfd5d7df43c",
         "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",
-        "README.md": "24f73e2d7fb23da8900c7a37a857ec38d3c217a7bf17cef26e7c2f5fa96cb02d",
+        "README.md": "82dae72714535d383309a3b849da84bf6f0b285c0caad03d684e1fdaf0e77134",
         "RoleSettings.lua": "1a3259f087351cd59d5423ea6c813f7fefb3679cf9e06fd75adf83d25e6f36d9",
-        "Rules/Paladin.lua": "4e9080a348f66a795a186079b52aba1820db00afe7126144f5d59bd3c4c97c39",
-        "Rules/Paladin/Healing.lua": "2d4edacbeb8835a86cd64e31c1059849942e17252f23c6d401976a634f527469",
-        "docs/HEALING_RULES.md": "e0321625b60cbf175a029f5f900608ce3010caddb47743aaafcb003aac5fbb12"
+        "Rules/Paladin.lua": "cb85741f41c9b7559d24de70799fda07931382a8d1ffc9bce11b531af2d93618",
+        "Rules/Paladin/Healing.lua": "a4af2971d39f9a33a9a36ea0efd264775f06d7a118c19b68f45f60ea2ca59d62",
+        "docs/HEALING_RULES.md": "38d19b5c559420032207c6477c19b212ad06b55b8219358497be1866d06f6d38"
       },
       "localOnly": true,
       "name": "ApogeeAuction",

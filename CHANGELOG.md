@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Refactor Auction class/role policy boundaries and item evaluation helpers,
+  retaining confirmed suffix behavior and conservative healing recommendations.
+
 - Preserve Auction hovered suffix effects through healing evaluation instead of
   relying on a second generic item-link tooltip query.
 

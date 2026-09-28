@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Expand Auction passive healing wording and formatting coverage with strict
+  negative tests for temporary, damage-only and party effects.
+
 - Prevent Auction healing Need calls on melee-focused shields and held off-hands.
 
 - Refine Auction healing weapon guidance with learned-skill checks and melee

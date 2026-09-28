@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Match Auction DEV settings to Apogee's dark panel and verify native Defaults
+  returns the saved role and dropdown to Auto.
+
 - Include Auction DEV's native add-on-list icon using the existing Apogee artwork.
 
 - Pin Auction review fixes for signed attributes, native/tooltip consistency,

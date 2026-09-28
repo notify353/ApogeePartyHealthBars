@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Preserve Auction hovered suffix effects through healing evaluation instead of
+  relying on a second generic item-link tooltip query.
+
 - Add opt-in Alt-hover Auction diagnostics to identify silent evaluation blockers.
 
 - Handle ordinary Auction shield block and Classic healing-stat aliases while

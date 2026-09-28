@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Unify Auction, Essentials, Group Alert, Heals and Keybinds reset controls under
+  confirmed top-right Defaults buttons, with separately audited DEV popup identities.
+
 - Match Auction DEV settings to Apogee's dark panel and verify native Defaults
   returns the saved role and dropdown to Auto.
 

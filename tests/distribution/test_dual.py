@@ -130,7 +130,8 @@ class DualTests(unittest.TestCase):
         settings_body = self.dev[name + '/RoleSettings.lua']
         expected_settings = source['RoleSettings.lua'].replace(
             b'ApogeeAuctionDB', b'ApogeeAuctionDevDB').replace(
-            b'"Apogee Auction"', b'"Apogee Auction DEV"')
+            b'Apogee Auction', b'Apogee Auction DEV').replace(
+            b'APOGEE_AUCTION_DEFAULTS', b'APOGEE_AUCTION_DEV_DEFAULTS')
         self.assertEqual(settings_body, dual.prefix(name, 'DEV') + expected_settings)
         for path in gameplay:
             self.assertEqual(self.dev[name + '/' + path], dual.prefix(name, 'DEV') + source[path])

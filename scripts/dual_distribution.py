@@ -34,11 +34,16 @@ IDENTITIES = {
 
 def identity_map(name):
     result = {s: name + 'Dev' + s[len(name):] for s in IDENTITIES[name]}
+    if name == 'ApogeeAuction':
+        result['APOGEE_AUCTION_DEFAULTS'] = 'APOGEE_AUCTION_DEV_DEFAULTS'
+    if name == 'ApogeeEssentials':
+        result['APOGEE_ESSENTIALS_DEFAULTS'] = 'APOGEE_ESSENTIALS_DEV_DEFAULTS'
     if name == 'ApogeeHeals':
         result['APOGEE_HEALS_RESET_CHARACTER'] = 'APOGEE_HEALS_DEV_RESET_CHARACTER'
     if name == 'ApogeeKeybinds':
         result['APOGEE_KEYBINDS_RESET_CHARACTER'] = 'APOGEE_KEYBINDS_DEV_RESET_CHARACTER'
     if name == 'ApogeeGroupAlert':
+        result['APOGEE_GROUP_ALERT_DEFAULTS'] = 'APOGEE_GROUP_ALERT_DEV_DEFAULTS'
         result.update(SLASH_APOGEEGROUPALERT1='SLASH_APOGEEGROUPALERTDEV1',
                       APOGEEGROUPALERT='APOGEEGROUPALERTDEV')
     return result

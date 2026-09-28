@@ -18,11 +18,13 @@ and an addon-settings dropdown: Auto, Healer, Tank or Damage. Auto uses the assi
 group role; manual choices also work solo. Its only saved data is a per-character
 role choice. The audited ApogeeAuctionDB identity becomes ApogeeAuctionDevDB in DEV;
 all runtime chunks remain behind the existing family gate. Healing paladins receive
-Need/Greed guidance with equipped-item comparisons and conservative
+Need-only tooltip guidance with equipped-item comparisons and conservative
 effect/tradeoff fallbacks. Class rules, item parsing, group context and comparison
 live in separate modules; other classes are not evaluated yet. Generated gameplay
 tests exercise DEV output. Player level does not affect recommendations. The tooltip
 role label is simply "Role: Healer" (or the selected role); settings retain the DEV suffix.
+Only clear Need results show a native dice icon, ROLL NEED heading and spaced stat
+gains; other outcomes add no recommendation text.
 The gate's canonical PROD member
 inventory is unchanged because Auction has no production counterpart.
 

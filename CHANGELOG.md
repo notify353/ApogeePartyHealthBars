@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Show only clear Auction Need calls, with native dice icon, prominent heading and
+  spaced stat gains; hide all non-Need recommendations and explanations.
 - Trim Auction DEV tooltips by removing comparison labels and loot-rule reminders.
 - Exclude Stamina from Auction DEV healing recommendations and stat explanations.
 - Make Auction DEV recommendations binary: clear Need, otherwise Greed with a reason.

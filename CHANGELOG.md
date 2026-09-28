@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-09-28
+
 - Include hosted Auction source in future PROD packages with isolated DEV identity,
   canonical family exclusion, and hosted validation/release checkout coverage.
 

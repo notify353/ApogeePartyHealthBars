@@ -17,14 +17,15 @@ selection remain unchanged. Auction adds an item-tooltip evaluation-role indicat
 and an addon-settings dropdown: Auto, Healer, Tank or Damage. Auto uses the assigned
 group role; manual choices also work solo. Its only saved data is a per-character
 role choice. The audited ApogeeAuctionDB identity becomes ApogeeAuctionDevDB in DEV;
-all runtime chunks remain behind the existing family gate. Healing paladins receive
+all runtime chunks remain behind the existing family gate. Paladins in all three roles receive
 Need-only tooltip guidance with equipped-item comparisons and conservative
 effect/tradeoff fallbacks. Class profiles own equipment and training restrictions;
 role profiles own stat recognition, comparison priorities and shared-loot policy.
 The common reader, evaluator and roster code consume those profiles. Hovered
 native tooltip data preserves auction suffix effects. Mixed healing/damage items
 and possible competing healers retain conservative group checks. Other classes
-and paladin Tank/Damage roles are not evaluated yet. Generated gameplay
+are not evaluated yet. Damage and Tank use separate conservative profiles,
+including displayed weapon baselines and same-speed comparisons. Generated gameplay
 tests exercise DEV output. Player level does not affect recommendations. The tooltip
 role label is simply "Role: Healer" (or the selected role); settings retain the DEV suffix.
 Only clear Need results show a native dice icon, ROLL NEED heading and spaced stat

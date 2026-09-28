@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Pin Paladin Damage and Tank loot profiles in Auction DEV, with generated-output
+  regression coverage and unchanged PROD bytes.
+
 - Refactor Auction class/role policy boundaries and item evaluation helpers,
   retaining confirmed suffix behavior and conservative healing recommendations.
 

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Refine Auction healing weapon guidance with learned-skill checks and melee
+  red flags, retaining individual slot comparisons and conservative fallbacks.
+
 - Harden Auction DEV shared-loot checks and separate paladin healing rules from
   class-wide equipment rules and the shared comparison engine.
 - Show only clear Auction Need calls, with native dice icon, prominent heading and

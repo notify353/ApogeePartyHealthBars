@@ -225,21 +225,21 @@
   },
   "localDevChildren": [
     {
-      "commit": "c65f398b191abb76376eea1b515915219d6b5495",
+      "commit": "e1e91fda6c89d24988934e26ef514ce6d322d544",
       "files": {
         "ApogeeAuction.lua": "1a8c595fb8b69a31aaf7e135c793d25485869f7b2b51ef5459242761533ad82e",
         "ApogeeAuction.toc": "bb2e67c49fe6cb18b697dc6e9327e29f096dcf471f881658d1022ea4467245d9",
-        "CHANGELOG.md": "1e1624d051fae21afb70ecde52e44140bf00b1f37ec7a1e2cfd4c4875d2f3a4e",
+        "CHANGELOG.md": "228a3065cb60894cf8ee6864221a9c3830d75701157b50c0cea4e2cd4524af29",
         "Core/Compare.lua": "ff6239a48fc624614f7a80f250847bef9d234515f353c064405ae0f588ae5a04",
-        "Core/Evaluate.lua": "3293d95c4b905a68255004fc9bc59fddcdd8643b1d7ea0c12c8dea98f6996fcd",
+        "Core/Evaluate.lua": "09ec3ffe040081344a417bae90e4920e83fe9e0c62c65b56cafb304335688f82",
         "Core/Group.lua": "e583ddf348d957fc828b8f198890747c8df053c1d3430b15a3650daee0092246",
-        "Core/Items.lua": "025184829c93b2d7281f2df2dd8248764c5c3bdb48a8caffc5281848fbd20acd",
+        "Core/Items.lua": "a456c6e222ad058737f2999111eab5dc1db17ca54d0e5f2e18051f3a0e759995",
         "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",
-        "README.md": "66cf11d781e50ea2f94d93e396f1bea1f830903adfa6884e32c7294a3f86af10",
+        "README.md": "97a68a2ae3a6cc5f372d7f7a30aeef0511198296902ef35846d4fa7e86949021",
         "RoleSettings.lua": "1a3259f087351cd59d5423ea6c813f7fefb3679cf9e06fd75adf83d25e6f36d9",
-        "Rules/Paladin.lua": "699e540f0dc4e33569f0287699f62f044d9ed8cac13c683b89b8e6f45b098312",
+        "Rules/Paladin.lua": "4e9080a348f66a795a186079b52aba1820db00afe7126144f5d59bd3c4c97c39",
         "Rules/Paladin/Healing.lua": "2d4edacbeb8835a86cd64e31c1059849942e17252f23c6d401976a634f527469",
-        "docs/HEALING_RULES.md": "239df1ea8037d46b83c4f696b0ae27612b2a28606ea5d2dfc990310c58e287cf"
+        "docs/HEALING_RULES.md": "9ff8382904cbe01b7eb7397b1774c02906096af378f6bfc936bb4a3bd8ec655d"
       },
       "localOnly": true,
       "name": "ApogeeAuction",

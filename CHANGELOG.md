@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Prevent Auction healing Need calls on melee-focused shields and held off-hands.
+
 - Refine Auction healing weapon guidance with learned-skill checks and melee
   red flags, retaining individual slot comparisons and conservative fallbacks.
 

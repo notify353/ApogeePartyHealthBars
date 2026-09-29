@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-09-28
+
 - Filter auction browse results to Roll Need or Need + Possible Upgrades for your
   selected Paladin or Warrior role.
 - See how many items are checked and whether more search results remain, with a

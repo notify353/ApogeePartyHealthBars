@@ -1,6 +1,6 @@
 {
   "accepted": true,
-  "basis": "Owner explicitly confirmed everything is tested after the latest DEV installation, in response to a question covering reload, weapon-speed removal and Possible Upgrade tradeoffs. Every installed DEV Lua file was verified against the exact generated package. PROD records the counterpart from the same sources, not separate PROD or CurseForge-client testing.",
+  "basis": "Owner confirmed everything is tested and looks good after the latest DEV background-overflow fix, and requested release. Every installed DEV Lua file matches the accepted package. PROD records the counterpart from the same sources; separate PROD or CurseForge-client testing is not claimed.",
   "curseforgeClientTested": false,
   "followUpChecks": [
     {
@@ -22,19 +22,21 @@
     }
   ],
   "gateSha256": "ba4159949c807b3af7ad47d2df85d75698e7a847a76ab0250ae36b95695a4904",
-  "installedArchiveSha256": "4cad1ff4de73457b53679197de81f357648f34a52a4ce75c135e2319c7e32703",
-  "installedReceipt": "C:/Dev/WoW/local-install-backups/apogee-no-speed-20260928/transaction.json",
+  "installedArchiveSha256": "cb1ac9b6dea1cef9375e725d5c30ac519d7f45a27d2f44555f78a8987b60f7ff",
+  "installedReceipt": "C:\\Dev\\WoW\\local-install-backups\\apogee-auction-background-20260928\\transaction.json",
   "productionClientTested": false,
   "reportedDate": "2026-09-28",
   "runtimeFiles": {
     "DEV": {
-      "ApogeeAuctionDev/ApogeeAuctionDev.lua": "7240bb5dedbaa05b57b61e18ae0d5066f5457de538c5d2669e3d0a8b0a2f4499",
+      "ApogeeAuctionDev/ApogeeAuctionDev.lua": "49f8651dd4ef897f43363b521220427a26db21833f84e495bfb42aaa90b88314",
+      "ApogeeAuctionDev/Auction/Browse.lua": "7ff075c593f3aed4031c2b1a11e6f8dac04ac532aa7840ee720b92c267c4ddbd",
+      "ApogeeAuctionDev/Auction/Filter.lua": "6fe73afdc5694389c5fe29db9958185654d9ff62fcc59884fa106836b0f137ee",
       "ApogeeAuctionDev/Core/Combat.lua": "388149167b3940590153b93417c1dd1e71ce1c5e74f1fed0d69f1adea0f4244b",
       "ApogeeAuctionDev/Core/Compare.lua": "ecca5c2319f00296905906a74ecb310cd0d942716b9294ece07b7bdbee9e6267",
-      "ApogeeAuctionDev/Core/Evaluate.lua": "b6b41187c0fd07d1cdd38f289d192f44f733d3601423cc600025986a71197be2",
+      "ApogeeAuctionDev/Core/Evaluate.lua": "0ad0a3f2bd6f51ed351c6030ec378885a3c240b81d39a1d2597ab318e0d1fcb9",
       "ApogeeAuctionDev/Core/Group.lua": "cc3a986fda9fe2b89177cc638723f0832db79b70e40b3c42552ffe11df004ad8",
-      "ApogeeAuctionDev/Core/Items.lua": "ede259b25df0d516f56e378e5896c250dab1cc32ba75d86d9c3c40a53e53e5ff",
-      "ApogeeAuctionDev/RoleSettings.lua": "305f2447d5afc5a45dff1c8ebc81c398e2b9018ad79ed5f24fc6f78626625d40",
+      "ApogeeAuctionDev/Core/Items.lua": "f1bd48f98332c06475ea24734cadfcab76967737dcace6377c34a7eb570fff3c",
+      "ApogeeAuctionDev/RoleSettings.lua": "7f26e3df11697c9dc62da9558831602c1e06aacce9c7e887cbe07285b46bec97",
       "ApogeeAuctionDev/Rules/Paladin.lua": "e206b49f7070643acca5002dccd1c2bfc0dadfbc4ac401f653a65564c0cace2c",
       "ApogeeAuctionDev/Rules/Paladin/Combat.lua": "1f4e6da0f99df70f7a13142208b8fcff8b66c79ad3c4a10ad3388dc89aed04d7",
       "ApogeeAuctionDev/Rules/Paladin/Damage.lua": "aee291ccf8cb1a6bd165c2df1771e32927cfa68c82c75a3091b6ed1c01652c14",
@@ -154,13 +156,15 @@
       "ApogeeTankDev/__Distribution/FamilyGate.lua": "2545a0358af87868f9edde498ee88e3e539c3bc4fbbd3b5e1eddb8066fad6415"
     },
     "PROD": {
-      "ApogeeAuction/ApogeeAuction.lua": "2a1520cd62a66361f0ab147a4f24b50ab8e5d64dc3fdee188566b2a011eb7417",
+      "ApogeeAuction/ApogeeAuction.lua": "cc1e1e02cf70d21fa19d6eb5775b836b1cd9972d9b6fdbd77daf86a215621229",
+      "ApogeeAuction/Auction/Browse.lua": "204883c3b8544d0fc38bc00fc78a35e41825eda421a3bf70822bfe32105c541c",
+      "ApogeeAuction/Auction/Filter.lua": "b0e2092e23a62712ef3ad08745a6a8fa4dcf8f2dbbff79190ce785dacec1602e",
       "ApogeeAuction/Core/Combat.lua": "7d4bee0a593630701412c088a9f01201ddb4602dd0bdbea193daae09413c1552",
       "ApogeeAuction/Core/Compare.lua": "eac74fd972fc8c5426f413b4da18b990950c169b0f6fe867d9d24fda931e84c7",
-      "ApogeeAuction/Core/Evaluate.lua": "56f00d74586695f4578f0ea47750472cd7a201c5779cadd4b2498be86cbc5d39",
+      "ApogeeAuction/Core/Evaluate.lua": "c91460ec3d2519052af4990472b7d1ff710504bcd69b1098381ba1c7b1d6ab9a",
       "ApogeeAuction/Core/Group.lua": "65e1bdc3c3836479f686bf3d83e24feb3606ee91aafcd923b89bf422fce32484",
-      "ApogeeAuction/Core/Items.lua": "1aeef130ad5750d4cb510679b1734c99799eb6c393ad98705f6f2d3c813a2c83",
-      "ApogeeAuction/RoleSettings.lua": "840184990f6b603077edc3cb2d8da96a7c30422db108e2ab07d6be754133ba4b",
+      "ApogeeAuction/Core/Items.lua": "787b9c940449be3db4aaa1507d54937ed07a152f9da73a2b4110872bae866842",
+      "ApogeeAuction/RoleSettings.lua": "34d9a3748fc79f7678362f98f92a21a103ce34655ab91876c896df1c384adb64",
       "ApogeeAuction/Rules/Paladin.lua": "dfdbca7145c4d150aa8290a9fc52bc497a87622a758f958c4d0160967333a268",
       "ApogeeAuction/Rules/Paladin/Combat.lua": "249e4c7d61926b023f90d329615fe3cbfa3c4f69ba986b29788c57d3d004a35c",
       "ApogeeAuction/Rules/Paladin/Damage.lua": "c8ee1d58c2488552b100b3470ec93e3149a3ebc1ccda209a7b64d267cd8b4d58",

@@ -9,7 +9,7 @@ Five focused addons for **World of Warcraft Forever 1.60.1**:
 - **Auction:** personal Paladin Healing/Damage/Tank and Warrior Damage/Tank gear guidance in item tooltips.
 
 Enable the modules you want under **Apogee Forever** in WoW's AddOns list.
-Each module has its own settings. Auction shows ROLL NEED for clear upgrades and POSSIBLE UPGRADE for recognized stat tradeoffs for the selected role. Rings, necklaces and other supported slots use the same personal guidance; unresolved item data stays quiet. This edition supports Forever only.
+Each module has its own settings. Auction shows ROLL NEED for clear upgrades and POSSIBLE UPGRADE for recognized stat tradeoffs for the selected role. Rings, necklaces and other supported slots use the same personal guidance; unresolved item data stays quiet. The auction browse Show menu filters to Roll Need or Need + Possible Upgrades. Use Load more results while the search is incomplete; unavailable items could not be evaluated safely. This edition supports Forever only.
 
 Legacy profiles are not imported, and Dungeon Guide is not included.
 

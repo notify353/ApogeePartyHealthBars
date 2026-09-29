@@ -2,17 +2,13 @@
 
 ## [Unreleased]
 
-- Fix Auction Classic background overflow below the resized browse list.
-
-- Clarify Auction search completeness with persistent status and a larger Load more
-  results button; remove manual Retry while retaining automatic data recovery.
-
-- Pin Auction filter review fixes for delayed item-data recovery, targeted retries
-  and restoration of native empty-result text.
-
-- Pin Auction's native browse upgrade filters with shared role selection, manual
-  pagination and bounded evaluation. Validate generated DEV filter/UI tests;
-  the new UI requires renewed owner acceptance before production release.
+- Filter auction browse results to Roll Need or Need + Possible Upgrades for your
+  selected Paladin or Warrior role.
+- See how many items are checked and whether more search results remain, with a
+  prominent Load more results button and automatic late-item-data recovery.
+- Preserve exact auction item variants and native result interactions while
+  evaluating upgrades in small batches.
+- Keep the Classic auction background contained within the results panel.
 
 ## [1.6.0] - 2026-09-28
 

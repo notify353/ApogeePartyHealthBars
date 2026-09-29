@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Fix Auction Classic background overflow below the resized browse list.
+
 - Clarify Auction search completeness with persistent status and a larger Load more
   results button; remove manual Retry while retaining automatic data recovery.
 

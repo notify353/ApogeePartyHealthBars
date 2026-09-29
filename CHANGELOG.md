@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+- Pin Auction guidance without weapon-speed parsing or vetoes; retain displayed
+  DPS, per-hit damage, role stats and complete-data safeguards.
+
+- Pin Auction personal role guidance: remove group-competition vetoes, recommend
+  useful empty-slot upgrades, and display recognized stat tradeoffs as Possible
+  Upgrade across supported Paladin and Warrior roles, including rings and necklaces.
+
+- Pin the reviewed Auction fix for incomplete Tank shield defenses; require
+  complete shield baselines before a Need recommendation.
+
+- Pin Auction Warrior Tank/Damage support for checked local DEV installation;
+  preserve other child pins and require renewed native acceptance before release.
+
 ## [1.5.0] - 2026-09-28
 
 - Add Apogee Auction with gear guidance for Paladin Healing, Damage and Tank.

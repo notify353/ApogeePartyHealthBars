@@ -116,8 +116,10 @@ class DualTests(unittest.TestCase):
         self.assertEqual(prod_meta['IconTexture'], 'Interface/AddOns/ApogeeAuction/Media/Textures/ApogeeLogo.png')
         name = 'ApogeeAuctionDev'
         meta, runtime = d.toc_info(self.dev[name + '/' + name + '.toc'])
-        gameplay = ['Core/Compare.lua', 'Rules/Paladin.lua', 'Rules/Paladin/Healing.lua',
+        gameplay = ['Core/Compare.lua', 'Core/Combat.lua', 'Rules/Paladin.lua', 'Rules/Paladin/Healing.lua',
                     'Rules/Paladin/Combat.lua', 'Rules/Paladin/Damage.lua', 'Rules/Paladin/Tank.lua',
+                    'Rules/Warrior.lua', 'Rules/Warrior/Combat.lua', 'Rules/Warrior/Damage.lua',
+                    'Rules/Warrior/Tank.lua',
                     'Core/Items.lua', 'Core/Group.lua', 'Core/Evaluate.lua']
         self.assertEqual(runtime, [dual.GATE_PATH, name + '.lua'] + gameplay + ['RoleSettings.lua'])
         self.assertEqual(meta.get('SavedVariablesPerCharacter'), 'ApogeeAuctionDevDB')

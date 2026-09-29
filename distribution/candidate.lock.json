@@ -206,12 +206,12 @@
       "version": "0.1.0-dev"
     },
     {
-      "commit": "ca5e6c152448a979614af7934c81c7df0e8407e3",
+      "commit": "2347409709197f1abbb249d53c35d061c7f21383",
       "files": {
         "ApogeeAuction.lua": "c7a4eb9f6b4383f58ce2676dcb78d3cde939d34d9de29b44199b2b16ebdb1f87",
         "ApogeeAuction.toc": "282875f273cd828763ed57ae25394c934c867056b5e82000a6aa049dbfdc8092",
-        "CHANGELOG.md": "b6b40792338e5458e57776baa9aaef5a73643b051449dea760d8d5f6fd9c4b96",
-        "Core/Combat.lua": "14fc46c8915dff50cda10e70fed37d171ded499b53f56370951955d3e720e3eb",
+        "CHANGELOG.md": "4b1574705f1d4c51be775c97f4bcebab95e724a53a4b7ed741a6a12c0bd77f82",
+        "Core/Combat.lua": "27d03ef8a79e244d80f443865a7138d592718200510fa943ca6d10da19ad4471",
         "Core/Compare.lua": "ff6239a48fc624614f7a80f250847bef9d234515f353c064405ae0f588ae5a04",
         "Core/Evaluate.lua": "f1668ed25a4f073ad0f5c42380e1241fd2a53f8d11334896b94e33bccc9affa2",
         "Core/Group.lua": "5593322fb4278d4eef5f09e774ee8de55f1ab2606fc3068ed12805be07d56147",
@@ -229,7 +229,7 @@
         "Rules/Warrior/Combat.lua": "198dbdb5d9c28159a15246193ac3eb09477bb05da77542084f87921c7edb02c9",
         "Rules/Warrior/Damage.lua": "f28bc7567e91ce586e324d7a806f7d6e2ac3fd8f2495cbbc3d3caa82f447d5d0",
         "Rules/Warrior/Tank.lua": "ef34a8fef9921227c05e05636c98e24aa60aa381a01cb76d36a432d38fd8877b",
-        "docs/COMBAT_RULES.md": "f210d121d69df21ecbe62b20f459850bb5be6bb02cf4d0c4b24c03c6c093e8ff",
+        "docs/COMBAT_RULES.md": "96ee058f6ce5d89487486c784ae656ece9fcd6307405909d748f967560593137",
         "docs/HEALING_RULES.md": "538bbf04d8a9d3ffd91f6dc16f199ec16e20a06ee5ae7a2d2a21c6f479c8c283"
       },
       "name": "ApogeeAuction",

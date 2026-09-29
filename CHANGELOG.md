@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Pin the reviewed Auction fix for incomplete Tank shield defenses; require
+  complete shield baselines before a Need recommendation.
+
 - Pin Auction Warrior Tank/Damage support for checked local DEV installation;
   preserve other child pins and require renewed native acceptance before release.
 

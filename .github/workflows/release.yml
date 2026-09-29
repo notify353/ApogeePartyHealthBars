@@ -14,7 +14,7 @@ jobs:
     environment: production
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
           path: distribution-repo
@@ -27,7 +27,7 @@ jobs:
           lock=json.load(open('distribution-repo/distribution/candidate.lock.json'))
           with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
               for child in lock['children']: out.write(child['name']+'='+child['commit']+'\n')
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: notify353/ApogeeHeals
           ref: ${{ steps.pins.outputs.ApogeeHeals }}
@@ -35,7 +35,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           token: ${{ github.token }}
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: notify353/ApogeeKeybinds
           ref: ${{ steps.pins.outputs.ApogeeKeybinds }}
@@ -43,7 +43,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           token: ${{ secrets.DISTRIBUTION_READ_TOKEN }}
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: notify353/ApogeeGroupAlert
           ref: ${{ steps.pins.outputs.ApogeeGroupAlert }}
@@ -51,7 +51,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           token: ${{ secrets.DISTRIBUTION_READ_TOKEN }}
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: notify353/ApogeeEssentials
           ref: ${{ steps.pins.outputs.ApogeeEssentials }}
@@ -59,7 +59,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           token: ${{ secrets.DISTRIBUTION_READ_TOKEN }}
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: notify353/ApogeeTank
           ref: ${{ steps.pins.outputs.ApogeeTank }}
@@ -67,7 +67,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           token: ${{ github.token }}
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: notify353/ApogeeAuction
           ref: ${{ steps.pins.outputs.ApogeeAuction }}
@@ -95,7 +95,7 @@ jobs:
         run: python -B scripts/publish_distribution.py upload --sources-root "$GITHUB_WORKSPACE/sources" --output "$RUNNER_TEMP/apogee-publication"
       - name: Preserve exact package and upload receipt even on failure
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: apogee-publication
           path: ${{ runner.temp }}/apogee-publication

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Refresh pinned GitHub Actions and check artifact byte preservation and extraction
+  paths across old and new upload/download versions before release use.
+
 ## [1.7.0] - 2026-09-28
 
 - Filter auction browse results to Roll Need or Need + Possible Upgrades for your

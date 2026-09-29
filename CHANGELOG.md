@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Pin Auction Warrior Tank/Damage support for checked local DEV installation;
+  preserve other child pins and require renewed native acceptance before release.
+
 ## [1.5.0] - 2026-09-28
 
 - Add Apogee Auction with gear guidance for Paladin Healing, Damage and Tank.

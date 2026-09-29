@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Clarify Auction search completeness with persistent status and a larger Load more
+  results button; remove manual Retry while retaining automatic data recovery.
+
 - Pin Auction filter review fixes for delayed item-data recovery, targeted retries
   and restoration of native empty-result text.
 

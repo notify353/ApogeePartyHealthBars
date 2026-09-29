@@ -1,0 +1,75 @@
+name: Actions artifact compatibility
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'scripts/check_action_artifact.py'
+  push:
+    branches: ['codex/actions-compatibility']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - run: python -B scripts/check_action_artifact.py create "$RUNNER_TEMP/synthetic-package"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fixture-old
+          path: ${{ runner.temp }}/synthetic-package
+          if-no-files-found: error
+          retention-days: 1
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: fixture-new
+          path: ${{ runner.temp }}/synthetic-package
+          if-no-files-found: error
+          retention-days: 1
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: fixture-receipt
+          path: ${{ runner.temp }}/synthetic-package/receipt.json
+          if-no-files-found: error
+          retention-days: 1
+  download:
+    needs: upload
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        uploader: [old, new]
+        downloader: [old, new]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      # Explicit token/run-id exercises the REST download path used by verification.
+      - if: matrix.downloader == 'old'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: fixture-${{ matrix.uploader }}
+          run-id: ${{ github.run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/downloaded
+      - if: matrix.downloader == 'new'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: fixture-${{ matrix.uploader }}
+          run-id: ${{ github.run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/downloaded
+      - run: python -B scripts/check_action_artifact.py verify "$RUNNER_TEMP/downloaded"
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: fixture-receipt
+          run-id: ${{ github.run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/receipt
+      - run: python -B scripts/check_action_artifact.py verify-receipt "$RUNNER_TEMP/receipt"

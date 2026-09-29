@@ -9,7 +9,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - run: python -B tests/distribution/test_repository.py
       - run: python -B tests/distribution/test_curseforge.py
       - run: python -B tests/distribution/test_publisher.py
@@ -18,7 +18,7 @@ jobs:
     environment: distribution-validation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
           path: distribution-repo
@@ -30,7 +30,7 @@ jobs:
           lock=json.load(open('distribution-repo/distribution/candidate.lock.json'))
           with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
               for child in lock['children']: out.write(child['name']+'='+child['commit']+'\n')
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: notify353/ApogeeHeals
           ref: ${{ steps.pins.outputs.ApogeeHeals }}
@@ -38,7 +38,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           token: ${{ github.token }}
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: notify353/ApogeeKeybinds
           ref: ${{ steps.pins.outputs.ApogeeKeybinds }}
@@ -46,7 +46,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           token: ${{ secrets.DISTRIBUTION_READ_TOKEN }}
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: notify353/ApogeeGroupAlert
           ref: ${{ steps.pins.outputs.ApogeeGroupAlert }}
@@ -54,7 +54,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           token: ${{ secrets.DISTRIBUTION_READ_TOKEN }}
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: notify353/ApogeeEssentials
           ref: ${{ steps.pins.outputs.ApogeeEssentials }}
@@ -62,7 +62,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           token: ${{ secrets.DISTRIBUTION_READ_TOKEN }}
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: notify353/ApogeeTank
           ref: ${{ steps.pins.outputs.ApogeeTank }}
@@ -70,7 +70,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           token: ${{ github.token }}
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: notify353/ApogeeAuction
           ref: ${{ steps.pins.outputs.ApogeeAuction }}

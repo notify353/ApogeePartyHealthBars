@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Pin Auction personal role guidance: remove group-competition vetoes, recommend
+  useful empty-slot upgrades, and display recognized stat tradeoffs as Possible
+  Upgrade across supported Paladin and Warrior roles, including rings and necklaces.
+
 - Pin the reviewed Auction fix for incomplete Tank shield defenses; require
   complete shield baselines before a Need recommendation.
 

@@ -6,10 +6,10 @@ Five focused addons for **World of Warcraft Forever 1.60.1**:
 - **Keybinds:** configurable keyboard and mouse actions with combat HUDs.
 - **Group Alert:** dungeon group discovery and recruitment alerts.
 - **Essentials:** chat conveniences, UI fading and error controls.
-- **Auction:** conservative Paladin Healing, Damage and Tank gear guidance in item tooltips.
+- **Auction:** personal Paladin Healing/Damage/Tank and Warrior Damage/Tank gear guidance in item tooltips.
 
 Enable the modules you want under **Apogee Forever** in WoW's AddOns list.
-Each module has its own settings. Auction shows ROLL NEED only for clear upgrades for the selected Paladin role; uncertain items stay quiet. This edition supports Forever only.
+Each module has its own settings. Auction shows ROLL NEED for clear upgrades and POSSIBLE UPGRADE for recognized stat tradeoffs for the selected role. Rings, necklaces and other supported slots use the same personal guidance; unresolved item data stays quiet. This edition supports Forever only.
 
 Legacy profiles are not imported, and Dungeon Guide is not included.
 

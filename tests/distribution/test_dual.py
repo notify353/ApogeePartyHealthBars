@@ -121,7 +121,7 @@ class DualTests(unittest.TestCase):
                     'Rules/Warrior.lua', 'Rules/Warrior/Combat.lua', 'Rules/Warrior/Damage.lua',
                     'Rules/Warrior/Tank.lua',
                     'Core/Items.lua', 'Core/Group.lua', 'Core/Evaluate.lua']
-        self.assertEqual(runtime, [dual.GATE_PATH, name + '.lua'] + gameplay + ['RoleSettings.lua'])
+        self.assertEqual(runtime, [dual.GATE_PATH, name + '.lua'] + gameplay + ['RoleSettings.lua', 'Auction/Filter.lua', 'Auction/Browse.lua'])
         self.assertEqual(meta.get('SavedVariablesPerCharacter'), 'ApogeeAuctionDevDB')
         self.assertNotIn('SavedVariables', meta)
         body = self.dev[name + '/' + name + '.lua']
@@ -136,7 +136,7 @@ class DualTests(unittest.TestCase):
             b'Apogee Auction', b'Apogee Auction DEV').replace(
             b'APOGEE_AUCTION_DEFAULTS', b'APOGEE_AUCTION_DEV_DEFAULTS')
         self.assertEqual(settings_body, dual.prefix(name, 'DEV') + expected_settings)
-        for path in gameplay:
+        for path in gameplay + ['Auction/Filter.lua', 'Auction/Browse.lua']:
             self.assertEqual(self.dev[name + '/' + path], dual.prefix(name, 'DEV') + source[path])
         evaluation_check = OPTIONS.artifacts / 'auction-evaluation.lua'
         evaluation_check.write_bytes(source['tests/evaluation.lua'])
@@ -145,6 +145,10 @@ class DualTests(unittest.TestCase):
         settings_check.write_bytes(source['tests/role-settings.lua'])
         subprocess.run(['lua', str(settings_check),
                         str(OPTIONS.artifacts / 'DEV' / name / 'RoleSettings.lua'), name], check=True)
+        for script in ('auction-filter.lua', 'auction-browse.lua'):
+            check_path = OPTIONS.artifacts / script
+            check_path.write_bytes(source['tests/' + script])
+            subprocess.run(['lua', str(check_path), str(OPTIONS.artifacts / 'DEV' / name), name], check=True)
         # Execute the generated body in a strict sandbox: admission must precede
         # even client inspection and tooltip registration.
         check = OPTIONS.artifacts / 'auction-bootstrap.lua'

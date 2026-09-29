@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+- Filter auction browse results to Roll Need or Need + Possible Upgrades for your
+  selected Paladin or Warrior role.
+- See how many items are checked and whether more search results remain, with a
+  prominent Load more results button and automatic late-item-data recovery.
+- Preserve exact auction item variants and native result interactions while
+  evaluating upgrades in small batches.
+- Keep the Classic auction background contained within the results panel.
+
 ## [1.6.0] - 2026-09-28
 
 - Add Warrior Tank and Damage loot guidance, including one-hand/shield tanking,

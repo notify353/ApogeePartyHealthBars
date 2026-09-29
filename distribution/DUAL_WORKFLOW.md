@@ -19,7 +19,9 @@ Auction fixtures remain supported but cannot be promoted without a hosted pin.
 Auction provides Paladin Healing/Damage/Tank and Warrior Damage/Tank guidance, a saved
 per-character role selector, and confirmed Defaults. Clear upgrades show ROLL NEED;
 known stat tradeoffs show POSSIBLE UPGRADE; unresolved data stays quiet.
-Recommendations describe personal value without group-competition vetoes. Its displayed-tooltip path preserves random
+The native auction browse list also provides session-only upgrade filters, a shared
+role selector, bounded evaluation and manual pagination. Recommendations describe
+personal value without group-competition vetoes. Its displayed-tooltip path preserves random
 auction suffix stats. All generated runtime chunks are guarded, and canonical
 Auction participates in the same PROD/DEV exclusion decision as the other addons.
 

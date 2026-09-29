@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-09-28
+
 - Pin Auction guidance without weapon-speed parsing or vetoes; retain displayed
   DPS, per-hit damage, role stats and complete-data safeguards.
 

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Pin Auction's native browse upgrade filters with shared role selection, manual
+  pagination and bounded evaluation. Validate generated DEV filter/UI tests;
+  the new UI requires renewed owner acceptance before production release.
+
 ## [1.6.0] - 2026-09-28
 
 - Add Warrior Tank and Damage loot guidance, including one-hand/shield tanking,

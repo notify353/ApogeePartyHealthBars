@@ -4,18 +4,17 @@
 
 ## [1.6.0] - 2026-09-28
 
-- Pin Auction guidance without weapon-speed parsing or vetoes; retain displayed
-  DPS, per-hit damage, role stats and complete-data safeguards.
-
-- Pin Auction personal role guidance: remove group-competition vetoes, recommend
-  useful empty-slot upgrades, and display recognized stat tradeoffs as Possible
-  Upgrade across supported Paladin and Warrior roles, including rings and necklaces.
-
-- Pin the reviewed Auction fix for incomplete Tank shield defenses; require
-  complete shield baselines before a Need recommendation.
-
-- Pin Auction Warrior Tank/Damage support for checked local DEV installation;
-  preserve other child pins and require renewed native acceptance before release.
+- Add Warrior Tank and Damage loot guidance, including one-hand/shield tanking,
+  two-handed damage and existing dual-wield setups.
+- Show personal upgrades for the selected role regardless of group composition.
+  Clear gains show ROLL NEED; recognized stat tradeoffs show POSSIBLE UPGRADE
+  with the compared item and stat changes.
+- Recognize useful upgrades into empty slots and compare either ring slot.
+  Rings, necklaces and other supported slots use the same role-specific rules.
+- Remove weapon-speed restrictions from recommendations. Displayed weapon DPS,
+  damage per hit and role-relevant stats still determine the comparison.
+- Fix Tank shield recommendations when defensive tooltip data is incomplete.
+  Unknown effects and incomplete item data remain conservative blockers.
 
 ## [1.5.0] - 2026-09-28
 

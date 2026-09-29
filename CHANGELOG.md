@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Pin Auction guidance without weapon-speed parsing or vetoes; retain displayed
+  DPS, per-hit damage, role stats and complete-data safeguards.
+
 - Pin Auction personal role guidance: remove group-competition vetoes, recommend
   useful empty-slot upgrades, and display recognized stat tradeoffs as Possible
   Upgrade across supported Paladin and Warrior roles, including rings and necklaces.

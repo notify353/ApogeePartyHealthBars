@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Pin Auction filter review fixes for delayed item-data recovery, targeted retries
+  and restoration of native empty-result text.
+
 - Pin Auction's native browse upgrade filters with shared role selection, manual
   pagination and bounded evaluation. Validate generated DEV filter/UI tests;
   the new UI requires renewed owner acceptance before production release.

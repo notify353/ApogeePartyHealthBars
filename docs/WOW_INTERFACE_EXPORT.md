@@ -1,8 +1,15 @@
 # Forever interface authority
 
-Loading safety targets Forever16001, reviewed client1.60.1.70009. Export root:
+Loading safety targets Forever16001, reviewed client1.60.1.70124. Export root:
 `C:/Program Files (x86)/World of Warcraft/_classic_beta_/BlizzardInterfaceCode/Interface/AddOns`.
 Run `pwsh ./scripts/check-wow-api-export.ps1` before API work.
+
+The September 29, 2026 refresh was exported after the installed 70124 client
+update. All five recorded loading-safety reference files are byte-identical to
+the reviewed 70009 export. The current candidate build pin advances to 70124;
+Interface 16001, child source pins, TOCs, transforms and runtime remain unchanged.
+Historical source locks retain their original build. This source review does not
+establish native gameplay acceptance on the updated client.
 
 Recorded AddOns, AddOnConstants, FrameScript and Unit generated documentation
 establish metadata/load/enable APIs, enums, secret inspection and UnitGUID.

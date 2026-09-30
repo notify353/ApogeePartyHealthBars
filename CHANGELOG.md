@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Review the Forever 1.60.1.70124 interface export and advance the current build
+  pin. Loading-safety APIs and addon runtime bytes are unchanged.
 - Refresh pinned GitHub Actions and check artifact byte preservation and extraction
   paths across old and new upload/download versions before release use.
 

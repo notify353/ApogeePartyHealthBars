@@ -82,9 +82,11 @@ def public_children(lock):
 def read_lock(path=DEFAULT_LOCK):
     lock = json.loads(Path(path).read_text(encoding='utf-8'))
     require(lock['schema'] == 1 and lock['publicationAllowed'] is False, 'Prototype lock required')
-    require(lock['projectId'] == 1608100 and lock['client'] == {
+    # Retain the immutable historical source lock alongside the reviewed current build.
+    require(lock['projectId'] == 1608100 and lock['client'] in [{
         'flavor': 'forever', 'interface': 16001, 'version': '1.60.1',
-        'reviewedBuild': '1.60.1.70009', 'curseforgeVersionTypeId': 88568},
+        'reviewedBuild': build, 'curseforgeVersionTypeId': 88568}
+        for build in ('1.60.1.70009', '1.60.1.70124')],
         'Unexpected client/project; no flavor fallback is permitted')
     require(re.fullmatch(r'[0-9A-Za-z.-]+', lock['version']), 'Unsafe version')
     hosted_children(lock)

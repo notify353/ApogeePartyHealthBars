@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Pin Heals' combat-only reserved threat target row, suppressing idle placeholders
+  for DEV retesting without changing stable encounter rows or sibling pins.
 - Pin Heals' independent lead and native restricted threat display correction
   for DEV retesting. Preserve sibling pins, PROD and private SavedVariables.
 - Pin Heals' minimal stable eight-row tank threat stack for local DEV validation.

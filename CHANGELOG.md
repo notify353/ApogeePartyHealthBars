@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Pin Heals' independent lead and native restricted threat display correction
+  for DEV retesting. Preserve sibling pins, PROD and private SavedVariables.
 - Pin Heals' minimal stable eight-row tank threat stack for local DEV validation.
   Preserve all sibling pins and DEV/PROD isolation; centered numeric movement
   is disabled and native dungeon warning/rendering acceptance remains pending.

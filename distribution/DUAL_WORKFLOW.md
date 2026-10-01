@@ -16,8 +16,10 @@ ApogeeAuction in PROD and isolated ApogeeAuctionDev in DEV. PROD has six roots
 Historical source locks retain their original five-child inventories; local-only
 Auction fixtures remain supported but cannot be promoted without a hosted pin.
 
-Auction provides Paladin Healing/Damage/Tank and Warrior Damage/Tank guidance, a saved
-per-character role selector, and confirmed Defaults. Clear upgrades show ROLL NEED;
+The unreleased Auction candidate covers nine classes and sixteen class/role
+combinations. Good for describes class/role suitability; For you compares the
+selected personal role against equipped gear. It retains a saved per-character
+role selector and confirmed Defaults. Clear upgrades show ROLL NEED;
 known stat tradeoffs show POSSIBLE UPGRADE; unresolved data stays quiet.
 The native auction browse list also provides session-only upgrade filters, a shared
 role selector, bounded evaluation and manual pagination. Recommendations describe
@@ -46,6 +48,24 @@ Before future development builds, locally commit the reviewed child candidate on
 its task branch, update only that child's pin/file inventory to reviewed Git
 blobs, and run its checks plus aggregate checks. Never include sibling dirty
 files implicitly. New identity tokens or loader mechanisms need an explicit audit.
+
+### Current local candidate handoff
+
+The all-class Auction candidate is pinned to
+`1adf433d30dda3618ef5560d05eb8ca76385f0cb` on the central task branch
+`codex/auction-all-class-distribution`, based on canonical candidate `43692db`.
+The canonical checkout remains on `codex/heals-threat-stack-20260929`; it has
+not received this Auction pin. Before the next DEV build/install, deliberately
+carry the reviewed Auction entry forward alongside the latest reviewed sibling
+entries. Do not use the older canonical lock unchanged or reset sibling pins.
+Heals remains `a4250f46e1f56004251c4526bde4dea3c7b08bbf` in this candidate.
+Use the candidate lock explicitly with `--lock` for both builder and installer
+when running unchanged central scripts from the canonical checkout.
+The installed candidate receipt is
+`C:/Dev/WoW/local-install-backups/apogee-auction-all-class-20261001-2b04/transaction.json`.
+Verify the latest receipt and current installed bytes before another install.
+This handoff grants no main integration or publication approval; native
+acceptance for the changed Auction and Heals runtime is pending.
 
 The builder emits two deterministic ZIPs from the same pins. PROD retains exact
 source gameplay bodies behind an admission prefix. DEV transforms audited
@@ -174,7 +194,8 @@ Actual CurseForge app testing requires an approved available compatible release.
 Local ZIP installation is not that test; private/held uploads are not assumed
 accessible. Its FAQ says Modified/Working Copy addons skip auto-updates, so check
 production app status for release testing. DEV stays installed separately.
-Native acceptance for the staged gameplay is recorded in native-acceptance.json.
+Historical native acceptance is recorded by runtime hash in native-acceptance.json;
+it does not cover the changed all-class Auction or unfinished Heals candidates.
 Release1.0.0 was approved for exact Forever1.60.1 (upload ID17053/type88568), and
 Actions verified identical downloaded CurseForge/GitHub ZIP bytes. See RELEASING.md
 for the active publication workflow and required gates for future versions.

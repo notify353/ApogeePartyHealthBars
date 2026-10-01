@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Clarify that native acceptance covers historical runtime hashes, and record
+  the all-class Auction pin/receipt handoff for subsequent checked DEV updates.
 - Pin Auction's all-class guidance: separate class/role suitability from personal
   equipment comparisons across nine classes and sixteen roles. Validate both new
   guarded runtime chunks and generated DEV gameplay; preserve all sibling pins.

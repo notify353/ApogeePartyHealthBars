@@ -13,6 +13,11 @@ Each module has its own settings. Auction shows ROLL NEED for clear upgrades and
 
 Legacy profiles are not imported, and Dungeon Guide is not included.
 
+The unreleased DEV candidate expands Auction to all nine classes and sixteen
+class/role combinations, with separate Good for suitability and For you personal
+gear comparisons. This candidate still needs native acceptance; the release
+description above does not imply it has been published.
+
 Install using the [CurseForge listing](https://www.curseforge.com/wow/addons/apogee-party-health-bars)
 or a packaged [GitHub release](https://github.com/notify353/ApogeePartyHealthBars/releases).
 For a manual installation, extract all six addon folders into Interface/AddOns.

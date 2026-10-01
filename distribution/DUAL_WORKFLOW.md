@@ -52,22 +52,30 @@ files implicitly. New identity tokens or loader mechanisms need an explicit audi
 ### Current local candidate handoff
 
 The all-class Auction candidate is pinned to
-`a649d30d02438a8a26aa79ddf43ab7e9f3deafc3` on the central task branch
+`354bc6bc3a0f6ae0762a38585492ff81eb71200e` on the central task branch
 `codex/auction-all-class-distribution`, based on canonical candidate `43692db`.
 The canonical checkout remains on `codex/heals-threat-stack-20260929`; it has
 not received this Auction pin. Before the next DEV build/install, deliberately
 carry the reviewed Auction entry forward alongside the latest reviewed sibling
 entries. Do not use the older canonical lock unchanged or reset sibling pins.
 Heals remains `a4250f46e1f56004251c4526bde4dea3c7b08bbf` in this candidate.
-Use the candidate lock explicitly with `--lock` for both builder and installer
-when running unchanged central scripts from the canonical checkout.
-The installed candidate receipt is
+Use the candidate lock explicitly with `--lock` for both builder and installer.
+This layout also requires this task branch's central scripts: the canonical
+scripts predate the exact inert-stub exception and must not install this lock.
+Run the reviewed task scripts by absolute path from the canonical checkout
+until those central changes are deliberately integrated.
+The latest installed candidate is still the prior QA source `a649d30`; its receipt is
 `C:/Dev/WoW/local-install-backups/apogee-auction-qa-fixes-20261001-2b04/transaction.json`.
+The layout install preflight stopped because the client build changed during
+validation. No layout backup or installed writes occurred. Obtain a fresh matching
+API export and review it before resuming validation and installation.
 Verify the latest receipt and current installed bytes before another install.
-The QA update passed all 66 distribution checks and the revised generated DEV
-evaluation/cache regressions. It changes eight existing Auction Lua files and
-adds the QA report; reload activates the runtime edits. No TOC or runtime-file
-discovery change was introduced by this update.
+The uniform layout has nine class registration files and sixteen supported role
+files. Eighteen new Lua files and a changed TOC require user discovery/reload
+acceptance; restart if reload does not discover them. Three old Lua paths remain
+as exact reviewed inert stubs outside the TOC, with no file retirement. The
+central contract permits only those Auction paths with their exact no-op bytes;
+all other unlisted Lua/XML remains rejected.
 This handoff grants no main integration or publication approval; native
 acceptance for the changed Auction and Heals runtime is pending.
 

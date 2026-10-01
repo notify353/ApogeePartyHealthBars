@@ -155,8 +155,19 @@ def child_contract(child, files):
             'Children must remain independent')
     require(runtime and all(p in files for p in runtime), 'Missing runtime module')
     require({p for p in files if p.endswith('.toc')} == {child['toc']}, 'Unexpected alternate TOC')
-    require({p for p in files if p.endswith(('.lua', '.xml'))} == set(runtime),
-            'Unlisted runtime or duplicated embedded addon')
+    executable = {p for p in files if p.endswith(('.lua', '.xml'))}
+    require(set(runtime) <= executable, 'Invalid runtime file extension')
+    unlisted = executable - set(runtime)
+    # These exact reviewed, unloaded no-op files replace old installed Auction
+    # modules without deleting user files. No general unlisted-Lua exemption.
+    inert = (b'local _, A = ...\n'
+             b'if type(A) ~= "table" or not A.ready then return end\n'
+             b'-- Unloaded compatibility stub: retained for safe replacement of installed files.\n'
+             b'-- Active class registration and role definitions live in Rules/<Class>[/<Role>].lua.\n')
+    stub_paths = {'Rules/Other.lua', 'Rules/Paladin/Combat.lua', 'Rules/Warrior/Combat.lua'}
+    require(not unlisted or (child['name'] == 'ApogeeAuction' and unlisted == stub_paths
+                            and all(files[p] == inert for p in unlisted)),
+            'Unlisted runtime or non-inert compatibility stub')
     for path in runtime:
         require(files[path], 'Empty runtime source')
     return runtime

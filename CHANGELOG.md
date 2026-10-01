@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Pin Auction's uniform class registration/role module layout, with generated
+  TOC/registration checks and inert retained compatibility files. Preserve the
+  reviewed gameplay behavior and all sibling pins during DEV installation.
 - Pin Auction's reviewed QA fixes for spell-only stats, resource tradeoffs,
   malformed/conditional data, class restrictions and cache/data recovery.
   Exercise the new adversarial cases against generated DEV before installation.

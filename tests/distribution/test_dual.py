@@ -117,9 +117,13 @@ class DualTests(unittest.TestCase):
         name = 'ApogeeAuctionDev'
         meta, runtime = d.toc_info(self.dev[name + '/' + name + '.toc'])
         gameplay = ['Core/Compare.lua', 'Core/Combat.lua', 'Core/Profiles.lua', 'Rules/Paladin.lua', 'Rules/Paladin/Healing.lua',
-                    'Rules/Paladin/Combat.lua', 'Rules/Paladin/Damage.lua', 'Rules/Paladin/Tank.lua',
-                    'Rules/Warrior.lua', 'Rules/Warrior/Combat.lua', 'Rules/Warrior/Damage.lua',
-                    'Rules/Warrior/Tank.lua', 'Rules/Other.lua',
+                    'Rules/Paladin/Damage.lua', 'Rules/Paladin/Tank.lua',
+                    'Rules/Warrior.lua', 'Rules/Warrior/Damage.lua', 'Rules/Warrior/Tank.lua',
+                    'Rules/Priest.lua', 'Rules/Priest/Healing.lua', 'Rules/Priest/Damage.lua',
+                    'Rules/Mage.lua', 'Rules/Mage/Damage.lua', 'Rules/Warlock.lua', 'Rules/Warlock/Damage.lua',
+                    'Rules/Rogue.lua', 'Rules/Rogue/Damage.lua', 'Rules/Hunter.lua', 'Rules/Hunter/Damage.lua',
+                    'Rules/Shaman.lua', 'Rules/Shaman/Healing.lua', 'Rules/Shaman/Damage.lua',
+                    'Rules/Druid.lua', 'Rules/Druid/Healing.lua', 'Rules/Druid/Tank.lua', 'Rules/Druid/Damage.lua',
                     'Core/Items.lua', 'Core/Group.lua', 'Core/Evaluate.lua']
         self.assertEqual(runtime, [dual.GATE_PATH, name + '.lua'] + gameplay + ['RoleSettings.lua', 'Auction/Filter.lua', 'Auction/Browse.lua'])
         self.assertEqual(meta.get('SavedVariablesPerCharacter'), 'ApogeeAuctionDevDB')
@@ -138,6 +142,26 @@ class DualTests(unittest.TestCase):
         self.assertEqual(settings_body, dual.prefix(name, 'DEV') + expected_settings)
         for path in gameplay + ['Auction/Filter.lua', 'Auction/Browse.lua']:
             self.assertEqual(self.dev[name + '/' + path], dual.prefix(name, 'DEV') + source[path])
+        # Retain old installed paths as inert, unloaded stubs. The owning
+        # evaluation suite also executes them and checks for registrations.
+        for path in ('Rules/Other.lua', 'Rules/Paladin/Combat.lua', 'Rules/Warrior/Combat.lua'):
+            self.assertNotIn(path, runtime)
+            self.assertEqual(self.dev[name + '/' + path], source[path])
+            self.assertEqual(self.prod['ApogeeAuction/' + path], source[path])
+        pinned_files = {p: source[p] for p in child['files']}
+        d.child_contract(child, pinned_files)
+        for path in ('Rules/Other.lua', 'Rules/Paladin/Combat.lua', 'Rules/Warrior/Combat.lua'):
+            changed = dict(pinned_files)
+            changed[path] += b'CreateFrame("Frame")\n'
+            with self.assertRaises(ValueError): d.child_contract(child, changed)
+        changed = dict(pinned_files)
+        changed['Rules/Unexpected.lua'] = source['Rules/Other.lua']
+        with self.assertRaises(ValueError): d.child_contract(child, changed)
+        foreign_child = dict(child, name='ApogeeHeals')
+        with self.assertRaises(ValueError): d.child_contract(foreign_child, pinned_files)
+        changed = dict(pinned_files)
+        changed[child['toc']] += b'README.md\n'
+        with self.assertRaises(ValueError): d.child_contract(child, changed)
         evaluation_check = OPTIONS.artifacts / 'auction-evaluation.lua'
         evaluation_check.write_bytes(source['tests/evaluation.lua'])
         subprocess.run(['lua', str(evaluation_check), str(OPTIONS.artifacts / 'DEV' / name), name], check=True)

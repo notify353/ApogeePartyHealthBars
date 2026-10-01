@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Pin Auction's reviewed QA fixes for spell-only stats, resource tradeoffs,
+  malformed/conditional data, class restrictions and cache/data recovery.
+  Exercise the new adversarial cases against generated DEV before installation.
 - Clarify that native acceptance covers historical runtime hashes, and record
   the all-class Auction pin/receipt handoff for subsequent checked DEV updates.
 - Pin Auction's all-class guidance: separate class/role suitability from personal

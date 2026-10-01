@@ -52,7 +52,7 @@ files implicitly. New identity tokens or loader mechanisms need an explicit audi
 ### Current local candidate handoff
 
 The all-class Auction candidate is pinned to
-`1adf433d30dda3618ef5560d05eb8ca76385f0cb` on the central task branch
+`a649d30d02438a8a26aa79ddf43ab7e9f3deafc3` on the central task branch
 `codex/auction-all-class-distribution`, based on canonical candidate `43692db`.
 The canonical checkout remains on `codex/heals-threat-stack-20260929`; it has
 not received this Auction pin. Before the next DEV build/install, deliberately
@@ -62,8 +62,12 @@ Heals remains `a4250f46e1f56004251c4526bde4dea3c7b08bbf` in this candidate.
 Use the candidate lock explicitly with `--lock` for both builder and installer
 when running unchanged central scripts from the canonical checkout.
 The installed candidate receipt is
-`C:/Dev/WoW/local-install-backups/apogee-auction-all-class-20261001-2b04/transaction.json`.
+`C:/Dev/WoW/local-install-backups/apogee-auction-qa-fixes-20261001-2b04/transaction.json`.
 Verify the latest receipt and current installed bytes before another install.
+The QA update passed all 66 distribution checks and the revised generated DEV
+evaluation/cache regressions. It changes eight existing Auction Lua files and
+adds the QA report; reload activates the runtime edits. No TOC or runtime-file
+discovery change was introduced by this update.
 This handoff grants no main integration or publication approval; native
 acceptance for the changed Auction and Heals runtime is pending.
 

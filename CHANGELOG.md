@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Pin Auction's all-class guidance: separate class/role suitability from personal
+  equipment comparisons across nine classes and sixteen roles. Validate both new
+  guarded runtime chunks and generated DEV gameplay; preserve all sibling pins.
+
 - Pin Heals' combat-only reserved threat target row, suppressing idle placeholders
   for DEV retesting without changing stable encounter rows or sibling pins.
 - Pin Heals' independent lead and native restricted threat display correction

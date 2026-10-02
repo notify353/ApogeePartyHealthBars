@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Pin the Heals relative-threat bar prototype for DEV group testing.
+
 - Update Heals DEV threat diagnostics with sustained-combat sampling coverage.
 
 - Pin Heals combat threat checks for local DEV testing, with frozen screenshot

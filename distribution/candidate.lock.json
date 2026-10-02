@@ -210,13 +210,13 @@
       "version": "0.1.0-dev"
     },
     {
-      "commit": "e8070ac8a4f4cd529fc6fcb8a140b4d11bd8f70b",
+      "commit": "1f99b166621de9d2a5a8f8538e7ba1f7236f9a0b",
       "files": {
-        "ApogeeAuction.lua": "0fe52d75363c2f77b257dd96c7fd9d0a81f58906b3a099d5101b2605c3a245f3",
+        "ApogeeAuction.lua": "c14690360de524421a9005167a983fb313fa1958b827f19e4bcb43504bad6c5d",
         "ApogeeAuction.toc": "3955f946225726282e8743a132f8a1e26319a1d3202f7d0d2a9529dd91a67397",
         "Auction/Browse.lua": "e5b8bbe61c55ddf66e3535a4b97d36b623e26d2082e3b478a4d21c79e1452e1b",
         "Auction/Filter.lua": "680f6b0b315fd2643717e20ae06e92f3b0d45aed493554f1c84f456db8a6cc2e",
-        "CHANGELOG.md": "93ac282a8a363921941dc8d52262549c6bf8c171dbd98618060ceeeecdf389e9",
+        "CHANGELOG.md": "10fdecf14588f5adb9f5929b792a2b87362ad1bb69fa8b4a31164d979b7bb2c3",
         "Core/Combat.lua": "863e2ed12084b74bd926af5e483f8bd2131736f268966a78f800ff44d64c9ffb",
         "Core/Compare.lua": "f10336db3993a9f08750ff848a70bbf7b8e71408293fe523b2cc9b263fd8a52a",
         "Core/Evaluate.lua": "00c94219ae1a66a7a1f731d21cba6f67335578ef174e9feb2d665cb51040355c",

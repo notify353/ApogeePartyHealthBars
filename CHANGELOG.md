@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+- Include uniform all-class Auction modules, conditional-stat/tooltip fixes and
+  real group evaluation regressions in the checked DEV candidate. Preserve the
+  latest default-off Heals pin and all other child pins. Patch-number differences
+  remain advisory at runtime; export/install provenance checks stay separate.
+
 - Default Heals' prototype threat stack off with its existing settings checkbox
   opt-in. Review Heals on 70170 and preserve the installed, reviewed Auction QA
   candidate while validating this DEV update.

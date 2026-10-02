@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Polish Auction DEV stat guidance with section spacing, a compact class/role
+  header and aligned Priority 1/2/3 stat rows without benefit explanations.
+
 - Update Auction DEV with filled class-color squares and a gold You highlight
   for the player's class in the matching suitability list.
 

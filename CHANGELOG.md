@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Update Auction DEV with filled class-color squares and a gold You highlight
+  for the player's class in the matching suitability list.
+
 - Hide unmatched Auction classes while retaining compact combined-role rows
   and class-colored marks for matching classes.
 

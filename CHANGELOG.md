@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+- Add a dice toggle to show auction upgrades for your role, with progressive results,
+  automatic loading of additional search pages, and visible checking/completion states.
+- Select a session fallback role beside the auction dice or below the character
+  window. Assigned group roles take priority and keep both selectors synchronized.
+- Keep auction browsing responsive with bounded item checks, loading retries,
+  timeout recovery and cancellation. Preserve native item and purchase navigation.
+- Reload after updating; restart WoW if the new auction modules are not discovered.
+  If a legacy Apogee Auction copy remains enabled, disable it to use Stats filtering.
+
 ## [1.9.0] - 2026-10-01
 
 - Add Stats gear guidance to native item tooltips: NEED during loot rolls and

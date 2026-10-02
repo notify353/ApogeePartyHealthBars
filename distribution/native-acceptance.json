@@ -1,6 +1,6 @@
 {
   "accepted": true,
-  "basis": "Owner reports testing and accepting the installed DEV package including latest Stats weapon logic and normal loading, and confirms Stats replaces Auction in PROD while Auction and Tank remain DEV-only. All installed DEV Lua bytes verified against this candidate. PROD is the generated counterpart, not separately client-tested.",
+  "basis": "Owner reports testing everything and accepting the installed DEV auction upgrade filter and shared role selector. All installed DEV Lua bytes verified against this candidate. Unchanged sibling runtime acceptance is retained. PROD is the generated counterpart, not separately client-tested.",
   "curseforgeClientTested": false,
   "followUpChecks": [
     {
@@ -22,10 +22,10 @@
     }
   ],
   "gateSha256": "ba988f34520cfcfdb5a340138659431d3eed30d42577ee30e326f199851a278d",
-  "installedArchiveSha256": "b59eaa24a254258c3b2d9dc6ea1c4b8be59618b2d8f660a683f3fa33b4724755",
-  "installedReceipt": "C:/Dev/WoW/local-install-backups/apogee-stats-weapons-20261001/transaction.json",
+  "installedArchiveSha256": "e7f6b5d19b6e4bb86b4c19f12bc934cf25bbb770dc7c794ec562a8c3bf4bf5db",
+  "installedReceipt": "C:\\Dev\\WoW\\local-install-backups\\apogee-stats-auction-role-20261002\\transaction.json",
   "productionClientTested": false,
-  "reportedDate": "2026-10-01",
+  "reportedDate": "2026-10-02",
   "runtimeFiles": {
     "DEV": {
       "ApogeeAuctionDev/ApogeeAuctionDev.lua": "6337888aaec45948fffb9ee8a57e47bc6591b4493439b9430aaedbf55d2d209a",
@@ -150,8 +150,10 @@
       "ApogeeKeybindsDev/UI/Widgets.lua": "1585ef3dbca8db5cf84aed0b1596b71a84478c8fdd6271481daac45de6f49d57",
       "ApogeeKeybindsDev/Weapons/Loadouts.lua": "c1007c615abb3f5ed628593b485fc599442cc75dd6a201ab0501274d7529a35d",
       "ApogeeKeybindsDev/__Distribution/FamilyGate.lua": "2fbfab2ab9a7ce51466890aca1bcd8ff9ea15ee2c9d73c8d9dc49486d1d5d529",
-      "ApogeeStatsDev/ApogeeStatsDev.lua": "c08a28764adb5a6a0a4c0177cc49fd98421b9eaa590e6547ab337b86de21d0c8",
-      "ApogeeStatsDev/Core/Items.lua": "ae71457935f82038f927cfb6e1f4cfe333fcde97713e80309f586caa2bf972b3",
+      "ApogeeStatsDev/ApogeeStatsDev.lua": "e2ad380a78e6c8988381479a06be36a6182fbf99d65383f4b9027950d3510dd3",
+      "ApogeeStatsDev/Auction/Browse.lua": "fa5dc955b0b1c655a94808c68b390945b22d34a12bd210ea67f34022a6906a19",
+      "ApogeeStatsDev/Auction/Queue.lua": "57e3004c16201118f95b9666a2e1e0a1aac95e97676a924f7634edb8d5c158d1",
+      "ApogeeStatsDev/Core/Items.lua": "ae57e5e03655215195cb11c6954c7e6017d4e0112c059e182644c7153e5147ba",
       "ApogeeStatsDev/Core/Rules.lua": "146cf1a34cae0754b30dae1240e46149f8e5cf0383d6c59ee7b66839c729d247",
       "ApogeeStatsDev/__Distribution/FamilyGate.lua": "ba988f34520cfcfdb5a340138659431d3eed30d42577ee30e326f199851a278d",
       "ApogeeTankDev/ApogeeTankDev.lua": "b2801a3e0d2f1a8a79387537e3dbe3b310e38a09b0610f16cf4fadc54452386b",
@@ -266,8 +268,10 @@
       "ApogeeKeybinds/UI/Widgets.lua": "b63e9c076ee2bbdfb3b16ac8ea1d1fae46eb57f6faacee9bcd59639e20983d9a",
       "ApogeeKeybinds/Weapons/Loadouts.lua": "8b9696a485e692fb8a0f7c4e5935e0c861b0c47bbfa7336a476489ba1c97803c",
       "ApogeeKeybinds/__Distribution/FamilyGate.lua": "acf75a18371af14ad21fae1ac0c0b57c53ae69568f34066cc4e81f155bea91e1",
-      "ApogeeStats/ApogeeStats.lua": "e2b554348c93666f48cc4929c28b6f277ed56e3d1f8f46250b5aa33c5d0b0845",
-      "ApogeeStats/Core/Items.lua": "49f58e1676b93ce6d395bcca694fb326b7acc87864c6156d034f7a26bba6ec8b",
+      "ApogeeStats/ApogeeStats.lua": "d3219bb87ee89c5933849770aea976b1c9e64519e184208b30953fb2438c4551",
+      "ApogeeStats/Auction/Browse.lua": "19f3fc4272150dbfeefc1d33fed96886a78c4a017c28dfda182e1525ddb12f1c",
+      "ApogeeStats/Auction/Queue.lua": "2cc9f1ae4a2669eebdb2394832d08f406f44ef86d6d03b5e01713c59ffe2549c",
+      "ApogeeStats/Core/Items.lua": "1a013782e7462d5325948e09718bb5dca0cc18a359dbbca8e94f653019103abf",
       "ApogeeStats/Core/Rules.lua": "1e9d696e3bf19cb4e179c5b79d063978348b095c05fe0908088def59564d7ddd",
       "ApogeeStats/__Distribution/FamilyGate.lua": "15e7d9da7f466e38ec9114df7c64855f49e76611dc1f269e028028bb0d509891"
     }

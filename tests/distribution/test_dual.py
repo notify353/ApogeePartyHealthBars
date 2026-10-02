@@ -125,16 +125,19 @@ class DualTests(unittest.TestCase):
                                        ('DEV', self.dev, self.dev_changes)):
             name = 'ApogeeStats' + ('Dev' if family == 'DEV' else '')
             meta, runtime = d.toc_info(files[name + '/' + name + '.toc'])
-            self.assertEqual(runtime, [dual.GATE_PATH, 'Core/Rules.lua', 'Core/Items.lua', name + '.lua'])
+            self.assertEqual(runtime, [dual.GATE_PATH, 'Core/Rules.lua', 'Core/Items.lua', name + '.lua', 'Auction/Queue.lua', 'Auction/Browse.lua'])
             self.assertEqual(meta['Title'], 'Apogee Stats' + (' DEV' if family == 'DEV' else ''))
             self.assertFalse(any(k.startswith('SavedVariables') for k in meta))
             path = name + '/' + name + '.lua'
             self.assertEqual(files[path], dual.prefix(name, family) + source['ApogeeStats.lua'])
             self.assertEqual(changes[path]['identityEdits'], [])
-            for relative in ('Core/Rules.lua', 'Core/Items.lua'):
+            for relative in ('Core/Rules.lua', 'Core/Items.lua', 'Auction/Queue.lua', 'Auction/Browse.lua'):
                 self.assertEqual(files[name + '/' + relative], dual.prefix(name, family) + source[relative])
             test_path = OPTIONS.artifacts / ('stats-guidance-' + family + '.lua')
             test_path.write_bytes(source['tests/test_tooltip.lua'])
+            subprocess.run(['lua', str(test_path), str(OPTIONS.artifacts / family / name), name], check=True)
+            test_path = OPTIONS.artifacts / ('stats-auction-' + family + '.lua')
+            test_path.write_bytes(source['tests/test_auction.lua'])
             subprocess.run(['lua', str(test_path), str(OPTIONS.artifacts / family / name), name], check=True)
         bad = copy.deepcopy(self.lock)
         next(c for c in bad['children'] if c['name'] == 'ApogeeStats')['files']['ApogeeStats.lua'] = '0' * 64

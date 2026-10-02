@@ -1,3 +1,8 @@
+## Unreleased
+
+- Pin Heals combat threat checks for local DEV testing, with frozen screenshot
+  results. Native acceptance remains pending.
+
 # Changelog
 
 ## [Unreleased]

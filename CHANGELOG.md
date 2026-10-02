@@ -1,7 +1,5 @@
 ## Unreleased
 
-- Pin Auction's AtlasLoot custom-tooltip guidance fix for local DEV installation.
-
 - Pin the settings-controlled solo Heals threat demo for visual review in DEV.
 
 - Pin the Heals relative-threat bar prototype for DEV group testing.

@@ -168,13 +168,14 @@ class DualTests(unittest.TestCase):
         changed = dict(pinned_files)
         changed[child['toc']] += b'README.md\n'
         with self.assertRaises(ValueError): d.child_contract(child, changed)
+        (OPTIONS.artifacts / 'loot-scenarios.lua').write_bytes(source['tests/loot-scenarios.lua'])
         evaluation_check = OPTIONS.artifacts / 'auction-evaluation.lua'
         evaluation_check.write_bytes(source['tests/evaluation.lua'])
         subprocess.run(['lua', str(evaluation_check), str(OPTIONS.artifacts / 'DEV' / name), name], check=True)
         # Execute real loot/group regressions against transformed package bytes.
-        for script in ('loot-scenarios.lua', 'group-fixtures.lua', 'group-scenarios.lua', 'group-browse.lua'):
+        for script in ('loot-scenarios.lua', 'group-fixtures.lua', 'group-scenarios.lua', 'group-browse.lua', 'core-stats.lua'):
             (OPTIONS.artifacts / script).write_bytes(source['tests/' + script])
-        for script in ('loot-scenarios.lua', 'group-scenarios.lua', 'group-browse.lua'):
+        for script in ('loot-scenarios.lua', 'group-scenarios.lua', 'group-browse.lua', 'core-stats.lua'):
             subprocess.run(['lua', str(OPTIONS.artifacts / script),
                             str(OPTIONS.artifacts / 'DEV' / name), name], check=True)
         settings_check = OPTIONS.artifacts / 'auction-settings.lua'

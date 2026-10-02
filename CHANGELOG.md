@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Pin Auction native numeric stat ratings, removing tooltip-text parsing and
+  duplicate diagnostics. Validate native stat and enhancement contracts against
+  generated DEV bytes before the checked DEV installation.
+
 - Refresh the Auction DEV pin for a binary Upgrade/Pass verdict and held-Alt
   explanations, with live modifier refresh and a single upgrades-only filter.
 

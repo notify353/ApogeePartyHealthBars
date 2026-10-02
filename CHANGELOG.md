@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-10-01
+
 - Fix native Forever project identification in all affected children and remove
   exact-interface runtime shutdowns. Include source and generated native-project
   regressions; preserve required APIs, other-client rejection and family guards.

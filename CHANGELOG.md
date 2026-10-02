@@ -2,45 +2,14 @@
 
 ## [Unreleased]
 
-- Bundle the shared Apogee logo in Stats and validate family-local icon paths
-  in both generated packages.
-
-- Replace Auction with the inert Stats baseline in the production candidate.
-  Retain Auction and Tank in DEV; add guarded Stats DEV, hosted immutable source
-  pinning and private-source workflow checkouts. Extend family exclusion and
-  generated-package/install regressions. No Stats gameplay or saved data added.
-
-- Always show the full Auction guidance tooltip; remove Alt gating and modifier
-  refresh hooks while retaining compact priorities and matching class rows.
-
-- Polish Auction DEV stat guidance with section spacing, a compact class/role
-  header and aligned Priority 1/2/3 stat rows without benefit explanations.
-
-- Update Auction DEV with filled class-color squares and a gold You highlight
-  for the player's class in the matching suitability list.
-
-- Hide unmatched Auction classes while retaining compact combined-role rows
-  and class-colored marks for matching classes.
-
-- Update Auction DEV suitability to one row per supported class, combining
-  matching roles and retaining dimmed unmatched classes.
-
-- Update Auction DEV with role/playstyle-and-item teaching reminders and grouped
-  vertical class-colored suitability rows, replacing duplicate native comparisons.
-
-- Refresh Auction DEV with concise Alt details, removing generic helper text
-  while preserving item-specific comparisons and relevant Pass reasons.
-
-- Pin Auction native numeric stat ratings, removing tooltip-text parsing and
-  duplicate diagnostics. Validate native stat and enhancement contracts against
-  generated DEV bytes before the checked DEV installation.
-
-- Refresh the Auction DEV pin for a binary Upgrade/Pass verdict and held-Alt
-  explanations, with live modifier refresh and a single upgrades-only filter.
-
-- Pin Auction core-stat guidance for the approved DEV installation: exclude
-  enhancements and optional effects, preserve inherent bonuses, and select damage
-  playstyles explicitly. Other child pins and canonical PROD are unchanged.
+- Add Stats gear guidance to native item tooltips: NEED during loot rolls and
+  UPGRADE elsewhere, with a compact role-and-stat explanation.
+- Use native group roles automatically, with a session-only fallback selector
+  below the character window for solo use.
+- Compare armor by primary attributes and damage weapons by weapon DPS while
+  preserving tank shield setups and conservative class/role eligibility.
+- Stats replaces Auction in the public package. Auction and Tank remain DEV-only.
+  Update through CurseForge; existing addon preferences are preserved.
 
 ## [1.8.0] - 2026-10-01
 

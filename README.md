@@ -6,12 +6,12 @@ Five focused addons for **World of Warcraft Forever 1.60.1**:
 - **Keybinds:** configurable keyboard and mouse actions with combat HUDs.
 - **Group Alert:** dungeon group discovery and recruitment alerts.
 - **Essentials:** chat conveniences, UI fading and error controls.
-- **Stats:** empty foundation for upcoming stats features; currently displays and saves nothing.
+- **Stats:** role-aware gear guidance with NEED during loot rolls and UPGRADE on other item tooltips.
 
 Auction and Tank remain DEV-only in the next package candidate.
 
 Enable the modules you want under **Apogee Forever** in WoW's AddOns list.
-Gameplay modules retain their own settings. Stats has no settings or gameplay yet. This edition supports Forever only.
+Gameplay modules retain their own settings. Stats uses your assigned group role or a session fallback selected below the character window. This edition supports Forever only.
 
 Legacy profiles are not imported, and Dungeon Guide is not included.
 

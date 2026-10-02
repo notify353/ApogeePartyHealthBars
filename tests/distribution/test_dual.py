@@ -42,7 +42,7 @@ class DualTests(unittest.TestCase):
     def test_native_forever_identity_and_revision_tolerance(self):
         for child in self.lock['children']:
             if child['name'] == 'ApogeeStats':
-                continue  # Inert Stats has no client adapter; its generated chunks are tested separately.
+                continue  # Stats client identity is covered by its pinned generated-package suite.
             name = child['name'] + 'Dev'
             subprocess.run(['lua', str(ROOT / 'tests/distribution/client_identity.lua'),
                             str(OPTIONS.artifacts / 'DEV' / name), name], check=True)
@@ -117,7 +117,7 @@ class DualTests(unittest.TestCase):
         with patch.object(publisher, 'ACCEPTANCE', evidence):
             self.assertEqual(publisher.payload(OPTIONS.sources_root, self.lock['version']), d.zip_bytes(self.prod))
 
-    def test_stats_baseline_in_both_families_is_guarded_and_inert(self):
+    def test_stats_guidance_in_both_families_is_guarded(self):
         self.assertIn('ApogeeStats', d.public_children(self.lock))
         child = next(c for c in self.lock['children'] if c['name'] == 'ApogeeStats')
         source = d.source_tree(OPTIONS.sources_root / child['name'], child['commit'])
@@ -125,14 +125,17 @@ class DualTests(unittest.TestCase):
                                        ('DEV', self.dev, self.dev_changes)):
             name = 'ApogeeStats' + ('Dev' if family == 'DEV' else '')
             meta, runtime = d.toc_info(files[name + '/' + name + '.toc'])
-            self.assertEqual(runtime, [dual.GATE_PATH, name + '.lua'])
+            self.assertEqual(runtime, [dual.GATE_PATH, 'Core/Rules.lua', 'Core/Items.lua', name + '.lua'])
             self.assertEqual(meta['Title'], 'Apogee Stats' + (' DEV' if family == 'DEV' else ''))
             self.assertFalse(any(k.startswith('SavedVariables') for k in meta))
             path = name + '/' + name + '.lua'
             self.assertEqual(files[path], dual.prefix(name, family) + source['ApogeeStats.lua'])
             self.assertEqual(changes[path]['identityEdits'], [])
-            subprocess.run(['lua', str(ROOT / 'tests/distribution/stats_baseline.lua'),
-                            str(OPTIONS.artifacts / family / path), name], check=True)
+            for relative in ('Core/Rules.lua', 'Core/Items.lua'):
+                self.assertEqual(files[name + '/' + relative], dual.prefix(name, family) + source[relative])
+            test_path = OPTIONS.artifacts / ('stats-guidance-' + family + '.lua')
+            test_path.write_bytes(source['tests/test_tooltip.lua'])
+            subprocess.run(['lua', str(test_path), str(OPTIONS.artifacts / family / name), name], check=True)
         bad = copy.deepcopy(self.lock)
         next(c for c in bad['children'] if c['name'] == 'ApogeeStats')['files']['ApogeeStats.lua'] = '0' * 64
         for family in ('PROD', 'DEV'):

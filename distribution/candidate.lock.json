@@ -270,13 +270,18 @@
       "version": "0.1.0-dev"
     },
     {
-      "commit": "8ef0aa5404693625e26b71895d102d68e9691539",
+      "commit": "4eee9afba8ac264a4a1f7c5a9d26020647a7b633",
       "files": {
-        "ApogeeStats.lua": "5cfeb6bd89f644e6596dd9c1e6be8c835a94541b48f2abdc572f399d3948fa34",
-        "ApogeeStats.toc": "0d1cbeb2ce3ef55827ed5cc9680f9b9b697d7d2a0c3033db4e00269ffb56dc5e",
+        "ApogeeStats.lua": "947dfb90b3b33f00f1404c80791166c34503a150d0d22de8450eea9cc2fa11d3",
+        "ApogeeStats.toc": "b9782ecc327b5528802386e0f010ef4c3b54ea47113ec509f69453d0b913e3c2",
+        "CHANGELOG.md": "ede0587a9773129d1ba5446c8c36f57e080b403685a135cae709ea27954eefc9",
+        "Core/Items.lua": "b4e0a94812eee27bcbdb827edf8a7aaa1b27193a2b4c64cbb3ed824901874b3d",
+        "Core/Rules.lua": "daa7a2e36ca9104b356e1627a6e01f559925bf086d16595c0f0166695fe7cbed",
         "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",
         "Media/Textures/ApogeeLogo.png": "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e",
-        "README.md": "3d2d0c706caa4a587bc08b950e356c43f7506006e5df9ee7985f2920756b1a93"
+        "README.md": "0d374a2cf7767fc9f32a8fad7e1d49843cb47a6daa14c49280aaee645d71a1fc",
+        "docs/CLASS_ROLE_REFERENCE.md": "e8da0e944109376eeee17bc9201f2337353fc1ad99c0859053f98973cbeaa495",
+        "docs/NATIVE_ACCEPTANCE.md": "ea2815eb99f4a52fc28ea279197e5dc4ad19ced46b84bc41585bc868f5f4a124"
       },
       "name": "ApogeeStats",
       "repository": "https://github.com/notify353/ApogeeStats.git",

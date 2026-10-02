@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Pin the settings-controlled solo Heals threat demo for visual review in DEV.
+
 - Pin the Heals relative-threat bar prototype for DEV group testing.
 
 - Update Heals DEV threat diagnostics with sustained-combat sampling coverage.

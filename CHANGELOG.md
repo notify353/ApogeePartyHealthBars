@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Update Auction DEV suitability to one row per supported class, combining
+  matching roles and retaining dimmed unmatched classes.
+
 - Update Auction DEV with role/playstyle-and-item teaching reminders and grouped
   vertical class-colored suitability rows, replacing duplicate native comparisons.
 

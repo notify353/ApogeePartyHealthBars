@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Always show the full Auction guidance tooltip; remove Alt gating and modifier
+  refresh hooks while retaining compact priorities and matching class rows.
+
 - Polish Auction DEV stat guidance with section spacing, a compact class/role
   header and aligned Priority 1/2/3 stat rows without benefit explanations.
 

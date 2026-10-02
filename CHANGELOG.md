@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-10-02
+
 - Add a dice toggle to show auction upgrades for your role, with progressive results,
   automatic loading of additional search pages, and visible checking/completion states.
 - Select a session fallback role beside the auction dice or below the character

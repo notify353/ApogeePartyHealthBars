@@ -234,3 +234,12 @@ The recorded token expiry also requires owner review before hosted builds.
 This is package configuration, not a production release. Existing canonical
 Auction folders are never removed by local tools. CurseForge update/removal
 behavior and renewed native acceptance remain required before release.
+
+## Stats gameplay promotion
+
+Stats now pins the owner-accepted role-aware tooltip implementation. Its three
+private-namespace chunks are gated; unnamed UI frames and session-only role state
+introduce no saved-variable or lexical identity mappings. The central generated
+suite runs the pinned child's Lua regressions against both families. Native role
+assignments override fallback selection; damage weapons compare DPS first, caster
+weapons stay stat-first, and tank shield layouts are protected.

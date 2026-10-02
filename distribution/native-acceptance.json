@@ -19,6 +19,33 @@
       "scope": "Confirms the dungeon-name fix only. Existing full-package acceptance hashes remain unchanged; later release candidates require matching acceptance. PROD and CurseForge-client testing are not claimed.",
       "sourceCommit": "7151707abeefaf7b4366e1766f9de132642ed332",
       "testedFamily": "DEV"
+    },
+    {
+      "check": "Stats higher-level upgrade and AtlasLoot tooltip guidance",
+      "installedReceipt": "C:\\Dev\\WoW\\local-install-backups\\apogee-stats-higher-level-20261002\\transaction.json",
+      "reportedDate": "2026-10-02",
+      "result": "Owner confirms the reported missing upgrade guidance is fixed.",
+      "runtimeFiles": {
+        "DEV": {
+          "ApogeeStatsDev/ApogeeStatsDev.lua": "1ee5acbf1ea4da3db20e8ba1f95fe87d72c60fcad1454655826accba6193866c",
+          "ApogeeStatsDev/Auction/Browse.lua": "fa5dc955b0b1c655a94808c68b390945b22d34a12bd210ea67f34022a6906a19",
+          "ApogeeStatsDev/Auction/Queue.lua": "57e3004c16201118f95b9666a2e1e0a1aac95e97676a924f7634edb8d5c158d1",
+          "ApogeeStatsDev/Core/Items.lua": "9aa4d389f2268a06066eb83c29b1e2e0838d1161f6e24c4344a103074b38ca31",
+          "ApogeeStatsDev/Core/Rules.lua": "146cf1a34cae0754b30dae1240e46149f8e5cf0383d6c59ee7b66839c729d247",
+          "ApogeeStatsDev/__Distribution/FamilyGate.lua": "ba988f34520cfcfdb5a340138659431d3eed30d42577ee30e326f199851a278d"
+        },
+        "PROD": {
+          "ApogeeStats/ApogeeStats.lua": "29f25670b142ffdef8aa557be33dfcdd02da17dda758aaba67dcf2b6a4649a2a",
+          "ApogeeStats/Auction/Browse.lua": "19f3fc4272150dbfeefc1d33fed96886a78c4a017c28dfda182e1525ddb12f1c",
+          "ApogeeStats/Auction/Queue.lua": "2cc9f1ae4a2669eebdb2394832d08f406f44ef86d6d03b5e01713c59ffe2549c",
+          "ApogeeStats/Core/Items.lua": "b19d7742957e3e695ba67d2ce3a21b4b73d3c9e272da661cb9b15b145f099aa1",
+          "ApogeeStats/Core/Rules.lua": "1e9d696e3bf19cb4e179c5b79d063978348b095c05fe0908088def59564d7ddd",
+          "ApogeeStats/__Distribution/FamilyGate.lua": "15e7d9da7f466e38ec9114df7c64855f49e76611dc1f269e028028bb0d509891"
+        }
+      },
+      "scope": "Stats runtime only; installed DEV bytes verified. Does not accept unrelated Heals work or claim PROD or CurseForge testing. Full-package release acceptance remains a separate gate.",
+      "sourceCommit": "51e01b087966975022c78270178ddfe36233bd70",
+      "testedFamily": "DEV"
     }
   ],
   "gateSha256": "ba988f34520cfcfdb5a340138659431d3eed30d42577ee30e326f199851a278d",

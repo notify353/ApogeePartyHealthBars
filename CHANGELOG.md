@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Refresh the Auction DEV pin for a binary Upgrade/Pass verdict and held-Alt
+  explanations, with live modifier refresh and a single upgrades-only filter.
+
 - Pin Auction core-stat guidance for the approved DEV installation: exclude
   enhancements and optional effects, preserve inherent bonuses, and select damage
   playstyles explicitly. Other child pins and canonical PROD are unchanged.

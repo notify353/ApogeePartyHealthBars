@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Hide unmatched Auction classes while retaining compact combined-role rows
+  and class-colored marks for matching classes.
+
 - Update Auction DEV suitability to one row per supported class, combining
   matching roles and retaining dimmed unmatched classes.
 

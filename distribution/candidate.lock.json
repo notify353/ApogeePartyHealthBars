@@ -270,12 +270,13 @@
       "version": "0.1.0-dev"
     },
     {
-      "commit": "ab7839c24f0c4b2cc99c3f5b0628faa186366abf",
+      "commit": "8ef0aa5404693625e26b71895d102d68e9691539",
       "files": {
         "ApogeeStats.lua": "5cfeb6bd89f644e6596dd9c1e6be8c835a94541b48f2abdc572f399d3948fa34",
-        "ApogeeStats.toc": "1ca33c267ab5bfa983b80cbb5ebaede90b02e3ae7cc3c83f01f379bbe78762a5",
+        "ApogeeStats.toc": "0d1cbeb2ce3ef55827ed5cc9680f9b9b697d7d2a0c3033db4e00269ffb56dc5e",
         "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",
-        "README.md": "25d0af0518db6aaf8015ad1a92bf1b1eb2eb97c2f9802e57ac506940201affcf"
+        "Media/Textures/ApogeeLogo.png": "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e",
+        "README.md": "3d2d0c706caa4a587bc08b950e356c43f7506006e5df9ee7985f2920756b1a93"
       },
       "name": "ApogeeStats",
       "repository": "https://github.com/notify353/ApogeeStats.git",

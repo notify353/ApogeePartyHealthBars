@@ -218,10 +218,11 @@ features. Native acceptance of the corrected package still requires owner testin
 
 ## Stats replaces Auction in the production candidate
 
-Stats is pinned to its hosted private baseline commit with four explicit file
+Stats is pinned to its hosted private baseline commit with five explicit file
 hashes. Its one source chunk unconditionally returns. Both generated identities
 receive the existing admission prefix and family metadata; no lexical identity
-edits or saved-variable mappings are needed. The family inventory recognizes
+edits or saved-variable mappings are needed. The bundled logo uses family-local
+TOC paths. The family inventory recognizes
 canonical Stats alongside retained Tank and Auction identities.
 
 PROD selects Heals, Keybinds, Group Alert, Essentials and Stats. DEV additionally

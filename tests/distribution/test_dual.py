@@ -295,7 +295,7 @@ end
         for family, files in (('PROD', self.prod), ('DEV', self.dev)):
             suffix = 'Dev' if family == 'DEV' else ''
             expected = files['ApogeeKeybinds' + suffix + '/' + logo]
-            for base in (d.MARKER, 'ApogeeHeals'):
+            for base in (d.MARKER, 'ApogeeHeals', 'ApogeeStats'):
                 name = base + suffix
                 meta, runtime = d.toc_info(files[name + '/' + name + '.toc'])
                 self.assertEqual(meta['IconTexture'], 'Interface/AddOns/' + name + '/' + logo)

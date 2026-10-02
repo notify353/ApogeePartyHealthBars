@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Bundle the shared Apogee logo in Stats and validate family-local icon paths
+  in both generated packages.
+
 - Replace Auction with the inert Stats baseline in the production candidate.
   Retain Auction and Tank in DEV; add guarded Stats DEV, hosted immutable source
   pinning and private-source workflow checkouts. Extend family exclusion and

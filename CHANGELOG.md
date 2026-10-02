@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Update Heals DEV threat diagnostics with sustained-combat sampling coverage.
+
 - Pin Heals combat threat checks for local DEV testing, with frozen screenshot
   results. Native acceptance remains pending.
 

@@ -19,3 +19,8 @@ Heals includes an optional tank threat stack. It starts off; enable Tank threat 
 For manual installation, extract all six folders into Interface/AddOns.
 This edition supports Forever only. Legacy Apogee Party Health Bars profiles
 are not imported, and Dungeon Guide is not included.
+
+Stats auction browsing: click the dice to show upgrades. It pulses while checking
+and stays lit while filtering. Choose a fallback role beside the dice; group roles
+still take priority. Progress includes unavailable items, and clicking again restores
+all results. Disable any retained legacy Apogee Auction copy to use this filter.

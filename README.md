@@ -22,3 +22,8 @@ GitHub source archives are not installable packages.
 
 Contributor documentation: [build workflow](distribution/DUAL_WORKFLOW.md),
 [release checklist](RELEASING.md), [client API reference](docs/WOW_INTERFACE_EXPORT.md).
+
+Stats auction browsing: click the dice to show upgrades. It pulses while checking
+and stays lit while filtering. Choose a fallback role beside the dice; group roles
+still take priority. Progress includes unavailable items, and clicking again restores
+all results. Disable any retained legacy Apogee Auction copy to use this filter.

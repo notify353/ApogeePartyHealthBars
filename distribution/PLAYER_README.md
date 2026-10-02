@@ -5,8 +5,12 @@ conveniences for World of Warcraft Forever 1.60.1.
 
 Includes Apogee Heals, Keybinds, Group Alert, Essentials, and Stats. Enable the
 modules you want under Apogee Forever in the AddOns list, then reload.
-Stats is an empty foundation for future development: no display, collection,
-settings or saved data yet. Auction and Tank are not included in this package.
+Stats adds NEED to qualifying loot-roll items and UPGRADE to other item tooltips.
+The smaller line shows the role and relevant stats. Native group roles take priority;
+use the Stats button below the character window for a session-only fallback.
+Armor uses primary attributes first; damage weapons use weapon DPS first.
+Guidance is a baseline comparison, not a simulation of procs or every talent.
+Auction and Tank are not included in this package.
 Existing copies from earlier installations may remain; manage those through
 CurseForge and the AddOns list. Their saved settings are not removed here.
 

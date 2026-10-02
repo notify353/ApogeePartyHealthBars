@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-10-01
+
 - Add Stats gear guidance to native item tooltips: NEED during loot rolls and
   UPGRADE elsewhere, with a compact role-and-stat explanation.
 - Use native group roles automatically, with a session-only fallback selector

@@ -15,11 +15,11 @@ CHILDREN = ('ApogeeHeals', 'ApogeeKeybinds', 'ApogeeGroupAlert',
             'ApogeeEssentials', 'ApogeeTank')
 MARKER = 'ApogeePartyHealthBars'
 LOCAL_DEV_CHILDREN = ('ApogeeAuction',)
-OPTIONAL_HOSTED_CHILDREN = ('ApogeeAuction',)
+OPTIONAL_HOSTED_CHILDREN = ('ApogeeAuction', 'ApogeeStats')
 
 def hosted_children(lock):
     names = tuple(c['name'] for c in lock['children'])
-    require(names in (CHILDREN, CHILDREN + OPTIONAL_HOSTED_CHILDREN),
+    require(names in (CHILDREN, CHILDREN + ('ApogeeAuction',), CHILDREN + OPTIONAL_HOSTED_CHILDREN),
             'Unexpected hosted child inventory')
     return names
 

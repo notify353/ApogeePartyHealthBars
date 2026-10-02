@@ -268,6 +268,20 @@
       },
       "toc": "ApogeeAuction.toc",
       "version": "0.1.0-dev"
+    },
+    {
+      "commit": "ab7839c24f0c4b2cc99c3f5b0628faa186366abf",
+      "files": {
+        "ApogeeStats.lua": "5cfeb6bd89f644e6596dd9c1e6be8c835a94541b48f2abdc572f399d3948fa34",
+        "ApogeeStats.toc": "1ca33c267ab5bfa983b80cbb5ebaede90b02e3ae7cc3c83f01f379bbe78762a5",
+        "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",
+        "README.md": "25d0af0518db6aaf8015ad1a92bf1b1eb2eb97c2f9802e57ac506940201affcf"
+      },
+      "name": "ApogeeStats",
+      "repository": "https://github.com/notify353/ApogeeStats.git",
+      "savedVariables": {},
+      "toc": "ApogeeStats.toc",
+      "version": "0.1.0-dev"
     }
   ],
   "client": {
@@ -293,7 +307,7 @@
     "ApogeeKeybinds",
     "ApogeeGroupAlert",
     "ApogeeEssentials",
-    "ApogeeAuction"
+    "ApogeeStats"
   ],
   "publicationAllowed": false,
   "schema": 1,

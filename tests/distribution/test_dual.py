@@ -41,6 +41,8 @@ class DualTests(unittest.TestCase):
 
     def test_native_forever_identity_and_revision_tolerance(self):
         for child in self.lock['children']:
+            if child['name'] == 'ApogeeStats':
+                continue  # Inert Stats has no client adapter; its generated chunks are tested separately.
             name = child['name'] + 'Dev'
             subprocess.run(['lua', str(ROOT / 'tests/distribution/client_identity.lua'),
                             str(OPTIONS.artifacts / 'DEV' / name), name], check=True)
@@ -115,11 +117,42 @@ class DualTests(unittest.TestCase):
         with patch.object(publisher, 'ACCEPTANCE', evidence):
             self.assertEqual(publisher.payload(OPTIONS.sources_root, self.lock['version']), d.zip_bytes(self.prod))
 
-    def test_auction_is_hosted_in_both_families(self):
-        self.assertIn('ApogeeAuction', d.public_children(self.lock))
-        prod_meta, _ = d.toc_info(self.prod['ApogeeAuction/ApogeeAuction.toc'])
-        self.assertEqual(prod_meta['SavedVariablesPerCharacter'], 'ApogeeAuctionDB')
-        self.assertEqual(prod_meta['IconTexture'], 'Interface/AddOns/ApogeeAuction/Media/Textures/ApogeeLogo.png')
+    def test_stats_baseline_in_both_families_is_guarded_and_inert(self):
+        self.assertIn('ApogeeStats', d.public_children(self.lock))
+        child = next(c for c in self.lock['children'] if c['name'] == 'ApogeeStats')
+        source = d.source_tree(OPTIONS.sources_root / child['name'], child['commit'])
+        for family, files, changes in (('PROD', self.prod, self.prod_changes),
+                                       ('DEV', self.dev, self.dev_changes)):
+            name = 'ApogeeStats' + ('Dev' if family == 'DEV' else '')
+            meta, runtime = d.toc_info(files[name + '/' + name + '.toc'])
+            self.assertEqual(runtime, [dual.GATE_PATH, name + '.lua'])
+            self.assertEqual(meta['Title'], 'Apogee Stats' + (' DEV' if family == 'DEV' else ''))
+            self.assertFalse(any(k.startswith('SavedVariables') for k in meta))
+            path = name + '/' + name + '.lua'
+            self.assertEqual(files[path], dual.prefix(name, family) + source['ApogeeStats.lua'])
+            self.assertEqual(changes[path]['identityEdits'], [])
+            subprocess.run(['lua', str(ROOT / 'tests/distribution/stats_baseline.lua'),
+                            str(OPTIONS.artifacts / family / path), name], check=True)
+        bad = copy.deepcopy(self.lock)
+        next(c for c in bad['children'] if c['name'] == 'ApogeeStats')['files']['ApogeeStats.lua'] = '0' * 64
+        for family in ('PROD', 'DEV'):
+            with self.assertRaisesRegex(ValueError, 'pinned file mismatch'):
+                dual.family_files(bad, OPTIONS.sources_root, family)
+
+    def test_stats_dev_install_and_rollback_preserve_existing_family(self):
+        old = {p: b for p, b in self.dev.items() if not p.startswith('ApogeeStatsDev/')}
+        client, backup = self.fixture(old)
+        result = installer.install(client, self.dev, self.known, backup)
+        self.assertIn('ApogeeStatsDev', result['names'])
+        self.assertEqual(m.tree(client / 'Interface/AddOns/ApogeeStatsDev'),
+                         {p.split('/', 1)[1]: b for p, b in self.dev.items() if p.startswith('ApogeeStatsDev/')})
+        self.assertIn('ApogeeStatsDev/ApogeeStatsDev.toc', result['activation']['discoveryChanges'])
+        m.rollback(backup)
+        self.assertEqual(m.managed(client / 'Interface/AddOns', m.DEV_NAMES + m.LOCAL_DEV_NAMES), old)
+
+    def test_auction_is_hosted_but_dev_only(self):
+        self.assertNotIn('ApogeeAuction', d.public_children(self.lock))
+        self.assertFalse(any(p.startswith('ApogeeAuction/') for p in self.prod))
         name = 'ApogeeAuctionDev'
         meta, runtime = d.toc_info(self.dev[name + '/' + name + '.toc'])
         gameplay = ['Core/Compare.lua', 'Core/Combat.lua', 'Core/Profiles.lua', 'Rules/Paladin.lua', 'Rules/Paladin/Healing.lua',
@@ -153,7 +186,7 @@ class DualTests(unittest.TestCase):
         for path in ('Rules/Other.lua', 'Rules/Paladin/Combat.lua', 'Rules/Warrior/Combat.lua'):
             self.assertNotIn(path, runtime)
             self.assertEqual(self.dev[name + '/' + path], source[path])
-            self.assertEqual(self.prod['ApogeeAuction/' + path], source[path])
+            self.assertNotIn('ApogeeAuction/' + path, self.prod)
         pinned_files = {p: source[p] for p in child['files']}
         d.child_contract(child, pinned_files)
         for path in ('Rules/Other.lua', 'Rules/Paladin/Combat.lua', 'Rules/Warrior/Combat.lua'):
@@ -216,8 +249,9 @@ end
 
     def test_local_only_history_remains_private_and_pins_are_verified(self):
         baseline = copy.deepcopy(self.lock)
+        baseline['children'] = [c for c in baseline['children'] if c['name'] != 'ApogeeStats']
+        baseline['publicChildren'].remove('ApogeeStats')
         child = baseline['children'].pop()
-        baseline['publicChildren'].remove('ApogeeAuction')
         child.pop('repository'); child['localOnly'] = True
         baseline['localDevChildren'] = [child]
         self.assertEqual(d.local_dev_children(baseline), [child])
@@ -232,7 +266,7 @@ end
         with self.assertRaises(ValueError): d.local_dev_children(bad)
         for family in ('PROD', 'DEV'):
             bad = copy.deepcopy(self.lock)
-            bad['children'][-1]['files']['ApogeeAuction.lua'] = '0' * 64
+            next(c for c in bad['children'] if c['name'] == 'ApogeeAuction')['files']['ApogeeAuction.lua'] = '0' * 64
             with self.assertRaisesRegex(ValueError, 'pinned file mismatch'):
                 dual.family_files(bad, OPTIONS.sources_root, family)
 

@@ -16,9 +16,10 @@ GATE_PATH = '__Distribution/FamilyGate.lua'
 FAMILY_TITLES = {'PROD': 'Apogee Forever', 'DEV': 'Apogee Dev'}
 LABELS = {'ApogeeHeals': 'Apogee Heals', 'ApogeeKeybinds': 'Apogee Keybinds',
           'ApogeeGroupAlert': 'Apogee Group Alert', 'ApogeeEssentials': 'Apogee Essentials',
-          'ApogeeTank': 'Apogee Tank', 'ApogeeAuction': 'Apogee Auction'}
+          'ApogeeTank': 'Apogee Tank', 'ApogeeAuction': 'Apogee Auction', 'ApogeeStats': 'Apogee Stats'}
 # Exact identity inventory reviewed with each owning addon task. No Blizzard names or gameplay keys.
 IDENTITIES = {
+    'ApogeeStats': [],  # Inert baseline: no globals, saves, frames, assets or slash identities.
     'ApogeeAuction': ['ApogeeAuctionDB'],  # Per-character evaluation role; DEV keeps a separate table.
     'ApogeeHeals': ['ApogeeHealsDB', 'ApogeeHealsAnchor', 'ApogeeHealsUnit',
                     'ApogeeHealsBindingEditor', 'ApogeeHealsBuffPicker', 'ApogeeHealsMinimapButton'],

@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+- Replace Auction with the inert Stats baseline in the production candidate.
+  Retain Auction and Tank in DEV; add guarded Stats DEV, hosted immutable source
+  pinning and private-source workflow checkouts. Extend family exclusion and
+  generated-package/install regressions. No Stats gameplay or saved data added.
+
 - Always show the full Auction guidance tooltip; remove Alt gating and modifier
   refresh hooks while retaining compact priorities and matching class rows.
 

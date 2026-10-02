@@ -3,16 +3,17 @@
 The active local workflow is side-by-side PROD and DEV. Earlier prototype and
 migration fixtures remain historical evidence. PROD 1.0.0 is published on
 CurseForge and GitHub; DEV remains local. APHB is a zero-Lua distribution identity with no gameplay or saved
-settings. The candidate now pins six independent children; five are public.
+settings. The candidate now pins seven independent children; five are selected for PROD.
 
 ## Build and validate
 
 ### Hosted Auction
 
 Auction is now a private hosted child under notify353, pinned by immutable commit
-and file hashes alongside the other children. The candidate includes canonical
-ApogeeAuction in PROD and isolated ApogeeAuctionDev in DEV. PROD has six roots
-(five public children and the marker); DEV has seven. ApogeeTank remains DEV-only.
+and file hashes alongside the other children. The candidate includes isolated ApogeeAuctionDev in DEV only. PROD has six roots
+(five selected children and the marker); DEV has eight. ApogeeTank and
+ApogeeAuction remain DEV-only. ApogeeStats is included in both families as an
+inert baseline with no gameplay or saved data.
 Historical source locks retain their original five-child inventories; local-only
 Auction fixtures remain supported but cannot be promoted without a hosted pin.
 
@@ -25,13 +26,13 @@ personal value without group-competition vetoes. Its displayed-tooltip path pres
 auction suffix stats. All generated runtime chunks are guarded, and canonical
 Auction participates in the same PROD/DEV exclusion decision as the other addons.
 
-Hosted validation and production require read access to the new private Auction
-repository in DISTRIBUTION_READ_TOKEN. Adding the repository does not establish
+Hosted validation and production require read access to the private Auction and Stats
+repositories in DISTRIBUTION_READ_TOKEN. Adding the repository does not establish
 that access. Runtime changes require renewed owner-reported native acceptance;
 local validation does not authorize a release or claim in-game acceptance.
 
 Run from the canonical checkout `C:/Dev/WoW/ApogeePartyHealthBars`.
-This document and its central scripts are the stable authority for all six
+This document and its central scripts are the stable authority for all seven
 child projects. Historical prototype worktrees are retained evidence, not an
 installation dependency. Run `pwsh ./scripts/test-local.ps1` for full validation.
 
@@ -52,15 +53,15 @@ source gameplay bodies behind an admission prefix. DEV transforms audited
 identifiers, saves, frames, popup/slash names, asset paths and labels. Manifests
 list every identity edit and source/body hash. Comments, gameplay keys and Blizzard
 names are not blindly renamed. The publicChildren selection in candidate.lock.json includes five PROD children;
-DEV retains all six pinned children. Public artifacts have six roots including
-the marker; DEV has seven. Tank remains DEV-only, with its source pin retained.
-Family safety still recognizes older installed canonical Tank. Omitting a folder
+DEV retains all seven pinned children. Public artifacts have six roots including
+the marker; DEV has eight. Tank and Auction remain DEV-only, with their pins retained.
+Family safety still recognizes older installed canonical Tank and Auction. Omitting a folder
 from a ZIP does not prove CurseForge removes an older installed copy; that update
 behavior needs client acceptance. Never delete PROD folders or saved data here.
 Heals uses an independent default position beneath the default Keybinds Mouse grid.
 Its factory-reset dialog is explicitly mapped to a separate DEV identity; the
 confirmation and per-character storage remain within their own family.
-The existing CurseForge project1608100 download owns PROD roots, never the seven DEV roots.
+The existing CurseForge project1608100 download owns PROD roots, never the eight DEV roots.
 DEV TOCs contain no CurseForge project ID.
 Each family marker bundles the existing green Apogee logo from the pinned
 Keybinds source and points its IconTexture at that family-local asset. Native
@@ -214,3 +215,21 @@ regressions cover the native identity, interface revisions and missing APIs.
 The new source regressions fail against all five old project-1 adapters.
 Export/install provenance remains pinned; runtime version numbers do not expire
 features. Native acceptance of the corrected package still requires owner testing.
+
+## Stats replaces Auction in the production candidate
+
+Stats is pinned to its hosted private baseline commit with four explicit file
+hashes. Its one source chunk unconditionally returns. Both generated identities
+receive the existing admission prefix and family metadata; no lexical identity
+edits or saved-variable mappings are needed. The family inventory recognizes
+canonical Stats alongside retained Tank and Auction identities.
+
+PROD selects Heals, Keybinds, Group Alert, Essentials and Stats. DEV additionally
+includes Tank and Auction. Workflow source checkouts include private Stats;
+DISTRIBUTION_READ_TOKEN must have read access in both build environments before
+hosted validation. Local CLI access does not prove that environment-token access.
+The recorded token expiry also requires owner review before hosted builds.
+
+This is package configuration, not a production release. Existing canonical
+Auction folders are never removed by local tools. CurseForge update/removal
+behavior and renewed native acceptance remain required before release.

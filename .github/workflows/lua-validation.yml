@@ -78,6 +78,14 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           token: ${{ secrets.DISTRIBUTION_READ_TOKEN }}
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: notify353/ApogeeStats
+          ref: ${{ steps.pins.outputs.ApogeeStats }}
+          path: sources/ApogeeStats
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{ secrets.DISTRIBUTION_READ_TOKEN }}
       - name: Install Lua 5.1
         run: sudo apt-get update && sudo apt-get install -y lua5.1
       - name: Validate and build both families without publishing

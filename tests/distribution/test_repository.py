@@ -87,6 +87,8 @@ class RepositoryTests(unittest.TestCase):
         for name in d.hosted_children(d.read_lock(ROOT / 'distribution/candidate.lock.json')):
             self.assertIn('repository: notify353/' + name, ci)
             self.assertIn('steps.pins.outputs.' + name, ci)
+            self.assertIn('repository: notify353/' + name, workflow)
+            self.assertIn('steps.pins.outputs.' + name, workflow)
         preflight = (ROOT / '.github/workflows/curseforge-preflight.yml').read_text()
         self.assertIn('environment: distribution-validation', preflight)
         self.assertNotIn('publish_distribution', preflight)

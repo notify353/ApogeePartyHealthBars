@@ -3,9 +3,12 @@
 Party frames and healing, keyboard and mouse actions, group alerts, everyday UI
 conveniences for World of Warcraft Forever 1.60.1.
 
-Includes Apogee Heals, Keybinds, Group Alert, Essentials, and Auction. Enable the
-modules you want under Apogee Forever in the AddOns list, then reload. Each
-module has its own settings. Auction supports all nine classes. Select your role or use Auto; clear personal upgrades show ROLL NEED, known tradeoffs show POSSIBLE UPGRADE, and unresolved items stay quiet. Auction browse filters use the same guidance.
+Includes Apogee Heals, Keybinds, Group Alert, Essentials, and Stats. Enable the
+modules you want under Apogee Forever in the AddOns list, then reload.
+Stats is an empty foundation for future development: no display, collection,
+settings or saved data yet. Auction and Tank are not included in this package.
+Existing copies from earlier installations may remain; manage those through
+CurseForge and the AddOns list. Their saved settings are not removed here.
 
 Heals includes an optional tank threat stack. It starts off; enable Tank threat stack in Heals settings to try it.
 

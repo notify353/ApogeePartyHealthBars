@@ -3,7 +3,7 @@ local name, namespace = ...
 local expectedName, family = "@NAME@", "@FAMILY@"
 if type(namespace) == "table" then namespace.__ApogeeFamilyAdmission = nil end
 if type(namespace) ~= "table" or name ~= expectedName then return end
-local members = {"ApogeeHeals", "ApogeeKeybinds", "ApogeeGroupAlert", "ApogeeEssentials", "ApogeeTank", "ApogeeAuction"}
+local members = {"ApogeeHeals", "ApogeeKeybinds", "ApogeeGroupAlert", "ApogeeEssentials", "ApogeeTank", "ApogeeAuction", "ApogeeStats"}
 local function decide()
     if type(issecretvalue) ~= "function" then error("secret-value API unavailable") end
     local function public(v) return not issecretvalue(v) end

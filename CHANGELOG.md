@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Pin compact centered Heals threat frames with mob HP and mana rail for DEV.
+
 - Restore Auction's prior tooltip behavior and pin Stats' higher-level upgrade
   guidance and AtlasLoot tooltip support for DEV.
 

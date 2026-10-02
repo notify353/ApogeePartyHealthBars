@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Pin Auction core-stat guidance for the approved DEV installation: exclude
+  enhancements and optional effects, preserve inherent bonuses, and select damage
+  playstyles explicitly. Other child pins and canonical PROD are unchanged.
+
 ## [1.8.0] - 2026-10-01
 
 - Auction now supports all nine classes, with role-specific personal loot guidance

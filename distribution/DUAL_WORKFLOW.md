@@ -158,7 +158,7 @@ X-Apogee-Distribution-Schema=1. Keybinds still rejects legacy/malformed APHB.
 
 ## Evidence and limits
 
-Current export 1.60.1.70124 documents C_AddOns.GetAddOnEnableState(name, character),
+Current export 1.60.1.70170 documents C_AddOns.GetAddOnEnableState(name, character),
 GetAddOnMetadata, GetNumAddOns, GetAddOnName and IsAddOnLoaded.
 Blizzard_AddOnList/AddonList.lua uses UnitGUID("player") for current-character
 selection, Group metadata for grouping, right-click SetEnabledAll for groups,

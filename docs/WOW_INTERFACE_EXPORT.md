@@ -1,8 +1,23 @@
 # Forever interface authority
 
-Loading safety targets Forever16001, reviewed client1.60.1.70124. Export root:
+Loading safety targets Forever16001, reviewed client1.60.1.70170. Export root:
 `C:/Program Files (x86)/World of Warcraft/_classic_beta_/BlizzardInterfaceCode/Interface/AddOns`.
 Run `pwsh ./scripts/check-wow-api-export.ps1` before API work.
+
+The October 1, 2026 owner export is newer than the installed 70170 executable.
+Four recorded references are byte-identical to the 70124 baseline. The Unit
+documentation hash changed; the current UnitGUID contract was reviewed directly:
+one unit token, a nullable WOWGUID, and restricted identity/argument annotations.
+FamilyGate already checks the player GUID for restricted, missing and malformed
+values before use. AddOnList's matching GUID/enable-selection source is unchanged.
+The prior complete Unit source was not retained here, so this records a current
+contract review, not a claim that every Unit API is unchanged.
+
+Auction's item metadata/stat, hyperlink/item-key tooltip and tooltip-line enum
+contracts were also inspected in this export for its reader work. Missing returns
+remain possible and restricted values require checking. No runtime guard, TOC,
+Interface number, child source pin or transform changes are needed for this
+authority refresh. Native gameplay acceptance on 70170 remains unverified.
 
 The September 29, 2026 refresh was exported after the installed 70124 client
 update. All five recorded loading-safety reference files are byte-identical to

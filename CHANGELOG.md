@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Review the owner-exported Forever 1.60.1.70170 API authority. Refresh the Unit
+  documentation hash and current build pin; preserve Interface 16001, child pins,
+  guards, runtime bytes and historical locks. Native acceptance remains separate.
+
 - Pin Heals' combat-only reserved threat target row, suppressing idle placeholders
   for DEV retesting without changing stable encounter rows or sibling pins.
 - Pin Heals' independent lead and native restricted threat display correction

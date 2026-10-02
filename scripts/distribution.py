@@ -86,7 +86,7 @@ def read_lock(path=DEFAULT_LOCK):
     require(lock['projectId'] == 1608100 and lock['client'] in [{
         'flavor': 'forever', 'interface': 16001, 'version': '1.60.1',
         'reviewedBuild': build, 'curseforgeVersionTypeId': 88568}
-        for build in ('1.60.1.70009', '1.60.1.70124')],
+        for build in ('1.60.1.70009', '1.60.1.70124', '1.60.1.70170')],
         'Unexpected client/project; no flavor fallback is permitted')
     require(re.fullmatch(r'[0-9A-Za-z.-]+', lock['version']), 'Unsafe version')
     hosted_children(lock)

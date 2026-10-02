@@ -50,12 +50,14 @@ class RepositoryTests(unittest.TestCase):
 
     def test_unreviewed_client_build_rejected(self):
         lock = json.loads((ROOT / 'distribution/candidate.lock.json').read_text())
-        lock['client']['reviewedBuild'] = '1.60.1.70125'
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / 'unreviewed.lock.json'
-            path.write_text(json.dumps(lock))
-            with self.assertRaisesRegex(ValueError, 'Unexpected client/project'):
-                d.read_lock(path)
+            for build in ('1.60.1.70125', '1.60.1.70169', '1.60.1.70171'):
+                with self.subTest(build=build):
+                    lock['client']['reviewedBuild'] = build
+                    path.write_text(json.dumps(lock))
+                    with self.assertRaisesRegex(ValueError, 'Unexpected client/project'):
+                        d.read_lock(path)
 
     def test_release_requires_guarded_actions_and_private_sources_are_restricted(self):
         workflow = (ROOT / '.github/workflows/release.yml').read_text()

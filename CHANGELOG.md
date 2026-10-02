@@ -1,5 +1,8 @@
 ## Unreleased
 
+- Restore Auction's prior tooltip behavior and pin Stats' higher-level upgrade
+  guidance and AtlasLoot tooltip support for DEV.
+
 - Pin the settings-controlled solo Heals threat demo for visual review in DEV.
 
 - Pin the Heals relative-threat bar prototype for DEV group testing.

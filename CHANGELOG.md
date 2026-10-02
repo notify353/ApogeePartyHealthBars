@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Refresh Auction DEV with concise Alt details, removing generic helper text
+  while preserving item-specific comparisons and relevant Pass reasons.
+
 - Pin Auction native numeric stat ratings, removing tooltip-text parsing and
   duplicate diagnostics. Validate native stat and enhancement contracts against
   generated DEV bytes before the checked DEV installation.

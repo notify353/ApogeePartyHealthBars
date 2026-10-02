@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Fix native Forever project identification in all affected children and remove
+  exact-interface runtime shutdowns. Include source and generated native-project
+  regressions; preserve required APIs, other-client rejection and family guards.
+
 - Include uniform all-class Auction modules, conditional-stat/tooltip fixes and
   real group evaluation regressions in the checked DEV candidate. Preserve the
   latest default-off Heals pin and all other child pins. Patch-number differences

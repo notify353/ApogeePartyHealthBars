@@ -39,6 +39,12 @@ class DualTests(unittest.TestCase):
                        'Interface/AddOns/Unrelated/keep.txt': b'unchanged unrelated'})
         return client, base / 'backup'
 
+    def test_native_forever_identity_and_revision_tolerance(self):
+        for child in self.lock['children']:
+            name = child['name'] + 'Dev'
+            subprocess.run(['lua', str(ROOT / 'tests/distribution/client_identity.lua'),
+                            str(OPTIONS.artifacts / 'DEV' / name), name], check=True)
+
     def test_receipted_retirement_and_rollback_preserve_unknown_files(self):
         path = 'ApogeeEssentialsDev/Thanks/Retired.lua'
         extra = 'ApogeeEssentialsDev/Thanks/User.lua'

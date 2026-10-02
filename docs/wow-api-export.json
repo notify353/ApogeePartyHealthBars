@@ -21,6 +21,18 @@
     {
       "path": "Blizzard_AddOnList/AddonList.lua",
       "sha256": "3f5a958ccf33b071c629a233f9bcf79e11c447bc982182504f5f02cf45b4a376"
+    },
+    {
+      "path": "Blizzard_ProjectConstants/ProjectConstants.lua",
+      "sha256": "6167412ff1bf3c3ab439590e87bafce10f35f9efbbe68c56ee7e3c39a031a57a"
+    },
+    {
+      "path": "Blizzard_ProjectConstants/Camelot/ProjectConstants.lua",
+      "sha256": "e5f1b28c7756a195b8aa96dc121fdafb0a87977736f9be31685fd33ea7bb4c3c"
+    },
+    {
+      "path": "Blizzard_ProjectConstants/Blizzard_ProjectConstants.toc",
+      "sha256": "bc34bd720c77bdfc4e0bfc92b2424111a4e919d0fd2a86e0c9d7afce70e349e4"
     }
   ],
   "interface": 16001,

@@ -82,9 +82,11 @@ def public_children(lock):
 def read_lock(path=DEFAULT_LOCK):
     lock = json.loads(Path(path).read_text(encoding='utf-8'))
     require(lock['schema'] == 1 and lock['publicationAllowed'] is False, 'Prototype lock required')
-    require(lock['projectId'] == 1608100 and lock['client'] == {
+    # Retain the immutable historical source lock alongside the reviewed current build.
+    require(lock['projectId'] == 1608100 and lock['client'] in [{
         'flavor': 'forever', 'interface': 16001, 'version': '1.60.1',
-        'reviewedBuild': '1.60.1.70009', 'curseforgeVersionTypeId': 88568},
+        'reviewedBuild': build, 'curseforgeVersionTypeId': 88568}
+        for build in ('1.60.1.70009', '1.60.1.70124', '1.60.1.70170')],
         'Unexpected client/project; no flavor fallback is permitted')
     require(re.fullmatch(r'[0-9A-Za-z.-]+', lock['version']), 'Unsafe version')
     hosted_children(lock)
@@ -153,8 +155,19 @@ def child_contract(child, files):
             'Children must remain independent')
     require(runtime and all(p in files for p in runtime), 'Missing runtime module')
     require({p for p in files if p.endswith('.toc')} == {child['toc']}, 'Unexpected alternate TOC')
-    require({p for p in files if p.endswith(('.lua', '.xml'))} == set(runtime),
-            'Unlisted runtime or duplicated embedded addon')
+    executable = {p for p in files if p.endswith(('.lua', '.xml'))}
+    require(set(runtime) <= executable, 'Invalid runtime file extension')
+    unlisted = executable - set(runtime)
+    # These exact reviewed, unloaded no-op files replace old installed Auction
+    # modules without deleting user files. No general unlisted-Lua exemption.
+    inert = (b'local _, A = ...\n'
+             b'if type(A) ~= "table" or not A.ready then return end\n'
+             b'-- Unloaded compatibility stub: retained for safe replacement of installed files.\n'
+             b'-- Active class registration and role definitions live in Rules/<Class>[/<Role>].lua.\n')
+    stub_paths = {'Rules/Other.lua', 'Rules/Paladin/Combat.lua', 'Rules/Warrior/Combat.lua'}
+    require(not unlisted or (child['name'] == 'ApogeeAuction' and unlisted == stub_paths
+                            and all(files[p] == inert for p in unlisted)),
+            'Unlisted runtime or non-inert compatibility stub')
     for path in runtime:
         require(files[path], 'Empty runtime source')
     return runtime

@@ -4,6 +4,7 @@ from pathlib import Path
 import re
 import sys
 import subprocess
+import tempfile
 import unittest
 
 sys.dont_write_bytecode = True
@@ -46,6 +47,17 @@ class RepositoryTests(unittest.TestCase):
         self.assertGreaterEqual(len(record['files']), 5)
         for item in record['files']:
             d.safe_path(item['path']); self.assertRegex(item['sha256'], r'^[0-9a-f]{64}$')
+
+    def test_unreviewed_client_build_rejected(self):
+        lock = json.loads((ROOT / 'distribution/candidate.lock.json').read_text())
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'unreviewed.lock.json'
+            for build in ('1.60.1.70125', '1.60.1.70169', '1.60.1.70171'):
+                with self.subTest(build=build):
+                    lock['client']['reviewedBuild'] = build
+                    path.write_text(json.dumps(lock))
+                    with self.assertRaisesRegex(ValueError, 'Unexpected client/project'):
+                        d.read_lock(path)
 
     def test_release_requires_guarded_actions_and_private_sources_are_restricted(self):
         workflow = (ROOT / '.github/workflows/release.yml').read_text()

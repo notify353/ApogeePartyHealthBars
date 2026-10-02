@@ -16,7 +16,7 @@ ApogeeAuction in PROD and isolated ApogeeAuctionDev in DEV. PROD has six roots
 Historical source locks retain their original five-child inventories; local-only
 Auction fixtures remain supported but cannot be promoted without a hosted pin.
 
-Auction provides Paladin Healing/Damage/Tank and Warrior Damage/Tank guidance, a saved
+Auction provides all nine classes and sixteen supported class/role combinations, a saved
 per-character role selector, and confirmed Defaults. Clear upgrades show ROLL NEED;
 known stat tradeoffs show POSSIBLE UPGRADE; unresolved data stays quiet.
 The native auction browse list also provides session-only upgrade filters, a shared
@@ -158,7 +158,7 @@ X-Apogee-Distribution-Schema=1. Keybinds still rejects legacy/malformed APHB.
 
 ## Evidence and limits
 
-Current export 1.60.1.70009 documents C_AddOns.GetAddOnEnableState(name, character),
+Current export 1.60.1.70170 documents C_AddOns.GetAddOnEnableState(name, character),
 GetAddOnMetadata, GetNumAddOns, GetAddOnName and IsAddOnLoaded.
 Blizzard_AddOnList/AddonList.lua uses UnitGUID("player") for current-character
 selection, Group metadata for grouping, right-click SetEnabledAll for groups,
@@ -181,3 +181,36 @@ for the active publication workflow and required gates for future versions.
 The staged PROD candidate is backed up outside AddOns. First CurseForge app
 installation and later update/removal ownership tests remain
 separate acceptance checks; published-byte verification does not establish them.
+
+## October 1 complete DEV candidate
+
+The all-class Auction candidate includes uniform class modules, conditional talent
+stat handling, conflicting tooltip baseline rejection and connected group/browse
+regressions. The default-off Heals threat stack remains pinned. All other child
+pins are unchanged; their additional local merge commits have identical packaged
+content. Retained child worktrees contain no uncommitted or unintegrated feature
+changes relative to their canonical source branches. Native acceptance is pending.
+
+Runtime patch-number differences do not expire features. Addons retain their
+Forever interface/capability checks and family exclusion; missing required APIs
+can prevent startup. The exact reviewed-build requirement belongs to export and
+installation provenance, not a runtime patch-number kill switch. An observed
+in-game shutdown still needs its actual message/context to identify its cause.
+
+
+## Native Forever identity correction (October 1)
+
+The owner's screenshot is a real Keybinds startup rejection, not a status label.
+The fresh native export assigns WOW_PROJECT_ID = WOW_PROJECT_CAMELOT (18), while
+five child adapters required project 1. Earlier patch-only tests held that stale
+identity constant and missed the defect. The reviewed ProjectConstants base,
+Camelot override and selecting TOC are now included in the authority hashes.
+
+All six children now accept native Forever identity and/or their legacy Forever
+identification without an exact-interface expiry. Native identity accepts older
+and future version/interface metadata; mandatory API checks, other-family
+rejection and DEV/PROD admission remain. Six child suites and generated client
+regressions cover the native identity, interface revisions and missing APIs.
+The new source regressions fail against all five old project-1 adapters.
+Export/install provenance remains pinned; runtime version numbers do not expire
+features. Native acceptance of the corrected package still requires owner testing.

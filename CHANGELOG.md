@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+- Fix native Forever project identification in all affected children and remove
+  exact-interface runtime shutdowns. Include source and generated native-project
+  regressions; preserve required APIs, other-client rejection and family guards.
+
+- Include uniform all-class Auction modules, conditional-stat/tooltip fixes and
+  real group evaluation regressions in the checked DEV candidate. Preserve the
+  latest default-off Heals pin and all other child pins. Patch-number differences
+  remain advisory at runtime; export/install provenance checks stay separate.
+
+- Default Heals' prototype threat stack off with its existing settings checkbox
+  opt-in. Review Heals on 70170 and preserve the installed, reviewed Auction QA
+  candidate while validating this DEV update.
+- Review the owner-exported Forever 1.60.1.70170 API authority. Refresh the Unit
+  documentation hash and current build pin; preserve Interface 16001, child pins,
+  guards, runtime bytes and historical locks. Native acceptance remains separate.
+
+- Pin Heals' combat-only reserved threat target row, suppressing idle placeholders
+  for DEV retesting without changing stable encounter rows or sibling pins.
+- Pin Heals' independent lead and native restricted threat display correction
+  for DEV retesting. Preserve sibling pins, PROD and private SavedVariables.
+- Pin Heals' minimal stable eight-row tank threat stack for local DEV validation.
+  Preserve all sibling pins and DEV/PROD isolation; centered numeric movement
+  is disabled and native dungeon warning/rendering acceptance remains pending.
+
+- Review the Forever 1.60.1.70124 interface export and advance the current build
+  pin. Loading-safety APIs and addon runtime bytes are unchanged.
 - Refresh pinned GitHub Actions and check artifact byte preservation and extraction
   paths across old and new upload/download versions before release use.
 

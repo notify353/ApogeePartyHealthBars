@@ -39,6 +39,12 @@ class DualTests(unittest.TestCase):
                        'Interface/AddOns/Unrelated/keep.txt': b'unchanged unrelated'})
         return client, base / 'backup'
 
+    def test_native_forever_identity_and_revision_tolerance(self):
+        for child in self.lock['children']:
+            name = child['name'] + 'Dev'
+            subprocess.run(['lua', str(ROOT / 'tests/distribution/client_identity.lua'),
+                            str(OPTIONS.artifacts / 'DEV' / name), name], check=True)
+
     def test_receipted_retirement_and_rollback_preserve_unknown_files(self):
         path = 'ApogeeEssentialsDev/Thanks/Retired.lua'
         extra = 'ApogeeEssentialsDev/Thanks/User.lua'
@@ -116,10 +122,14 @@ class DualTests(unittest.TestCase):
         self.assertEqual(prod_meta['IconTexture'], 'Interface/AddOns/ApogeeAuction/Media/Textures/ApogeeLogo.png')
         name = 'ApogeeAuctionDev'
         meta, runtime = d.toc_info(self.dev[name + '/' + name + '.toc'])
-        gameplay = ['Core/Compare.lua', 'Core/Combat.lua', 'Rules/Paladin.lua', 'Rules/Paladin/Healing.lua',
-                    'Rules/Paladin/Combat.lua', 'Rules/Paladin/Damage.lua', 'Rules/Paladin/Tank.lua',
-                    'Rules/Warrior.lua', 'Rules/Warrior/Combat.lua', 'Rules/Warrior/Damage.lua',
-                    'Rules/Warrior/Tank.lua',
+        gameplay = ['Core/Compare.lua', 'Core/Combat.lua', 'Core/Profiles.lua', 'Rules/Paladin.lua', 'Rules/Paladin/Healing.lua',
+                    'Rules/Paladin/Damage.lua', 'Rules/Paladin/Tank.lua',
+                    'Rules/Warrior.lua', 'Rules/Warrior/Damage.lua', 'Rules/Warrior/Tank.lua',
+                    'Rules/Priest.lua', 'Rules/Priest/Healing.lua', 'Rules/Priest/Damage.lua',
+                    'Rules/Mage.lua', 'Rules/Mage/Damage.lua', 'Rules/Warlock.lua', 'Rules/Warlock/Damage.lua',
+                    'Rules/Rogue.lua', 'Rules/Rogue/Damage.lua', 'Rules/Hunter.lua', 'Rules/Hunter/Damage.lua',
+                    'Rules/Shaman.lua', 'Rules/Shaman/Healing.lua', 'Rules/Shaman/Damage.lua',
+                    'Rules/Druid.lua', 'Rules/Druid/Healing.lua', 'Rules/Druid/Tank.lua', 'Rules/Druid/Damage.lua',
                     'Core/Items.lua', 'Core/Group.lua', 'Core/Evaluate.lua']
         self.assertEqual(runtime, [dual.GATE_PATH, name + '.lua'] + gameplay + ['RoleSettings.lua', 'Auction/Filter.lua', 'Auction/Browse.lua'])
         self.assertEqual(meta.get('SavedVariablesPerCharacter'), 'ApogeeAuctionDevDB')
@@ -138,9 +148,35 @@ class DualTests(unittest.TestCase):
         self.assertEqual(settings_body, dual.prefix(name, 'DEV') + expected_settings)
         for path in gameplay + ['Auction/Filter.lua', 'Auction/Browse.lua']:
             self.assertEqual(self.dev[name + '/' + path], dual.prefix(name, 'DEV') + source[path])
+        # Retain old installed paths as inert, unloaded stubs. The owning
+        # evaluation suite also executes them and checks for registrations.
+        for path in ('Rules/Other.lua', 'Rules/Paladin/Combat.lua', 'Rules/Warrior/Combat.lua'):
+            self.assertNotIn(path, runtime)
+            self.assertEqual(self.dev[name + '/' + path], source[path])
+            self.assertEqual(self.prod['ApogeeAuction/' + path], source[path])
+        pinned_files = {p: source[p] for p in child['files']}
+        d.child_contract(child, pinned_files)
+        for path in ('Rules/Other.lua', 'Rules/Paladin/Combat.lua', 'Rules/Warrior/Combat.lua'):
+            changed = dict(pinned_files)
+            changed[path] += b'CreateFrame("Frame")\n'
+            with self.assertRaises(ValueError): d.child_contract(child, changed)
+        changed = dict(pinned_files)
+        changed['Rules/Unexpected.lua'] = source['Rules/Other.lua']
+        with self.assertRaises(ValueError): d.child_contract(child, changed)
+        foreign_child = dict(child, name='ApogeeHeals')
+        with self.assertRaises(ValueError): d.child_contract(foreign_child, pinned_files)
+        changed = dict(pinned_files)
+        changed[child['toc']] += b'README.md\n'
+        with self.assertRaises(ValueError): d.child_contract(child, changed)
         evaluation_check = OPTIONS.artifacts / 'auction-evaluation.lua'
         evaluation_check.write_bytes(source['tests/evaluation.lua'])
         subprocess.run(['lua', str(evaluation_check), str(OPTIONS.artifacts / 'DEV' / name), name], check=True)
+        # Execute real loot/group regressions against transformed package bytes.
+        for script in ('loot-scenarios.lua', 'group-fixtures.lua', 'group-scenarios.lua', 'group-browse.lua'):
+            (OPTIONS.artifacts / script).write_bytes(source['tests/' + script])
+        for script in ('loot-scenarios.lua', 'group-scenarios.lua', 'group-browse.lua'):
+            subprocess.run(['lua', str(OPTIONS.artifacts / script),
+                            str(OPTIONS.artifacts / 'DEV' / name), name], check=True)
         settings_check = OPTIONS.artifacts / 'auction-settings.lua'
         settings_check.write_bytes(source['tests/role-settings.lua'])
         subprocess.run(['lua', str(settings_check),

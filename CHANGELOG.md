@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Update Auction DEV with role/playstyle-and-item teaching reminders and grouped
+  vertical class-colored suitability rows, replacing duplicate native comparisons.
+
 - Refresh Auction DEV with concise Alt details, removing generic helper text
   while preserving item-specific comparisons and relevant Pass reasons.
 

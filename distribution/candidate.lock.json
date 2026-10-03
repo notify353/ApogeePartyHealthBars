@@ -1,7 +1,7 @@
 {
   "children": [
     {
-      "commit": "5b65f0512410ee18221de85d200b4a4b39c4c081",
+      "commit": "4ac137f9d817bcf86fde4f38f157404837c828b9",
       "files": {
         "ApogeeHeals.lua": "1bbede96d06448c3812a2911a644e05ea3c62fa932a676b905096202f04329b8",
         "ApogeeHeals.toc": "fe56908966c0ea442d416a38af9f5f9fa0ee30e48c2ae87e479dd0a786fea56d",
@@ -11,7 +11,7 @@
         "Buffs/Defaults.lua": "88118e8147534df41c6e695475557aafe8c86d610bc4b52b55656935ca006073",
         "Buffs/Runtime.lua": "4a8609e2939a8e194c715f99a4230789e8429403f3212db417392632254eb958",
         "Buffs/View.lua": "b0b628439d1d04fe34b2662017bbdc3befad59869720afd74c8cce1491e9efcc",
-        "CHANGELOG.md": "24e73ddee6da5609e56cdaffd4167ac5057d26a11672758f3bb9ddb250d1b270",
+        "CHANGELOG.md": "e0f0ca42513c2b668902e116584471e0dd86c1021dc461a3be4779b0e2f3f7e3",
         "Cleansing/Runtime.lua": "78ec7cd14a77a81b0bfebc12dfa1056c0456dfeaa61b0c0e83f12cf339a51f16",
         "Core/Access.lua": "7e518d6a5a11f608ca797756f0448e88733b2346821c283812231a47c1ab821e",
         "Core/Client.lua": "332d6d3456588cf0326e87e2addd207155498ad0340892cbd2e2f90e1e169064",
@@ -26,9 +26,9 @@
         "PartyFrames/View.lua": "9590ceb97a022e098bd9abea4847aad9efab03fa63591e2460f919b14523c566",
         "README.md": "206604ea76088cfd0103a86653a6a7623facd97a082f8a2e632f1c33c10367f0",
         "Threat/Diagnostics.lua": "7c71432508520517e684c604f6eefd3c932ba47f264d4aa83c4171d0c2a0923e",
-        "Threat/Model.lua": "592e0a755966260ddd82424ecb67f611d6e485e0cdd3e7f578dd055b15c52413",
+        "Threat/Model.lua": "9f5db7e0058d89eec9e45dd589d3523847ef460de05d7ae18f8e87161d8a072f",
         "Threat/Runtime.lua": "c3f85acdfa52a3f0e0515b254483d1d8d303fc30f61c6cdbb16221ca8516b2f0",
-        "Threat/View.lua": "3645db863f5ad1d31f2a5f0c141a3767768abbd773bd2e6e26e456e1a3294730",
+        "Threat/View.lua": "759bc46d8e1c1ea0d507f78d68d2c25f970f3c670a20feedb3b69c42a8c9b04a",
         "UI/BindingEditor.lua": "af8cf5f60a274fcc04da7eed3a7f308d5ab211b6a6ad363a6dc82d32d86bf258",
         "UI/Minimap.lua": "9133eef058f71d27b1ba11efb6b24faa062e0dc818b171186eef476099d5e9a0",
         "UI/Settings.lua": "466caa15abe1c045afb65995a63f098182d6b030c9ec073edbdd00c033987e19",

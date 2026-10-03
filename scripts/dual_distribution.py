@@ -23,7 +23,7 @@ IDENTITIES = {
     'ApogeeAuction': ['ApogeeAuctionDB'],  # Per-character evaluation role; DEV keeps a separate table.
     'ApogeeHeals': ['ApogeeHealsDB', 'ApogeeHealsAnchor', 'ApogeeHealsUnit',
                     'ApogeeHealsBindingEditor', 'ApogeeHealsBuffPicker', 'ApogeeHealsMinimapButton'],
-    'ApogeeKeybinds': ['ApogeeKeybindsDB', 'ApogeeKeybindsPhysical', 'ApogeeKeybindsHud', 'ApogeeKeybindsPayload',
+    'ApogeeKeybinds': ['ApogeeKeybindsDB', 'ApogeeKeybindsPhysical', 'ApogeeKeybindsHud',
                       'ApogeeKeybindsSlotMenu', 'ApogeeKeybindsMinimapButton', 'ApogeeKeybindsWeaponsHeader'],
     'ApogeeGroupAlert': ['ApogeeGroupAlertDB', 'ApogeeGroupAlertCharacterDB', 'ApogeeGroupAlertGroups'],
     'ApogeeEssentials': ['ApogeeEssentialsDB'],

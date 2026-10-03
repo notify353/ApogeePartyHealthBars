@@ -2,9 +2,9 @@
 
 ## [Unreleased]
 
-- Audit Keybinds weapon execution and isolate conditional action bodies from
-  stance-driver parsing. Audit the new family-local payload-button identity.
-  Shared routing covers all inputs; native click forwarding still needs DEV acceptance.
+- Restore the preceding Keybinds DEV candidate after the owner reported broad
+  spell failure with experimental conditional-action forwarding. Keep the
+  accepted key-2 stance change; the Shield Bash weapon issue remains unresolved.
 
 - Pin Keybinds with Battle Stance key 2 attempting Defensive Stance without the
   automatic Bloodrage cast, preserving its weapon attachment. Native verification

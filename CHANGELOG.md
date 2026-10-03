@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.12.0] - 2026-10-03
+
 - Fix assigned weapon sets in Keybinds and simplify action execution while preserving
   default key assignments and saved weapon choices.
 - Remove class-specific automatic spell combinations and buff hiding from Keybinds;

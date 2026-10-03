@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Pin Heals' restricted maximum-mana background fix for local DEV testing. Native
+  fills preserve blue mana rows and matching threat masks in combat; live acceptance pending.
+
 - Restore the preceding Keybinds DEV candidate after the owner reported broad
   spell failure with experimental conditional-action forwarding. Keep the
   accepted key-2 stance change; the Shield Bash weapon issue remains unresolved.

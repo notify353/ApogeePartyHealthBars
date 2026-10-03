@@ -203,6 +203,17 @@ def expected_hashes(lock, variant):
     return hashes
 
 
+def validate_keybinds_policy(tree, files):
+    for path in ('Actions/Defaults.lua', 'UI/Cooldowns.lua', 'Rules/SelfBuffs.lua'):
+        source = 'common/' + path
+        # Historical pins include SelfBuffs. Its retirement is valid only when
+        # both copies and the package entry are absent from the immutable pin.
+        if path == 'Rules/SelfBuffs.lua' and path not in tree and source not in tree:
+            require(path not in files, 'Retired Keybinds policy remains packaged')
+            continue
+        require(source in tree and tree[source] == files.get(path), 'Keybinds generated policy drift')
+
+
 def collect(lock, sources_root, variant):
     result = {}
     for child in lock['children']:
@@ -216,8 +227,7 @@ def collect(lock, sources_root, variant):
             require(p in tree and sha(tree[p]) == digest, child['name'] + ': pinned file mismatch: ' + p)
             files[p] = tree[p]
         if child['name'] == 'ApogeeKeybinds':
-            for p in ('Actions/Defaults.lua', 'UI/Cooldowns.lua', 'Rules/SelfBuffs.lua'):
-                require(tree.get('common/' + p) == files[p], 'Keybinds generated policy drift')
+            validate_keybinds_policy(tree, files)
         child_contract(child, files)
         result.update({child['name'] + '/' + p: data for p, data in files.items()})
     if variant != 'children-only':

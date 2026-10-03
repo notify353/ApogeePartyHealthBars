@@ -1,3 +1,8 @@
+## Unreleased - Keybinds class-agnostic action candidate
+
+- Pin the reviewed static native weapon/action programs. Preserve default assignments and remove class-specific combinations and buff hiding.
+- Replace full macrotext driver values without nested click forwarding. Native acceptance pending after DEV installation.
+
 # Changelog
 
 ## [Unreleased]

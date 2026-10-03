@@ -79,6 +79,22 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual(len(d.validate(self.zip, self.lock, 'children-only')), 134)
         self.assertFalse(any('.git' in p.split('/') for p in self.files))
 
+    def test_keybinds_retired_policy_requires_both_copies_absent(self):
+        files = {'Actions/Defaults.lua': b'defaults', 'UI/Cooldowns.lua': b'cooldowns'}
+        tree = dict(files)
+        tree.update({'common/' + path: data for path, data in files.items()})
+        d.validate_keybinds_policy(tree, files)
+        for path in ('Rules/SelfBuffs.lua', 'common/Rules/SelfBuffs.lua'):
+            with self.assertRaises(Exception):
+                d.validate_keybinds_policy(dict(tree, **{path: b'legacy'}), files)
+        legacy = dict(files, **{'Rules/SelfBuffs.lua': b'legacy'})
+        with self.assertRaises(Exception):
+            d.validate_keybinds_policy(tree, legacy)
+        tree.update({'Rules/SelfBuffs.lua': b'legacy', 'common/Rules/SelfBuffs.lua': b'legacy'})
+        d.validate_keybinds_policy(tree, legacy)
+        with self.assertRaises(Exception):
+            d.validate_keybinds_policy(tree, dict(legacy, **{'Rules/SelfBuffs.lua': b'drift'}))
+
     def test_repeated_build_is_byte_identical(self):
         again = d.collect(self.lock, OPTIONS.sources_root, 'children-only')
         self.assertEqual(self.zip, d.zip_bytes(dict(reversed(list(again.items())))))

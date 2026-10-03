@@ -7,6 +7,9 @@
 
 ## [Unreleased]
 
+- Pin Heals' threat refresh sweep: coalesced unit events, fewer redundant native
+  writes and reads, stable aura bindings, and a 0.1-second fallback refresh.
+
 - Pin Heals' restricted maximum-mana background fix for local DEV testing. Native
   fills preserve blue mana rows and matching threat masks in combat; live acceptance pending.
 

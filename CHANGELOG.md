@@ -18,6 +18,8 @@
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-10-03
+
 - Show Stats upgrades above the player's current level while retaining other
   equipment restrictions, including guidance on AtlasLoot's custom tooltip.
   Owner verified the Phantom Armor warrior tank case in DEV.

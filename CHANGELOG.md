@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Audit Keybinds weapon execution and isolate conditional action bodies from
+  stance-driver parsing. Audit the new family-local payload-button identity.
+  Shared routing covers all inputs; native click forwarding still needs DEV acceptance.
+
 - Pin Keybinds with Battle Stance key 2 attempting Defensive Stance without the
   automatic Bloodrage cast, preserving its weapon attachment. Native verification
   of the reported stance/weapon failure remains pending; DEV-only installation.

@@ -60,3 +60,11 @@ regressions cover the native identity, interface revisions and missing APIs.
 The new source regressions fail against all five old project-1 adapters.
 Export/install provenance remains pinned; runtime version numbers do not expire
 features. Native acceptance of the corrected package still requires owner testing.
+
+## October 2 client refresh
+
+Owner refreshed the export after updating to 1.60.1.70205. All eight recorded
+loading-safety source hashes match the prior review exactly, and the fresh
+files postdate the executable. Interface remains 16001. Reviewed Heals threat
+and nameplate contracts; matching-source tests pass. Advance only the current
+candidate build pin; historical locks and sibling runtime pins stay unchanged.

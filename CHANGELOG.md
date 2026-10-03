@@ -1,26 +1,20 @@
-## Unreleased
-
-- Pin compact centered Heals threat frames with mob HP and mana rail for DEV.
-
-- Restore Auction's prior tooltip behavior and pin Stats' higher-level upgrade
-  guidance and AtlasLoot tooltip support for DEV.
-
-- Pin the settings-controlled solo Heals threat demo for visual review in DEV.
-
-- Pin the Heals relative-threat bar prototype for DEV group testing.
-
-- Update Heals DEV threat diagnostics with sustained-combat sampling coverage.
-
-- Pin Heals combat threat checks for local DEV testing, with frozen screenshot
-  results. Native acceptance remains pending.
-
 # Changelog
 
 ## [Unreleased]
 
-- Show Stats upgrades above the player's current level while retaining other
-  equipment restrictions, including guidance on AtlasLoot's custom tooltip.
-  Owner verified the Phantom Armor warrior tank case in DEV.
+## [1.11.0] - 2026-10-03
+
+- Add an optional compact tank threat meter with eight stable enemy rows, center-origin
+  bars, mana-type backgrounds, and a clear marker for your selected enemy.
+- Track your Sunder Armor stacks, Thunder Clap, and Demoralizing Shout with compact
+  icons that appear only while the matching debuff is confirmed active.
+- Preview the threat layout solo with Threat demo, or capture combat readings with
+  Threat checks. Enable the meter in Heals settings and keep enemy nameplates visible.
+  The percentage bar is a relative display, not a prediction of when aggro will be lost.
+- Show Stats gear upgrades above your current level while retaining other equipment
+  restrictions, including guidance on AtlasLoot tooltips.
+- Reload after updating. Existing settings are preserved; the threat meter stays
+  off until enabled.
 
 ## [1.10.0] - 2026-10-02
 

@@ -1,7 +1,7 @@
 {
   "children": [
     {
-      "commit": "54bb3095d993363a10e9958658715420dac9bd2b",
+      "commit": "02ec20c02b8342a1b377a6979e04aeb70d7bef81",
       "files": {
         "ApogeeHeals.lua": "1bbede96d06448c3812a2911a644e05ea3c62fa932a676b905096202f04329b8",
         "ApogeeHeals.toc": "fe56908966c0ea442d416a38af9f5f9fa0ee30e48c2ae87e479dd0a786fea56d",
@@ -11,7 +11,7 @@
         "Buffs/Defaults.lua": "88118e8147534df41c6e695475557aafe8c86d610bc4b52b55656935ca006073",
         "Buffs/Runtime.lua": "4a8609e2939a8e194c715f99a4230789e8429403f3212db417392632254eb958",
         "Buffs/View.lua": "b0b628439d1d04fe34b2662017bbdc3befad59869720afd74c8cce1491e9efcc",
-        "CHANGELOG.md": "aea28840ce26eb011c05327e6be38e125cabf3a6b4be0d1ed42847e7f791c192",
+        "CHANGELOG.md": "c2feecc148f56d8732f7d855f6d0520c8d7b915e5fed481ab4f15f5772a849ba",
         "Cleansing/Runtime.lua": "78ec7cd14a77a81b0bfebc12dfa1056c0456dfeaa61b0c0e83f12cf339a51f16",
         "Core/Access.lua": "7e518d6a5a11f608ca797756f0448e88733b2346821c283812231a47c1ab821e",
         "Core/Client.lua": "332d6d3456588cf0326e87e2addd207155498ad0340892cbd2e2f90e1e169064",
@@ -28,7 +28,7 @@
         "Threat/Diagnostics.lua": "7c71432508520517e684c604f6eefd3c932ba47f264d4aa83c4171d0c2a0923e",
         "Threat/Model.lua": "592e0a755966260ddd82424ecb67f611d6e485e0cdd3e7f578dd055b15c52413",
         "Threat/Runtime.lua": "d0e87dc6b681e203845de3a2178e06d54a37c0f522000a9c7a74e1992fbf90e8",
-        "Threat/View.lua": "85a052d8abc1e0c31421631d0d9bc1c0dc5fbe5e621b9ba65b4106d79f5a6d3e",
+        "Threat/View.lua": "40c7648ff2f72011235501cc755892ce8404876e0f3fc162d38bf58f5e562678",
         "UI/BindingEditor.lua": "af8cf5f60a274fcc04da7eed3a7f308d5ab211b6a6ad363a6dc82d32d86bf258",
         "UI/Minimap.lua": "9133eef058f71d27b1ba11efb6b24faa062e0dc818b171186eef476099d5e9a0",
         "UI/Settings.lua": "466caa15abe1c045afb65995a63f098182d6b030c9ec073edbdd00c033987e19",

@@ -1,28 +1,16 @@
-## Unreleased - Keybinds class-agnostic action candidate
-
-- Pin the reviewed static native weapon/action programs. Preserve default assignments and remove class-specific combinations and buff hiding.
-- Replace full macrotext driver values without nested click forwarding. Native acceptance pending after DEV installation.
-
 # Changelog
 
 ## [Unreleased]
 
-- Pin Heals' threat refresh sweep: coalesced unit events, fewer redundant native
-  writes and reads, stable aura bindings, and a 0.1-second fallback refresh.
-
-- Pin Heals' restricted maximum-mana background fix for local DEV testing. Native
-  fills preserve blue mana rows and matching threat masks in combat; live acceptance pending.
-
-- Restore the preceding Keybinds DEV candidate after the owner reported broad
-  spell failure with experimental conditional-action forwarding. Keep the
-  accepted key-2 stance change; the Shield Bash weapon issue remains unresolved.
-
-- Pin Keybinds with Battle Stance key 2 attempting Defensive Stance without the
-  automatic Bloodrage cast, preserving its weapon attachment. Native verification
-  of the reported stance/weapon failure remains pending; DEV-only installation.
-
-- Pin Essentials with default-disabled Loss of Control Alerts and an account-wide
-  settings switch. DEV validation does not establish native acceptance.
+- Fix assigned weapon sets in Keybinds and simplify action execution while preserving
+  default key assignments and saved weapon choices.
+- Remove class-specific automatic spell combinations and buff hiding from Keybinds;
+  assigned spells now use the shared action options.
+- Fix blue backgrounds for mana enemies in the Heals threat meter and improve
+  responsiveness by combining event bursts and avoiding redundant updates.
+- Add the Essentials Disable Loss of Control Alerts setting, enabled by default
+  to keep those alerts off.
+- Reload after updating to activate the changes. Existing settings are preserved.
 
 ## [1.11.0] - 2026-10-03
 

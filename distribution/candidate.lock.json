@@ -47,10 +47,10 @@
       "version": "0.1.0-dev"
     },
     {
-      "commit": "e744f739cd62095af008a8f248a8523217438a57",
+      "commit": "c6d1a01bab8d2111a29d7450b00a55050d5265a6",
       "files": {
-        "Actions/Compile.lua": "f56780e4116f39d6f51705221fd718ca023eeda4ce8e2fd9500f4e4142b16363",
-        "Actions/Defaults.lua": "01bedc827bee7916d5f1a23395ff612c3339937cd40a3c3c9ba46b0747e91c46",
+        "Actions/Compile.lua": "bd80758cdcb639dd538313b80ab3b814eabe0debf73ecf956bbdcaa2dfc90319",
+        "Actions/Defaults.lua": "6233cbc86710b8ef449668f4bac62d139b6b6b008c84f1ed5a5bfbffb2f20975",
         "Actions/Drag.lua": "7a5cb485fc8856393320216cb19000b6d1bbdf2479f1d93c45d793dd3c09f97c",
         "Actions/Identity.lua": "ee93094bb697842eac92c77b110421ee96755d8271d54362ef130138a374f7b1",
         "Actions/Secure.lua": "9e55657083dbcfbff57badddc575b46ae1ae4b78ce95be2e7ba794453d6582bc",
@@ -64,8 +64,8 @@
         "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",
         "Media/Textures/ApogeeLogo.png": "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e",
         "NOTICE.md": "f1672e42817d7a61ec552508b4fa2dc9bf6066e97c9e2e9af73f7a4b32020f68",
-        "README.md": "347e4b37d317ff317bb58d3c400e7c8114d9c650ce555e7f7e72ae44c34bd451",
-        "Rules/Bloodrage.lua": "c708b713003383b6da351a9823ff4c59926478c172fd40222fe8da15c3e0c494",
+        "README.md": "64db7b0d344440331c61dc7c67a00c49e2429206108ad9cd264e24095483b039",
+        "Rules/Bloodrage.lua": "f502eebef17c26a5fc14078b6a3cbee15e4a13e0b948d07f1c63147a3cc4e486",
         "Rules/Charge.lua": "fce93ea0aea85b21fbbf94a742a2e528c96a06b73b1605a9ebfbb169b4092c0a",
         "Rules/Explosives.lua": "e0ee6146ed300a5b340ec3e04dbe82b5c72fbc42ee92829d4043eb293b84d628",
         "Rules/Melee.lua": "6b8743b1a385d9e6ca983fc256b0eb66c9f3af623e627fa21e41fc659114198f",
@@ -81,7 +81,7 @@
         "UI/Widgets.lua": "82e5fc012764a106a5b3fb055410994bdf13f2b7b963757eacde73060f6567b5",
         "Weapons/Loadouts.lua": "e4cf1a5a9fbf8aa814a89b18026a7a3ff935ba0ffdc8a849e790229186c85ad4",
         "docs/ACCEPTANCE.md": "0d0013270bfc731970a1342d1af51f425114ef4fcd0b24f8cbb4b3dac7271200",
-        "docs/API_REFERENCE.md": "0febff7f552832760ed3e85406ba5e8faf4cb568f38b73154121ad47fa23c937",
+        "docs/API_REFERENCE.md": "a9db082682f914b4fa73f66a24c38562c14e5915f466501dacb858adf6fbbba7",
         "docs/ARCHITECTURE.md": "ce46952f6e63604b3cc746628faffacad09b474a17245a5d07c068cc898d4a7f",
         "docs/BETA_TESTING.md": "2b0c99c10a57ccc156a5d38238ff09293b0ac8308eac1abcaa6ee4838ca02e5a",
         "docs/CLOSEOUT.md": "788d6da887cb0ccb3ac51491971d65ad26a05ece1d507bbbb79ba81c1d029cd6",

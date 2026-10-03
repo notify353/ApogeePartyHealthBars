@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Pin Keybinds with Battle Stance key 2 attempting Defensive Stance without the
+  automatic Bloodrage cast, preserving its weapon attachment. Native verification
+  of the reported stance/weapon failure remains pending; DEV-only installation.
+
 - Pin Essentials with default-disabled Loss of Control Alerts and an account-wide
   settings switch. DEV validation does not establish native acceptance.
 

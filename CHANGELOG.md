@@ -18,6 +18,10 @@
 
 ## [Unreleased]
 
+- Show Stats upgrades above the player's current level while retaining other
+  equipment restrictions, including guidance on AtlasLoot's custom tooltip.
+  Owner verified the Phantom Armor warrior tank case in DEV.
+
 ## [1.10.0] - 2026-10-02
 
 - Add a dice toggle to show auction upgrades for your role, with progressive results,

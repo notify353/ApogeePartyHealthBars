@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Pin Essentials with default-disabled Loss of Control Alerts and an account-wide
+  settings switch. DEV validation does not establish native acceptance.
+
 ## [1.11.0] - 2026-10-03
 
 - Add an optional compact tank threat meter with eight stable enemy rows, center-origin

@@ -2,8 +2,15 @@
 
 ## [Unreleased]
 
-- Pin Essentials with default-disabled Loss of Control Alerts and an account-wide
-  settings switch. DEV validation does not establish native acceptance.
+- Fix assigned weapon sets in Keybinds and simplify action execution while preserving
+  default key assignments and saved weapon choices.
+- Remove class-specific automatic spell combinations and buff hiding from Keybinds;
+  assigned spells now use the shared action options.
+- Fix blue backgrounds for mana enemies in the Heals threat meter and improve
+  responsiveness by combining event bursts and avoiding redundant updates.
+- Add the Essentials Disable Loss of Control Alerts setting, enabled by default
+  to keep those alerts off.
+- Reload after updating to activate the changes. Existing settings are preserved.
 
 ## [1.11.0] - 2026-10-03
 

@@ -1,3 +1,19 @@
+## Unreleased
+
+- Pin compact centered Heals threat frames with mob HP and mana rail for DEV.
+
+- Restore Auction's prior tooltip behavior and pin Stats' higher-level upgrade
+  guidance and AtlasLoot tooltip support for DEV.
+
+- Pin the settings-controlled solo Heals threat demo for visual review in DEV.
+
+- Pin the Heals relative-threat bar prototype for DEV group testing.
+
+- Update Heals DEV threat diagnostics with sustained-combat sampling coverage.
+
+- Pin Heals combat threat checks for local DEV testing, with frozen screenshot
+  results. Native acceptance remains pending.
+
 # Changelog
 
 ## [Unreleased]

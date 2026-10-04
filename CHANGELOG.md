@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+- Prioritize Healing Power for healers and Spell Power for caster damage, with Intellect breaking ties.
+- Include Defense Rating for Bear and Warrior tanks, and compare shield Block Rating and Block Value separately.
+- Prevent incomplete weapon DPS or ambiguous item stats from creating misleading upgrades; retain confirmed role results while other comparisons are unavailable.
+- Refresh upgrade tooltips after profession skill changes.
+- Reload after updating. Existing settings are preserved.
+
 ## [1.14.0] - 2026-10-04
 
 - Show upgrades for all supported roles outside dungeons and raids, with native role icons matching the dice size.

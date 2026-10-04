@@ -257,3 +257,34 @@ match the candidate and receipt at
 The acceptance record retains unchanged sibling coverage. Generated PROD is the
 counterpart of the accepted sources; separate PROD and CurseForge-client testing
 are not claimed.
+
+## October 4 Keybinds learned-rank recovery DEV candidate
+
+Keybinds pins reviewed commit `9123fe23d092769c3cf466859eb20e1fd5a852e9`.
+Saved spell assignments whose former rank is no longer learned recover through
+the current active spell family, including talent overrides. Exact learned ranks
+remain explicit choices. The child regression and existing talent-override spec
+pass against both generated families, including key/HUD routing, saved-choice
+preservation, exclusions and combat-deferred refresh. All sibling pins, runtime
+transforms and loader contracts are unchanged.
+
+Full local distribution validation passed against the matching Forever
+1.60.1.70205 export. DEV-only installation is recorded at
+`C:/Dev/WoW/local-install-backups/apogee-keybinds-rank-9123fe2-20261004/transaction.json`;
+the verified backup retains every previously managed DEV file. All 188 installed
+package-file hashes and all 155 generated DEV Lua hashes match. The 111 existing
+PROD addon files are byte-identical before and after installation. Private saves,
+enable preferences and differing local documentation remain untouched.
+
+Only Keybinds DEV `Actions/Identity.lua` and the distribution DEV marker's version
+TOC changed. The owner subsequently reports "that fixed it" for the installed
+level-25 Vanguard Charge fix. This accepts the reported Charge failure only;
+broader new gameplay checks, PROD testing and CurseForge-client testing are not
+claimed. `native-acceptance.json` updates the changed Keybinds Lua hash in each
+generated family and preserves prior acceptance for all unchanged runtime.
+
+The owner authorizes GitHub push and merge so this fix is included in the next
+deployment. The reviewed source pin remains the exact installed candidate.
+This request does not authorize a release, deployment, tag or further local
+installation. The ordinary release-preparation and final-commit hosted gates
+still apply before any separately authorized publication.

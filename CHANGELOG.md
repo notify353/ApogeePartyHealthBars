@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Limit Heals automatic raid marks to bosses and mana enemies; remove health fallback and fix the restricted existing-icon gate.
+
 - Add guarded Heals automatic boss circle and sticky mana-first skull marking, with lowest-health fallback only for readable candidates.
 
 - Keep gray indicators on unselected Heals threat rows and gold on the selected enemy.

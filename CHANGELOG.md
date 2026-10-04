@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Match Stats tooltip role icons to the 22-pixel dice icon.
+
 - Pin Stats DEV auction loading-loop/flicker fixes and native role icons.
 
 - Pin Stats to all-role outdoor guidance, labeled role/playstyle upgrades and independent per-visit auction filters. Preserve instance assignment priority and validate partial-data recovery in generated families.

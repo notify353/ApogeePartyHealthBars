@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Add a 40-yard party range fallback when Heals slot one has no usable range, with distinct unknown-distance feedback.
+
 - Limit Heals automatic raid marks to bosses and mana enemies; remove health fallback and fix the restricted existing-icon gate.
 
 - Add guarded Heals automatic boss circle and sticky mana-first skull marking, with lowest-health fallback only for readable candidates.

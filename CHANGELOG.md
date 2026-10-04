@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Pin Stats DEV auction loading-loop/flicker fixes and native role icons.
+
 - Pin Stats to all-role outdoor guidance, labeled role/playstyle upgrades and independent per-visit auction filters. Preserve instance assignment priority and validate partial-data recovery in generated families.
 
 ## [1.13.0] - 2026-10-03

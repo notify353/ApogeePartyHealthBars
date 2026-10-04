@@ -270,20 +270,20 @@
       "version": "0.1.0-dev"
     },
     {
-      "commit": "5d737602f591f9c1ae5a4f9f10c5e0fceb4736f9",
+      "commit": "59a47902f17561ebd39b47616eeb76e5ad722034",
       "files": {
-        "ApogeeStats.lua": "ae4b6a2c49443dfe476fddbb615d81689c9b3c35025ff0e392b352a5ff217ff9",
+        "ApogeeStats.lua": "9ece62bf250c19e8007966c36eb2cda27f146b7ff839735337c7f44193de5ea3",
         "ApogeeStats.toc": "ff843e04e6685e3c5912e92b483d961ded701c9ab5ca9e2540a5c80193cfb832",
-        "Auction/Browse.lua": "67387e2c590bc3083570479dbff9304f90d662868143734d9f276e0b29b0e43a",
-        "Auction/Queue.lua": "f8d352547818f6809fbc96c3dfebe518d8ea1012e894da619a6abdd8dff48dc4",
-        "CHANGELOG.md": "de766eae3a25bb84524ed8bcff57caf56f67cef29f22a39fb742760ddc89a247",
+        "Auction/Browse.lua": "ae7cae9edee2b1585bbbbadde8ba0f4080b80a301c474943fa3349009d0553e1",
+        "Auction/Queue.lua": "574d497ce61d203421bb5a679c3c8b9e1aa3be4f882029b04a5ac3deaeb96ba3",
+        "CHANGELOG.md": "c502d21b100fd8495a9c76a52aeef29b50addc0220e505b3fde13123faba33bb",
         "Core/Items.lua": "63c401eeb3049d531e5e0d46adb3d5245f2969c479a9eb5ea85eddac5241f736",
         "Core/Rules.lua": "daa7a2e36ca9104b356e1627a6e01f559925bf086d16595c0f0166695fe7cbed",
         "LICENSE": "db8f2e7eaca2d2ff00e6ef2eaf351a1a066dfdd76c830c9b4db4c55d3fc15b4b",
         "Media/Textures/ApogeeLogo.png": "6b901741b85c06da51cf281bc437ff86c44ab65428951403ed047298d23fa10e",
-        "README.md": "304da97f6aff48dacf870689dc56a452bb253c044586a11aee33e477ad6b6b91",
-        "docs/CLASS_ROLE_REFERENCE.md": "975228b287d5ed12c7d4cf51594549881a31a7b81606c01b466889475a8dc7e6",
-        "docs/NATIVE_ACCEPTANCE.md": "d06a10364ffcc6ae05b49e627bcebc27a1e12318ffe8182f4ed6628c5a6e0b70"
+        "README.md": "c19a7b9e4fb323021e2c4d03558f516b59264df9c316a78bdda888d3baa9d4b2",
+        "docs/CLASS_ROLE_REFERENCE.md": "9068fd89c426186e7c90b16b0ba4f2ca5cbbbe040616654b0071cfc455f567e7",
+        "docs/NATIVE_ACCEPTANCE.md": "e3a818b51c59003446b605574beb9c918b8cec38765060158ef1796be3f2568d"
       },
       "name": "ApogeeStats",
       "repository": "https://github.com/notify353/ApogeeStats.git",

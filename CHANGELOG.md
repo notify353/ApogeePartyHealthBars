@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.14.0] - 2026-10-04
+
 - Show upgrades for all supported roles outside dungeons and raids, with native role icons matching the dice size.
 - Filter gear guidance by role while the character window is open; closing it restores normal guidance.
 - Start each auction visit with All roles and allow independent role filtering.

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Add guarded Heals automatic boss circle and sticky mana-first skull marking, with lowest-health fallback only for readable candidates.
+
 - Keep gray indicators on unselected Heals threat rows and gold on the selected enemy.
 
 - Make Heals threat backgrounds transparent for non-mana enemies while retaining blue mana backgrounds.

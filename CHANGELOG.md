@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.14.1] - 2026-10-04
+
 - Prioritize Healing Power for healers and Spell Power for caster damage, with Intellect breaking ties.
 - Include Defense Rating for Bear and Warrior tanks, and compare shield Block Rating and Block Value separately.
 - Prevent incomplete weapon DPS or ambiguous item stats from creating misleading upgrades; retain confirmed role results while other comparisons are unavailable.

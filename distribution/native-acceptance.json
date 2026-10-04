@@ -1,6 +1,6 @@
 {
   "accepted": true,
-  "basis": "Owner confirms all latest changes tested and working and explicitly approves deployment. Covers Stats role scopes, character-window gear filter, auction loading-loop/flicker fixes, and 22-pixel native role icons. Installed DEV runtime bytes verified against the accepted package; PROD is the generated counterpart, not separately client-tested.",
+  "basis": "Owner reports testing everything and explicitly approves GitHub merge and CurseForge deployment of the installed Stats audit fixes. Covers throughput-first healer/caster priorities, tank Defense and separate block stats, ambiguous alias handling, required weapon DPS and skill-change refresh. All 155 installed DEV Lua files match the candidate and installation receipt; unchanged sibling runtime retains prior acceptance. PROD is the generated counterpart, not separately client-tested.",
   "curseforgeClientTested": false,
   "followUpChecks": [
     {
@@ -182,8 +182,8 @@
     }
   ],
   "gateSha256": "ba988f34520cfcfdb5a340138659431d3eed30d42577ee30e326f199851a278d",
-  "installedArchiveSha256": "97f3a57f3851f1b135e7f48ca3d7293772acec0e85580cd146f4880b8ce7584a",
-  "installedReceipt": "C:\\Dev\\WoW\\local-install-backups\\apogee-stats-character-filter-20261004\\transaction.json",
+  "installedArchiveSha256": "842c64ecf2cc763cd0b347afdfc7489b4b615bdc3f80eb8c29dc3cd9818db40c",
+  "installedReceipt": "C:\\Dev\\WoW\\local-install-backups\\apogee-stats-policy-18c7f80-20261004\\transaction.json",
   "productionClientTested": false,
   "reportedDate": "2026-10-04",
   "runtimeFiles": {
@@ -310,11 +310,11 @@
       "ApogeeKeybindsDev/UI/Widgets.lua": "1585ef3dbca8db5cf84aed0b1596b71a84478c8fdd6271481daac45de6f49d57",
       "ApogeeKeybindsDev/Weapons/Loadouts.lua": "c1007c615abb3f5ed628593b485fc599442cc75dd6a201ab0501274d7529a35d",
       "ApogeeKeybindsDev/__Distribution/FamilyGate.lua": "2fbfab2ab9a7ce51466890aca1bcd8ff9ea15ee2c9d73c8d9dc49486d1d5d529",
-      "ApogeeStatsDev/ApogeeStatsDev.lua": "16035abcea12c5abef1b57577b26f6314a61558ae83002f7d5581a7b18c458a6",
+      "ApogeeStatsDev/ApogeeStatsDev.lua": "4b5cb2ac530485b020532cb5466b65f6c89d6d97897af5a46bd848e7782a7a0d",
       "ApogeeStatsDev/Auction/Browse.lua": "c049254e2cc22026bd7de395ce9cb38e3c24f3b6ca52d6f08f64bc71c4585abb",
-      "ApogeeStatsDev/Auction/Queue.lua": "be5379badec69a244c9bdfcd669b52e51e12975912e25d5ee6157a127921ae53",
-      "ApogeeStatsDev/Core/Items.lua": "63736149738af02f78b0a5686a2d0b097253d5f393c3501bd1c9e506229dac69",
-      "ApogeeStatsDev/Core/Rules.lua": "146cf1a34cae0754b30dae1240e46149f8e5cf0383d6c59ee7b66839c729d247",
+      "ApogeeStatsDev/Auction/Queue.lua": "692016b98c5c27e69ca0b517568063cb85a37553ce2e4f2f3ffb02e80e33f6bb",
+      "ApogeeStatsDev/Core/Items.lua": "63f308e8970e15a4c2f8ea42d8b71d5f67d0c817f3c22f270081bd4cdf93a449",
+      "ApogeeStatsDev/Core/Rules.lua": "6dec562c6577d097383e1e502100e583a84d0955d74e7112efe40898477a92a6",
       "ApogeeStatsDev/__Distribution/FamilyGate.lua": "ba988f34520cfcfdb5a340138659431d3eed30d42577ee30e326f199851a278d",
       "ApogeeTankDev/ApogeeTankDev.lua": "b2801a3e0d2f1a8a79387537e3dbe3b310e38a09b0610f16cf4fadc54452386b",
       "ApogeeTankDev/Cooldowns/Actions.lua": "c122996b57cc15f5141798de424515b15f01d30ceac1c9e6c8b8a246d5f9d066",
@@ -428,11 +428,11 @@
       "ApogeeKeybinds/UI/Widgets.lua": "b63e9c076ee2bbdfb3b16ac8ea1d1fae46eb57f6faacee9bcd59639e20983d9a",
       "ApogeeKeybinds/Weapons/Loadouts.lua": "8b9696a485e692fb8a0f7c4e5935e0c861b0c47bbfa7336a476489ba1c97803c",
       "ApogeeKeybinds/__Distribution/FamilyGate.lua": "acf75a18371af14ad21fae1ac0c0b57c53ae69568f34066cc4e81f155bea91e1",
-      "ApogeeStats/ApogeeStats.lua": "26ad2e7ed2d2b8d4ba0e3651cc13ff56ff489238bfa952ae0c4970a91b9613b9",
+      "ApogeeStats/ApogeeStats.lua": "7f5980f325142913948ced2766d77d9fe0395746915c35c1f8489497e481c723",
       "ApogeeStats/Auction/Browse.lua": "7a58ec6134421c5f5a4759fbde6d90742fd1b5038ec4ed15e17a0f759b3454db",
-      "ApogeeStats/Auction/Queue.lua": "6ed548cf1f2c40341af45bb08a4d519c72cc91d596fe278a40d31338e472baa8",
-      "ApogeeStats/Core/Items.lua": "e3b0d5d81a5342aa5bea5b3296fd3b22e37acfaeb92466ed5f82e5921d33b189",
-      "ApogeeStats/Core/Rules.lua": "1e9d696e3bf19cb4e179c5b79d063978348b095c05fe0908088def59564d7ddd",
+      "ApogeeStats/Auction/Queue.lua": "58f4930c2e98b93b7ee06604e7897dc943a9f3f6ccbcd54848a9a812704b1ee7",
+      "ApogeeStats/Core/Items.lua": "e2eef2b51e9bdda84796720193f4f475821a6fba17127fc9071c2951b7b277e2",
+      "ApogeeStats/Core/Rules.lua": "8a8acf47e2cef382a0a33dff87aad0ac19fcc31cc56ce198d7552c8f20058e84",
       "ApogeeStats/__Distribution/FamilyGate.lua": "15e7d9da7f466e38ec9114df7c64855f49e76611dc1f269e028028bb0d509891"
     }
   },

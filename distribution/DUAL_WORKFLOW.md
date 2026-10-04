@@ -243,3 +243,17 @@ introduce no saved-variable or lexical identity mappings. The central generated
 suite runs the pinned child's Lua regressions against both families. Native role
 assignments override fallback selection; damage weapons compare DPS first, caster
 weapons stay stat-first, and tank shield layouts are protected.
+
+## October 4 Stats equipment audit acceptance
+
+The owner reports testing the installed Stats audit corrections and explicitly
+approves GitHub integration and CurseForge deployment. The candidate pins merged
+Stats commit `aecb5fbf9f08b857ffec5fbabe059c5703f3413b`. Its throughput-first
+caster/healer policy, tank Defense and separate block stats, uncertain alias
+handling, required weapon DPS and skill-change refresh are covered by the child
+regressions against both generated families. All 155 installed DEV Lua hashes
+match the candidate and receipt at
+`C:/Dev/WoW/local-install-backups/apogee-stats-policy-18c7f80-20261004/transaction.json`.
+The acceptance record retains unchanged sibling coverage. Generated PROD is the
+counterpart of the accepted sources; separate PROD and CurseForge-client testing
+are not claimed.

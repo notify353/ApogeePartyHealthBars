@@ -139,6 +139,9 @@ class DualTests(unittest.TestCase):
             test_path = OPTIONS.artifacts / ('stats-auction-' + family + '.lua')
             test_path.write_bytes(source['tests/test_auction.lua'])
             subprocess.run(['lua', str(test_path), str(OPTIONS.artifacts / family / name), name], check=True)
+            test_path = OPTIONS.artifacts / ('stats-policy-' + family + '.lua')
+            test_path.write_bytes(source['tests/test_stat_policy.lua'])
+            subprocess.run(['lua', str(test_path), str(OPTIONS.artifacts / family / name), name], check=True)
         bad = copy.deepcopy(self.lock)
         next(c for c in bad['children'] if c['name'] == 'ApogeeStats')['files']['ApogeeStats.lua'] = '0' * 64
         for family in ('PROD', 'DEV'):

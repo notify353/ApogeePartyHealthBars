@@ -1,6 +1,6 @@
 {
   "accepted": true,
-  "basis": "Owner reports testing everything and explicitly approves GitHub merge and CurseForge deployment of the installed Stats audit fixes. Covers throughput-first healer/caster priorities, tank Defense and separate block stats, ambiguous alias handling, required weapon DPS and skill-change refresh. All 155 installed DEV Lua files match the candidate and installation receipt; unchanged sibling runtime retains prior acceptance. PROD is the generated counterpart, not separately client-tested.",
+  "basis": "Owner confirms that the installed DEV fix resolved the reported level-25 Vanguard Charge failure. Acceptance updates only Keybinds Actions/Identity.lua; unchanged runtime retains prior owner acceptance. All 155 installed DEV Lua hashes match the candidate and installation receipt. PROD is the generated counterpart, not separately client-tested. The owner authorizes GitHub integration for the next deployment; no new release or deployment is authorized.",
   "curseforgeClientTested": false,
   "followUpChecks": [
     {
@@ -179,11 +179,29 @@
       "result": "Owner confirms everything has been tested and approves publication. All installed DEV runtime hashes verified against the candidate and installation receipt.",
       "scope": "Full current DEV runtime accepted; PROD generated counterpart only; no CurseForge client acceptance claim.",
       "testedFamily": "DEV"
+    },
+    {
+      "check": "Keybinds level-25 Vanguard Charge learned-rank recovery",
+      "installedArchiveSha256": "84d7858995ef2df51ca6ea0e44d8bc9a24101511b61546bf83e1c4989800daf9",
+      "installedReceipt": "C:/Dev/WoW/local-install-backups/apogee-keybinds-rank-9123fe2-20261004/transaction.json",
+      "reportedDate": "2026-10-04",
+      "result": "Owner reports: that fixed it. The installed DEV Charge fix is accepted for the reported failure.",
+      "runtimeFiles": {
+        "DEV": {
+          "ApogeeKeybindsDev/Actions/Identity.lua": "b6f8e5395218e84a8115e7607a326fa4a02b76ea68889fcfd6e02c0aebee7f86"
+        },
+        "PROD": {
+          "ApogeeKeybinds/Actions/Identity.lua": "37e7c8218b0eaa40264f4e51e72553614962cb7abdb0356d471697dc4a60ac42"
+        }
+      },
+      "scope": "Charge fix only. No broader new gameplay testing, PROD testing or CurseForge-client acceptance is claimed. Prior acceptance is retained for unchanged sibling runtime. GitHub push and merge are authorized for inclusion in the next deployment; release and deployment remain separately authorized.",
+      "sourceCommit": "9123fe23d092769c3cf466859eb20e1fd5a852e9",
+      "testedFamily": "DEV"
     }
   ],
   "gateSha256": "ba988f34520cfcfdb5a340138659431d3eed30d42577ee30e326f199851a278d",
-  "installedArchiveSha256": "842c64ecf2cc763cd0b347afdfc7489b4b615bdc3f80eb8c29dc3cd9818db40c",
-  "installedReceipt": "C:\\Dev\\WoW\\local-install-backups\\apogee-stats-policy-18c7f80-20261004\\transaction.json",
+  "installedArchiveSha256": "84d7858995ef2df51ca6ea0e44d8bc9a24101511b61546bf83e1c4989800daf9",
+  "installedReceipt": "C:/Dev/WoW/local-install-backups/apogee-keybinds-rank-9123fe2-20261004/transaction.json",
   "productionClientTested": false,
   "reportedDate": "2026-10-04",
   "runtimeFiles": {
@@ -289,7 +307,7 @@
       "ApogeeKeybindsDev/Actions/Compile.lua": "76ee9aa786b4cd53d6af43744788becc85f40ec1d271f2db0f1d6aa3d143f59b",
       "ApogeeKeybindsDev/Actions/Defaults.lua": "8bc802954916d8dfe9be6806a858fd9044e19f997c6f82f24854b5cf7cdf5240",
       "ApogeeKeybindsDev/Actions/Drag.lua": "536c1e4da4ecd065b7c58d158665473a846a711859b60f51581e67b5e4ae6d15",
-      "ApogeeKeybindsDev/Actions/Identity.lua": "22dfd88d64527005ef15219de5688922d3a96ea2c317296d06d69e395ac30601",
+      "ApogeeKeybindsDev/Actions/Identity.lua": "b6f8e5395218e84a8115e7607a326fa4a02b76ea68889fcfd6e02c0aebee7f86",
       "ApogeeKeybindsDev/Actions/Program.lua": "f2c87e5986a2e3aa76d772e81b3572b7b5b618aba92725a301877d21a1ba57fc",
       "ApogeeKeybindsDev/Actions/Secure.lua": "e831f9672e7da52a2bc83bb5abe4c1b05be2d1e7c642c28b91d729a36a1d055b",
       "ApogeeKeybindsDev/ApogeeKeybindsDev.lua": "267098d5315d5d13fb8cd2ea6d6410aa6803635f8821a0b02e3806098b3da241",
@@ -407,7 +425,7 @@
       "ApogeeKeybinds/Actions/Compile.lua": "017293b543d59dcd458c1774c0a975425fba0d526077bf53bdc59729894e09a5",
       "ApogeeKeybinds/Actions/Defaults.lua": "303aa7c03c3ba0eb4173d0d187c29bba9d390880b1a41709ff438d815ae33cb2",
       "ApogeeKeybinds/Actions/Drag.lua": "49cd1520e6f515f967cb4262224fe06f2b09861f87ba389ee1b0ca3a78830bfd",
-      "ApogeeKeybinds/Actions/Identity.lua": "3eb2304e37e8ebe9c7e878acdec11067949480f43919cf8c81718059669c5707",
+      "ApogeeKeybinds/Actions/Identity.lua": "37e7c8218b0eaa40264f4e51e72553614962cb7abdb0356d471697dc4a60ac42",
       "ApogeeKeybinds/Actions/Program.lua": "1b53c712faedb7cfcab627582f72384edb45713f224db0ad8cfc6e89e057f252",
       "ApogeeKeybinds/Actions/Secure.lua": "ac400eeb3d215af336f296de8a233b1abe986418a0421e65e7be7e61914b4f75",
       "ApogeeKeybinds/ApogeeKeybinds.lua": "68c3b4d19f741a37683d568e4df643a1a9f64c6f6f2de9e6e0f341e1fbcf2d0d",

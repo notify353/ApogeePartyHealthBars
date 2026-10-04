@@ -277,11 +277,14 @@ PROD addon files are byte-identical before and after installation. Private saves
 enable preferences and differing local documentation remain untouched.
 
 Only Keybinds DEV `Actions/Identity.lua` and the distribution DEV marker's version
-TOC changed. The user must reload with the complete DEV family enabled, then test
-Charge from the assigned key and HUD. If the changed marker metadata is not
-discovered on reload, native rescan behavior may require a user restart. The
-reported level-25 Vanguard Charge failure remains unconfirmed in the live client;
-offline rank-replacement reproduction and installation do not establish native
-acceptance. Existing acceptance evidence is retained for its previous runtime,
-so this candidate still requires renewed acceptance before release. No main
-integration, push, release or PROD installation is authorized by this update.
+TOC changed. The owner subsequently reports "that fixed it" for the installed
+level-25 Vanguard Charge fix. This accepts the reported Charge failure only;
+broader new gameplay checks, PROD testing and CurseForge-client testing are not
+claimed. `native-acceptance.json` updates the changed Keybinds Lua hash in each
+generated family and preserves prior acceptance for all unchanged runtime.
+
+The owner authorizes GitHub push and merge so this fix is included in the next
+deployment. The reviewed source pin remains the exact installed candidate.
+This request does not authorize a release, deployment, tag or further local
+installation. The ordinary release-preparation and final-commit hosted gates
+still apply before any separately authorized publication.

@@ -2,25 +2,12 @@
 
 ## [Unreleased]
 
-- Fix Keybinds spellbook drops for talent-overridden spells such as Vanguard Charge in the DEV candidate.
-
-- Remove Heals raid marking and retire its obsolete DEV module through the verified central installer.
-
-- Pin the reviewed Heals secure priority-mark button for DEV: player-clicked circle/skull outside combat, with existing-icon preservation and destination-availability checks.
-
-- Disable Heals automatic raid marking after live testing produced a Blizzard-only blocked-action popup.
-
-- Preserve party names and levels when Heals range feedback fades a row; remove range-status labels.
-
-- Add a 40-yard party range fallback when Heals slot one has no usable range, with distinct unknown-distance feedback.
-
-- Limit Heals automatic raid marks to bosses and mana enemies; remove health fallback and fix the restricted existing-icon gate.
-
-- Add guarded Heals automatic boss circle and sticky mana-first skull marking, with lowest-health fallback only for readable candidates.
-
-- Keep gray indicators on unselected Heals threat rows and gold on the selected enemy.
-
-- Make Heals threat backgrounds transparent for non-mana enemies while retaining blue mana backgrounds.
+- Make non-mana enemy threat backgrounds transparent while retaining blue mana backgrounds.
+- Keep unselected threat indicators gray and the selected enemy indicator gold.
+- Preserve party names and levels during range fading, remove range-status labels, and use a forty-yard fallback when the first healing slot cannot provide range.
+- Remove the experimental Heals raid-marking feature.
+- Fix spellbook assignment of talent-overridden spells, including Vanguard Charge, and retain stable assignments across talent changes.
+- Reload after updating. Existing settings are preserved.
 
 ## [1.12.0] - 2026-10-03
 

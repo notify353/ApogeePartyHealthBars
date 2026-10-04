@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Preserve party names and levels when Heals range feedback fades a row; remove range-status labels.
+
 - Add a 40-yard party range fallback when Heals slot one has no usable range, with distinct unknown-distance feedback.
 
 - Limit Heals automatic raid marks to bosses and mana enemies; remove health fallback and fix the restricted existing-icon gate.

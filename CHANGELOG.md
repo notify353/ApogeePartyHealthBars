@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Remove Heals raid marking and retire its obsolete DEV module through the verified central installer.
+
 - Pin the reviewed Heals secure priority-mark button for DEV: player-clicked circle/skull outside combat, with existing-icon preservation and destination-availability checks.
 
 - Disable Heals automatic raid marking after live testing produced a Blizzard-only blocked-action popup.

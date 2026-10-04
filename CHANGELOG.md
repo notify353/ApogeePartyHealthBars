@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Make Stats character gear filtering apply only while the character window is open; preserve independent auction and loot guidance.
+
 - Match Stats tooltip role icons to the 22-pixel dice icon.
 
 - Pin Stats DEV auction loading-loop/flicker fixes and native role icons.

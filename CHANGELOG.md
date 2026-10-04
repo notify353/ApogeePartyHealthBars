@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Make Heals threat backgrounds transparent for non-mana enemies while retaining blue mana backgrounds.
+
 ## [1.12.0] - 2026-10-03
 
 - Fix assigned weapon sets in Keybinds and simplify action execution while preserving

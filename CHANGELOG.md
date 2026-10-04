@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Keep gray indicators on unselected Heals threat rows and gold on the selected enemy.
+
 - Make Heals threat backgrounds transparent for non-mana enemies while retaining blue mana backgrounds.
 
 ## [1.12.0] - 2026-10-03

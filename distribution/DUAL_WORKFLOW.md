@@ -257,3 +257,31 @@ match the candidate and receipt at
 The acceptance record retains unchanged sibling coverage. Generated PROD is the
 counterpart of the accepted sources; separate PROD and CurseForge-client testing
 are not claimed.
+
+## October 4 Keybinds learned-rank recovery DEV candidate
+
+Keybinds pins reviewed commit `9123fe23d092769c3cf466859eb20e1fd5a852e9`.
+Saved spell assignments whose former rank is no longer learned recover through
+the current active spell family, including talent overrides. Exact learned ranks
+remain explicit choices. The child regression and existing talent-override spec
+pass against both generated families, including key/HUD routing, saved-choice
+preservation, exclusions and combat-deferred refresh. All sibling pins, runtime
+transforms and loader contracts are unchanged.
+
+Full local distribution validation passed against the matching Forever
+1.60.1.70205 export. DEV-only installation is recorded at
+`C:/Dev/WoW/local-install-backups/apogee-keybinds-rank-9123fe2-20261004/transaction.json`;
+the verified backup retains every previously managed DEV file. All 188 installed
+package-file hashes and all 155 generated DEV Lua hashes match. The 111 existing
+PROD addon files are byte-identical before and after installation. Private saves,
+enable preferences and differing local documentation remain untouched.
+
+Only Keybinds DEV `Actions/Identity.lua` and the distribution DEV marker's version
+TOC changed. The user must reload with the complete DEV family enabled, then test
+Charge from the assigned key and HUD. If the changed marker metadata is not
+discovered on reload, native rescan behavior may require a user restart. The
+reported level-25 Vanguard Charge failure remains unconfirmed in the live client;
+offline rank-replacement reproduction and installation do not establish native
+acceptance. Existing acceptance evidence is retained for its previous runtime,
+so this candidate still requires renewed acceptance before release. No main
+integration, push, release or PROD installation is authorized by this update.

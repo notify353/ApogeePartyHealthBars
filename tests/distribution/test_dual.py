@@ -1,6 +1,7 @@
 import argparse
 import copy
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -46,6 +47,24 @@ class DualTests(unittest.TestCase):
             name = child['name'] + 'Dev'
             subprocess.run(['lua', str(ROOT / 'tests/distribution/client_identity.lua'),
                             str(OPTIONS.artifacts / 'DEV' / name), name], check=True)
+
+    def test_keybinds_spell_rank_and_talent_overrides_in_both_families(self):
+        child = next(c for c in self.lock['children'] if c['name'] == 'ApogeeKeybinds')
+        source = d.source_tree(OPTIONS.sources_root / child['name'], child['commit'])
+        for family in ('PROD', 'DEV'):
+            name = child['name'] + ('Dev' if family == 'DEV' else '')
+            harness = OPTIONS.artifacts / ('keybinds-spell-tests-' + family)
+            (harness / 'tests').mkdir(parents=True)
+            for support in ('mock.lua', 'beta_native.lua', 'macro_model.lua'):
+                (harness / 'tests' / support).write_bytes(source['tests/' + support])
+            env = dict(os.environ, APOGEE_KEYBINDS_RUNTIME_ROOT=str((OPTIONS.artifacts / family / name).resolve()),
+                       APOGEE_KEYBINDS_RUNTIME_NAME=name)
+            for spec in ('spell_override_spec.lua', 'spell_rank_replacement_spec.lua'):
+                data = source['tests/' + spec]
+                if family == 'DEV':
+                    data, _ = dual.transform_lua(data, child['name'])
+                (harness / 'tests' / spec).write_bytes(data)
+                subprocess.run(['lua', 'tests/' + spec], cwd=harness, env=env, check=True)
 
     def test_receipted_retirement_and_rollback_preserve_unknown_files(self):
         path = 'ApogeeEssentialsDev/Thanks/Retired.lua'

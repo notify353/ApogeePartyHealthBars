@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Recover saved Keybinds spell assignments, including Vanguard Charge, when a previously assigned rank has been replaced by a learned rank.
+
 ## [1.14.1] - 2026-10-04
 
 - Prioritize Healing Power for healers and Spell Power for caster damage, with Intellect breaking ties.

@@ -11,7 +11,7 @@ Five focused addons for **World of Warcraft Forever 1.60.1**:
 Auction and Tank remain DEV-only in the next package candidate.
 
 Enable the modules you want under **Apogee Forever** in WoW's AddOns list.
-Gameplay modules retain their own settings. Stats uses your assigned group role or a session fallback selected below the character window. This edition supports Forever only.
+Gameplay modules retain their own settings. Stats evaluates all supported roles outdoors and uses your assigned role or instance fallback in dungeons. Its character-window Gear filter applies only while that window is open. This edition supports Forever only.
 
 Legacy profiles are not imported, and Dungeon Guide is not included.
 
@@ -23,7 +23,8 @@ GitHub source archives are not installable packages.
 Contributor documentation: [build workflow](distribution/DUAL_WORKFLOW.md),
 [release checklist](RELEASING.md), [client API reference](docs/WOW_INTERFACE_EXPORT.md).
 
-Stats auction browsing: click the dice to show upgrades. It pulses while checking
-and stays lit while filtering. Choose a fallback role beside the dice; group roles
-still take priority. Progress includes unavailable items, and clicking again restores
-all results. Disable any retained legacy Apogee Auction copy to use this filter.
+Stats auction browsing: click the dice to show upgrades. It stays steadily lit
+while progress text reports loading. Each visit starts with All roles; the auction
+role filter is independent of character guidance. Tooltips show every qualifying
+role. Click the dice again to restore all results. Disable any retained legacy
+Apogee Auction copy to use this filter.

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+- Show upgrades for all supported roles outside dungeons and raids, with native role icons matching the dice size.
+- Filter gear guidance by role while the character window is open; closing it restores normal guidance.
+- Start each auction visit with All roles and allow independent role filtering.
+- Fix repeated auction loading requests and flickering results; keep confirmed upgrades visible while data loads.
+- Reload after updating. Existing settings are preserved.
+
 ## [1.13.0] - 2026-10-03
 
 - Make non-mana enemy threat backgrounds transparent while retaining blue mana backgrounds.

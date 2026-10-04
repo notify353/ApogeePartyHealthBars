@@ -2,13 +2,11 @@
 
 ## [Unreleased]
 
-- Make Stats character gear filtering apply only while the character window is open; preserve independent auction and loot guidance.
-
-- Match Stats tooltip role icons to the 22-pixel dice icon.
-
-- Pin Stats DEV auction loading-loop/flicker fixes and native role icons.
-
-- Pin Stats to all-role outdoor guidance, labeled role/playstyle upgrades and independent per-visit auction filters. Preserve instance assignment priority and validate partial-data recovery in generated families.
+- Show upgrades for all supported roles outside dungeons and raids, with native role icons matching the dice size.
+- Filter gear guidance by role while the character window is open; closing it restores normal guidance.
+- Start each auction visit with All roles and allow independent role filtering.
+- Fix repeated auction loading requests and flickering results; keep confirmed upgrades visible while data loads.
+- Reload after updating. Existing settings are preserved.
 
 ## [1.13.0] - 2026-10-03
 

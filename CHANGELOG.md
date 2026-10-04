@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+- Make non-mana enemy threat backgrounds transparent while retaining blue mana backgrounds.
+- Keep unselected threat indicators gray and the selected enemy indicator gold.
+- Preserve party names and levels during range fading, remove range-status labels, and use a forty-yard fallback when the first healing slot cannot provide range.
+- Remove the experimental Heals raid-marking feature.
+- Fix spellbook assignment of talent-overridden spells, including Vanguard Charge, and retain stable assignments across talent changes.
+- Reload after updating. Existing settings are preserved.
+
 ## [1.12.0] - 2026-10-03
 
 - Fix assigned weapon sets in Keybinds and simplify action execution while preserving

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.13.0] - 2026-10-03
+
 - Make non-mana enemy threat backgrounds transparent while retaining blue mana backgrounds.
 - Keep unselected threat indicators gray and the selected enemy indicator gold.
 - Preserve party names and levels during range fading, remove range-status labels, and use a forty-yard fallback when the first healing slot cannot provide range.

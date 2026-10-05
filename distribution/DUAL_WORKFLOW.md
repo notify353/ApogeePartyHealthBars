@@ -390,3 +390,31 @@ disappears on cooldown, insufficient resources and out-of-range targets. Check
 persistence and combat behavior in the client. Native acceptance remains pending;
 the prior acceptance record is unchanged. No game operation, PROD installation,
 push, integration or publication was performed.
+
+## October 5 Keybinds self-buff reminder DEV candidate
+
+Keybinds advances to reviewed commit `dbe93d829daa1b80395751a2d1127a67f12e2a2f`.
+The explicit Self-buff reminder (out of combat) right-click mode highlights only
+when the player's buff is confirmed missing and readiness/resource checks pass.
+It performs no combat aura queries and fails closed on unavailable or restricted
+observations. Name-based aura lookup recognizes different ranks of the same buff.
+Ordinary Highlight when ready behavior and existing HUD visibility are retained.
+The new pinned regression passes against both generated families, covering
+resources, cooldown, present/missing ranks, combat, restricted data, persistence,
+default slots and ordinary-mode independence. Sibling pins are unchanged.
+
+Full central validation passed against Forever 1.60.1.70205. Evidence is under
+`C:/Temp/apogee-keybinds-self-buff-validation-20261005`; the DEV-only transaction
+is `C:/Dev/WoW/local-install-backups/apogee-keybinds-self-buff-dbe93d8-20261005/transaction.json`.
+It chains from the previous ready-highlight receipt. All 188 package files,
+155 DEV Lua files and 219 backed-up files were byte-verified; 111 PROD files
+remain unchanged. Private saves, enable preferences and 31 differing local
+documentation files are preserved. Four Keybinds DEV Lua files changed:
+Actions/Defaults.lua, Core/Client.lua, UI/Cooldowns.lua and UI/Hud.lua. There are
+no loader or discovery changes.
+
+Reload with the complete DEV family enabled and select the self-buff reminder
+mode on the desired spell. Native checks remain pending for buff application,
+expiration, combat suppression, resource gating and persisted selection. Existing
+HUD hiding settings still apply. Native acceptance was not advanced; no game
+operation, PROD installation, push, integration or publication was performed.

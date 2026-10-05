@@ -64,7 +64,7 @@ class DualTests(unittest.TestCase):
                 (harness / 'tests' / support).write_bytes(source['tests/' + support])
             env = dict(os.environ, APOGEE_KEYBINDS_RUNTIME_ROOT=str((OPTIONS.artifacts / family / name).resolve()),
                        APOGEE_KEYBINDS_RUNTIME_NAME=name)
-            for spec in ('spell_override_spec.lua', 'spell_rank_replacement_spec.lua', 'shift_keyboard_spec.lua', 'ready_highlight_spec.lua'):
+            for spec in ('spell_override_spec.lua', 'spell_rank_replacement_spec.lua', 'shift_keyboard_spec.lua', 'ready_highlight_spec.lua', 'self_buff_reminder_spec.lua'):
                 data = source['tests/' + spec]
                 if family == 'DEV':
                     data, _ = dual.transform_lua(data, child['name'])

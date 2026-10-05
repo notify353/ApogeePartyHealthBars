@@ -327,3 +327,30 @@ three reviewed-build warning corrections. Publication still requires successful
 hosted test, aggregate and exact-version preflight checks on the final preparation
 commit, review of its exact package and notes, and immediate production-tag
 approval. Version preparation does not trigger another local installation.
+
+## October 5 Keybinds Shift keyboard DEV candidate
+
+Keybinds pins reviewed commit `41b476ace10a965a24d65685e18d7a54169b852a`.
+Its 15 keyboard slots claim priority Shift aliases to the same secure action,
+including existing native Shift bindings. The 30 saved slots remain unchanged;
+mouse-button and wheel modifier actions retain their independent assignments.
+The generated PROD and DEV suites run the pinned Shift regression alongside
+spell-rank and talent-override checks, covering combat deferral, layout changes,
+manual/default actions, macro modifiers, mouse isolation and override rollback.
+Sibling pins, admission guards, identity transforms and loader schemas are unchanged.
+
+Full central validation passed against the matching Forever 1.60.1.70205 export.
+DEV-only installation is recorded at
+`C:/Dev/WoW/local-install-backups/apogee-keybinds-shift-41b476a-20261005/transaction.json`;
+packages and aggregate evidence are under
+`C:/Temp/apogee-keybinds-shift-validation-20261005`.
+All 188 installed package files, 155 generated DEV Lua files and 219 backed-up
+files were byte-verified; all 111 canonical PROD files remained unchanged.
+Private saves, enable preferences and 31 differing documentation files were preserved.
+Only Keybinds DEV `Actions/Secure.lua` and the DEV marker version TOC changed.
+
+The user must reload with the complete DEV family enabled and verify Shift+1,
+other keyboard aliases and unchanged mouse/wheel modifier actions. The changed
+marker TOC is a discovery change; if reload does not discover it, a user restart
+may be needed. No game operation, PROD installation or publication was performed.
+Native acceptance remains pending; the prior acceptance record is not advanced.

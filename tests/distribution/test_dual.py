@@ -53,7 +53,7 @@ class DualTests(unittest.TestCase):
                                 str(OPTIONS.artifacts / family / name), name] +
                                ([reviewed_build] if reviewed else []), check=True)
 
-    def test_keybinds_spell_rank_and_talent_overrides_in_both_families(self):
+    def test_keybinds_spell_and_shift_overrides_in_both_families(self):
         child = next(c for c in self.lock['children'] if c['name'] == 'ApogeeKeybinds')
         source = d.source_tree(OPTIONS.sources_root / child['name'], child['commit'])
         for family in ('PROD', 'DEV'):
@@ -64,7 +64,7 @@ class DualTests(unittest.TestCase):
                 (harness / 'tests' / support).write_bytes(source['tests/' + support])
             env = dict(os.environ, APOGEE_KEYBINDS_RUNTIME_ROOT=str((OPTIONS.artifacts / family / name).resolve()),
                        APOGEE_KEYBINDS_RUNTIME_NAME=name)
-            for spec in ('spell_override_spec.lua', 'spell_rank_replacement_spec.lua'):
+            for spec in ('spell_override_spec.lua', 'spell_rank_replacement_spec.lua', 'shift_keyboard_spec.lua'):
                 data = source['tests/' + spec]
                 if family == 'DEV':
                     data, _ = dual.transform_lua(data, child['name'])

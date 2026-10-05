@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Add an optional pulsing green highlight for Keybinds spells when cooldown, resources and applicable range checks confirm they are ready. Enable Highlight when ready from the spell icon right-click menu.
+
 - Keep keyboard actions working while Shift is held, including keys with existing game Shift bindings. Mouse-button and wheel modifier actions remain unchanged.
 
 ## [1.14.2] - 2026-10-04

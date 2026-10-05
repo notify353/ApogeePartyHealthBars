@@ -362,3 +362,31 @@ receipt and candidate. Native acceptance advances only Keybinds
 The owner authorizes GitHub integration so the exact pinned source is consumed
 by the next CurseForge deployment; no new release or publication is requested.
 Separate PROD and CurseForge-client testing are not claimed.
+
+## October 5 Keybinds ready-highlight DEV candidate
+
+Keybinds pins reviewed commit `379c36ded8d0f499f46f053b0baf9e70f2148885`.
+The per-spell right-click option Highlight when ready enables a pulsing green
+border and glow when cooldown, resources and applicable range checks confirm
+readiness. Missing or restricted data stays quiet. Hidden spell art and the
+queued-action indicator retain precedence. The generated PROD and DEV suites
+run the pinned ready-highlight regression alongside Shift, learned-rank and
+talent-override checks. Sibling pins, transforms and loader metadata are unchanged.
+
+Full central validation passed against the matching Forever 1.60.1.70205 export.
+Artifacts and verification are at
+`C:/Temp/apogee-keybinds-ready-validation-20261005`. DEV-only installation used
+the latest Heals revert receipt and is recorded at
+`C:/Dev/WoW/local-install-backups/apogee-keybinds-ready-379c36d-20261005/transaction.json`.
+All 188 installed package files, 155 DEV Lua files and 219 backed-up files were
+byte-verified; all 111 canonical PROD files remained unchanged. Private saves,
+enable preferences and 31 differing local documentation files were preserved.
+Only Keybinds DEV Actions/Defaults.lua, UI/Cooldowns.lua, UI/Hud.lua and
+UI/Widgets.lua changed. There are no TOC or file discovery changes.
+
+Reload with the complete DEV family enabled, then enable Highlight when ready
+from a spell icon's right-click menu. Verify the effect appears when ready and
+disappears on cooldown, insufficient resources and out-of-range targets. Check
+persistence and combat behavior in the client. Native acceptance remains pending;
+the prior acceptance record is unchanged. No game operation, PROD installation,
+push, integration or publication was performed.

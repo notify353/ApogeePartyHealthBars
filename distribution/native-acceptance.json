@@ -1,6 +1,6 @@
 {
   "accepted": true,
-  "basis": "Owner confirms that the installed DEV fix resolved the reported level-25 Vanguard Charge failure. Acceptance updates only Keybinds Actions/Identity.lua; unchanged runtime retains prior owner acceptance. All 155 installed DEV Lua hashes match the candidate and installation receipt. PROD is the generated counterpart, not separately client-tested. The owner authorizes GitHub integration for the next deployment; no new release or deployment is authorized.",
+  "basis": "Owner confirms after DEV reload that all three stale startup warnings stopped and everything works. Acceptance updates only Core/Client.lua in Heals, Keybinds and Group Alert; prior accepted Charge behavior and unchanged sibling runtime retain their acceptance. All 155 installed DEV Lua hashes match the candidate and latest installation receipt. PROD is the generated counterpart, not separately client-tested. GitHub integration and release preparation are requested; exact production-tag approval remains a separate final step.",
   "curseforgeClientTested": false,
   "followUpChecks": [
     {
@@ -197,11 +197,37 @@
       "scope": "Charge fix only. No broader new gameplay testing, PROD testing or CurseForge-client acceptance is claimed. Prior acceptance is retained for unchanged sibling runtime. GitHub push and merge are authorized for inclusion in the next deployment; release and deployment remain separately authorized.",
       "sourceCommit": "9123fe23d092769c3cf466859eb20e1fd5a852e9",
       "testedFamily": "DEV"
+    },
+    {
+      "check": "Heals, Keybinds and Group Alert reviewed-build startup warnings",
+      "installedArchiveSha256": "3b7fbd961053ac2be301f2fb0759e91258afa1261b6fb374476fa7c77b294b3a",
+      "installedReceipt": "C:/Dev/WoW/local-install-backups/apogee-reviewed-build-70205-20261004/transaction.json",
+      "reportedDate": "2026-10-04",
+      "result": "After DEV reload, owner confirms: Yes, all three stopped and everything works.",
+      "runtimeFiles": {
+        "DEV": {
+          "ApogeeGroupAlertDev/Core/Client.lua": "26b091e76205c824f8b867e5b2e6a40b4bfe403f102f24145b6b4ed4149701f3",
+          "ApogeeHealsDev/Core/Client.lua": "e8c94e377d5e76206fcc94f29b20392c8ac813d4eba4d965309d922a104969cc",
+          "ApogeeKeybindsDev/Core/Client.lua": "e1e74892f21c0fc333cff7d7d75537c6e19400f2849add85445508802afd56e9"
+        },
+        "PROD": {
+          "ApogeeGroupAlert/Core/Client.lua": "72c03f43d90410fc346ae12183008604cff4f9113fd2d581565ab462736c4bb8",
+          "ApogeeHeals/Core/Client.lua": "2a8973bd548bebdb2bf80c0249c385421b7ff235a6d5e301bdb9dd98909dd7cc",
+          "ApogeeKeybinds/Core/Client.lua": "25b7de5d339d1492b33bd321827c0153604c65fec370493e6b369f5007a87a1c"
+        }
+      },
+      "scope": "Accepts the three warning corrections on the installed DEV candidate. Prior accepted Charge behavior and unchanged sibling runtime retain prior acceptance. No new PROD or CurseForge-client acceptance is claimed. GitHub integration and release preparation are requested; publication awaits exact production-tag approval.",
+      "sourceCommits": {
+        "ApogeeGroupAlert": "f1781c9dd3f88b5512205bd5cce1f5e74f503c6a",
+        "ApogeeHeals": "f81fa69ddbd60beb04495fab7f1266bad6e4f6df",
+        "ApogeeKeybinds": "c15d46d652c676b6208031150c65b719ec391eba"
+      },
+      "testedFamily": "DEV"
     }
   ],
   "gateSha256": "ba988f34520cfcfdb5a340138659431d3eed30d42577ee30e326f199851a278d",
-  "installedArchiveSha256": "84d7858995ef2df51ca6ea0e44d8bc9a24101511b61546bf83e1c4989800daf9",
-  "installedReceipt": "C:/Dev/WoW/local-install-backups/apogee-keybinds-rank-9123fe2-20261004/transaction.json",
+  "installedArchiveSha256": "3b7fbd961053ac2be301f2fb0759e91258afa1261b6fb374476fa7c77b294b3a",
+  "installedReceipt": "C:/Dev/WoW/local-install-backups/apogee-reviewed-build-70205-20261004/transaction.json",
   "productionClientTested": false,
   "reportedDate": "2026-10-04",
   "runtimeFiles": {
@@ -264,7 +290,7 @@
       "ApogeeGroupAlertDev/Alerts/Model.lua": "77636974db679f22027e39234ac26975d75d7271c71c96a4907d27773d2633f6",
       "ApogeeGroupAlertDev/Alerts/View.lua": "fd8b49205eea3d30b79f2bc539f6819d5ea02c810849860fa17c2e19796d082a",
       "ApogeeGroupAlertDev/ApogeeGroupAlertDev.lua": "d17ac70eff0855f3aec2a87fbc8fd534cb7fa2fd3e9a8928f74e88b68b28031e",
-      "ApogeeGroupAlertDev/Core/Client.lua": "c8049e4d6b85abb96ec59c15e3fa3e05d670d50300c5bf6aa5bb818c083f9092",
+      "ApogeeGroupAlertDev/Core/Client.lua": "26b091e76205c824f8b867e5b2e6a40b4bfe403f102f24145b6b4ed4149701f3",
       "ApogeeGroupAlertDev/Core/Text.lua": "1f9eb6c1ab5eecb9b4e4786b708022e6288fbc992bcc17304b39032962bfb91b",
       "ApogeeGroupAlertDev/Core/UI.lua": "b57d983d77d62ff1c025ec0d3695a5b314c10dd6fb452e8bdea48a955bf921a4",
       "ApogeeGroupAlertDev/Discovery/Dictionary.lua": "06fe83a6f9935109be7371be2e2c3c9311d005f410a3b9ba6117dd7bb33a3034",
@@ -286,7 +312,7 @@
       "ApogeeHealsDev/Buffs/View.lua": "9eaba8eeb6b575b28080cb8d3c2c235a988125a61038d2f94279924d7e39489b",
       "ApogeeHealsDev/Cleansing/Runtime.lua": "3179c122727e08d4616eaafc1911ec098dc63839ab155ae994dca298d49c1fea",
       "ApogeeHealsDev/Core/Access.lua": "4240202609d3026829b1ad6fa7f529026b9a38785f070cbbf26c4940e8884d1b",
-      "ApogeeHealsDev/Core/Client.lua": "17caf1247e3c6d1767a01413cefbad66fd088fa7f0710943f79ca6b8439e07dc",
+      "ApogeeHealsDev/Core/Client.lua": "e8c94e377d5e76206fcc94f29b20392c8ac813d4eba4d965309d922a104969cc",
       "ApogeeHealsDev/Core/Storage.lua": "500ee5fe95d2f90b9297941ab175934d4937e7c3dc0d7c3e40492811f0fb735b",
       "ApogeeHealsDev/Core/UnitAPI.lua": "2b6acbfbfaed13426ad9306921406405dc9a7a5d05836448a526e920530abd54",
       "ApogeeHealsDev/Drinking/Runtime.lua": "049e23292164f17722f67c98359de6c5b60231096ba51acbb371022494cdc115",
@@ -311,7 +337,7 @@
       "ApogeeKeybindsDev/Actions/Program.lua": "f2c87e5986a2e3aa76d772e81b3572b7b5b618aba92725a301877d21a1ba57fc",
       "ApogeeKeybindsDev/Actions/Secure.lua": "e831f9672e7da52a2bc83bb5abe4c1b05be2d1e7c642c28b91d729a36a1d055b",
       "ApogeeKeybindsDev/ApogeeKeybindsDev.lua": "267098d5315d5d13fb8cd2ea6d6410aa6803635f8821a0b02e3806098b3da241",
-      "ApogeeKeybindsDev/Core/Client.lua": "14736c9deb8f27923b58b25d225e7e8e0b90ec19d885b271a2b21ea37da62083",
+      "ApogeeKeybindsDev/Core/Client.lua": "e1e74892f21c0fc333cff7d7d75537c6e19400f2849add85445508802afd56e9",
       "ApogeeKeybindsDev/Core/Inputs.lua": "e8949e7803309d744189274967dab54bdf8d77ab5665dc825f9ed3809024bd21",
       "ApogeeKeybindsDev/Core/States.lua": "76466a1cde1d39509971d737914ac08092a1c13ab2edf02e3f2cdba437727813",
       "ApogeeKeybindsDev/Core/Storage.lua": "514555ae781ac5aef519d45d1f95099cc065ccb9a0f918bd34fa70ac692129b2",
@@ -382,7 +408,7 @@
       "ApogeeGroupAlert/Alerts/Model.lua": "5e06caf3b233c079ae93a1ed817af3ed20ed3f33215aa82e91b1a1fea5db333a",
       "ApogeeGroupAlert/Alerts/View.lua": "9d27c080d55ed73c446c26b42bccc4b587061fb26861a79f00965e7d19d4a953",
       "ApogeeGroupAlert/ApogeeGroupAlert.lua": "ba73b48adf61ea58e21c47e9c775e8b5f8e01cd048cb9f40f92cc9b944281051",
-      "ApogeeGroupAlert/Core/Client.lua": "4fe460e2b99685616785a8ba14942ffdff28e5c03dbb1522c00340c54e73031d",
+      "ApogeeGroupAlert/Core/Client.lua": "72c03f43d90410fc346ae12183008604cff4f9113fd2d581565ab462736c4bb8",
       "ApogeeGroupAlert/Core/Text.lua": "30d9742c349da95c0574815b783561390df6af0e414207d03ff3315b999aa220",
       "ApogeeGroupAlert/Core/UI.lua": "4d9de2d2ae9361949e15368d02368a2e817ac6d3adbe472a7edf55869cd1c245",
       "ApogeeGroupAlert/Discovery/Dictionary.lua": "ade0872410cc7827f88b2e425d06619850a50a1aa45a991ad9d58d458f74c7e4",
@@ -404,7 +430,7 @@
       "ApogeeHeals/Buffs/View.lua": "adb8ee31e5c6ce4382652e5bdf053cfffab10e3adec04c98b786f6337fcb0550",
       "ApogeeHeals/Cleansing/Runtime.lua": "5db964fe64746ae964a00a668f78e4d1aaee1400feaed4576771226c797b8f76",
       "ApogeeHeals/Core/Access.lua": "28fdedfef9540a2dfe2212245c3e7617fd9d930aacd02fc132f7396d75516cbe",
-      "ApogeeHeals/Core/Client.lua": "bcd53fe9c842ea0e043dc80fcd540eb34dc5cdada3c6b634eb71542711a9d32c",
+      "ApogeeHeals/Core/Client.lua": "2a8973bd548bebdb2bf80c0249c385421b7ff235a6d5e301bdb9dd98909dd7cc",
       "ApogeeHeals/Core/Storage.lua": "cb38f78560d2a16e95386cf783b19132efdc52cbe12cbb62769bf1c55c3c5f6a",
       "ApogeeHeals/Core/UnitAPI.lua": "fe8683cf20e6ff15ff286ed5a8ee2d9bdf7b00500da7ac55c66d6c8491b92073",
       "ApogeeHeals/Drinking/Runtime.lua": "f1504ed7c345d15a9603827acd343a7993506ae359a7aab021c4cc3fda630605",
@@ -429,7 +455,7 @@
       "ApogeeKeybinds/Actions/Program.lua": "1b53c712faedb7cfcab627582f72384edb45713f224db0ad8cfc6e89e057f252",
       "ApogeeKeybinds/Actions/Secure.lua": "ac400eeb3d215af336f296de8a233b1abe986418a0421e65e7be7e61914b4f75",
       "ApogeeKeybinds/ApogeeKeybinds.lua": "68c3b4d19f741a37683d568e4df643a1a9f64c6f6f2de9e6e0f341e1fbcf2d0d",
-      "ApogeeKeybinds/Core/Client.lua": "94be2fe9e0b92422ac178bbd194e86f968ad9dcbd103f41854a7f1bb2243d047",
+      "ApogeeKeybinds/Core/Client.lua": "25b7de5d339d1492b33bd321827c0153604c65fec370493e6b369f5007a87a1c",
       "ApogeeKeybinds/Core/Inputs.lua": "cc01e2707c3191d31f221a9a3d35f349aeedbc10d95f8531762eebc9695051e7",
       "ApogeeKeybinds/Core/States.lua": "eab0dac4de1f561bcf49c9e61b081c8a97456c1eacef5dd7d8fb4cae5c8645f2",
       "ApogeeKeybinds/Core/Storage.lua": "3ef364ab8a9f5a9a173eaeae3b06e607d85a2ef6ecb32b77802b95c7e9a61a2a",

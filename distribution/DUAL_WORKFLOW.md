@@ -288,3 +288,33 @@ deployment. The reviewed source pin remains the exact installed candidate.
 This request does not authorize a release, deployment, tag or further local
 installation. The ordinary release-preparation and final-commit hosted gates
 still apply before any separately authorized publication.
+
+## October 4 reviewed-build warning correction
+
+The central DEV candidate now pins Heals
+`f81fa69ddbd60beb04495fab7f1266bad6e4f6df`, Keybinds
+`c15d46d652c676b6208031150c65b719ec391eba`, and Group Alert
+`f1781c9dd3f88b5512205bd5cce1f5e74f503c6a`. Each changes its stale warning
+comparison to the reviewed Forever build 1.60.1.70205. The matching local export
+and all three child suites pass. Group Alert's source export record was refreshed
+after contract review; the child pins retain the reviewed documentation and
+regressions. Existing package inventories, sibling pins, identity transforms,
+loaders and capability guards remain unchanged.
+
+The generated client regression first failed against all six prior PROD/DEV
+client adapters. Both generated families now verify quiet startup on the build
+recorded in the central lock, warnings for the next build, cross-family rejection,
+revision tolerance and required-API failures. Full central validation passed.
+Prior native acceptance remains recorded against the previously accepted runtime;
+this warning correction requires the owner's reload confirmation before renewed
+release acceptance.
+
+DEV-only installation is recorded at
+`C:/Dev/WoW/local-install-backups/apogee-reviewed-build-70205-20261004/transaction.json`.
+Only the three DEV `Core/Client.lua` files changed. All 188 installed package
+files, 155 generated DEV Lua files and 219 backed-up files were byte-verified;
+111 PROD files remained unchanged. Private saves, addon enable preferences and
+31 differing local documentation files were preserved. There are no TOC or file
+discovery changes: the user should reload and verify that the three stale startup
+warnings no longer appear. No game operation, main integration, push, publication
+or PROD installation was performed for this correction.

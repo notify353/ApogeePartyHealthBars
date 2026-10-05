@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Remove stale unreviewed-build startup warnings from Heals, Keybinds and Group Alert on the reviewed Forever 1.60.1.70205 client.
+
 - Recover saved Keybinds spell assignments, including Vanguard Charge, when a previously assigned rank has been replaced by a learned rank.
 
 ## [1.14.1] - 2026-10-04

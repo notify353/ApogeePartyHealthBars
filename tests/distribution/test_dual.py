@@ -41,12 +41,17 @@ class DualTests(unittest.TestCase):
         return client, base / 'backup'
 
     def test_native_forever_identity_and_revision_tolerance(self):
+        reviewed_children = ('ApogeeHeals', 'ApogeeKeybinds', 'ApogeeGroupAlert')
+        reviewed_build = self.lock['client']['reviewedBuild'].rsplit('.', 1)[-1]
         for child in self.lock['children']:
             if child['name'] == 'ApogeeStats':
                 continue  # Stats client identity is covered by its pinned generated-package suite.
-            name = child['name'] + 'Dev'
-            subprocess.run(['lua', str(ROOT / 'tests/distribution/client_identity.lua'),
-                            str(OPTIONS.artifacts / 'DEV' / name), name], check=True)
+            reviewed = child['name'] in reviewed_children
+            for family in (('PROD', 'DEV') if reviewed else ('DEV',)):
+                name = child['name'] + ('Dev' if family == 'DEV' else '')
+                subprocess.run(['lua', str(ROOT / 'tests/distribution/client_identity.lua'),
+                                str(OPTIONS.artifacts / family / name), name] +
+                               ([reviewed_build] if reviewed else []), check=True)
 
     def test_keybinds_spell_rank_and_talent_overrides_in_both_families(self):
         child = next(c for c in self.lock['children'] if c['name'] == 'ApogeeKeybinds')

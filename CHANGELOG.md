@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.14.3] - 2026-10-05
+
 - Add an optional out-of-combat self-buff reminder for Keybinds spells; highlight only when the buff is confirmed missing and the spell is ready with enough resources.
 
 - Add an optional pulsing green highlight for Keybinds spells when cooldown, resources and applicable range checks confirm they are ready. Enable Highlight when ready from the spell icon right-click menu.

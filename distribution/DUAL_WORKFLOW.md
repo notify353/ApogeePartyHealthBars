@@ -418,3 +418,13 @@ mode on the desired spell. Native checks remain pending for buff application,
 expiration, combat suppression, resource gating and persisted selection. Existing
 HUD hiding settings still apply. Native acceptance was not advanced; no game
 operation, PROD installation, push, integration or publication was performed.
+
+The owner subsequently reports "it all works" after testing the ready highlight
+and self-buff reminder, and authorizes GitHub integration for future CurseForge
+consumption. All 155 installed DEV Lua hashes were reverified against the receipt
+and candidate. Native acceptance advances only the five changed Keybinds runtime
+files across the two generated families; sibling acceptance remains unchanged.
+The preceding Heals change and exact revert have no net candidate/runtime diff
+and receive no new acceptance here. Separate PROD/CurseForge-client testing is
+not claimed. No release, version bump, tag or publication is authorized by this
+integration request.

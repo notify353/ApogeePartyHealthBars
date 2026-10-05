@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.14.2] - 2026-10-04
+
 - Keep Vanguard Charge and other saved spell assignments working when a learned rank replaces the previous rank.
 - Remove stale startup warnings from Heals, Keybinds and Group Alert on the reviewed Forever 1.60.1.70205 client.
 - Reload after updating. Existing settings are preserved.

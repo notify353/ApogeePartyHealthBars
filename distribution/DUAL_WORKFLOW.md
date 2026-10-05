@@ -1,29 +1,5 @@
 # One source, two distributions
 
-## October 5 Heals Boosted Rest DEV candidate
-
-Heals pins locally reviewed commit `2e74c128cf3907ce1098e94300d7a44c2fb86fb9`.
-Its native unit-frame debuff groups exclude owner-confirmed Boosted Rest spell
-1229451 when native aura secrecy permits identity filtering. Restricted friendly
-debuffs remain visible. No Lua aura scanning or native visibility readback is added.
-Sibling pins, identity transforms and loader contracts remain unchanged.
-
-Heals source checks, matching-export filtering checks, generated DEV regressions
-and full central distribution validation passed. Artifacts are under
-`C:/Temp/apogee-heals-boosted-rest-2e74c12-20261005`.
-The owner explicitly requested installation. DEV-only receipt and verified backup:
-`C:/Dev/WoW/local-install-backups/apogee-heals-boosted-rest-2e74c12-20261005/transaction.json`.
-Only `ApogeeHealsDev/PartyFrames/View.lua` changed. Verified all 188 installed
-package files, 155 generated DEV Lua files and 219 backed-up files; 111 canonical
-PROD files remained byte-identical. Existing documentation, private saves and
-enable preferences were preserved. No file discovery changes or game operation.
-
-The user must reload with DEV enabled and verify Boosted Rest disappears while
-other debuffs remain visible, including in combat. NeverSecret classification and
-native behavior are not proven by the provided ID or offline tests. Native
-acceptance is pending; prior acceptance records are not advanced. Source and
-distribution changes are local only, with no push, main integration or publication.
-
 The active local workflow is side-by-side PROD and DEV. Earlier prototype and
 migration fixtures remain historical evidence. PROD 1.0.0 is published on
 CurseForge and GitHub; DEV remains local. APHB is a zero-Lua distribution identity with no gameplay or saved

@@ -354,3 +354,11 @@ other keyboard aliases and unchanged mouse/wheel modifier actions. The changed
 marker TOC is a discovery change; if reload does not discover it, a user restart
 may be needed. No game operation, PROD installation or publication was performed.
 Native acceptance remains pending; the prior acceptance record is not advanced.
+
+The owner subsequently confirms after reload that the Shift change is all working
+correctly. All 155 installed DEV runtime hashes were reverified against this
+receipt and candidate. Native acceptance advances only Keybinds
+`Actions/Secure.lua` in each generated family and retains all unchanged coverage.
+The owner authorizes GitHub integration so the exact pinned source is consumed
+by the next CurseForge deployment; no new release or publication is requested.
+Separate PROD and CurseForge-client testing are not claimed.

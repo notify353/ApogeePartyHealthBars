@@ -1,6 +1,6 @@
 {
   "accepted": true,
-  "basis": "Owner confirms after DEV reload that all three stale startup warnings stopped and everything works. Acceptance updates only Core/Client.lua in Heals, Keybinds and Group Alert; prior accepted Charge behavior and unchanged sibling runtime retain their acceptance. All 155 installed DEV Lua hashes match the candidate and latest installation receipt. PROD is the generated counterpart, not separately client-tested. GitHub integration and release preparation are requested; exact production-tag approval remains a separate final step.",
+  "basis": "Owner confirms after DEV reload that the Shift keyboard change is all working correctly. Acceptance updates only Keybinds Actions/Secure.lua; prior accepted behavior and unchanged sibling runtime retain their acceptance. All 155 installed DEV Lua hashes match the candidate and installation receipt. PROD is the generated counterpart, not separately client-tested. GitHub integration for the next deployment is authorized; no release or publication is authorized now.",
   "curseforgeClientTested": false,
   "followUpChecks": [
     {
@@ -223,13 +223,31 @@
         "ApogeeKeybinds": "c15d46d652c676b6208031150c65b719ec391eba"
       },
       "testedFamily": "DEV"
+    },
+    {
+      "check": "Keybinds Shift keyboard aliases",
+      "installedArchiveSha256": "d58fea6baddc74e43834c5910de87d8e40b7179b9c5ccac09a7a5b8ebda48721",
+      "installedReceipt": "C:/Dev/WoW/local-install-backups/apogee-keybinds-shift-41b476a-20261005/transaction.json",
+      "reportedDate": "2026-10-05",
+      "result": "Owner reports after reload: Yes, it is all working correctly now.",
+      "runtimeFiles": {
+        "DEV": {
+          "ApogeeKeybindsDev/Actions/Secure.lua": "f880a8ee2ee2cf9a2ed0d45d3fcf10398b4e83714f7a6eefd6191d4595aef58b"
+        },
+        "PROD": {
+          "ApogeeKeybinds/Actions/Secure.lua": "d98568d5ad95a74468edca69680215672a2da493f312654476fae88138571f19"
+        }
+      },
+      "scope": "Owner-reported DEV acceptance of the requested Shift keyboard behavior, with existing mouse and wheel modifiers retained. Prior sibling acceptance remains unchanged; separate PROD or CurseForge-client testing is not claimed.",
+      "sourceCommit": "41b476ace10a965a24d65685e18d7a54169b852a",
+      "testedFamily": "DEV"
     }
   ],
   "gateSha256": "ba988f34520cfcfdb5a340138659431d3eed30d42577ee30e326f199851a278d",
-  "installedArchiveSha256": "3b7fbd961053ac2be301f2fb0759e91258afa1261b6fb374476fa7c77b294b3a",
-  "installedReceipt": "C:/Dev/WoW/local-install-backups/apogee-reviewed-build-70205-20261004/transaction.json",
+  "installedArchiveSha256": "d58fea6baddc74e43834c5910de87d8e40b7179b9c5ccac09a7a5b8ebda48721",
+  "installedReceipt": "C:/Dev/WoW/local-install-backups/apogee-keybinds-shift-41b476a-20261005/transaction.json",
   "productionClientTested": false,
-  "reportedDate": "2026-10-04",
+  "reportedDate": "2026-10-05",
   "runtimeFiles": {
     "DEV": {
       "ApogeeAuctionDev/ApogeeAuctionDev.lua": "6337888aaec45948fffb9ee8a57e47bc6591b4493439b9430aaedbf55d2d209a",
@@ -335,7 +353,7 @@
       "ApogeeKeybindsDev/Actions/Drag.lua": "536c1e4da4ecd065b7c58d158665473a846a711859b60f51581e67b5e4ae6d15",
       "ApogeeKeybindsDev/Actions/Identity.lua": "b6f8e5395218e84a8115e7607a326fa4a02b76ea68889fcfd6e02c0aebee7f86",
       "ApogeeKeybindsDev/Actions/Program.lua": "f2c87e5986a2e3aa76d772e81b3572b7b5b618aba92725a301877d21a1ba57fc",
-      "ApogeeKeybindsDev/Actions/Secure.lua": "e831f9672e7da52a2bc83bb5abe4c1b05be2d1e7c642c28b91d729a36a1d055b",
+      "ApogeeKeybindsDev/Actions/Secure.lua": "f880a8ee2ee2cf9a2ed0d45d3fcf10398b4e83714f7a6eefd6191d4595aef58b",
       "ApogeeKeybindsDev/ApogeeKeybindsDev.lua": "267098d5315d5d13fb8cd2ea6d6410aa6803635f8821a0b02e3806098b3da241",
       "ApogeeKeybindsDev/Core/Client.lua": "e1e74892f21c0fc333cff7d7d75537c6e19400f2849add85445508802afd56e9",
       "ApogeeKeybindsDev/Core/Inputs.lua": "e8949e7803309d744189274967dab54bdf8d77ab5665dc825f9ed3809024bd21",
@@ -453,7 +471,7 @@
       "ApogeeKeybinds/Actions/Drag.lua": "49cd1520e6f515f967cb4262224fe06f2b09861f87ba389ee1b0ca3a78830bfd",
       "ApogeeKeybinds/Actions/Identity.lua": "37e7c8218b0eaa40264f4e51e72553614962cb7abdb0356d471697dc4a60ac42",
       "ApogeeKeybinds/Actions/Program.lua": "1b53c712faedb7cfcab627582f72384edb45713f224db0ad8cfc6e89e057f252",
-      "ApogeeKeybinds/Actions/Secure.lua": "ac400eeb3d215af336f296de8a233b1abe986418a0421e65e7be7e61914b4f75",
+      "ApogeeKeybinds/Actions/Secure.lua": "d98568d5ad95a74468edca69680215672a2da493f312654476fae88138571f19",
       "ApogeeKeybinds/ApogeeKeybinds.lua": "68c3b4d19f741a37683d568e4df643a1a9f64c6f6f2de9e6e0f341e1fbcf2d0d",
       "ApogeeKeybinds/Core/Client.lua": "25b7de5d339d1492b33bd321827c0153604c65fec370493e6b369f5007a87a1c",
       "ApogeeKeybinds/Core/Inputs.lua": "cc01e2707c3191d31f221a9a3d35f349aeedbc10d95f8531762eebc9695051e7",

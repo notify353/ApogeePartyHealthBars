@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Keep keyboard actions working while Shift is held, including keys with existing game Shift bindings. Mouse-button and wheel modifier actions remain unchanged.
+
 ## [1.14.2] - 2026-10-04
 
 - Keep Vanguard Charge and other saved spell assignments working when a learned rank replaces the previous rank.

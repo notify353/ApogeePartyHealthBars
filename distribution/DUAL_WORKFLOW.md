@@ -305,9 +305,12 @@ The generated client regression first failed against all six prior PROD/DEV
 client adapters. Both generated families now verify quiet startup on the build
 recorded in the central lock, warnings for the next build, cross-family rejection,
 revision tolerance and required-API failures. Full central validation passed.
-Prior native acceptance remains recorded against the previously accepted runtime;
-this warning correction requires the owner's reload confirmation before renewed
-release acceptance.
+The owner subsequently confirmed after DEV reload: "Yes, all three stopped and
+everything works". Native acceptance advances only the three changed client
+adapters; prior accepted Charge behavior and unchanged sibling runtime retain
+their acceptance. All 155 installed DEV Lua hashes were verified again against
+the candidate and receipt. Separate PROD and CurseForge-client testing are not
+claimed.
 
 DEV-only installation is recorded at
 `C:/Dev/WoW/local-install-backups/apogee-reviewed-build-70205-20261004/transaction.json`.
@@ -315,6 +318,12 @@ Only the three DEV `Core/Client.lua` files changed. All 188 installed package
 files, 155 generated DEV Lua files and 219 backed-up files were byte-verified;
 111 PROD files remained unchanged. Private saves, addon enable preferences and
 31 differing local documentation files were preserved. There are no TOC or file
-discovery changes: the user should reload and verify that the three stale startup
-warnings no longer appear. No game operation, main integration, push, publication
-or PROD installation was performed for this correction.
+discovery changes. No game operation or PROD installation was performed.
+
+The owner requests CurseForge deployment and authorizes the necessary GitHub
+integration and preparation of release 1.14.2. Exact source pins remain unchanged
+from the installed candidate. The release contains Charge rank recovery and the
+three reviewed-build warning corrections. Publication still requires successful
+hosted test, aggregate and exact-version preflight checks on the final preparation
+commit, review of its exact package and notes, and immediate production-tag
+approval. Version preparation does not trigger another local installation.

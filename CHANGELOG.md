@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Filter Boosted Rest from Heals unit-frame debuffs where permitted by the game's native aura secrecy rules.
+
 - Keep keyboard actions working while Shift is held, including keys with existing game Shift bindings. Mouse-button and wheel modifier actions remain unchanged.
 
 ## [1.14.2] - 2026-10-04

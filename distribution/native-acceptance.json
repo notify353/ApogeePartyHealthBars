@@ -1,6 +1,6 @@
 {
   "accepted": true,
-  "basis": "Owner reports it all works after testing the installed DEV ready highlight and self-buff reminder. Acceptance advances only the five changed Keybinds Lua files; all sibling and unchanged runtime acceptance is preserved. All 155 installed DEV Lua hashes match the candidate and receipt. PROD is the generated counterpart, not separately client-tested. GitHub integration for future CurseForge consumption is authorized; no release or publication is authorized now.",
+  "basis": "Owner reports it all works after testing the installed DEV ready highlight and self-buff reminder. Acceptance advances only the five changed Keybinds Lua files; all sibling and unchanged runtime acceptance is preserved. All 155 installed DEV Lua hashes match the candidate and receipt. PROD is the generated counterpart, not separately client-tested. The owner subsequently confirms everything is working in game and explicitly requests CurseForge deployment. Release 1.14.3 retains these exact accepted runtime bytes; publication follows the reviewed production-tag workflow and final hosted gates.",
   "curseforgeClientTested": false,
   "followUpChecks": [
     {

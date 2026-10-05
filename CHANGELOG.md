@@ -4,11 +4,10 @@
 
 ## [1.14.3] - 2026-10-05
 
-- Add an optional out-of-combat self-buff reminder for Keybinds spells; highlight only when the buff is confirmed missing and the spell is ready with enough resources.
-
-- Add an optional pulsing green highlight for Keybinds spells when cooldown, resources and applicable range checks confirm they are ready. Enable Highlight when ready from the spell icon right-click menu.
-
 - Keep keyboard actions working while Shift is held, including keys with existing game Shift bindings. Mouse-button and wheel modifier actions remain unchanged.
+- Add a pulsing green highlight when a spell is ready, with enough resources and applicable range checks. While editing, right-click a spell and enable Highlight when ready.
+- For self buffs, select Self-buff reminder (out of combat) from the spell's right-click menu while editing. Highlight only when the buff is missing and the spell is ready with enough resources.
+- Reload after updating. Existing settings are preserved.
 
 ## [1.14.2] - 2026-10-04
 

@@ -428,3 +428,12 @@ The preceding Heals change and exact revert have no net candidate/runtime diff
 and receive no new acceptance here. Separate PROD/CurseForge-client testing is
 not claimed. No release, version bump, tag or publication is authorized by this
 integration request.
+
+The owner subsequently confirms all current work is functioning in game and
+requests CurseForge deployment. Release 1.14.3 includes the accepted Shift
+keyboard fix, ready highlight and explicit out-of-combat self-buff reminder.
+Heals canonical main has the same tree as its existing pin; the recent rejected
+Boosted Rest experiment was exactly reverted and is not included. Source pins
+and accepted runtime bytes remain unchanged. Version preparation uses the
+documented helper; final-main test, aggregate and exact Forever version gates
+precede the single production-tag publication path.

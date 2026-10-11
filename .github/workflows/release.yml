@@ -103,7 +103,7 @@ jobs:
         run: python -B scripts/publish_distribution.py upload --sources-root "$GITHUB_WORKSPACE/sources" --output "$RUNNER_TEMP/apogee-publication"
       - name: Preserve exact package and upload receipt even on failure
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: apogee-publication
           path: ${{ runner.temp }}/apogee-publication

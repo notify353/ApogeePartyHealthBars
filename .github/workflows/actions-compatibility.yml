@@ -17,19 +17,19 @@ jobs:
         with:
           persist-credentials: false
       - run: python -B scripts/check_action_artifact.py create "$RUNNER_TEMP/synthetic-package"
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: fixture-old
           path: ${{ runner.temp }}/synthetic-package
           if-no-files-found: error
           retention-days: 1
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: fixture-new
           path: ${{ runner.temp }}/synthetic-package
           if-no-files-found: error
           retention-days: 1
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: fixture-receipt
           path: ${{ runner.temp }}/synthetic-package/receipt.json

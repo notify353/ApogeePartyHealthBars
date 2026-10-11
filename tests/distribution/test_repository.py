@@ -52,7 +52,7 @@ class RepositoryTests(unittest.TestCase):
         lock = json.loads((ROOT / 'distribution/candidate.lock.json').read_text())
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / 'unreviewed.lock.json'
-            for build in ('1.60.1.70125', '1.60.1.70169', '1.60.1.70171'):
+            for build in ('1.60.1.70125', '1.60.1.70169', '1.60.1.70171', '1.60.1.70337', '1.60.1.70339'):
                 with self.subTest(build=build):
                     lock['client']['reviewedBuild'] = build
                     path.write_text(json.dumps(lock))

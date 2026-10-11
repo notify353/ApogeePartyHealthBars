@@ -68,3 +68,12 @@ loading-safety source hashes match the prior review exactly, and the fresh
 files postdate the executable. Interface remains 16001. Reviewed Heals threat
 and nameplate contracts; matching-source tests pass. Advance only the current
 candidate build pin; historical locks and sibling runtime pins stay unchanged.
+
+## October 10 client refresh
+
+The owner refreshed the export after updating to 1.60.1.70338. All eight recorded
+loading-safety source hashes remain byte-identical to the prior review, and each
+fresh exported file postdates the installed executable. Interface remains 16001.
+Only current installation provenance advances; historical locks and sibling pins
+are retained. Generated adapter tests distinguish each pinned warning baseline
+from current-build capability acceptance. Native acceptance remains pending.

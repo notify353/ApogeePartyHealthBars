@@ -437,3 +437,32 @@ Boosted Rest experiment was exactly reverted and is not included. Source pins
 and accepted runtime bytes remain unchanged. Version preparation uses the
 documented helper; final-main test, aggregate and exact Forever version gates
 precede the single production-tag publication path.
+
+## October 10 Keybinds default-spell DEV candidate
+
+Keybinds pins reviewed commit `e911a536890a9b0d59223191b943721046e2dced`.
+Priest and Paladin empty slots no longer receive automatic spell assignments;
+Warrior defaults and saved assignments remain. Keybinds also refreshes its
+reviewed-build warning baseline to 70338. Sibling source pins, runtime, transforms
+and admission schema remain unchanged. Heals and Group Alert retain their pinned
+70205 warning baselines; generated tests independently verify their acceptance of
+the current 70338 installer build without suppressing those warnings.
+
+All eight central loading-safety export hashes are unchanged in the owner's fresh
+1.60.1.70338 export. Exact current installation provenance advances to this build;
+historical locks are preserved. Full central validation passed, including the
+Priest/Paladin regression against both generated identities. Evidence and packages
+are under `C:/Temp/apogee-keybinds-defaults-validation-20261010`.
+
+DEV-only installation chains from the latest self-buff receipt and is recorded at
+`C:/Dev/WoW/local-install-backups/apogee-keybinds-defaults-e911a53-20261010/transaction.json`.
+All 188 installed package files, 155 generated DEV Lua files and 219 backed-up files
+were independently byte-verified. All 111 canonical PROD files remain unchanged;
+private saves, enable preferences and 31 differing local documentation files are
+preserved. Only Keybinds DEV Actions/Defaults.lua, Core/Client.lua and the DEV marker
+version TOC changed. No game operation, PROD installation or publication occurred.
+
+Reload with the complete DEV family enabled and verify Priest/Paladin empty slots,
+manual saved assignments and unchanged Warrior defaults. The marker TOC is a
+discovery change; if reload does not discover it, a user restart may be needed.
+Native acceptance remains pending and its record is unchanged.

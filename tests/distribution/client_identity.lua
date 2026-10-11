@@ -1,6 +1,7 @@
 -- Exercise actual generated client modules with the native Forever project ID.
 -- API boundaries are mocked; this does not establish native gameplay acceptance.
-local root, name, reviewedBuild = arg[1], arg[2], arg[3]
+local root, name, reviewedBuild, installedBuild = arg[1], arg[2], arg[3], arg[4]
+if reviewedBuild == "" then reviewedBuild = nil end
 local child=name:gsub("Dev$", "")
 local messages, originalPrint = {}, print
 print=function(message) messages[#messages+1]=message end
@@ -53,6 +54,10 @@ if reviewedBuild then
     assert(loadClient(true) and #messages==0,"Reviewed build must start without a warning: "..name)
     build=tostring(tonumber(reviewedBuild)+1)
     assert(loadClient(true) and #messages==1,"Future build must warn and retain capability checks: "..name)
+end
+if installedBuild then
+    version,build,interface="1.60.1",installedBuild,16001
+    assert(loadClient(true),"Current reviewed installer build must remain supported: "..name)
 end
 for _,case in ipairs({{"1.60.1","70170",16001},{"1.60.0","69894",16000},
     {"1.60.2","99999",16002},{"1.61.0","100001",16100}}) do

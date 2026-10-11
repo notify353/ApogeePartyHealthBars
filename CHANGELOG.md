@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Remove built-in Priest and Paladin Keybinds spell defaults while preserving Warrior defaults and saved assignments.
+- Refresh current DEV installation provenance for the reviewed Forever 1.60.1.70338 export.
+
 ## [1.14.3] - 2026-10-05
 
 - Keep keyboard actions working while Shift is held, including keys with existing game Shift bindings. Mouse-button and wheel modifier actions remain unchanged.

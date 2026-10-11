@@ -41,17 +41,19 @@ class DualTests(unittest.TestCase):
         return client, base / 'backup'
 
     def test_native_forever_identity_and_revision_tolerance(self):
-        reviewed_children = ('ApogeeHeals', 'ApogeeKeybinds', 'ApogeeGroupAlert')
+        # Sibling pins retain their reviewed warning baseline when install provenance advances.
+        reviewed_children = {'ApogeeHeals': '70205', 'ApogeeGroupAlert': '70205'}
         reviewed_build = self.lock['client']['reviewedBuild'].rsplit('.', 1)[-1]
         for child in self.lock['children']:
             if child['name'] == 'ApogeeStats':
                 continue  # Stats client identity is covered by its pinned generated-package suite.
-            reviewed = child['name'] in reviewed_children
+            warning_build = reviewed_children.get(child['name'], reviewed_build if child['name'] == 'ApogeeKeybinds' else None)
+            reviewed = warning_build is not None
             for family in (('PROD', 'DEV') if reviewed else ('DEV',)):
                 name = child['name'] + ('Dev' if family == 'DEV' else '')
                 subprocess.run(['lua', str(ROOT / 'tests/distribution/client_identity.lua'),
                                 str(OPTIONS.artifacts / family / name), name] +
-                               ([reviewed_build] if reviewed else []), check=True)
+                               [warning_build or '', reviewed_build], check=True)
 
     def test_keybinds_spell_shift_and_ready_highlight_in_both_families(self):
         child = next(c for c in self.lock['children'] if c['name'] == 'ApogeeKeybinds')
@@ -64,7 +66,7 @@ class DualTests(unittest.TestCase):
                 (harness / 'tests' / support).write_bytes(source['tests/' + support])
             env = dict(os.environ, APOGEE_KEYBINDS_RUNTIME_ROOT=str((OPTIONS.artifacts / family / name).resolve()),
                        APOGEE_KEYBINDS_RUNTIME_NAME=name)
-            for spec in ('spell_override_spec.lua', 'spell_rank_replacement_spec.lua', 'shift_keyboard_spec.lua', 'ready_highlight_spec.lua', 'self_buff_reminder_spec.lua'):
+            for spec in ('spell_override_spec.lua', 'spell_rank_replacement_spec.lua', 'shift_keyboard_spec.lua', 'ready_highlight_spec.lua', 'self_buff_reminder_spec.lua', 'paladin_defaults_spec.lua'):
                 data = source['tests/' + spec]
                 if family == 'DEV':
                     data, _ = dual.transform_lua(data, child['name'])
